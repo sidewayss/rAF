@@ -314,7 +314,7 @@ class Easer {                        // Subject of: "The easer eases the easee."
             bi = bools[i];
             if (bi > i) {
                 arr[bi] = arr[i];
-                arr[i]  = li ? new Array() : undefined;
+                arr[i]  = li ? [] : undefined;
             }
         }
     }
@@ -642,7 +642,7 @@ class Easee {                        // Object of: "The easer eases the easee."
         this.eases = o.eases || o.easy;
         if (this.eases) {            // multi-ease transforms processed last
             if (Is.A(this.eases)) {  // there must be >1 func, and func is array
-                let fez = new Map;   // this.eases ends up as a map Func => Easy
+                let fez = new Map();   // this.eases ends up as a map Func => Easy
                 this.func.forEach((f, i) => {
                     fez.set(f, this.eases[i] || ez);
                     if (this.eases[i])
@@ -652,7 +652,7 @@ class Easee {                        // Object of: "The easer eases the easee."
             }
             else {
                 if (!Is.def(this.eases.get)) {
-                    let fez = new Map;
+                    let fez = new Map();
                     Object.entries(this.eases).forEach(([fn, easy]) => {
                         fez.set(FN[fn], easy);
                         easy.targets.push(this);
@@ -836,7 +836,6 @@ class Easy {                         // Outermost in the Easy instance hierarchy
                 this.pre(this);      // does not call ease(), must set this.e
             this.e =     { status:E.outward, value:(this.start || 0) };
             return this.e;
-            break;
         default:
             now -= this.zero;
         }
