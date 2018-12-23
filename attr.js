@@ -796,12 +796,12 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
                 "matrix3d","rotate3d", "scale3d","skew"];
     }
     static _funcL() {                // functions that take <length> arguments
-        return ["perspective", "translate3d"];
+        return ["perspective", "translate3d", "translateX", "translateY"];
     }
     static _funcA() {                // functions that take <angle> arguments
         return ["rotateX","rotateY","rotateZ"];
     }
-    static _func2() {
+    static _func2() {                // no abbreviations
         return ["skewX","skewY"];
     }
     static _lengths () {             // units "class variables"

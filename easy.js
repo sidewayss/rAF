@@ -26,7 +26,9 @@
 /* jshint -W117 */
 /* jshint -W138 */
 "use strict";
-///////////////////////////////////////|||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||| Easy classes |||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 class Easer {                        // Subject of: "The easer eases the easee."
     constructor(ee, elms,            // args after elms defined only by Teaser
                 func = ee.func, u = ee.units, c = ee.count,
@@ -149,7 +151,7 @@ class Easer {                        // Subject of: "The easer eases the easee."
             o.forEach((v, i) => {    // plug must be first, pre-zReplace()
                 this[v.key] = tc.zap(v, xv, c, l2, be);
                 if (i == 0)          // convert xv to numbers for post-plug
-                    xv = tc.zReplace(3, xv, ee);
+                    xv = tc.zReplace(3, xv, func, ee.units);
             });
             if (Is.def(this.factor)) {
                 this.factor   = tc.zReplace(ee.isEnd, this.factor, this.addend);
@@ -231,18 +233,18 @@ class Easer {                        // Subject of: "The easer eases the easee."
             v = (xv || xv === 0 ? xv : o.plug);
         return v;
     }
-    static zReplace(b, v, z) {    ////\ zReplace() handles three processes:
+    static zReplace(b, v, z, u) { ////\ zReplace() handles three processes:
         if (!b)                      //#1. factor = end (versus distance)
             return v;                //#2. replace undefined with "no change"
         if (!Is.A(v)) {              //    and null with undefined = get values
             switch(b) {              //#3. convert existing values to numbers
-            case 1:                  //#1. v = factor, z = addend
+            case 1:                  //#1. v = factor; z = addend.
                 return !Is.def(v) || v == 1 ? v : v - z;
             case 2:                  //#2. v = factor, addend, plug, max, or min
                 return  Is.def(v) ? (v === null ? undefined : v) : z;
-            case 3:                  //#3. v = factor, addend, max, or min
-                return Attr.toNumber(v, z.func, z.units);
-            }
+            case 3:                  //#3. v = factor, addend, max, or min;
+                return Attr.toNumber(v, z, u);
+            }                        // z = Func instance; u = units.
         }
         let l = v.length;
         let a = new Array(l);        // handles arrays recursively
