@@ -618,7 +618,7 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
     }                                // izByElm() helps let()
     static izByElm(v, c) { return Attr.dims(v) == (c ? 2 : 1); }
                             //////////\ vet(), net() are for unstructured values
-    vet(elms, v, m) {               //\ vet() "values" include function names
+    vet(elms, v, m) {               //\ vet() "values" include functions, text
         this.zvnet(false, elms, v, m);
     }
     net(elms, v, m, f = this.func) {//\ net() replaces only numbers
@@ -627,8 +627,12 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
     zvnet(isN, elms, v, m, f) {     //\ zvnet() consolidates vet() and net()
         let av, i, j, l, seps, vals, x;
         elms = this.constructor.elmArray(elms);
-        x    = isN ? this.getu(elms, f) : this.get(elms);
-        if (!Is.A(x)) x = [x];       // x = existing values
+        if (isN)
+           x = this.getu(elms, f)    // x = existing values;
+        else {
+           x = this.get(elms);
+           if (!Is.A(x)) x = [x];
+        }
         if (!Is.A(m)) m = [m];       // m = mask = array of indices into x[elm]
         if (!Is.A(v)) v = [v];
         else if (Is.A(v[0]))

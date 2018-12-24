@@ -464,8 +464,8 @@ class Geaser extends Easer {         // Easer for CSS gradients and for the SVG
                 bi = b.false[j];     // j can start at -1
                 lp = m[j + 1] || v[i].length;
                 for (k = (j < 0 ? 0 : m[j] + 1); k < lp; k++)
-                    p[i][bi] += s[i][k] + v[i][k];
-                p[i][bi] += s[i][k];
+                    p[i][bi] += s[k] + v[k];
+                p[i][bi] += s[k];
             }
         }
         this.type = 2;               // always all 2D arrays
@@ -481,7 +481,8 @@ class Geaser extends Easer {         // Easer for CSS gradients and for the SVG
 ///////////////////////////////////////|||||||||||||||||||||||||||||||||||||||||
 class Teaser {                       // Easer for transforms, wraps 1+ Easers in
     constructor(ee, elms) {          // this.easers by Func instance.
-     let a, b, bfc, c, f, fc, fi, fn, func, i, l, m, max, min, p, pre, suf, val;
+        let a, b, bfc, c, f, fc, fi, fn, func, i, l, m, max, min, p, pre, suf;
+        let u, val;
         this.easee  = ee;
         this.elms   = elms;
         this.easers = new Map();     // key = Func, value = Easer
@@ -555,10 +556,13 @@ class Teaser {                       // Easer for transforms, wraps 1+ Easers in
                 m = Attr.svgRot(ee.attr.svg, fi, m, l, f, a, p);
                 b = Attr.toBools(m, c[i]);
             }
-            this.easers.set(fi,      // one easer per func
-                new Easer(ee, elms, fi,
-                          Is.A(ee.units) ? ee.units[i] : undefined,
-                          c[i], val[i], pre[i], suf[i], f, a, p, max, min, b));
+            u = ee.attr.unitz(fi);   // one easer per func
+            if (ee.units) {
+                if (!isA(ee.units))   u = ee.units;
+                else if (ee.units[i]) u = ee.units[i];
+            }
+            this.easers.set(fi, new Easer(ee, elms, fi, u, c[i], val[i], pre[i],
+                                          suf[i], f, a, p, max, min, b));
         }
         Object.seal(this);
     }
