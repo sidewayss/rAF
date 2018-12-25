@@ -53,7 +53,7 @@ class Easer {                        // Subject of: "The easer eases the easee."
         this.min = min;     this.turn  = undefined;     this.number = undefined;
         this.idx = 0;   this.separator = undefined;   this.computer = undefined;
         /////////////////////////////// parse the factor, addend, and plug /////
-        o    = tc.zobj(max, min, a, f, p, c, b, ee.attr.plug(func));
+        o    = tc.zobj(max, min, a, f, p, c, b, ee.attr.plug(func), ee.isEnd);
         dims = Array.from(o, (v) => v.dims);
         d    = Math.max(...dims);
         if (ee.attr.izAll & d < 1 && !ee.mask) {
@@ -180,7 +180,7 @@ class Easer {                        // Subject of: "The easer eases the easee."
         return n ? ee.attr.za(v, ee.func, ee.units)
                  : v.map(s => ee.attr.zparse(s, ee.func));
     }                               //\ zobj() creates and fills the o variable
-    static zobj(max, min, a, f, p, hasPlug, b, pv) {
+    static zobj(max, min, a, f, p, hasPlug, b, pv, isEnd) {
         let o = Array.from({length:hasPlug ? 5 : 4}, () => Object.create(null));
         const key  = ["max", "min", "addend", "factor", "plug"];
         const plug = [Infinity, -Infinity, , 1, ];
@@ -196,8 +196,8 @@ class Easer {                        // Subject of: "The easer eases the easee."
             o[4].plug  = pv;
             o[4].bools = b.false;    // plug is the filler, not the meat
         }
-        if (o[3].value == 1)         // if no factor, remove its array element,
-            o.splice(3, 1);          // which is best left until the end.
+        if (o[3].value == 1 && !isEnd)
+            o.splice(3, 1);          // if no factor, remove its array element
         return o;
     }
     static zundef(v) {            ////\ zundef() = v.value is or has undefined?
@@ -239,7 +239,7 @@ class Easer {                        // Subject of: "The easer eases the easee."
         if (!Is.A(v)) {              //    and null with undefined = get values
             switch(b) {              //#3. convert existing values to numbers
             case 1:                  //#1. v = factor; z = addend.
-                return !Is.def(v) || v == 1 ? v : v - z;
+                return Is.def(v) ? v - z : v;
             case 2:                  //#2. v = factor, addend, plug, max, or min
                 return  Is.def(v) ? (v === null ? undefined : v) : z;
             case 3:                  //#3. v = factor, addend, max, or min;
@@ -450,7 +450,7 @@ class Geaser extends Easer {         // Easer for CSS gradients and for the SVG
         b.false = Array.from({length:lp}, (_, i) =>  nb + (i * 2));
                                      // parse the addend, factor, max, and min
         o = this.constructor.zobj(ee.max, ee.min, ee.addend, ee.factor,
-                                  false,  false,  b, ee.attr.plug());
+                                  false,  false,  b, ee.attr.plug(), ee.isEnd);
         o.forEach((v) => {           // using numbers, not strings
             v.izF       = Easer.izFull(v, 2, c);
             this[v.key] = Easer.zap(v, x.nums, c, l, ee.byElm, m);
@@ -527,8 +527,12 @@ class Teaser {                       // Easer for transforms, wraps 1+ Easers in
                             else
                                 p += fn + E.lp + s[j] + E.rp + E.sp;
                         }
-                        if (p && z >= 0)
-                            suf[z][i] = E.sp + p.trimEnd();
+                        if (p) {
+                            if (k == 0)
+                                pre[0][i] = p;
+                            else if (z >= 0)
+                                suf[z][i] = E.sp + p.trimEnd();
+                        }
                         if (k < fc) {// push non-existent funcs to the end
                             for (j of func)
                                 felm.add(j);
@@ -558,7 +562,7 @@ class Teaser {                       // Easer for transforms, wraps 1+ Easers in
             }
             u = ee.attr.unitz(fi);   // one easer per func
             if (ee.units) {
-                if (!isA(ee.units))   u = ee.units;
+                if (!Is.A(ee.units))   u = ee.units;
                 else if (ee.units[i]) u = ee.units[i];
             }
             this.easers.set(fi, new Easer(ee, elms, fi, u, c[i], val[i], pre[i],

@@ -769,10 +769,10 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
                 "stdDeviation","data-idx"];
     }
     static _css() {                  // <number> or <string>, no default units
-        return ["display","opacity","pointerEvents",
+        return ["display","pointerEvents",
                 "flexFlow","justifyContent","alignItems","alignSelf",
                 "fontFamily","fontWeight","fontStyle","fontStretch",
-                "overflowX","overflowY",
+                "opacity","fillOpacity","strokeOpacity","overflowX","overflowY",
                 "transform","transformOrigin"];
     }
     static _cssL() {                 // <length> or <percent> data type
