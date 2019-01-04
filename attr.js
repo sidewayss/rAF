@@ -15,15 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ////////////////////////////////////////////////////////////////////////////////
-/* jshint esversion: 6 */
-/* jshint strict: global */
-/* jshint elision: true */
-/* jshint -W014 */
-/* jshint -W069 */
-/* jshint -W078 */
-/* jshint -W083 */
-/* jshint -W117 */
-/* jshint -W138 */
+////////////////////////////////////////////////////////////////////////////////
+/* jshint esversion: 6 *//* jshint strict: global *//* jshint elision: true */
+/* jshint -W014 *//* jshint -W069 *//* jshint -W078 */
+/* jshint -W083 *//* jshint -W117 *//* jshint -W138 */
 "use strict";
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||| Global Constants |||||||||||||||||||||||
@@ -177,15 +172,15 @@ const C = {                          // CSS4 named colors as rgb and hsl arrays
     whitesmoke           : { rgb:[245,245,245], hsl:[  0,  0, 96] },
     yellow               : { rgb:[255,255,  0], hsl:[ 60,100, 50] },
     yellowgreen          : { rgb:[154,205, 50], hsl:[ 80, 61, 50] }
-};
+}; /* eslint-disable no-useless-escape */
 const E  = {                         // E for Easy and psuedo-enums
      wsp:/[\s]+/,         sp:" ",    x:0,  R:0,  H:0,  let:0,  arrived:0,
    comsp:/[,\s]+/,     comma:",",    y:1,  G:1,  S:1,  set:1,  return :1,
-    dash:/\-/g,         hash:"#",    w:2,  B:2,  L:2,  net:2,  pausing:2,
+    dash:/-/g,          hash:"#",    w:2,  B:2,  L:2,  net:2,  pausing:2,
     func:/[\(\)]/,        lp:"(",    h:3,  A:3,        in :0,  mid    :3,
    gfunc:/t\(/,           rp:")",                      out:1,  outward:4,
  sepfunc:/[,\s\(\)]+/,   num:/-?[\d\.]+/g,       increment:2,  waiting:5
-};
+}; /* eslint-enable no-useless-escape */
                                    //// These consts are populated by class Ez
 const A  = Object.create(null);      // attribute names
 const AT = Object.create(null);      // class Attr instances
@@ -212,7 +207,7 @@ class Func {                         // Func: CSS or SVG function ||||||||||||||
       //    this.count = -2;         // CSS gradients have a flexible structure
       //    break;
         case F.hsl: case F.hsla:
-            this.hsl   = true;       /* falls through */ // fall-through
+            this.hsl   = true;       // eslint-disable-line no-fallthrough
         case F.rgb: case F.rgba:
             this.color = true;
             this.count = this.name.length;
@@ -230,7 +225,7 @@ class Func {                         // Func: CSS or SVG function ||||||||||||||
             this.count =  6;
             break;
         case F.m3:
-            this.count = 16;         /* falls through */ // fall-through
+            this.count = 16;         // eslint-disable-line no-fallthrough
         default:                     // .count used as a boolean: array or not?
         }                            // unitz = variable, units = getter/setter
         this.constructor.setUnits(this, units);
@@ -280,16 +275,16 @@ class Func {                         // Func: CSS or SVG function ||||||||||||||
                                      // otherwise it's not a legit color value.
         return n || v;
     }
-    static toHSL(n, pct) {           // helps fromColor(). n is an array of 3 or
-        let diff, hsl, max, min, rgb;// 4 numbers. pct is a boolean: isPercent.
+    static toHSL(n, pct, u) {        // helps fromColor()
+        let diff, hsl, max, min, rgb, sum;
         const R = 0, G = 1, B = 2, A = 3, H = 0, S = 1, L = 2;
         rgb  = n.slice(0, 3).map(v => v / (pct ? 100 : 255));
-        max  = Math.max(...rgb);
-        min  = Math.min(...rgb);
+        max  = Math.max(...rgb);     // n is an array of 3 or 4 numbers
+        min  = Math.min(...rgb);     // pct is a boolean: isPercent
         diff = max - min;
         sum  = max + min;
         hsl  = new Array(n.length);
-        if (v.length > A)
+        if (n.length > A)
             hsl[A] = n[A];
         hsl[L] = (sum / 2) * 100;    // saturation and lightness are percents
         if (diff) {
@@ -397,10 +392,6 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
         }
         return this.units;
     }
-
-    get izAll() {                   //\ does attr spread 1 value to all subs?
-        return(this === AT.bF);      // for now baseFrequency is the only one
-    }
     izSVG(elm) { return this.svg || this.svg1 && elm instanceof SVGElement; }
     /////////////////////////////////// Remove Function: renamed to "cut" //////
     cut(elms) {
@@ -484,7 +475,7 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
                     seps.push("");   // simplifies the loop
                 vals.forEach((v, i) => {
                     v = f.fromColor(v);
-                    if (isA(v))      // named colors limit the use of RegExp
+                    if (Is.A(v))      // named colors limit the use of RegExp
                         vals[i] = f.apply(v.join(f.separator));
                     x[i] += vals[i] + seps[i];
                 });
@@ -625,10 +616,10 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
         this.zvnet(true,  elms, v, m, f);
     }
     zvnet(isN, elms, v, m, f) {     //\ zvnet() consolidates vet() and net()
-        let av, i, j, l, seps, vals, x;
+        let av, b2, i, j, l, seps, vals, x;
         elms = this.constructor.elmArray(elms);
         if (isN)
-           x = this.getu(elms, f)    // x = existing values;
+           x = this.getu(elms, f);   // x = existing values;
         else {
            x = this.get(elms);
            if (!Is.A(x)) x = [x];
@@ -688,13 +679,13 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
         if (elms) {                 //\ elmArray() returns an array of elements
             if (!Is.A(elms)) {      //\ user flexibility + internal consistency
                 if (Is.oneElm(elms)) // if it's not class Array, convert it now:
-                    elms = [elms];                    //- Element, String
+                    elms = [elms];                  //- Element, String
                 else if (elms.size)
                     elms = Array.from(elms.values()); //- Map, Set
                 else if (elms.length)
-                    elms = Array.from(elms);          //- HTMLCollection, NodeList
+                    elms = Array.from(elms);        //- HTMLCollection, NodeList
                 else
-                    elms = Object.values(elms);       //- Object
+                    elms = Object.values(elms);     //- Object
             }
             elms.forEach((v, i, a) => {
                 if (Is.String(v))    // convert Strings to Elements, by id
@@ -766,7 +757,7 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
         return ["x","y","x1","x2","y1","y2","r","cx","cy","d","dx","dy",
                 "stop-opacity","xlink:href","preserveAspectRatio","viewBox",
                 "azimuth","baseFrequency","elevation","k1","k2","k3","values",
-                "stdDeviation","data-idx"];
+                "stdDeviation","surfaceScale","data-idx"];
     }
     static _css() {                  // <number> or <string>, no default units
         return ["display","pointerEvents",

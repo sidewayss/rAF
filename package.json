@@ -1,0 +1,23 @@
+{
+  "name": "raf",
+  "version": "1.0.0",
+  "description": "JavaScript Animation Library",
+  "main": "raf.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sidewayss/rAF.git"
+  },
+  "keywords": [
+    "JavaScript",
+    "animation"
+  ],
+  "author" : "Sideways S.",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/sidewayss/rAF/issues"
+  },
+  "homepage": "https://github.com/sidewayss/rAF#readme"
+}
