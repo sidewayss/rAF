@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
-// AFrame and ACues classes. The outermost layer of the raf.js project.
-// Copyright (C) 2018 Sideways S. www.sidewayss.com
+// rAF stands for requestAnimationFrame()
+// Copyright (C) 2023 Sideways S. www.sidewayss.com
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||| Global Constants |||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-const C = {                          // CSS4 named colors as rgb and hsl arrays
+const C = {              // CSS4 named colors as rgb and hsl arrays
     aliceblue            : { rgb:[240,248,255], hsl:[208,100, 97] },
     antiquewhite         : { rgb:[250,235,215], hsl:[ 34, 78, 91] },
     aqua                 : { rgb:[  0,255,255], hsl:[180,100, 50] },
@@ -171,32 +171,39 @@ const C = {                          // CSS4 named colors as rgb and hsl arrays
     whitesmoke           : { rgb:[245,245,245], hsl:[  0,  0, 96] },
     yellow               : { rgb:[255,255,  0], hsl:[ 60,100, 50] },
     yellowgreen          : { rgb:[154,205, 50], hsl:[ 80, 61, 50] }
-}; /* eslint-disable no-useless-escape */
-const E  = {                         // E for Easy and psuedo-enums
+};
+
+/* eslint-disable no-useless-escape */
+const E  = {          // E for Easy and psuedo-enums
      wsp:/[\s]+/,         sp:" ",    x:0,  R:0,  H:0,  let:0,  arrived:0,
    comsp:/[,\s]+/,     comma:",",    y:1,  G:1,  S:1,  set:1,  return :1,
-    dash:/-/g,          hash:"#",    w:2,  B:2,  L:2,  net:2,  pausing:2,
+   gdash:/-/g,          hash:"#",    w:2,  B:2,  L:2,  net:2,  pausing:2,
     func:/[\(\)]/,        lp:"(",    h:3,  A:3,        in :0,  mid    :3,
-   gfunc:/t\(/,           rp:")",                      out:1,  outward:4,
+   gfunc:/t\(/,           rp:")",    yes:"Y",          out:1,  outward:4,
  sepfunc:/[,\s\(\)]+/,   num:/-?[\d\.]+/g,       increment:2,  waiting:5
-}; /* eslint-enable no-useless-escape */
-                                   //// These consts are populated by class Ez
-const A  = Object.create(null);      // attribute names
-const AT = Object.create(null);      // class Attr instances
-const F  = Object.create(null);      // function names
-const FN = Object.create(null);      // class Func instances
-const U  = Object.create(null);      // units strings, e.g. "px", "deg"
-//////////////////////////////////////////////////////////////////////////////
-class Is {                           // helpful boolean functions wrapped-up
+};
+/* eslint-enable no-useless-escape */
+
+// These consts are populated by class Ez
+const P  = {}; // property (attribute) names as strings
+const PR = {}; // class Prop instances
+const F  = {}; // function names
+const FN = {}; // class Func instances
+const U  = {}; // units strings, e.g. "px", "deg"
+
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||| Class Library ||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+class Is {                           // Is: helpful boolean functions wrapped-up
     static A(v)      { return Array.isArray(v);          }
-    static A2(a)     { return a.some(v => Is.A(v));      }
+    static A2(a)     { return a.some(v => Is.A(v));      } // is 2D array?
     static N(v)      { return typeof v == "number";      }
     static String(v) { return typeof v == "string";      }
     static def(v)    { return v !== undefined;           }
     static oneElm(v) { return v.tagName || Is.String(v); }
 }
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||| Attr classes |||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||| Prop classes: Func, Prop, Ez |||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 class Func {                         // Func: CSS or SVG function ||||||||||||||
     constructor(name, units) {
@@ -274,7 +281,7 @@ class Func {                         // Func: CSS or SVG function ||||||||||||||
                                      // otherwise it's not a legit color value.
         return n || v;
     }
-    static toHSL(n, pct, u) {        // helps fromColor()
+    static toHSL(n, pct, u = false) {// helps fromColor()
         let diff, hsl, max, min, rgb, sum;
         const R = 0, G = 1, B = 2, A = 3, H = 0, S = 1, L = 2;
         rgb  = n.slice(0, 3).map(v => v / (pct ? 100 : 255));
@@ -311,14 +318,14 @@ class Func {                         // Func: CSS or SVG function ||||||||||||||
     }
 }           /////////////////////////// end class Func |||||||||||||||||||||||||
 ///////////////////////////////////////|||||||||||||||||||||||||||||||||||||||||
-class Attr {                         // Attr: SVG attribute or CSS property ||||
-    constructor(name, units, func) {
+class Prop {                         // Prop: CSS property or SVG attribute |||||
+    constructor(name, units, func = undefined) {
         this.name = name;
         this.func = func;
         if (units === false) {       // false means SVG attribute
             this.svg   = true;
             this.units = "";
-            if (name == A.d || name == A.p) // d and points are unstructured
+            if (name == P.d || name == P.p) // d and points are unstructured
                 this.isDPoints = true;      // <text>/<tspan> x, y, dx, dy, and
         }                                   // rotate are optional unstructured
         else {
@@ -339,29 +346,29 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
                 this.cssName = s + z;
             }
         }
-        if (name == A.t)             // these last ifs are so that I can seal it
+        if (name == P.t)             // these last ifs are so that I can seal it
             this.isTransform = true; // a mild performance hit for a clean const
-        if (name == A.sc)
+        if (name == P.sc)
             this.svg = true;
-        if (name == A.w || name == A.h)
+        if (name == P.w || name == P.h)
             this.svg1 = true;        // SVG1 cannot style these, SVG2 can.
         Object.seal(this);
     }
     /////////////////////////////////// count() separator() plug() units() /////
     count(f = this.func) {          //\ count() returns argument count
-        if (f && !Is.A(f) && !(f === FN.r && this === AT.tCSS))
+        if (f && !Is.A(f) && !(f === FN.r && this === PR.tCSS))
             return f.count;          // if (count < 2) return undefined
         else {
             switch (this) {
-          //case AT.d: AT.points:
+          //case PR.d: PR.points:
           //    return -1;           // d and points have a flexible structure
-            case AT.bF:
+            case PR.bF:
                 return  2;
-            case AT.tO:
+            case PR.tO:
                 return  3;
-            case AT.vB: case AT.m: case AT.p:
+            case PR.vB: case PR.m: case PR.p:
                 return  4;
-            case AT.values:
+            case PR.values:
                 return 20;
             default:      }
         }
@@ -369,7 +376,7 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
     separator(f = this.func) {       // only font-family uses commas
         if (f)                       // to set font-family with multiple values
             return f.separator;      // you must use set() with 1 string value.
-        return E.sp;                 // AT.fF.let() is an unlikely requirement.
+        return E.sp;                 // PR.fF.let() is an unlikely requirement.
     }
     plug(f = this.func) {           //\ plug() is the default sub-value
         if (f)
@@ -380,7 +387,7 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
         if (f) {
             if (f.units)
                 return f.units;
-            else if (this === AT.tCSS) {
+            else if (this === PR.tCSS) {
                 switch (f) {
                 case FN.t:           // fallback if no value specified
                     return U.px;
@@ -391,6 +398,7 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
         }
         return this.units;
     }
+    //!!izSVG() might need a way to force .style, i.e return false
     izSVG(elm) { return this.svg || this.svg1 && elm instanceof SVGElement; }
     /////////////////////////////////// Remove Function: renamed to "cut" //////
     cut(elms) {
@@ -441,8 +449,8 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
     }
     zn(s, f, u = this.unitz(f)) {   //\ zn() converts 1 element's value(s)
         s = this.zparse(s, f);
-        return Is.A(s) ? s.map(v => Attr.toNumber(v, f, u))
-                       : Attr.toNumber(s, f, u);
+        return Is.A(s) ? s.map(v => Prop.toNumber(v, f, u))
+                       : Prop.toNumber(s, f, u);
     }
     zparse(s, f = this.func) {      //\ zparse() parses one element's value
         let v = "";
@@ -461,7 +469,7 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
         elms = this.constructor.elmArray(elms);
         l = elms.length;            //\ it returns an object with 5 properties
         x = this.get(elms);          // elms and x are always arrays
-        o = Object.create(null);     // returned object has 3 array properties
+        o = {};                      // returned object has 3 array properties
         o.vals = new Array(l);       // numeric values as strings
         o.seps = new Array(l);       // string leftovers as separators
         o.nums = new Array(l);       // numeric values as numbers
@@ -524,7 +532,7 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
                         p.length--;
                     if (this.isTransform && (p.length > 2 || bf || b)) {
                         l  = p.length / 2;
-                        fs = new Set();
+                        fs = new Set;
                         tf = new Array(l);
                         tp = new Array(l);
                         for (j = 0, k = 0; j < l; j++) {
@@ -564,10 +572,16 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
                 this.set(elms[i], z, f[0], u);
         }
     }                               //\ zet() helps instance.set() and .let()
-    zet(v, f = this.func, u = this.unitz(f), c = this.count(f), m, p) {
+    zet(v, f = this.func, u = this.unitz(f), c = this.count(f),
+           m = false,     p = undefined)
+    {
         if (c) {                     // list of values
             let isAv = Is.A(v);
             let isAu = Is.A(u);      // hsl(), hsla(), and rotate3d() mix units
+            if (f && !isAv) {
+                v = f.fromColor(v)   // fromColor ignores non-color properties
+                isAv = Is.A(v);
+            }
             if (m || (isAv && (v.length < c || v.includes(undefined)))) {
                 let i, isAp, z;      // the array needs plugging
                 if (Is.def(p)) {
@@ -606,15 +620,15 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
         if (f) return f.apply(v);
         else   return v;
     }                                // izByElm() helps let()
-    static izByElm(v, c) { return Attr.dims(v) == (c ? 2 : 1); }
+    static izByElm(v, c) { return Prop.dims(v) == (c ? 2 : 1); }
                             //////////\ vet(), net() are for unstructured values
     vet(elms, v, m) {               //\ vet() "values" include functions, text
         this.zvnet(false, elms, v, m);
     }
     net(elms, v, m, f = this.func) {//\ net() replaces only numbers
         this.zvnet(true,  elms, v, m, f);
-    }
-    zvnet(isN, elms, v, m, f) {     //\ zvnet() consolidates vet() and net()
+    }                               //\ zvnet() consolidates vet() and net()
+    zvnet(isN, elms, v, m, f = undefined) {
         let av, b2, i, j, l, seps, vals, x;
         elms = this.constructor.elmArray(elms);
         if (isN)
@@ -644,30 +658,30 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
         }
     }
     /////////////////////////////////// public static methods //////////////////
-    static set(attr, elm, v) {       // Attr.set() handles CSS versus SVG
-        if (attr.izSVG(elm))
+    static set(attr, elm, v) {       // Prop.set() handles CSS versus SVG
+        if (attr.izSVG(elm)) //!!need a way to force use of .style, maybe elm.useStyle?
             elm.setAttribute(attr.name, v);
         else
             elm.style[attr.name] = v;
     }
-    static visible(elms, b) {        // much nicer as a boolean
-        Attr.set(AT.visibility, elms, b ? "visible" : "hidden");
+    static visible(elm, b) {         // useful as a boolean - for 1 element!
+        Prop.set(PR.visibility, elm, b ? "visible" : "hidden");
     }
     static colorFunc(f) {            // changes color function globally
-        for (let i of Attr._colors())
-            AT[i].func = f;
+        for (let i of Prop._colors())
+            PR[i].func = f;
     }
     static lengthUnits(u) {          // changes <length> units globally
         let i;
-        for (i of Attr._cssL())
-            AT[i].units = u;
-        for (i of Attr._cssL2())
-            AT[i].units = u;
-        for (i of Attr._funcL())
+        for (i of Prop._cssL())
+            PR[i].units = u;
+        for (i of Prop._cssL2())
+            PR[i].units = u;
+        for (i of Prop._funcL())
             FN[i].units = u;
     }
     static angleUnits(u) {           // changes <angle>  units globally
-        for (let i of Attr._funcA())
+        for (let i of Prop._funcA())
             FN[i].units = u;
     }
     /////////////////////////////////// "friend class" static methods //////////
@@ -678,13 +692,13 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
         if (elms) {                 //\ elmArray() returns an array of elements
             if (!Is.A(elms)) {      //\ user flexibility + internal consistency
                 if (Is.oneElm(elms)) // if it's not class Array, convert it now:
-                    elms = [elms];                  //- Element, String
+                    elms = [elms];                   // Element, String
                 else if (elms.size)
-                    elms = Array.from(elms.values()); //- Map, Set
+                    elms = Array.from(elms.values());// Map, Set
                 else if (elms.length)
-                    elms = Array.from(elms);        //- HTMLCollection, NodeList
+                    elms = Array.from(elms);         // HTMLCollection, NodeList
                 else
-                    elms = Object.values(elms);     //- Object
+                    elms = Object.values(elms);      // Object
             }
             elms.forEach((v, i, a) => {
                 if (Is.String(v))    // convert Strings to Elements, by id
@@ -693,11 +707,11 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
         }
         return elms;
     }
-    static svgRot(b, func, m, l, f, a, p) {
+    static svgRot(b, func, m, l, f = 0, a = 0, p = 0) {
         b &= (func === FN.r);       //\ svgRot() handles SVG rotate's quirks
         if (!m) {                   //\ and if (!b) zap() helps Teaser
-            m = Attr.zap(0, f, a, p);
-            if (b && (!m || Attr.dims(m) < Math.min(l, 2)))
+            m = Prop.zap(0, f, a, p);
+            if (b && (!m || Prop.dims(m) < Math.min(l, 2)))
                 m = EZ.x;            // special lazy syntax: angle-only
         }
         else if (b) {                // else alternate arg order: (angle, x, y)
@@ -706,13 +720,13 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
             if (m & EZ.angle) m -= EZ.angle - 1;
         }
         return m;
-    }
-    static toNumber(v, f, u) {      //\ toNumber() is soft numeric conversion
+    }                               //\ toNumber() is soft numeric conversion
+    static toNumber(v, f = false, u = undefined) {
         let n = parseFloat(v);      //\ if it fails to convert, you must revert
         return Number.isNaN(n) ? (f ? f.fromColor(v, u) : v) : n;
     }
     static toBools(v, l) {          //\ toBools() returns 2 arrays of array
-        let o = Object.create(null);//\ indices for an addend/plug: true/false
+        let o = {};                 //\ indices for an addend/plug: true/false
         if (v) {
             let f, i, j, t;
             t = [];                  // t for true, f for false
@@ -734,9 +748,9 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
             o.false = [];
         }
         return o;
-    }                               //\ Attr.toBools(Ez.zap(...), length);
+    }                               //\ Prop.toBools(Ez.zap(...), length);
     static zap(mask, factor, addend, plug) {
-        return mask || Attr.zv(factor) || Attr.zv(addend) || Attr.zv(plug);
+        return mask || Prop.zv(factor) || Prop.zv(addend) || Prop.zv(plug);
     }
     static zv(v) { return Is.A(v) ? v : false; }
                                     //\ ztf() called by let() and new Teaser()
@@ -756,24 +770,26 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
         return ["x","y","x1","x2","y1","y2","r","cx","cy","d","dx","dy",
                 "stop-opacity","xlink:href","preserveAspectRatio","viewBox",
                 "azimuth","baseFrequency","elevation","k1","k2","k3","values",
-                "stdDeviation","surfaceScale","data-idx"];
+                "stdDeviation","surfaceScale"];
     }
     static _css() {                  // <number> or <string>, no default units
         return ["display","pointerEvents",
                 "flexFlow","justifyContent","alignItems","alignSelf",
                 "fontFamily","fontWeight","fontStyle","fontStretch",
                 "opacity","fillOpacity","strokeOpacity","overflowX","overflowY",
-                "transform","transformOrigin"];
+                "transform","transformOrigin","transitionDuration",
+                "textAnchor","vectorEffect"];
     }
     static _cssL() {                 // <length> or <percent> data type
-        return ["height","width","stroke-width","fontSize",
-                "border","margin","padding","left","right","bottom",
+        return ["height","width","maxHeight","maxWidth","minHeight","minWidth",
+                "border","margin","padding","left","right","bottom","fontSize",
                 "borderTop", "borderBottom", "borderLeft", "borderRight",
                 "marginTop", "marginBottom", "marginLeft", "marginRight",
-                "paddingTop","paddingBottom","paddingLeft","paddingRight"];
+                "paddingTop","paddingBottom","paddingLeft","paddingRight",
+                "strokeWidth"];
     }
     static _svg2() {                 // 2 = attribute names with no abbreviation
-        return ["class","offset","points","seed","type"];
+        return ["class","offset","points","scale","seed","type"];
     }
     static _css2() {
         return ["background","cursor","filter","flex","mask","overflow",
@@ -783,11 +799,12 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
         return ["top"];
     }
     static _funcs() {                // functions: first 4 are the color funcs
-        return ["rgb","rgba","hsl","hsla","url","attr","var","calc",
+        return ["rgb","rgba","hsl","hsla",
+                "url","attr","var","calc","cubic-bezier",
                 "repeating-linear-gradient","repeating-radial-gradient",
                           "linear-gradient",          "radial-gradient",
-                "matrix",  "rotate",   "scale",  "translate","cubic-bezier",
-                "matrix3d","rotate3d", "scale3d","skew"];
+                "matrix",  "rotate",   "scale",  "translate",
+                "matrix3d","rotate3d", "scale3d"];
     }
     static _funcL() {                // functions that take <length> arguments
         return ["perspective", "translate3d", "translateX", "translateY"];
@@ -796,7 +813,7 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
         return ["rotateX","rotateY","rotateZ"];
     }
     static _func2() {                // no abbreviations
-        return ["skewX","skewY"];
+        return ["skew","skewX","skewY"];
     }
     static _lengths () {             // units "class variables"
         return ["px","em","rem","vw","vh","vmin","vmax","pt","pc","mm","in"];
@@ -804,10 +821,10 @@ class Attr {                         // Attr: SVG attribute or CSS property ||||
     static _angles() {
         return ["deg","rad","grad","turn"];
     }
-}           /////////////////////////// end class Attr |||||||||||||||||||||||||
+}           /////////////////////////// end class Prop |||||||||||||||||||||||||
 ///////////////////////////////////////|||||||||||||||||||||||||||||||||||||||||
-class Ez {                           // Ez: bitmask pseudo-enums for value lists
-    constructor() {                  //     also fills: E, F, FN, A, and AT
+/** @unrestricted */ class Ez {      // Ez: bitmask pseudo-enums for value lists
+    constructor() {                  //     also fills: E, F, FN, P, and AT
         let abcd, rgba, rgbc;
         rgba = ["R","G","B","A"];    // rgb(), rgba(), hsl(), hsla(), viewBox++
         this.make(rgba);
@@ -821,48 +838,49 @@ class Ez {                           // Ez: bitmask pseudo-enums for value lists
                              (_, i) => abcd[i % 4] + Math.floor(i / 4 + 1)));
         abcd.push("e","f");          // SVG matrix() naming conventions
         this.make(abcd);             // matrix()
-        this.tx    = this.e;         // CSS matrix() naming conventions
-        this.ty    = this.f;
+        this.tx = this.e;            // CSS matrix() naming conventions
+        this.ty = this.f;
                                      // fill the other objects:
-        this.fill(U, Attr._lengths(), 4);
-        this.fill(U, Attr._angles(),  5);
-        this.fill(F, Attr._funcs(),   5, FN, "");
-        this.fill(F, Attr._funcL(),   5, FN, U.px );
-        this.fill(F, Attr._funcA(),   5, FN, U.deg);
-        this.fill(F, Attr._func2(),  99, FN, "");
-        this.fill(A, Attr._colors(),  3, AT, "", FN.rgb);
-        this.fill(A, Attr._svg(),     3, AT, false);
-        this.fill(A, Attr._css(),     3, AT, ""   );
-        this.fill(A, Attr._cssL(),    3, AT, U.px );
-        this.fill(A, Attr._svg2(),   99, AT, false);
-        this.fill(A, Attr._css2(),   99, AT, ""   );
-        this.fill(A, Attr._cssL2(),  99, AT, U.px );
+        this.fill(U, Prop._lengths(), 4);
+        this.fill(U, Prop._angles(),  5);
+        this.fill(F, Prop._funcs(),   5, FN, ""   );
+        this.fill(F, Prop._funcL(),   5, FN, U.px );
+        this.fill(F, Prop._funcA(),   5, FN, U.deg);
+        this.fill(F, Prop._func2(),  99, FN, ""   );
+        this.fill(P, Prop._colors(),  3, PR, "", FN.rgb);
+        this.fill(P, Prop._svg(),     3, PR, false);
+        this.fill(P, Prop._css(),     3, PR, ""   );
+        this.fill(P, Prop._cssL(),    3, PR, U.px );
+        this.fill(P, Prop._svg2(),   99, PR, false);
+        this.fill(P, Prop._css2(),   99, PR, ""   );
+        this.fill(P, Prop._cssL2(),  99, PR, U.px );
         U.pct   = "%";               // not easily automated
-        AT.tCSS = AT.t;              // transform is very special
-        AT.tSVG = new Attr(A.t, false);
-        A .bg   = A .background;     // background shortcuts not calculatable
-        AT.bg   = AT.background;     // A.b == "border"
-        A .bgC  = A .backgroundColor;
-        AT.bgC  = AT.backgroundColor;
-        AT.sc.svg  = true;           // stop-color grouped with colors, not svg
-        AT.filter.func = FN.url;
-                                     // finish filling this (EZ)
-        this.make([A.x, A.y, A.w, A.h]);
-        this.w     = this.width;     // for convenience and consistency w/Attr
+        PR.tCSS = PR.t;              // transform is very special
+        PR.tSVG = new Prop(P.t, false);
+        P .bg   = P .background;     // background shortcuts not calculatable
+        PR.bg   = PR.background;     // P.b == "border"
+        P .bgC  = P .backgroundColor;
+        PR.bgC  = PR.backgroundColor;
+        PR.sc.svg  = true;           // stop-color grouped with colors, not svg
+        PR.filter.func = FN.url;
+                                     // finish filling this, aka EZ
+        this.make([P.x, P.y, P.w, P.h]);
+        this.w     = this.width;     // for convenience and consistency w/Prop
         this.h     = this.height;
         this.z     = this.w;         // for most 3D transforms
         this.angle = this.h;         // for rotate3d()
         this.rad   = Math.PI / 180;  // some non-bitmask values too
         this.grad  = 10 / 9;
         this.turn  =  1 / 360;
-        Object.freeze(E);    Object.freeze(F);  Object.freeze(A);
-        Object.freeze(this); Object.freeze(FN); Object.freeze(AT);
+        Object.freeze(E);     Object.freeze(F);
+        Object.freeze(this);  Object.freeze(FN);
     }
     make(v) {                        // creates bitmasks for this
         for (let i = 0, j = 1; i < v.length; i++, j *= 2)
             this[v[i]] = j;
     }
-    fill(o, a, l, obj, units, func) {// populates global consts: A, AT, F, FN, U
+    fill(o, a, l, obj = false, units = undefined, func = undefined)
+    {                                // populates global consts: P, PR, F, FN, U
         let i, k, ln, m, s, xh;      // k = key, ln = long name, m = match
         const rx = /[A-Z]|\d|-(.)/g;
         for (s of a) {
@@ -883,33 +901,35 @@ class Ez {                           // Ez: bitmask pseudo-enums for value lists
                 }
             }
             o[k] = s;
-            if (k != s && !xh) {     // : is a legit char, but no AT.xlink:href
-                ln = s.replace(E.dash, "");
+            if (k != s && !xh) {     // : is a legit char, but no PR.xlink:href
+                ln = s.replace(E.gdash, "");
                 o[ln] = s;           // long name is a duplicate entry (strings)
             }
             if (obj) {               // add to objects collections: FN, AT
                 if (obj === FN) obj[k] = new Func(s, units);
-                else            obj[k] = new Attr(s, units, func);
+                else            obj[k] = new Prop(s, units, func);
                 if (k != s)
                     obj[ln] = obj[k];// long name links to the original entry
             }
         }
     }
 }                    ////////////////// end class Ez |||||||||||||||||||||||||||
-const EZ = new Ez();                 // one instance is all you need
+const EZ  = new Ez;
+const POS = {l:PR.left, r:PR.right, t:PR.top, b:PR.bottom};//eslint-disable-line
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||| Easy classes |||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||| Easy classes: Easer, Geaser, Teaser, |||
+//||||||||||||||||||||||||||||||||||||||||||||||||||  Easee, Easy  |||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-class Easer {                        // Subject of: "The easer eases the easee."
-    constructor(ee, elms,            // args after elms defined only by Teaser
+/** @unrestricted */ class Easer {   // Subject of: "The easer eases the easee."
+    constructor(ee, elms = false,    // args after elms defined only by Teaser
                 func = ee.func, u = ee.units, c = ee.count,
-                values, prefix, suffix,
+                values = undefined, prefix = undefined, suffix = undefined,
                 f   = (Is.def(values) ? undefined : ee.factor),
                 a   = (Is.def(values) ? undefined : ee.addend),
                 p   = (Is.def(values) ? undefined : ee.plug),
                 max = (Is.def(values) ? undefined : ee.max),
                 min = (Is.def(values) ? undefined : ee.min),
-                b   = (c ? Attr.toBools(Attr.zap(ee.mask, f, a, p), c) : false))
+                b   = (c ? Prop.toBools(Prop.zap(ee.mask, f, a, p), c) : false))
     {
         if (!elms) return;           // called from new Geaser() via super()
         let d, dims, o, xv;
@@ -945,9 +965,9 @@ class Easer {                        // Subject of: "The easer eases the easee."
             this.type = o.some(v => v.izF) || (xv && xv.length > 1) || false;
             if (this.type) {         // 1D array by element
                 this.number = new Array(l);
-                b = Attr.toBools(null, l);
+                b = Prop.toBools(null, l);
             }                        // b.true contains 100% of the indices
-            o.forEach((v) => {       // it's an off-label use of Attr.toBools()
+            o.forEach((v) => {       // it's an off-label use of Prop.toBools()
                 if (this.type) {     // it makes this call to izFull() possible
                     v.bools = b.true;
                     if (v.izF)
@@ -1035,7 +1055,8 @@ class Easer {                        // Subject of: "The easer eases the easee."
         Object.seal(this);
     } ///////////////////////////////// end constructor() //////////////////////
     /////////////////////////////////// static helpers for Easer and Geaser ////
-    static arrayz(li, lo, fill) { ////\ arrayz() creates a sized/filled array
+    static arrayz(li, lo, fill = undefined)
+    {                             ////\ arrayz() creates a sized/filled array
         if (Is.def(fill))           //\ li = inner length, lo = outer length
             return(lo ? Array.from({length:lo}, () => new Array(li).fill(fill))
                       : new Array(li).fill(fill));
@@ -1043,22 +1064,22 @@ class Easer {                        // Subject of: "The easer eases the easee."
             return(lo ? Array.from({length:lo}, () => new Array(li))
                       : new Array(li));
     }                             ////\ zex() gets and/or parses existing values
-    static zex(elms, ee, v = ee.attr.get(elms), n) {
-        return n ? ee.attr.za(v, ee.func, ee.units)
+    static zex(elms, ee, v = ee.attr.get(elms), b = false) {
+        return b ? ee.attr.za(v, ee.func, ee.units)
                  : v.map(s => ee.attr.zparse(s, ee.func));
     }                               //\ zobj() creates and fills the o variable
     static zobj(max, min, a, f, p, hasPlug, b, pv, isEnd) {
-        let o = Array.from({length:hasPlug ? 5 : 4}, () => Object.create(null));
+        let o = Array.from({length:hasPlug ? 5 : 4}, () => ({}));
         const key  = ["max", "min", "addend", "factor", "plug"];
         const plug = [Infinity, -Infinity, , 1, ];
         o.forEach((v, i) => {
             v.key   = key[i];
             v.plug  = plug[i];
             v.value = Easer.zReplace(2, arguments[i], v.plug);
-            v.dims  = Attr.dims(v.value);
+            v.dims  = Prop.dims(v.value);
             v.bools = b ? b.true : b;
         });
-        o[2].plug = Attr.toNumber(pv);
+        o[2].plug = Prop.toNumber(pv);
         if (hasPlug) {               // zReplace(2) = undefined for addend/plug
             o[4].plug  = pv;
             o[4].bools = b.false;    // plug is the filler, not the meat
@@ -1070,7 +1091,7 @@ class Easer {                        // Subject of: "The easer eases the easee."
     static zundef(v) {            ////\ zundef() = v.value is or has undefined?
         return v.izF ? v.value.includes(undefined) : !Is.def(v.value);
     }
-    static zap(o, xv, li, lo, byElm, g) {
+    static zap(o, xv, li, lo, byElm = undefined, g = undefined) {
         if (o.izF) return o.value;////\ zap() populates factor, addend, plug
                                     //\ g == array of indices into xv: Geaser()
         let b, bi, i, j, v;
@@ -1086,7 +1107,7 @@ class Easer {                        // Subject of: "The easer eases the easee."
         }
         return v;
     }
-    static zval(o, xv, b, j, byElm) {
+    static zval(o, xv, b = undefined, j = undefined, byElm = undefined) {
         let v;                    ////\ zval() assigns a value from the correct
         switch (o.dims) {           //\ source, or one of two fallback values.
         case -1:  v = xv;          break;
@@ -1099,8 +1120,8 @@ class Easer {                        // Subject of: "The easer eases the easee."
         if (!v && v !== 0)           // double fallback: existing value, plug
             v = (xv || xv === 0 ? xv : o.plug);
         return v;
-    }
-    static zReplace(b, v, z, u) { ////\ zReplace() handles three processes:
+    }                             ////\ zReplace() handles three processes:
+    static zReplace(b, v, z, u = undefined) {
         if (!b)                      //#1. factor = end (versus distance)
             return v;                //#2. replace undefined with "no change"
         if (!Is.A(v)) {              //    and null with undefined = get values
@@ -1110,7 +1131,7 @@ class Easer {                        // Subject of: "The easer eases the easee."
             case 2:                  //#2. v = factor, addend, plug, max, or min
                 return  Is.def(v) ? (v === null ? undefined : v) : z;
             case 3:                  //#3. v = factor, addend, max, or min;
-                return Attr.toNumber(v, z, u);
+                return Prop.toNumber(v, z, u);
             }                        // z = Func instance; u = units.
         }
         let l = v.length;
@@ -1119,7 +1140,7 @@ class Easer {                        // Subject of: "The easer eases the easee."
             a[i] = Easer.zReplace(b, v[i], Is.A(z) ? z[i] : z);
         return a;
     }
-    static izFull(o, d, li, lo, byElm) {
+    static izFull(o, d, li, lo = 0, byElm = false) {
         let b, lb;                ////\ izFull() checks the contents of an array
         if (o.bools)                 // if (1D array by elm) bools == undefined
             lb = o.bools.length;     // if (d == 2 && dfap == 1) 1D array by
@@ -1137,7 +1158,7 @@ class Easer {                        // Subject of: "The easer eases the easee."
         }
         return b;
     }
-    static zFu(arr, li, lo) {       //\ zFu() helps izFull()
+    static zFu(arr, li, lo = 0) {   //\ zFu() helps izFull()
         let b = Is.A(arr) && arr.filter(v => Is.def(v)).length >= lo ? lo : li;
         if (b && lo) {
             for (let i of arr) {     // if (!Is.A(i)) it's filled by zSpread()
@@ -1147,7 +1168,7 @@ class Easer {                        // Subject of: "The easer eases the easee."
         }
         return b;
     }
-    static zSpread(arr, bools, lo, li, byElm) {
+    static zSpread(arr, bools, lo, li = 0, byElm = false) {
         let i;                    ////\ zSpread() preps an array for processing.
         if (byElm) {                //\ here, li is the optional 2nd dimension,
             arr.length = lo;        //\ elsewhere it's lo. confusing, but true.
@@ -1175,8 +1196,8 @@ class Easer {                        // Subject of: "The easer eases the easee."
             }
         }
     }
-    static zSp(arr, bools, lo, li) {//\ zSp() helps zSpread()
-        let bi, i;
+    static zSp(arr, bools, lo, li = 0) {
+        let bi, i;                  //\ zSp() helps zSpread()
         i = arr.length - 1;
         arr.length = lo;
         for (; i >= 0; i--) {
@@ -1201,15 +1222,15 @@ class Easer {                        // Subject of: "The easer eases the easee."
                 let tv = this.compute(this.turn);
                 if (Is.A(tv))
                     tv = tv[this.idx];
-                Attr.set(attr, this.elms[this.idx], tv);
+                Prop.set(attr, this.elms[this.idx], tv);
                 ee.turn(this);
             }
-            Attr.set(attr, this.elms[this.idx], isAv ? v[this.idx] : v);
+            Prop.set(attr, this.elms[this.idx], isAv ? v[this.idx] : v);
         }
         else if (isAv)
-            this.elms.forEach((elm, i) => {Attr.set(attr, elm, v[i]);});
+            this.elms.forEach((elm, i) => {Prop.set(attr, elm, v[i]);});
         else
-            this.elms.forEach((elm)    => {Attr.set(attr, elm, v);});
+            this.elms.forEach((elm)    => {Prop.set(attr, elm, v);});
 
         if (ee.peri)
             ee.peri(this, e);
@@ -1241,10 +1262,10 @@ class Easer {                        // Subject of: "The easer eases the easee."
         else
             return v;
     }
-    varr(c, ev, p, idx) {            // arr = array, for computing value lists
+    varr(c, ev, p, idx = -1) {       // arr = array, for computing value lists
         let bi, v;                   // idx is element index for 2D array
         v = new Array(c);
-        if (Is.def(idx)) {
+        if (idx > -1) {
             for (bi of this.bools.true)
                 v[bi] = this.vnu(this.computer(ev, bi, idx), false, idx, bi);
             for (bi of this.bools.false)
@@ -1258,20 +1279,22 @@ class Easer {                        // Subject of: "The easer eases the easee."
         }
         return v;
     }
-    vnu(v, isP, i, j) {              // nu = numbers & units, isP = isPlug
+    vnu(v, isP = 0, i = -1, j = -1) {// nu = numbers & units, isP = isPlug
+        let isI = (i > -1);
+        let isJ = (j > -1);
         if (isP) {                   // plugs are strings, with units
-            if      (Is.def(j)) this.number[i][j] = Attr.toNumber(v);
-            else if (Is.def(i)) this.number[i]    = Attr.toNumber(v);
-            else                this.number       = Attr.toNumber(v);
+            if      (isJ) this.number[i][j] = Prop.toNumber(v);
+            else if (isI) this.number[i]    = Prop.toNumber(v);
+            else             this.number       = Prop.toNumber(v);
             return v;
         }
         else {                       // non-plugs are numbers, enforce max/min
-            if (Is.def(j)) {
+            if (isJ) {
                 this.number[i][j] = Math.max(this.min[i][j],
                                     Math.min(this.max[i][j], v));
                 return this.number[i][j] + this.units;
             }
-            else if (Is.def(i)) {
+            else if (isI) {
                 this.number[i]    = Math.max(this.min[i],
                                     Math.min(this.max[i], v));
                 return this.number[i]    + this.units;
@@ -1297,6 +1320,7 @@ class Easer {                        // Subject of: "The easer eases the easee."
     addElm(ev, sub, idx) { return      ev + this.addend[idx][sub]; }
 }             ///////////////////////// end class Easer ||||||||||||||||||||||||
 ///////////////////////////////////////|||||||||||||||||||||||||||||||||||||||||
+/** @unrestricted */
 class Geaser extends Easer {         // Easer for CSS gradients and for the SVG
     constructor(ee, elms) {          // <path d> and <poly* points> attributes.
         let b, bi, c, i, j, k, l, la, lb, lp, m, n1, nb, ne, o, p, s, v, x;
@@ -1310,7 +1334,7 @@ class Geaser extends Easer {         // Easer for CSS gradients and for the SVG
         c  = la * 2 - (nb && ne) + !(nb || ne);
         lp = c - la;                 // addend/plug are interwoven, every other:
         p  = Easer.arrayz(c, l, ""); // their lengths might differ by 1, and
-        b  = Object.create(null);    // either one can appear first and/or last.
+        b  = {};                     // either one can appear first and/or last.
       //b.bools = Array.from({length:c }, (_, i) => (nb + i) % 2);
         b.true  = Array.from({length:la}, (_, i) => !nb + (i * 2));
         b.false = Array.from({length:lp}, (_, i) =>  nb + (i * 2));
@@ -1351,8 +1375,8 @@ class Teaser {                       // Easer for transforms, wraps 1+ Easers in
         let u, val;
         this.easee  = ee;
         this.elms   = elms;
-        this.easers = new Map();     // key = Func, value = Easer
-        this.values = new Map();     // multi-easers: previous frame's values
+        this.easers = new Map;     // key = Func, value = Easer
+        this.values = new Map;     // multi-easers: previous frame's values
         this.idx    = 0;
         func = ee.func;
         if (!Is.A(func))
@@ -1373,7 +1397,7 @@ class Teaser {                       // Easer for transforms, wraps 1+ Easers in
                                      // loop by element: parse existing values
                 for (i = 0; i < l; i++) {
                     if (v[i]) {      // split into duples: func.name, arg(s)
-                        felm = new Set();
+                        felm = new Set;
                         p = "";      // every has prefix, only last has suffix
                         z = -1;      // z tracks last func index for suffix
                         s = v[i].split(E.func);
@@ -1414,17 +1438,17 @@ class Teaser {                       // Easer for transforms, wraps 1+ Easers in
             fi = func[i];
             fn = fi.name;
             if (bfc) {
-                f = Attr.ztf(ee.factor, fi, i);  m   = Attr.ztf(ee.mask, fi, i);
-                a = Attr.ztf(ee.addend, fi, i);  max = Attr.ztf(ee.max,  fi, i);
-                p = Attr.ztf(ee.plug,   fi, i);  min = Attr.ztf(ee.min,  fi, i);
+                f = Prop.ztf(ee.factor, fi, i);  m   = Prop.ztf(ee.mask, fi, i);
+                a = Prop.ztf(ee.addend, fi, i);  max = Prop.ztf(ee.max,  fi, i);
+                p = Prop.ztf(ee.plug,   fi, i);  min = Prop.ztf(ee.min,  fi, i);
             }
             else {
                 f = ee.factor;   p = ee.plug;   max = ee.max;
                 a = ee.addend;   m = ee.mask;   min = ee.min;
             }
             if (c[i]) {              // compute b: the bools object for fi
-                m = Attr.svgRot(ee.attr.svg, fi, m, l, f, a, p);
-                b = Attr.toBools(m, c[i]);
+                m = Prop.svgRot(ee.attr.svg, fi, m, l, f, a, p);
+                b = Prop.toBools(m, c[i]);
             }
             u = ee.attr.unitz(fi);   // one easer per func
             if (ee.units) {
@@ -1441,7 +1465,7 @@ class Teaser {                       // Easer for transforms, wraps 1+ Easers in
         let ee, ev, ez, v;
         ee = this.easee;
         ez = ee.eases;
-        v  = new Map();
+        v  = new Map;
         if (e) {                    //\ compute & store values by Func instance
             if (ez)                  // if (ez) then multiple eases, processed
                 return this;         // at the end of easeEm(), using each ez.e
@@ -1461,7 +1485,7 @@ class Teaser {                       // Easer for transforms, wraps 1+ Easers in
         }                           //\ apply the values to the elements
         if (ee.easy.byElm) {         // easy.byElm is loop by element
             if (Is.def(this.turn)) { // at the turning point, set values on two
-                let tv = new Map();  // elements: current and next//!!easy.break
+                let tv = new Map;    // elements: current and next//!!easy.break
                 this.easers.forEach((er, f) => {
                     tv.set(f, er.compute(this.turn));
                 });
@@ -1483,7 +1507,7 @@ class Teaser {                       // Easer for transforms, wraps 1+ Easers in
             vf = v.get(this.felms ? this.felms[i][j] : this.funcs[j]);
             s += (Is.A(vf)  ? vf[i] : vf) + E.sp;
         }
-        Attr.set(attr, this.elms[i], s.trimEnd());
+        Prop.set(attr, this.elms[i], s.trimEnd());
     }
 }             ///////////////////////// end class Teaser |||||||||||||||||||||||
 ///////////////////////////////////////|||||||||||||||||||||||||||||||||||||||||
@@ -1492,7 +1516,8 @@ class Easee {                        // Object of: "The easer eases the easee."
         this.set = o.set;    this.attr = o.attr;    this.easy = ez;
         this.min = o.min;    this.mask = o.mask;    this.peri = o.peri;
         this.max = o.max;    this.plug = o.plug;    this.eval = o.eval;
-        this.gpu = o.gpu;            // invert the leg value to simplify apply()
+        this.gpu = o.gpu;  this.revert = o.revert;
+        // invert the leg value to simplify apply()
         this.leg = o.leg == E.return  ? E.outward
                  : o.leg == E.outward ? E.return  : undefined;
 
@@ -1518,7 +1543,7 @@ class Easee {                        // Object of: "The easer eases the easee."
         this.eases = o.eases || o.easy;
         if (this.eases) {            // multi-ease transforms processed last
             if (Is.A(this.eases)) {  // there must be >1 func, and func is array
-                let fez = new Map(); // this.eases ends up as a map Func => Easy
+                let fez = new Map;   // this.eases ends up as a map Func => Easy
                 this.func.forEach((f, i) => {
                     fez.set(f, this.eases[i] || ez);
                     if (this.eases[i])
@@ -1528,7 +1553,7 @@ class Easee {                        // Object of: "The easer eases the easee."
             }
             else {
                 if (!Is.def(this.eases.get)) {
-                    let fez = new Map();
+                    let fez = new Map;
                     Object.entries(this.eases).forEach(([fn, easy]) => {
                         fez.set(FN[fn], easy);
                         easy.targets.push(this);
@@ -1546,7 +1571,7 @@ class Easee {                        // Object of: "The easer eases the easee."
     /////////////////////////////////// for reusing an instance w/alternate elms
     set    elms(elms) { this.constructor.elmz(this, elms); }
     static elmz(ee, elms) {          // kludgy to call setter from constructor
-        elms = Attr.elmArray(elms);
+        elms = Prop.elmArray(elms);
         ee.easer = !elms ? elms : (ee.attr.isTransform ? new Teaser(ee, elms)
                                            : (ee.isGDP ? new Geaser(ee, elms)
                                                        : new  Easer(ee, elms)));
@@ -1569,30 +1594,30 @@ class Easee {                        // Object of: "The easer eases the easee."
 /////////////////////////////////////|||||||||||||||||||||||||||||||||||||||||||
 class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
     constructor(zero = 0, time = 0, type = E.in,  pow = 1, start, end, wait = 0,
-      /* trip()     */  mid, pause, type2= type,  pow2= pow,      end2,
+      /* trip()     */  mid, pause, type2= type,  pow2= pow, end2,
       /* looping    */  turns = 1, breaK, byElm,
-      /* callbacks  */  pre, peri, post,
+      /* callbacks  */  pre, peri, post, autoReuse,
       /* RAF.test() */  gpu)
     {
-        this.zero = zero;    this.type  = type;     this.pow  = pow;
-        this.time = time;    this.type2 = type2;    this.pow2 = pow2;
-        this.wait = wait;    this.byElm = byElm;    this.pre  = pre;
-        this.dly  = wait;    this.break = breaK;    this.peri = peri;
-        this.mid  = mid;     this.turns = turns;    this.post = post;
-        this.gpu  = gpu;     this.volte = turns;    this.fois = turns;
-                                     // volte = Italian, fois = French
+        this.zero = zero;   this.type  = type;    this.pow  = pow;  this.e = {};
+        this.time = time;   this.type2 = type2;   this.pow2 = pow2; this.pastMid = false;
+        this.wait = wait;   this.byElm = byElm;   this.pre  = pre;  this.now = 0;
+        this.dly  = wait;   this.break = breaK;   this.peri = peri;
+        this.mid  = mid;    this.turns = turns;   this.post = post;
+        this.gpu  = gpu;    this.volte = turns;   this.fois = turns;
+        this.auto = autoReuse;       // reuse() is the method
         this.targets = [];           // targets is an array of Easee instances
         if (type == E.increment) {
             this.increment = pow;    // fully encapsulating incremental value
             this.base      = 0;      // changes means managing a base value too.
         }
-        else if (Is.def(end)) {      // if (!Is.def(end)) start is ignored
+        else if (Is.def(end)) {
             this.start = Is.def(start) ? start : 0;
             this.dist  = end - this.start;
             this.end   = end;
         }
         else {
-            this.start = 0;
+            this.start = 0;          // if (!Is.def(end)) start is ignored
             this.end   = 1;
         }
 
@@ -1601,7 +1626,7 @@ class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
             this.pause = 0;
         }
         else {                       // two-leg trip, round-trip or otherwise
-            this.func  = this.trip;
+            this.func  = this.trip;  // this.trip() calls this.ease()
             this.pause = pause ? mid + pause : mid;
             this.time2 = time - this.pause;
             if (Is.def(end2)) {      // return destination fully specified
@@ -1627,7 +1652,7 @@ class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
                         o.turns || o.plays || o.repeats + 1 || undefined,
                         o.break,
                         o.byElm || o.byElement,
-                        o.pre, o.peri, o.post, o.gpu);
+                        o.pre, o.peri, o.post, o.reuse, o.gpu);
     }
     /////////////////////////////////// reuse() resets the basics to go again //
     reuse(time = this.time, wait = this.dly) {
@@ -1638,6 +1663,7 @@ class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
             this.zero = 0;           // preserve null and false values
         if (this.increment)
             this.base = 0;
+        this.targets.forEach((ee) => { if (ee.revert) ee.is1m = !ee.is1m; });
     }
     /////////////////////////////////// .total & Easy.last() help set this.post
     static last(it) {
@@ -1670,7 +1696,7 @@ class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
         return this.constructor.zadd(this, -1, arguments);
     } /* eslint-enable no-unused-vars*/
     static zadd(ez, type, args) {    // a helper for the addXX() functions
-        let o   = Object.create(null);
+        let o   = {};
         o.isEnd = type > 0;
         o.is1m  = type < 0;   o.factor = args[2];   o.mask  = args[5];
         o.attr  = args[0];    o.addend = args[3];   o.plug  = args[6];
@@ -1684,49 +1710,53 @@ class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
         if (!Is.A(it))               // array, map, set, object, or error
             it = it.values() || Object.values(it);
 
-        combo = new Set();
+        combo = new Set;
         for (i of it) {
             if (Is.def(i.zero)) {
                 e = i.easeMe(now, combo);
                 if (!e.status)       // final value set, stop animating i
                     i.zero = undefined;
                 if (e.status > v.status)
-                    v = e;
-            }
+                    v = e;           // status value order is end-to-start
+            }                        // highest status value == return value
         }
         combo.delete(undefined);     // combined transforms
         combo.forEach((t) => { t.apply(); });
 
+        if (v.status == E.arrived) { // wait until arrival for autoReuse
+            for (i of it) { if (i.auto) i.reuse(); }
+        }
         return v;                    // one e returned, the rest are in it[n].e
     }
-    easeMe(now, combo = new Set()) {//\ easeMe() calculates and applies values
+    easeMe(now, combo = new Set) {  //\ easeMe() calculates and applies values
         switch (this.zero) {         // this.zero should never be NaN
         case null:                   // undefined is pre-handled by easeEm()
-            break;                   // null   = now is already adjusted
+            break;                   // null   = now is already adjusted !!no examples
         case false:                  // false  = run once, set final values
             now = Infinity;          // 0      = set it to now, skip 1st frame,
             break;                   //          because timeStamp was unknown.
-        case 0:                      // truthy = use it to adjust now
-            this.zero = now;
+        case 0:                      //          ACues.run() does the same.
+            this.zero = now;         // truthy = default: use it to adjust now
             if (this.pre && !this.wait)
                 this.pre(this);      // does not call ease(), must set this.e
             this.e =     { status:E.outward, value:(this.start || 0) };
             return this.e;
         default:
             now -= this.zero;
-        }
-        if (this.wait) {             // wait is handled here, not ease()
-            if (this.wait > now) {   // does not call ease(), must set this.e
-                this.e = { status:E.waiting, value:(this.start || 0) };
-                return this.e;
+            if (this.wait) {         // wait is handled here, not ease()
+                if (this.wait > now) {
+                    this.now = now;  // for pausing or reusing this Easy
+                    this.e = { status:E.waiting, value:(this.start || 0) };
+                    return this.e;   // does not call ease(), must set this.e
+                }
+                if (this.pre)
+                    this.pre(this);
+                this.zero += this.wait;
+                now       -= this.wait;
+                this.wait  = 0;      // if block won't run again
             }
-            if (this.pre)
-                this.pre(this);
-            this.zero += this.wait;
-            now       -= this.wait;
-            this.wait  = 0;
         }
-        let e = this.func(now);
+        let e = this.func(now);      // runs ease() or trip()
         if (e.status !== E.pausing && !this.noop)
             this.targets.forEach((t) => { combo.add(t.easer.apply(e)); });
         if (this.peri)
@@ -1793,8 +1823,8 @@ class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
                 }
             }
         }
-        if (now < Infinity)          // Infinity == jump to end, but
-            this.now = now;          // leave this.now intact.
+        if (now < Infinity)          // Infinity == jump to end
+            this.now = now;          // for pausing or reusing this Easy
 
         e.value = v;
         this.e  = e;
@@ -1826,19 +1856,17 @@ class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
     }
 } ///////////////////////////////////// end class Easy |||||||||||||||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-//||||||||||||||||||||||||||||||||||||| RAF classes ||||||||||||||||||||||||||||
+//||||||||||||||||||||||||||||||||||||| RAF classes: ACues, AFrame |||||||||||||
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-class ACues {                        // ACues: a barebones cues list
-    constructor(func, cues, times, zero) { // eslint-disable-line no-unused-vars
-        this.init(...arguments);
+/** @unrestricted */ class ACues {   // ACues: a barebones cue list
+    constructor(func, post = null, cues = [], times = [], zero = 0) {
+        this.func  = func;   this.post = post;   this.cues = cues;
+        this.times = times;  this.zero = zero;
+        this.index = 0;      this.last = cues.length - 1;
         Object.seal(this);
     }
-    init(func, cues = [], times = [], zero = 0) {
-        this.func = func;   this.times = times;   this.cues = cues;
-        this.zero = zero;   this.index = 0;       this.last = cues.length - 1;
-    }
     push(t, attr, elms, v, set, arg3, arg4, arg5, arg6) {
-        let obj = Object.create(null);
+        let obj = {};
         this.cues .push(obj);
         this.times.push(t);
         this.last++;
@@ -1865,17 +1893,20 @@ class ACues {                        // ACues: a barebones cues list
                 this.func(cue, this);
             this.index++;            // must wait until after this.func()
         }
-        return(this.index <= this.last);
+        let val = (this.index <= this.last);
+        if (!val && this.post)
+            this.post(this);
+        return val;
     }
 }             ///////////////////////// end class ACues ||||||||||||||||||||||||
 ///////////////////////////////////////|||||||||||||||||||||||||||||||||||||||||
-class AFrame {                       // AFrame: the animation frame manager
+/** @unrestricted */ class AFrame {  // AFrame: the animation frame manager
     constructor() {
         this.frame = undefined;   this.min = undefined;   this.func = undefined;
         this.cues  = undefined;   this.fps = undefined;   this.skip = undefined;
-        this.eases = [];          this.gpu = undefined;   this.gpuf = undefined;
-        this.last  = Object.create(null);
-        Object.seal(this);
+        this.post  = undefined;   this.gpu = undefined;   this.gpuf = undefined;
+        this.keepPost = false;    this.paused = false;    this.last = {};
+        this.eases = [];          Object.seal(this);
     }
     /////////////////////////////////// 2 types of target: Easy and ACues //////
     add(o) {                         // adds an instance of Easy to this.eases
@@ -1884,11 +1915,11 @@ class AFrame {                       // AFrame: the animation frame manager
                          o.turns || o.plays || o.repeats + 1 || undefined,
                          o.break,
                          o.byElm || o.byElement,
-                         o.pre, o.peri, o.post, o.gpu);
+                         o.pre, o.peri, o.post, o.reuse, o.gpu);
     } /* eslint-disable */           // push() = raw arguments version of add()
     push(zero, time, type,  pow, start, end, wait,
          mid, pause, type2, pow2,       end2,
-         turns, breaK, byElm, pre, peri, post, gpu)
+         turns, breaK, byElm, pre, peri, post, reuse, gpu)
     { /* eslint-enable */
         let ez = new Easy(...arguments);
         this.eases.push(ez);
@@ -1896,24 +1927,26 @@ class AFrame {                       // AFrame: the animation frame manager
             this.constructor.zgpu(ez, this);
         return ez;
     }                                // cue() creates and returns this.cues
-    cue(func, cues, times, zero) {   // eslint-disable-line no-unused-vars
+    newCues(func, post, cues, times, zero) { // eslint-disable-line no-unused-vars
         this.cues = new ACues(...arguments);
         return this.cues;
     }
     /////////////////////////////////// animation methods //////////////////////
     animate(timeStamp) {             // cues first so they can trigger eases...
         if (this.cues && !this.cues.run(timeStamp))
-            this.zend("cues",  null);
+            this.zend(false);
         if (this.eases.length && !Easy.easeEm(this.eases, timeStamp).status)
-            this.zend("eases", []);
+            this.zend(true);
 
         if ((this.func && this.func(this)) || this.cues || this.eases.length)
             this.frame = requestAnimationFrame((t) => this.animate(t));
-        else
-            this.frame = undefined;
+        else {                       // end of animation
+            this.frame = undefined;  // must precede post() to chain animations
+            this.zpost();
+        }
     }
     cancel(arrive, reset)  {
-        if (Is.def(this.frame)) {
+        if (this.isRunning) {
             cancelAnimationFrame(this.frame);
             this.frame = undefined;
             if (arrive) {
@@ -1921,23 +1954,32 @@ class AFrame {                       // AFrame: the animation frame manager
                     this.cues.index = this.cues.last;
                     this.cues.run(Infinity);
                 }
-                if (this.eases)
+                if (this.eases.length)
                     Easy.easeEm(this.eases, Infinity);
+                this.zpost();
             }
             if (reset) {
-                if (this.cues)         this.zend("cues",  null);
-                if (this.eases.length) this.zend("eases", []);
+                if (this.cues)         this.zend(false);
+                if (this.eases.length) this.zend(true);
             }
             return true;
         }
     }
+    pause() {                        // pause can resume
+        this.paused = this.cancel(false, false) || 1;
+    }
     start()   {
-        if (!Is.def(this.frame)) {
+        if (!this.isRunning) {
+            if (this.paused) {       // resume from ez.now
+                let n = performance.now();
+                this.eases.forEach((ez) => { ez.zero = n - ez.now; });
+                this.paused = false;
+            }
             this.frame = requestAnimationFrame((t) => this.animate(t));
             return true;
         }
     }                                // test() is an alternative to start()
-    test(timeStamp, ez, min, func, skip = 0) {
+    test(timeStamp, ez = 0, min = 0, func = 0, skip = 0) {
         if (!timeStamp) {            // use the default (ez.zero = 0), so that
             ez.aframe = this;        // easeMe() starts counting at 0, not 1.
             ez.frames = 0;                       this.min  = min;
@@ -1947,15 +1989,32 @@ class AFrame {                       // AFrame: the animation frame manager
         this.frame = requestAnimationFrame(
                      (t) => (this.skip-- > 0 ? this.test(t) : this.animate(t)));
     }
-    zend(key, val) {                 // zend() is "private", not for public use
-        this.last[key] = this[key];
-        this[key]      = val;
+    get isRunning() {                // convenience, convention, encapsulation
+        return Is.def(this.frame);
+    }
+    zpost() {                        // consolidates a small bit of code to run
+        if (this.post) {             // this.post() upon arrival at destination.
+            let post = this.post;    // note: this.post can be set inside post()
+            if (!this.keepPost)      // defaults to single-use function
+                this.post = undefined;
+            post(this);
+        }
+    }
+    zend(isEases) {
+        if (isEases) {               // Closure Compiler makes this verbose
+            this.last.eases = this.eases;
+            this.eases      = [];    // better as .length = 0? may need slice()
+        }
+        else {
+            this.last.cues = this.cues;
+            this.cues      = undefined;
+        }
     }
     /////////////////////////////////// static helpers /////////////////////////
     static zfps(ez) {                // zfps() computes .fps: frames per second
         let af = ez.aframe;          // sets .gpu to pass/fail: .fps >= minimum
         af.fps = ez.frames / (ez.time / 1000);
-        af.gpu = af.fps >= af.min;
+        af.gpu = af.fps >= af.min;   // .gpu is a boolean pass|fail
         for (let t of af.eases)
             AFrame.zgpu(t, af);
         if (af.gpuf)
@@ -1972,4 +2031,4 @@ class AFrame {                       // AFrame: the animation frame manager
     }
     static zpp(ez) { ez.frames++; }  // zpp() counts frames
 }                         ///////////// end class AFrame |||||||||||||||||||||||
-const RAF = new AFrame(); /*eslint-disable-line*/// one instance is all you need
+const RAF = new AFrame; /*eslint-disable-line*/// one instance is all you need
