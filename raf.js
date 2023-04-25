@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
-// rAF stands for requestAnimationFrame()
-// Copyright (C) 2023 Sideways S. www.sidewayss.com
+// rAF stands for requestAnimationFrame().
+// Copyright (C) 2023 Sideways S, www.sidewayss.com
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -10,10 +10,7 @@
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// GNU General Public License for more details: <https://www.gnu.org/licenses/>
 ////////////////////////////////////////////////////////////////////////////////
 /* jshint esversion: 6 *//* jshint strict: global *//* jshint elision: true */
 /* jshint -W014 *//* jshint -W069 *//* jshint -W078 */
@@ -316,9 +313,9 @@ class Func {                         // Func: CSS or SVG function ||||||||||||||
         }
         return hsl;
     }
-}           /////////////////////////// end class Func |||||||||||||||||||||||||
+} ///////////////////////////////////// end class Func |||||||||||||||||||||||||
 ///////////////////////////////////////|||||||||||||||||||||||||||||||||||||||||
-class Prop {                         // Prop: CSS property or SVG attribute |||||
+class Prop {                         // Prop: CSS property or SVG attribute ||||
     constructor(name, units, func = undefined) {
         this.name = name;
         this.func = func;
@@ -821,7 +818,7 @@ class Prop {                         // Prop: CSS property or SVG attribute ||||
     static _angles() {
         return ["deg","rad","grad","turn"];
     }
-}           /////////////////////////// end class Prop |||||||||||||||||||||||||
+} ///////////////////////////////////// end class Prop |||||||||||||||||||||||||
 ///////////////////////////////////////|||||||||||||||||||||||||||||||||||||||||
 /** @unrestricted */ class Ez {      // Ez: bitmask pseudo-enums for value lists
     constructor() {                  //     also fills: E, F, FN, P, and AT
@@ -913,7 +910,7 @@ class Prop {                         // Prop: CSS property or SVG attribute ||||
             }
         }
     }
-}                    ////////////////// end class Ez |||||||||||||||||||||||||||
+} ///////////////////////////////////// end class Ez |||||||||||||||||||||||||||
 const EZ  = new Ez;
 const POS = {l:PR.left, r:PR.right, t:PR.top, b:PR.bottom};//eslint-disable-line
 //||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1318,7 +1315,7 @@ const POS = {l:PR.left, r:PR.right, t:PR.top, b:PR.bottom};//eslint-disable-line
     addOne(ev)           { return      ev + this.addend;           }
     addSub(ev, sub)      { return      ev + this.addend[sub];      }
     addElm(ev, sub, idx) { return      ev + this.addend[idx][sub]; }
-}             ///////////////////////// end class Easer ||||||||||||||||||||||||
+} ///////////////////////////////////// end class Easer ||||||||||||||||||||||||
 ///////////////////////////////////////|||||||||||||||||||||||||||||||||||||||||
 /** @unrestricted */
 class Geaser extends Easer {         // Easer for CSS gradients and for the SVG
@@ -1367,7 +1364,7 @@ class Geaser extends Easer {         // Easer for CSS gradients and for the SVG
         this.separator = "";
         Object.seal(this);
     }
-}             ///////////////////////// end class Geaser |||||||||||||||||||||||
+} ///////////////////////////////////// end class Geaser |||||||||||||||||||||||
 ///////////////////////////////////////|||||||||||||||||||||||||||||||||||||||||
 class Teaser {                       // Easer for transforms, wraps 1+ Easers in
     constructor(ee, elms) {          // this.easers by Func instance.
@@ -1509,10 +1506,10 @@ class Teaser {                       // Easer for transforms, wraps 1+ Easers in
         }
         Prop.set(attr, this.elms[i], s.trimEnd());
     }
-}             ///////////////////////// end class Teaser |||||||||||||||||||||||
+} ///////////////////////////////////// end class Teaser |||||||||||||||||||||||
 ///////////////////////////////////////|||||||||||||||||||||||||||||||||||||||||
 class Easee {                        // Object of: "The easer eases the easee."
-    constructor(o, ez) {
+    constructor(ez, o) {
         this.set = o.set;    this.attr = o.attr;    this.easy = ez;
         this.min = o.min;    this.mask = o.mask;    this.peri = o.peri;
         this.max = o.max;    this.plug = o.plug;    this.eval = o.eval;
@@ -1590,22 +1587,22 @@ class Easee {                        // Object of: "The easer eases the easee."
             er.idx = 0;
         er.turn = undefined;
     }
-}             ///////////////////////// end class Easee ||||||||||||||||||||||||
-/////////////////////////////////////|||||||||||||||||||||||||||||||||||||||||||
+} ///////////////////////////////////// end class Easee ||||||||||||||||||||||||
+///////////////////////////////////////|||||||||||||||||||||||||||||||||||||||||
 class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
     constructor(zero = 0, time = 0, type = E.in,  pow = 1, start, end, wait = 0,
-      /* trip()     */  mid, pause, type2= type,  pow2= pow, end2,
-      /* looping    */  turns = 1, breaK, byElm,
-      /* callbacks  */  pre, peri, post, autoReuse,
+      /* trip() */  mid, pause = 0, type2= type,  pow2= pow, end2,
+      /* looping */  turns = 1, breaK, byElm,
+      /* callbacks */  pre, peri, post, reuse,
       /* RAF.test() */  gpu)
     {
         this.zero = zero;   this.type  = type;    this.pow  = pow;  this.e = {};
-        this.time = time;   this.type2 = type2;   this.pow2 = pow2; this.pastMid = false;
-        this.wait = wait;   this.byElm = byElm;   this.pre  = pre;  this.now = 0;
-        this.dly  = wait;   this.break = breaK;   this.peri = peri;
+        this.time = time;   this.type2 = type2;   this.pow2 = pow2; this.now = 0;
+        this.wait = wait;   this.byElm = byElm;   this.pre  = pre;  this.reuse = reuse;
+        this.dly  = wait;   this.break = breaK;   this.peri = peri; this.pastMid = false;
         this.mid  = mid;    this.turns = turns;   this.post = post;
         this.gpu  = gpu;    this.volte = turns;   this.fois = turns;
-        this.auto = autoReuse;       // reuse() is the method
+
         this.targets = [];           // targets is an array of Easee instances
         if (type == E.increment) {
             this.increment = pow;    // fully encapsulating incremental value
@@ -1621,26 +1618,26 @@ class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
             this.end   = 1;
         }
 
-        if (!mid) {                  // one-way, one-leg trip
-            this.func  = this.ease;
-            this.pause = 0;
-        }
-        else {                       // two-leg trip, round-trip or otherwise
+        if (mid) {                   // two-leg trip, round-trip or otherwise
             this.func  = this.trip;  // this.trip() calls this.ease()
-            this.pause = pause ? mid + pause : mid;
+            this.pause = mid + pause;
             this.time2 = time - this.pause;
             if (Is.def(end2)) {      // return destination fully specified
                 this.dist2 = end2 - end;
                 this.end2  = end2;
             }
-            else if (this.dist) {    // default to round trip
+            else if (this.dist) {    // round trip, return to start
                 this.dist2 = this.dist * -1;
                 this.end2  = this.start;
             }
-            else {                   // fall back to raw ease() return value
-                this.dist2 = -1;
+            else {                   // round trip, but fall back to raw ease()
+                this.dist2 = -1;     // return value.
                 this.end2  =  0;
             }
+        }
+        else {                       // one-way, one-leg trip
+            this.func  = this.ease;
+            this.pause = 0;
         }
     } ///////////////////////////////// this is extensible, not sealed /////////
     static create(o) {  /////////////// create() has named args, flex arg order
@@ -1654,8 +1651,8 @@ class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
                         o.byElm || o.byElement,
                         o.pre, o.peri, o.post, o.reuse, o.gpu);
     }
-    /////////////////////////////////// reuse() resets the basics to go again //
-    reuse(time = this.time, wait = this.dly) {
+    /////////////////////////////////// recycle() resets the basics for reuse //
+    recycle(time = this.time, wait = this.dly) {
         this.time  = time;           // dly = "delay", synonym of "wait"
         this.wait  = wait;           // this.wait gets set to 0 in easeMe()
         this.turns = this.fois;      // .turns and .wait have backup values
@@ -1674,7 +1671,7 @@ class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
     get total() { return this.wait + this.time; }
     /////////////////////////////////// 4 ways to add a target (class Easee) ///
     add(o) {                         //#1. flex arg order, named args, alt names
-        let ee = new Easee(o, this); // ...see Easee.constructor() for alt names
+        let ee = new Easee(this, o); // ...see Easee.constructor() for alt names
         this.targets.push(ee);
         if (this.byElm && ee.easer) {//    if (!o.elms) ee.easer = undefined
             this.turns = Math.max(this.turns,
@@ -1723,8 +1720,8 @@ class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
         combo.delete(undefined);     // combined transforms
         combo.forEach((t) => { t.apply(); });
 
-        if (v.status == E.arrived) { // wait until arrival for autoReuse
-            for (i of it) { if (i.auto) i.reuse(); }
+        if (v.status == E.arrived) { // wait until arrival for recycling
+            for (i of it) { if (i.reuse) i.recycle(); }
         }
         return v;                    // one e returned, the rest are in it[n].e
     }
@@ -1784,7 +1781,8 @@ class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
     //  additional statuses: 3 = E.mid, 2 = E.pausing, 1 = E.return
     //  easeMe() returns the one remaining status val: 5 = E.waiting
     ease(now, time = this.time,  type = this.type, pow = this.pow,
-             start = this.start, dist = this.dist, end = this.end)
+             start = this.start, dist = this.dist, end = this.end,
+             is2ndLeg)               // is this the second leg of the trip?
     {
         let e, n, v;
         if (now >= time) {           // now always < time if outward leg of trip
@@ -1823,16 +1821,15 @@ class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
                 }
             }
         }
-        if (now < Infinity)          // Infinity == jump to end
+        if (!is2ndLeg && now < Infinity)
             this.now = now;          // for pausing or reusing this Easy
-
         e.value = v;
         this.e  = e;
         return e;
     }
     trip(now) {
         let e;
-        if (now < this.mid)          // if (!pause) it never arrives at end
+        if (now < this.mid)          // if (!this.pause) it never arrives at end
             return this.ease(now, this.mid);
         if (now < this.pause) {
             e = {value:(this.increment ? 0 : this.end)};
@@ -1847,9 +1844,10 @@ class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
             this.e = e;              // does not call ease(), must set this.e
             return e;
         }
+        this.now = now;              // set this here instead of ease()
         now -= this.pause;
-        e    = this.ease(now, this.time2, this.type2, this.pow2, this.end,
-                              this.dist2, this.end2);
+        e = this.ease(now, this.time2, this.type2, this.pow2, this.end,
+                           this.dist2, this.end2, true);
         if (e.status)
             e.status = E.return;
         return e;
@@ -1898,7 +1896,7 @@ class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
             this.post(this);
         return val;
     }
-}             ///////////////////////// end class ACues ||||||||||||||||||||||||
+} ///////////////////////////////////// end class ACues ||||||||||||||||||||||||
 ///////////////////////////////////////|||||||||||||||||||||||||||||||||||||||||
 /** @unrestricted */ class AFrame {  // AFrame: the animation frame manager
     constructor() {
@@ -2030,5 +2028,5 @@ class Easy { /*eslint-disable-line*/ // Outermost in the Easy instance hierarchy
         }
     }
     static zpp(ez) { ez.frames++; }  // zpp() counts frames
-}                         ///////////// end class AFrame |||||||||||||||||||||||
-const RAF = new AFrame; /*eslint-disable-line*/// one instance is all you need
+} ///////////////////////////////////// end class AFrame |||||||||||||||||||||||
+const RAF = new AFrame; /*eslint-disable-line*/// one instance is all you needpause
