@@ -1,10 +1,10 @@
 # rAF - <b>JavaScript animation library for CSS and SVG</b>
 
-It provides a structured, compact way to create and execute CSS or SVG animations of two types:<br>
+<b>It provides a structured, compact way to create and execute CSS or SVG animations of two types:</b><br>
 	•	Gradual value changes, aka easing<br>
 	•	Cue-based animations, where timing cues trigger animation events
 
-Goals, Assumptions, and Approach:<br>
+<b>Goals, Assumptions, and Approach:</b><br>
   •	Normalize all things similar across CSS and SVG.<br>
   •	Allow for the animation of every property/attribute and function in full detail.<br>
   •	Create a minimal syntax that is both flexible and forgiving.<br>
@@ -13,7 +13,7 @@ Goals, Assumptions, and Approach:<br>
   •	Build in callbacks for flexibility and the ability to meet as-yet-unknown requirements.<br>
   •	Use my home page animations as functional requirements and a test bed.  Ensure that all the exceptional situations are handled.  There are ~100 separate animations, most of which work together as parts of larger animations.
   
-Structure:<br>
+<b>Structure:</b><br>
 raf.js has three sub-libraries that wrap each other like nesting dolls (inner to outer order):<br>
 •	prop.js defines the Prop, Func, and Ez classes<br>
 •	easy.js defines the Easy, Easee, Easer, Teaser, and Geaser classes<br>
