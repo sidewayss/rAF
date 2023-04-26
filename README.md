@@ -10,8 +10,8 @@ Goals, Assumptions, and Approach:<br>
   •	Create a minimal syntax that is both flexible and forgiving.<br>
   •	Make it fully object-oriented within the confines of JavaScript.<br>
   •	Assume a “modern browser” that supports ES6.<br>
-  •	Use my recently built home page animations as functional requirements and a test bed.  Ensure that all the exceptional situations are handled.  There are ~100 separate animations, most of which work together as parts of larger animations.<br>
-  •	Build in callbacks for flexibility and the ability to meet as-yet-unknown requirements.
+  •	Build in callbacks for flexibility and the ability to meet as-yet-unknown requirements.<br>
+  •	Use my recently built home page animations as functional requirements and a test bed.  Ensure that all the exceptional situations are handled.  There are ~100 separate animations, most of which work together as parts of larger animations.
   
 Structure:<br>
 raf.js has three sub-libraries that wrap each other like nesting dolls (inner to outer order):<br>
