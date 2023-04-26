@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Func, Prop, and Ez classes defined. Part of rAF.js project, but useful on its
 // own for setting property/attribute values without animation.
-// Copyright (C) 2023 Sideways S. www.sidewayss.com
-//
+// Copyright (C) 2023 Sideways S, www.sidewayss.com
+////////////////////////////////////////////////////////////////////////////////
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
