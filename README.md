@@ -15,7 +15,7 @@
   
 <b>Structure:</b><br>
 raf.js has three sub-libraries that wrap each other like nesting dolls (inner to outer order):<br>
-&nbsp;• prop.js defines the Prop, Func, and Ez classes<br>
+&nbsp;• prop.js defines the Prop, Func, Is, and Ez classes<br>
 &nbsp;• easy.js defines the Easy, Easee, Easer, Teaser, and Geaser classes<br>
 &nbsp;• raf.js defines the ACues and AFrame classes
 
