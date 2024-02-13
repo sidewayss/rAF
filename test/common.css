@@ -1,0 +1,386 @@
+:root {
+  --fade-75: 0.75;
+  --bg-white:     #FAFAFA;
+  --sidebar-white:#FDFDFD;
+  --darkest-blue: #004;
+  --dark-blue:    #007;
+  --medium-blue:  #019;
+  --accent-blue:  #03B;
+  --charcoal:     #272727;
+  --dark-gray:    #444;
+  --medium-gray:  #777;
+  --line-gray:    #ACACAC;
+  --border-gray:  1px solid #0002;
+  --border-hidden:1px solid transparent;
+  --butt-size: 1.75rem;
+  --8th:  calc(1rem / 8);
+  --3-8ths:  calc(3 * var(--8th));
+  --5-8ths:  calc(5 * var(--8th));
+  --16th: calc(1rem / 16);
+  --3-16ths: calc(3 * var(--16th));
+  --5-16ths: calc(5 * var(--16th));
+  --7-16ths: calc(7 * var(--16th));
+  --9-16ths: calc(9 * var(--16th));
+  --11-16ths: calc(11 * var(--16th));
+  --15-16ths: calc(1rem - var(--16th));
+}
+html * {
+  font-size: 1rem;
+  font-family:"Roboto Mono", monospace;
+  accent-color :var(--medium-blue);
+  outline-color:var(--charcoal-gray);
+  outline-width:thin;
+}
+/* By tag */
+body {
+  background-color:var(--bg-white);
+  caret-color:transparent;
+  opacity:0; /* javascript fades it in */
+/*  filter: grayscale(100%)
+          blur(3px)
+          drop-shadow(1rem 1rem 1.25rem #0FFE)
+          invert(12%); */
+}
+#chart {
+  stroke:black;
+  stroke-width:2px;
+  transform:scaleY(-1); /* bottom-to-top: 0 to 1000 */
+}
+#y {
+  transform:scaleY(-1); /* ditto */
+  pointer-events:none;
+  height:1px;           /* must have initial value */
+}
+#canvas {
+  fill:white;
+  stroke:var(--medium-gray);
+}
+line, #crosshairs {
+  fill:none;
+  stroke-dasharray:4;
+  stroke-width:1px;
+}
+line { /* #dashX, #dashY */
+  stroke:#77F;
+}
+#crosshairs {
+  stroke:#AAA;
+}
+#line {
+  fill:none;
+  stroke:var(--dark-blue);
+  stroke-width:4px;
+  stroke-linejoin:round;
+}
+#trackY, #marksY {
+  stroke:var(--medium-gray);
+  stroke-width:2px;
+  stroke-dasharray:none;
+}
+circle {
+  r:12px;
+  fill-opacity:0.5;
+  stroke:var(--dark-blue);
+  stroke-width:3px;
+}
+text, tspan, span {
+  white-space:pre;
+}
+span  {
+  font-weight:500;
+  color:var(--dark-blue);
+}
+p {
+  margin:var(--8th) 0;
+  color:var(--charcoal);
+  white-space:nowrap;
+}
+label, pre { /* I use <pre> instead of labels w/o for attribute */
+  margin: 0;
+  padding:0 var(--3-16ths) 0 0;
+  color:var(--charcoal);
+}
+label, pre, button, check-box {
+  user-select:none;
+}
+/* <button>, <select>, <input> */
+input[type=range] {
+  margin:0;
+}
+button, input[type=color],
+select, input[type=number] {
+  color:var(--dark-blue);
+  border-radius:0.25rem;
+}
+button, input[type=color] {
+  appearance:none;          /* else iOS pads a lot, no way to control it */
+  background-color:#DDDDE7;
+  border:1px solid var(--line-gray);
+}
+select, input[type=number] {
+  background-color:var(--sidebar-white);
+  border:var(--border-gray);
+}
+input[type=number] {
+  text-align:right;
+  padding-left: 0;
+  padding-right:0;
+  caret-color:black;
+}
+button:disabled {
+  pointer-events:none;
+  color:var(--medium-gray);
+  background-color:#DDD;
+}
+button:hover:not(:disabled),
+input[type=color]:hover {
+  color:var(--accent-blue);
+  background-color:#CCCCD7;
+  border-color:var(--medium-gray);
+}
+select:hover {
+  background-color:white;
+  border-color:var(--line-gray);
+}
+button:focus-visible,
+select:focus-visible,
+input[type=color]:focus-visible {
+  border-color: transparent;
+  outline-style:solid;
+}
+button:active:hover,
+select:active,
+input[type=color]:active:hover {
+  color:var(--medium-blue);
+  background-color:#DDDDE7;
+  border-color: var(--dark-blue);
+  outline-style:none;
+}
+
+/* <input type=range> */
+#time { width:16ch; }
+#x {
+  width:calc(100% - 0.25rem);
+  position:relative;
+  top:0.25rem;
+}
+#x:disabled {
+  color:var(--medium-blue);
+}
+
+/* <button> */
+.symButt {
+  font-family:"Material Symbols Rounded";
+  font-size:  1.5rem;
+  line-height:1.5rem;
+  padding:    0;
+  margin-left:var(--5-8ths);
+  width: var(--butt-size);
+  height:var(--butt-size);
+  border:var(--border-gray);
+}
+#save, #data {
+  margin-left:var(--16th);
+}
+
+/* <select>, <span>, <p>, #mid - hi/lo */
+.named { width:15ch; } /* <select> */
+select.lo, span.lo, #mid.lo { /* #mid in easings only */
+  color:var(--charcoal);
+}
+span.lo, #mid.lo {
+  font-weight:400;
+}
+select.hi, span.hi {
+  color:var(--dark-blue); /* unnecessary for <span>, but consistent */
+}
+p.lo {  /* unchecked, false/indeterminate - OFF */
+  color:var(--medium-gray);
+}
+p.hi { /* checked, true/indeterminate - ON */
+  color:var(--darkest-blue); /* no change... */
+}
+
+/* <check-box> */
+check-box {
+  cursor:default;
+  fill:none;
+  stroke:var(--charcoal);
+  color: var(--charcoal);
+}
+check-box[checked] {
+  fill:  var(--sidebar-white);
+  stroke:var(--dark-blue);
+  color: var(--dark-blue);
+}
+check-box[disabled] {
+  pointer-events:none;
+}
+check-box:hover {
+  fill-opacity:0.05;
+  fill:  var(--accent-blue);
+  color: var(--medium-blue);
+}
+check-box:active {
+  fill:white;
+  stroke:var(--medium-blue);
+  color: var(--medium-blue);
+}
+.checklist, input.checklist {
+  margin:1px 0;
+}
+
+/* <state-button> - #play, #stop */
+state-button {
+  opacity:0.9;
+  fill   :var(--accent-blue);
+  stroke :var(--accent-blue);
+  stroke-width:4px;
+  stroke-linejoin:round;
+  stroke-linecap :round;
+}
+state-button:hover {
+  opacity:1;
+  fill   :var(--dark-blue);
+  stroke :var(--dark-blue);
+}
+state-button:active {
+  fill  :var(--darkest-blue);
+  stroke:var(--darkest-blue);
+}
+state-button[disabled] {
+  opacity:0.15;
+  fill   :var(--charcoal);
+  stroke :var(--charcoal);
+}
+state-button.hi {
+  opacity:1;
+  fill   :none;
+}
+
+/* <div> */
+#diptych {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  row-gap:0.5rem;
+}
+#triptych {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+}
+#left  {
+  display:flex;
+  justify-content:flex-end;
+  text-align:end;
+  padding-right:var(--5-8ths);
+}
+#right {
+  display:flex;
+  border-left:1px solid;
+}
+#sidebar {
+  padding:0.25rem 0.5rem;
+  margin:0.5rem 0;
+  border:1px solid #BBB;
+  border-radius:var(--3-8ths);
+  background-color:var(--sidebar-white);
+}
+#placeholder {
+  height:calc(1rem + var(--11-16ths)); /* .row height + 2px for borders?? */
+}
+#divCopy {
+  padding:0.75rem 0 0.5rem var(--3-16ths);
+  margin-top:var(--9-16ths);
+}
+#divSave {
+  padding:0.5rem 0 0.5rem calc(5ch + var(--3-8ths));
+}
+.row {
+  display:flex;
+  align-items:center;
+  min-height:1.5em;   /* iOS requires more height for some rows */
+}
+.col {
+  display:flex;
+  flex-flow:column;
+}
+.flex    { display:flex; }
+.end     { justify-content:flex-end; }
+.center  { justify-content:center;   }
+.around  { justify-content:space-around ; }
+.between { justify-content:space-between; }
+.evenly  { justify-content:space-evenly;  }
+
+.align-start  { align-items:flex-start; }
+.align-end    { align-items:flex-end; }
+.align-center { align-items:center; }
+
+.grow { flex-grow:1 }
+
+/* <label> */
+.lbl-right {
+  padding:0;
+  margin:0 0 0 0.25rem;
+  color:var(--darkest-blue);
+}
+.label {
+  margin:0;
+}
+
+/* General - rem values in 1/16ths per 1rem = 16px */
+.mt1-2  { margin-top:    0.5rem; }
+.mt5-16 { margin-top:    var(--5-16ths); }
+.mb3-8  { margin-bottom: var(--3-8ths);  }
+.mr1    { margin-right:  1rem;  }
+.mr1-2  { margin-right:  0.5rem }
+.ml5-8  { margin-left:   var(--5-8ths);  }
+.mr3-16 { margin-right:  var(--3-16ths); }
+.ml1-2  { margin-left:   0.5rem }
+.ml3-8  { margin-left:   var(--3-8ths); }
+.ml5-16 { margin-left:   var(--5-16ths); }
+.ml3-16 { margin-left:   var(--3-16ths); }
+.ml1ch  { margin-left:   1ch;  }
+.ml0    { margin-left:   0; }
+
+input.mt1px { margin-top: 1px; }
+
+.pt5-8  { padding-top:   var(--5-8ths);  }
+.pt3-8  { padding-top:   var(--3-8ths);  }
+.pb5-8  { padding-bottom:var(--5-8ths);  }
+.pl3-8  { padding-left:  var(--3-8ths);  }
+.pl3-16 { padding-left:  var(--3-16ths); }
+.pr3-16 { padding-right: var(--3-16ths); }
+
+.bt {
+  border-top:1px solid var(--line-gray);
+  padding-top:0.25rem;
+}
+.bt-dots {
+  border-top-style:dotted;
+}
+.bb {
+  border-bottom:1px solid;
+}
+.slash {
+  font-family:sans-serif;
+  margin:0 0.25rem;
+}
+
+/* Specialty */
+#copied {
+  position:absolute;
+  opacity:0;
+  cursor:default;
+  font-family:sans-serif;
+  font-size:calc(13 * var(--16th));
+  font-weight:bold;
+  color:white;
+  background-color:var(--medium-blue);
+  border:1px solid var(--dark-blue);
+  border-radius:10%;
+  padding:var(--3-16ths);
+}
+::backdrop {
+  backdrop-filter:blur(var(--16th));
+  background-color:#AAA7;
+}

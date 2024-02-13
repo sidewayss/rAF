@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Steps</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded"/>
+    <link rel="stylesheet" href="common.css"/>
+    <script src="../raf.js" ></script>
+    <script src="steps.js"  ></script>
+    <script src="easteps.js"></script> <!-- pseudo-modules -->
+    <script src="common.js" ></script>
+    <script src="named.js"  ></script>
+    <script src="update.js" ></script>
+    <script src="draw.js"   ></script>
+    <script src="play.js"   ></script>
+    <script src="copy.js"   ></script>
+  </head>
+  <body>
+    <div id="diptych">
+      <div id="left">
+        <div class="col">
+          <div class="row mb3-8">
+            <label for="loopWait">Wait:</label>
+            <select id="loopWait" class="mr1"></select>
+            <label for="plays">Plays:</label>
+            <select id="plays" class="mr1"></select>
+            <label for="time">Duration:</label>
+            <input  id="time" class="chart" type="range"
+                   min="50" max="4000" step="1" value="2000"/>
+            <label for="time" class="lbl-right"></label>
+          </div>
+          <div class="flex between mb3-8">
+            <div class="row">
+              <div class="row">
+                <input  id="roundTrip" type="checkbox"/>
+                <label for="roundTrip">Round trip</label>
+              </div>
+              <div class="row mr3-16"> <!-- yes, 0.5px aligns autoTrip w/autoReset -->
+                <input  id="autoTrip" type="checkbox" class="ml1-2" checked/>
+                <label for="autoTrip">Auto</label>
+              </div>
+              <div class="row mr3-16">
+                <input  id="flipTrip" type="checkbox" checked style="display:none"/>
+                <label for="flipTrip" style="display:none">Flip</label>
+              </div>
+              <div class="row">
+                <input  id="tripWait" type="checkbox"/>
+                <label for="tripWait">Wait</label>
+              </div>
+              <div class="row pl3-8">
+                <input  id="reset" type="checkbox"/>
+                <label for="reset">Auto reset</label>
+              </div>
+            </div>
+            <div class="row">
+              <label for="direction">Direction:</label>
+              <select id="direction" class="chart">
+                <option value="" selected>Up</option>
+                <option value="1">Down</option>
+              </select>
+            </div>
+          </div>
+          <div class="row between mb3-8" style="height:1.5rem"> <!-- min-height doesn't work here -->
+            <div id="userValues" class="row">
+              <pre>Vals:</pre>
+              <input id="v0" class="value chart w33" type="number" min="-100" max="1100" step="1" value= "333"/>
+              <input id="v1" class="value chart w33" type="number" min="-100" max="1100" step="1" value= "667"/>
+              <input id="v2" class="value chart w33" type="number" min="-100" max="1100" step="1" value="1000"/>
+            </div>
+            <div id="userTiming" class="row">
+              <pre>Times:</pre>
+              <input id="t0" class="timing chart w33" type="number" min="0" max="2" step="0.001" value="0.667"/>
+              <input id="t1" class="timing chart w33" type="number" min="0" max="2" step="0.001" value="1.333"/>
+              <input id="t2" class="timing chart w33" type="number" min="0" max="2" step="0.001" value="2.000"/>
+              <pre>s</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="right">
+        <div id="col">
+          <div class="row mb3-8">
+            <div class="row">
+              <label for="steps">Steps:</label>
+              <select id="steps" class="chart mr1" style="text-align:right"></select>
+            </div>
+            <div class="row">
+              <label for="jump">Jump:</label>
+              <select id="jump" class="chart"></select>
+            </div>
+          </div>
+          <div class="row mb3-8">
+            <label for="values">Values:</label>
+            <select id="values" class="chart">
+              <option value="" selected>linear</option>
+              <option value="easeValues">easing</option>
+              <option value="userValues">values</option>
+            </select>
+            <select id="easeValues" class="chart named"></select>
+          </div>
+          <div class="row mb3-8">
+            <label for="timing">Timing:</label>
+            <select id="timing" class="chart">
+              <option value="" selected>linear</option>
+              <option value="easeTiming">easing</option>
+              <option value="userTiming">times</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="triptych">
+      <!-- row 1 -->
+      <div class="row end">
+        <div class="row evenly">
+          <button id="play">Play</button>
+          <button id="stop" disabled>Stop</button>
+        </div>
+      </div>
+      <div class="row center">
+        <input id="x" type="range" min="0" max="1" step="1" value="0"/>
+      </div>
+      <div></div>
+      <!-- row 2 -->
+      <div class="flex end">
+        <div class="col">
+          <div id="sidebar">
+            <p>Start:<span id="start" class="ml5-16">   0</span></p>
+            <p class="mb3-8">End &nbsp;:<span id="end"   class="ml5-16">1000</span></p>
+            <p class="bt mb3-8">value:<span id="value"   class="ml5-16"></span></p>
+            <p class="bt"      >unit :<span id="unit"    class="ml5-16"></span><span class="slash">/</span><span>1</span></p>
+            <p class="mb3-8"   >comp :<span id="comp"    class="ml5-16"></span><span class="slash">/</span><span>1</span></p>
+            <p class="bt"      >time :<span id="elapsed" class="ml5-16"></span><span class="slash">/</span><span id="duration"></span></p>
+            <p                 >frame:<span id="frame"   class="ml5-16"></span><span class="slash">/</span><span id="frames"  ></span></p>
+          </div>
+          <div class="col" style="border-left:1px solid transparent;">
+            <div class="row pt5-8 pl3-16" style="border-top:1px solid">
+              <label for="named">Name:</label>
+              <select id="named" class="named"></select>
+            </div>
+            <div class="row bb divSave">
+              <button id="save"   class="symButt">save</button>
+              <button id="revert" class="symButt">undo</button>
+              <button id="delete" class="symButt">delete</button>
+            </div>
+            <div class="row pt5-8 pb5-8 pl3-16 bb">
+              <pre>Copy:</pre>
+              <button id="data" class="symButt">data_table</button>
+              <button id="code" class="symButt">data_object</button>
+              <span id="copied">Copied!</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <svg viewBox="-15 -15 1030 1030">
+        <rect x="-2" y="-2" width="1004" height="1004"/>
+        <line     id="dashX" x1="500" x2="500" y1="0" y2="1000"/>
+        <line     id="dashY" y1="500" y2="500" x1="0" x2="1000"/>
+        <path d="M500,0 V1000 M0,500 H1000"/>
+        <polyline id="line"/>
+        <circle   id="dot" r="12"/>
+      </svg>
+      <div>
+        <input id="y" type="range" min="0" max="1000" value="0"
+           orient="vertical" tabindex="-1" style="pointer-events:none"/>
+      </div>
+    </div>
+    <dialog id="dialog">
+      <input  id="name" type="text" minlength="1" maxlength="12" autocomplete="off"/>
+      <button id="ok"    >OK</button>
+      <button id="cancel">Cancel</button>
+    </dialog>
+  </body>
+</html>

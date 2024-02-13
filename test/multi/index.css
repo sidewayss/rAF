@@ -1,0 +1,143 @@
+/* overrides of common.css */
+@media (height < 307px) {
+  html * {
+    font-family:monospace;
+  }
+}
+
+body {
+  margin:0.5rem 0 0 0;
+/*
+  height:985px;
+  background-repeat:no-repeat;
+  background-size:100% 100%;
+  background-image:radial-gradient(ellipse at center 216px, var(--bg-white) 324px, gray);
+*/
+}
+@media (height < 360px) {
+  body { margin-top:0; }
+}
+@media (height < 376px) {
+  body { margin-top:0.5rem; }
+}
+
+p {
+  margin:0 var(--3-8ths);
+  font-weight:400;
+  color:var(--darkest-blue);
+}
+@media (height < 298px) {
+  p { line-height:1rem; }
+}
+@media (298px <= height < 307px) {
+  p { line-height:calc(1rem + var(--16th)); }
+}
+@media (307px <= height < 328px) {
+  p { line-height:calc(1rem + var(--8th)); }
+}
+
+select, label, pre {
+  font-weight:400;
+}
+select {
+  color:var(--dark-blue);
+}
+
+#x {
+  margin:0.25rem 0;
+}
+@media (height >= 344px) {
+  #x { padding:0.5rem 0; }
+}
+
+input[type=color] {
+  width: 2.5rem;
+  height:var(--butt-size);
+}
+
+#save { margin-left:var(--5-8ths) }
+#data { margin-left:0 }
+
+.slash {
+  position:relative;
+  top:1px;
+  font-size:calc(1rem + var(--8th));
+  margin:0 var(--8th);
+}
+
+/* additions to common.css */
+/* <div> */
+#bgWhite {
+  border:1px solid var(--line-gray);
+  background-color:white;
+}
+#filler {
+  position:absolute;
+  width:1em;
+  background-color:var(--bg-white);
+}
+#clip {
+  position:absolute;
+  pointer-events:none;
+  background:linear-gradient(to bottom right, var(--bg-white), var(--bg-white));
+  opacity:0.15;
+/*clip-path:polygon(
+/*  0px    0px, 16px   0px,                         /*  0, 1, 2, 3 */
+/*  16px   9px, 17px   9px, 17px  71px, 16px  71px, /*  4, 5, 6, 7, 8, 9,10,11 */
+/*  16px  81px, 17px  81px, 17px 143px, 16px 143px, /* 12,13,14,15,16,17,18,19 */
+/*  16px 153px, 17px 153px, 17px 214px, 16px 214px, /* 20,21,22,23,24,25,26,27 */
+/*  16px 223px,  0px 223px);                        /* 28,29,30,31 */
+}
+
+.counter  {
+  align-items:baseline;
+  margin:0;
+  padding:var(--16th) var(--5-16ths) 0 var(--5-16ths);
+  color:var(--dark-blue);
+  border-bottom:var(--border-gray);
+}
+.spacer {
+  height:0.5em;
+  width: 1.0em;
+  border-right:1px solid var(--line-gray);
+}
+.ucv {
+  align-items:flex-end;
+  padding:var(--16th) var(--3-8ths) var(--8th) 0;
+  border-left:var(--border-gray);
+}
+.easy {
+  padding-left:0.25rem;
+  border:1px solid var(--line-gray);
+  border-left:none;
+  background-color:var(--bg-white);
+}
+.easies-plays {
+  margin:0 var(--3-8ths) 0 var(--8th)
+}
+/* general purpose */
+.font400 { font-weight:400 }
+
+.mt3-16 { margin-top:   var(--3-16ths) }
+.mr0    { margin-right: 0 }
+.ml3-8  { margin-left:  var(--3-8ths) }
+.ml3-4  { margin-left:  0.75rem }
+.ml1    { margin-left:  1rem }
+
+/* rules for svg tri-state button images */
+.trip {
+  margin-left:calc(5ch + 0.25rem);
+  visibility:hidden; /* overridden by javascript */
+}
+.tri {
+  width: 36px;
+  height:15px;
+}
+.plays {
+  font-weight:500;
+  margin-left:var(--3-8ths);
+}
+.eKey {
+  padding:0 var(--16th);
+  margin-left:0.25rem;
+}

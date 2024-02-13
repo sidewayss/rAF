@@ -1,0 +1,143 @@
+/* overrides of common.css */
+.row { height:calc(1rem + var(--9-16ths)); }
+
+p.hi { font-weight:500; }
+
+#save, #revert {
+  font-size:1.5rem;
+}
+#code {
+  padding-right:1px;
+}
+
+#left  {
+  padding-right:var(--5-8ths);
+}
+#right {
+  padding-bottom:0;
+}
+
+/* for this page only */
+#mid {
+  padding-top:0;
+  margin-left:var(--5-8ths);
+  font-weight:500;
+}
+#split, #gap {
+  width:4.25rem;
+  margin-right:var(--8th);
+  font-weight:500;  /* matches sidebar */
+}
+#v0, #v1, #v2 {
+  width:calc(3ch + 1.5rem);
+}
+.secs { /* #t0, #t1, #t1 */
+  width:calc(5ch + 1rem);
+}
+.secs  + label,
+#split + label, #gap + label {
+  position:absolute;
+}
+.secs  + label {
+  padding-right:var(--7-16ths);
+}
+#split + label, #gap + label {
+  padding-right:var(--9-16ths);
+  color:var(--dark-blue);
+  font-weight:500;
+}
+.secs:hover + label, #split:hover + label, #gap:hover + label,
+.secs:focus + label, #split:focus + label, #gap:focus + label {
+  visibility:hidden;
+}
+/* <button> */
+#clearSplit, #clearGap {
+  line-height:1.25rem;
+}
+.clear {
+  align-self: flex-end;
+  font-family:"Material Symbols Rounded";
+  font-weight:bold;
+  font-size:  1.5rem;
+  line-height:1.5rem;
+  padding:0;
+  color:#700;
+  background-color:transparent;
+  border:none;
+}
+.clear:disabled, .lock:disabled {
+  font-weight:normal;
+  color:#AAA;
+  background-color:transparent;
+}
+.clear:hover:not(:disabled) {
+  color:#B00;
+  background:radial-gradient(circle at center, #0002 0, #0000 70%);
+}
+.clear:active:hover{
+  color:#D00;
+  background:radial-gradient(circle at center, #0044 0, #0000 75%);
+}
+.lock, .link{
+  font-family:"Material Symbols Rounded";
+  padding:0;
+  border:none;
+  border-radius:var(--7-16ths);
+  background:transparent;
+}
+.lock {
+  align-self:  flex-start;
+  font-size:   1.5rem;
+  line-height: 1.5rem;
+  margin-right:0.25rem;
+  color:var(--dark-gray);
+}
+.link {
+  font-size:calc(1rem + var(--5-8ths));
+  line-height: 1.5rem;
+  color:var(--medium-blue);
+}
+.lock:hover:not(:disabled),
+.link:hover:not(:disabled) {
+  color:var(--accent-blue);
+  background:radial-gradient(ellipse at center, #0002 0, #0000 80%);
+}
+.lock:active:hover,
+.link:active:hover {
+  color:var(--medium-blue);
+  background:radial-gradient(ellipse at center, #0044 0, #0000 90%);
+}
+
+#linkType {
+  margin:0 0.25rem 0 0;
+}
+#linkPow {
+  margin:0 var(--8th) 0 0;
+}
+.locked {
+  color:var(--dark-blue);
+}
+.linked { /* not necessary with colors the same now... */
+  color:var(--medium-blue);
+}
+
+/* miscellaneous */
+.emph { /* emphasis for sidebar labels */
+  color:var(--dark-blue);
+  font-weight:500;
+}
+
+.mr0 { margin-right: 0 }
+.pr0 { padding-right:0 }
+
+.pl1-2 { padding-left:0.5rem; }
+.pl1-8 { padding-left:var(--8th); }
+
+.w3 { width:3rem; }
+.w4 { width:4rem; }
+
+.lbl-paren {
+  font-size:calc(1rem + var(--5-16ths));
+  margin:0;
+  padding:0;
+}

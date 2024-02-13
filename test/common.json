@@ -1,0 +1,79 @@
+{
+  "titles": {
+    "plays":      "Number of times to play the animation",
+    "loopWait":   "Time to wait between each play",
+    "autoTrip":   "Automatic return trip",
+    "flipTrip":   "Flip to mirror image for return trip",
+    "tripWait":   "Time to wait before commencing return trip",
+    "reset":      "Automatically reset after each play",
+    "save":       "Save current settings as a named Easy",
+    "revert":     "Revert to saved, discard changes",
+    "preset":     "Revert to original preset, discarding all previous changes",
+    "delete":     "Delete selected named Easy",
+    "data":       "Copy animation data as a tab-delimited table, for pasting into a spreadsheet",
+    "code":       "Copy object(s) as plain text JavaScript code",
+    "time":       "The duration of a one-way play",
+    "direction":  "Up or Down, from 0 to 1000 or from 1000 to 0",
+    "type":       "The primary shaper of the timing curve(s)",
+    "type2":      "Ease for the second leg",
+    "io":         "IO: the permutations of in and out, here it determines if the animation has one or two legs",
+    "pow":        "Power aka exponent",
+    "pow2":       "Power for second leg",
+    "linkType":   "Link type across two legs",
+    "linkPow":    "Link power (exponent) across two legs",
+    "bezier0":    "x1",
+    "bezier1":    "y1",
+    "bezier2":    "x2",
+    "bezier3":    "y2",
+    "steps":      "",
+    "jump":       "",
+    "values":     "",
+    "timing":     "",
+    "easeValues": "",
+    "easeTiming": "",
+    "v0":         "",
+    "v1":         "",
+    "v2":         "",
+    "t0":         "",
+    "t1":         "",
+    "t2":         "",
+    "clearMid":   "Clear mid",
+    "clearSplit": "Clear split",
+    "clearGap":   "Clear gap",
+    "lockSplit":  "Lock split: maintain or scale value when Duration changes",
+    "lockGap":    "Lock gap: maintain or scale value when Duration changes",
+    "color0":     "Color of top-left corner of gradient",
+    "color1":     "Color of bottom-right corner of gradient"
+  },
+  "presets": {
+    "Easy-": {
+      "": {
+        "time": 2000,
+        "start": 0,
+        "end": 1000
+      },
+      "circIn": {
+        "time": 2000,
+        "start": 0,
+        "end": 1000,
+        "type": 2,
+        "io": 0
+      },
+      "circOut": {
+        "time": 2000,
+        "start": 0,
+        "end": 1000,
+        "type": 2,
+        "io": 1
+      }
+    },
+    "MEaser-": {
+      "": {
+        "names": ["","circIn","circOut"],
+        "plays": ["","",""],
+        "eKey": ["unit","unit","unit"],
+        "trip": ["","",""]
+      }
+    }
+  }
+}
