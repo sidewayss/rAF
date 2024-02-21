@@ -19,7 +19,7 @@ function loadChart() {
     const byClass = document.getElementsByClassName("chart");
     addEventsByElm(CHANGE, byClass, handlers, true);
 }
-const handlers = { // event handlers: function name = twoToCamel(CHANGE, elm.id)
+const handlers = { // event handlers: function name = toCamel(CHANGE, elm.id)
     changeTime(evt) {
         let oldEzY;
         updateTime();
@@ -31,7 +31,7 @@ const handlers = { // event handlers: function name = twoToCamel(CHANGE, elm.id)
         else {
             updateSplitGap();   // setSplitGap() already called by inputTime()
             oldEzY = isUnlocked(elms.split)
-                 && (isUnlocked(elms.gap) || elms.clearGap.disabled);
+                 && (isUnlocked(elms.gap) || elms.gap.clear.disabled);
         }
         ezX.time = msecs;
         redraw(evt.target, oldEzY ? msecs : 0);

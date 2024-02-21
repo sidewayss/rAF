@@ -83,6 +83,5 @@ function isBezier(val = g.type) {
 // bezierArray() converts the 4 <input>s' values into an array of 4 numbers,
 //               <= easingFromForm(), redraw(), isOutOfBounds().
 function bezierArray() {
-    const strBez = Easy.type[E.bezier];
-    return Array.from({length:4}, (_, i) => elms[strBez + i].valueAsNumber);
+    return elms.beziers.map(elm => elm.valueAsNumber);
 }

@@ -2,7 +2,7 @@
 export {points, pad, loadUpdate, inputX, updateFrame, updateSidebar, updateTime,
         setDuration, setFrames, eGet, pseudoAnimate};
 
-import {E, Is, Ez, P} from "../raf.js";
+import {E, Is, P} from "../raf.js";
 
 import {FPS, ezX, raf, secs}  from "./load.js";
 import {loadPlay, changeStop} from "./play.js";
@@ -12,26 +12,29 @@ import {MILLI, LENGTH, INPUT, elms, g, formatNumber}
 import {isSteps} from "./easings/steps.js";
 /*
 import(_update.js): getPoint, pointZero, updateX;
-                    redraw, flipZero, formatClip pass through to play.js.
+                    redraw, flipZero, formatPlayback, and
+                    vucPoint, flipZero, formatFrames pass through to play.js.
 */
 let ns;       // _update.js namespace
 const D = 3;  // D for decimals: .toFixed(D) = milliseconds, etc.
 
 const points = [];  // time, x, y, and eKey values by frame
-const pad    = {};  // string.pad() values by id
-
+const pad = {       // string.pad() values for formatting numbers
+    frame:5,
+    milli:MILLI.toString().length,
+    secs: D + 3,
+    value:D + 5,    // overriden in loadUpdate() if (isMulti)
+    unit: D + 2,
+    comp: D + 2
+};
+//==============================================================================
 // loadUpdate() is called by loadCommon()
 async function loadUpdate(isMulti, dir) {
-    if (isMulti)
+    if (isMulti) {
         points[0] = {t:0, x:Array.from(LENGTH, () => new Object)};
-
-    pad.frame = 5;     // varies in multi
-    pad.secs  = D + 3; // ditto when duration >= 10s
-    Ez.readOnly(pad, "milli", MILLI.toString().length);
-    Ez.readOnly(pad, "value", isMulti ? pad.milli : D + 5);
-    Ez.readOnly(pad, "unit",  D + 2);
-    Ez.readOnly(pad, "comp",  pad.unit);
-    Object.seal(pad);
+        pad.value = pad.milli;
+    }
+    Object.freeze(pad);
 
     elms.x.addEventListener(INPUT, inputX, false);
     return import(`${dir}_update.js`).then(namespace => {
@@ -40,6 +43,7 @@ async function loadUpdate(isMulti, dir) {
         return ns;
     }); // .catch(errorAlert) in Promise.all() in loadCommon()
 }
+//==============================================================================
 // inputX() handles input events for #x, called by easings redraw(), updateAll()
 function inputX(evt) {
     const f = elms.x.valueAsNumber; // f for frame
@@ -47,6 +51,7 @@ function inputX(evt) {
     updateSidebar(f, p);
     ns.updateX(p, !Is.def(evt));    // 2nd arg easings only
 }
+//==============================================================================
 // updateFrame() consolidates easy.peri() code, records points, updates textContent
 function updateFrame(arg0, arg1, arg2) {
     const t = raf.elapsed;  // Chrome pre-v120 currentTime can be > first frame's timeStamp
@@ -74,12 +79,11 @@ function updateTime() {
         factor: g.frames / MILLI
     });
 }
+//==============================================================================
 // setDuration() is called by changePlay(), changeStop(), multi updateAll(),
 //               and easing inputTime()
 function setDuration(val = secs) {
-    const txt = ns.formatDuration(val, D);
-    elms.duration.textContent = txt;
-    return txt;
+    return (elms.duration.textContent = ns.formatDuration(val, D));
 }
 // setFrames() is called by updateTime() and changePlay()
 function setFrames(val) {
@@ -87,10 +91,11 @@ function setFrames(val) {
     elms.x.max = val;
     g.frames = val;
     let txt = val.toString();
-    if (ns.formatFrames)        // multi only, not easings
+    if (ns.formatFrames)        // multi only
         txt = ns.formatFrames(txt);
     elms.frames.textContent = txt;
 }
+//==============================================================================
 // eGet() chooses ez.e or ez.e2, called by multi.getPoint() and
 //                               easings.update()=>updateFrame()=>getPoint()
 function eGet(ez) {
@@ -101,6 +106,7 @@ function eGet(ez) {
     else
         return e;
 }
+//==============================================================================
 // pseudoAnimate() does not apply values, intead it populates the points array,
 //                 called by both redraw()s.
 function pseudoAnimate() {

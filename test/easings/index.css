@@ -3,8 +3,18 @@
 
 p.hi { font-weight:500; }
 
+#x {
+  position:relative;
+  top:0.25rem;
+}
+.symButt {
+  margin-left:var(--5-8ths);
+}
 #save, #revert {
   font-size:1.5rem;
+}
+#save, #data {
+  margin-left:var(--16th);
 }
 #code {
   padding-right:1px;
@@ -31,14 +41,14 @@ p.hi { font-weight:500; }
 #v0, #v1, #v2 {
   width:calc(3ch + 1.5rem);
 }
-.secs { /* #t0, #t1, #t1 */
+input.secs { /* #t0, #t1, #t1 */
   width:calc(5ch + 1rem);
 }
-.secs  + label,
+pre.secs,
 #split + label, #gap + label {
   position:absolute;
 }
-.secs  + label {
+pre.secs {
   padding-right:var(--7-16ths);
 }
 #split + label, #gap + label {
@@ -51,15 +61,15 @@ p.hi { font-weight:500; }
   visibility:hidden;
 }
 /* <button> */
-#clearSplit, #clearGap {
-  line-height:1.25rem;
+#clearMid {
+  line-height:1.5rem;
 }
 .clear {
   align-self: flex-end;
   font-family:"Material Symbols Rounded";
   font-weight:bold;
   font-size:  1.5rem;
-  line-height:1.5rem;
+  line-height:1.25rem;
   padding:0;
   color:#700;
   background-color:transparent;

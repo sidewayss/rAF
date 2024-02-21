@@ -1,5 +1,5 @@
 // export everything but update()
-export {OVERRIDES, MASK_X, clip, easys, measer, meFromForm};
+export {OVERRIDES, MASK_X, clip, easys, meFromForm};
 
 import {P} from "../../raf.js";
 
@@ -9,7 +9,6 @@ import {COUNT, elms, orUndefined, elseUndefined} from "../common.js";
 import {clipEnd, clipStart} from "./_load.js";
 import {objFromForm}        from "./_named.js";
 
-let measer;
 const OVERRIDES = ["plays","eKey","trip"];
 
 const MASK_X = [6,8, 14,16, 22,24]; // polygon's animated x-value indexes

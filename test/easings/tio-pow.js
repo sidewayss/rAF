@@ -3,7 +3,7 @@ export {TIME, TYPE, IO, POW, loadTIOPow, setLink, updateTypeIO, isPow};
 import {E, Ez, P, Easy} from "../../raf.js";
 
 import {TWO, CLICK, INPUT, elms, g, addEventByClass, formatInputNumber,
-        toggleClass, twoToCamel, boolToString} from "../common.js";
+        toggleClass, toCamel, boolToString} from "../common.js";
 
 import {redraw}      from "./_update.js";
 import {chart}       from "./chart.js";
@@ -52,7 +52,7 @@ function inputTypePow(evt) {
     const isP  = tar.id.includes("ow");
     const id   = isP ? POW : TYPE;
     const suff = tar.id.endsWith(TWO) ? [TWO,""] : ["",TWO];
-    const link = elms[twoToCamel(LINK, id)];
+    const link = elms[toCamel(LINK, id)];
     const src  = elms[id + suff[0]];
     const copy = elms[id + suff[1]];
 
@@ -98,7 +98,7 @@ function updateTypeIO(isIO) {
     for (elm of [elms.div2, elms.divMid, chart.dashX, chart.dashY])
         P.displayed(elm, has2);
 
-    for (elm of [elms.split.parentNode, elms.gap.parentNode])
+    for (elm of [elms.divSplit, elms.divGap])
         P.visible(elm, has2);
 
     if (has2)
@@ -106,7 +106,7 @@ function updateTypeIO(isIO) {
 
     P.displayed(elms.placeholder, !has2);
     if (!isIO) {        // false || undefined
-        P.displayed(elms.io,     !isBez && !isStp);
+        P.displayed(elms.io,    !isBez && !isStp);
         P.displayed(elms.bezier, isBez);
         for (elm of elms.divsSteps)
             P.displayed(elm, isStp);

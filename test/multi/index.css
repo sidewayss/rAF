@@ -27,13 +27,13 @@ p {
   color:var(--darkest-blue);
 }
 @media (height < 298px) {
-  p { line-height:1rem; }
+  p { line-height:1rem }
 }
 @media (298px <= height < 307px) {
-  p { line-height:calc(1rem + var(--16th)); }
+  p { line-height:calc(1rem + var(--16th)) }
 }
 @media (307px <= height < 328px) {
-  p { line-height:calc(1rem + var(--8th)); }
+  p { line-height:calc(1rem + var(--8th)) }
 }
 
 select, label, pre {
@@ -43,11 +43,15 @@ select {
   color:var(--dark-blue);
 }
 
-#x {
-  margin:0.25rem 0;
-}
+#x { padding:0.25rem 0 }
 @media (height >= 344px) {
-  #x { padding:0.5rem 0; }
+  #x { padding:0.5rem 0 }
+  #bgWhite {
+    margin-bottom:0.25rem;
+  }
+  #playback {
+    margin-top:0.25rem;
+  }
 }
 
 input[type=color] {
@@ -55,8 +59,10 @@ input[type=color] {
   height:var(--butt-size);
 }
 
-#save { margin-left:var(--5-8ths) }
-#data { margin-left:0 }
+#stop { margin:0 var(--5-8ths) }
+
+.symButt { margin-left:0.5rem }
+#data    { margin-left:0 }
 
 .slash {
   position:relative;

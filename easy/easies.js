@@ -184,10 +184,9 @@ export class Easies {
             val, val2;
 
         // Execute each easy
-        for (easy of this.#active) {
+        for (easy of this.#active)
             easy._easeMe(timeStamp);
-            console.log()
-        }
+
         // Process the easies' targets
         for ([easy, map] of this.#byEasy) {
             e   = easy.e;

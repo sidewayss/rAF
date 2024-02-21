@@ -51,7 +51,8 @@ function formFromObj(obj) {
     elms.loopByElm.checked = obj.loopByElm;
     inputTime();
     setNoWaits();
-    return (isSteps(obj.type) ? stepsFromLocal : easingFromLocal)(obj, legs);
+    (isSteps(obj.type) ? stepsFromLocal : easingFromLocal)(obj, legs);
+    return obj;
 }
 // objFromForm() creates an object from control values,
 //               <= loadFinally(), storeCurrent(), clickCode(), newEzY()

@@ -16,11 +16,10 @@ import(_load.js) : updateAll via loadNamed(..., _load) { ns_load = _load; }
 let ns, ns_load, preClass, preDoc, presets; // ns exported for storeCurrent()
 //==============================================================================
 // loadNamed() called by loadCommon()
-async function loadNamed(isMulti, dir, pre, _load) {
-    ns_load  = _load;       // for openNamed()
-    preDoc   = pre;         // prefix by document
-    preClass = isMulti      // prefix by class
-             ? "MEaser-" : EASY_;
+function loadNamed(isMulti, dir, pre, _load) {
+    ns_load  = _load;                       // for openNamed()
+    preDoc   = pre;                         // prefix by document
+    preClass = isMulti ? "MEaser-" : EASY_; // prefix by class
 
     presets = g.presets[preClass];
     elms.named .addEventListener(CHANGE, openNamed, false);

@@ -9,12 +9,12 @@ import {getNamed, getLocalNamed, setNamed}  from "./local-storage.js";
 import {loadUpdate}                         from "./update.js";
 import {DEFAULT_NAME, loadNamed, disableSave,
         disablePreset, disableDelete}       from "./named.js";
-import {INPUT, MILLI, COUNT, ONE, dlg, elms, g,
+import {INPUT, SELECT, MILLI, COUNT, ONE, dlg, elms, g,
         formatNumber, errorAlert, errorLog} from "./common.js";
 /*
 import(_load.js): loadIt, getEasies, initEasies, updateAll, resizeWindow
 */
-let awaitJSON, awaitNamed, loadTemplates, ns, ns_named;
+let awaitJSON, awaitNamed, ns, ns_named;
 
 const awaitFonts = [                 // start loading fonts asap
     new FontFace("Roboto Mono",
@@ -29,16 +29,17 @@ document.addEventListener("DOMContentLoaded", loadCommon, false);
 async function loadCommon() {
     let elm, i;
     PFactory.init();                 // raf.js infrastructure init
-                                     // collect the HTMLElements by tag
-    const byTag = [INPUT,"select","button","span","div","label","dialog",
-                         "state-button","check-box"]
-                  .map(v => [...document.body.getElementsByTagName(v)]);
+                                     // collect HTMLElements by tag, then by id
+    const tags = [INPUT, SELECT, "button","dialog","div","label","span",
+                  "state-button","check-box"];
+
+    const byTag = tags.map(tag => [...document.body.getElementsByTagName(tag)]);
 
     for (elm of [...byTag[0].splice(-1, 1), ...byTag[2].splice(-2, 2)])
         dlg[elm.id] = elm;           // break out <dialog> sub-elements by id
 
     for (elm of byTag.flat())        // populate elms by id
-        if (elm.id)                  // most <label>, <span>, <div> have no id
+        if (elm.id)                  // most <div>, <label>, <span>s have no id
             elms[elm.id] = elm;
 
                                      // elms.x doesn't disable the normal way
@@ -69,13 +70,13 @@ async function loadCommon() {
 
     awaitNamed = Ez.promise();       // resolves in loadJSON()
     awaitJSON  = Ez.promise();       // ditto
-    const msg  = "Presets and tooltips are unavailable, "
-               + "error fetching common.json";
+    const msg  = "Presets and tooltips are unavailable due to an error "
+               + "fetching common.json";
     fetch("../common.json")
       .then (rsp => loadJSON(rsp, isMulti, dir, pre, ns, hasVisited, msg))
       .catch(err => errorAlert(err, msg));
 
-    Promise.all([...awaitFonts, awaitUpdate, awaitNamed, awaitJSON])
+    Promise.all([document.fonts.ready, awaitUpdate, awaitNamed, awaitJSON])
       .then (()  => loadFinally(hasVisited, restore, id))
       .catch(errorAlert);
 
@@ -84,47 +85,43 @@ async function loadCommon() {
 //==============================================================================
 // loadJSON() executes on fetch(common.json).then(), could be inlined & indented
 function loadJSON(response, isMulti, dir, pre, ns, hasVisited, msg) {
-    if (!response.ok) {
-        alert(`${msg}:\nHTTP error, status = ${response.status}`);
-        return;
-    } //--------------------------
-    response.json().then(json => {
-        let elm, id, title;
-        g.presets = json.presets;  // must precede loadNamed(), loadFinally()
-        loadNamed(isMulti, dir, pre, ns)
-          .then(namespace => {
-            ns_named = namespace;
-            awaitNamed.resolve();
-        }).catch(err =>
-            awaitNamed.reject(err) // let Promise.all() handle it
-        );
-        getNamed();                // populate elms.named from localStorage
-        ns.getEasies(hasVisited);  // populate lists for E.steps || multi
-        for ([id, title] of Object.entries(json.titles)) {
-            elm = elms[id];        // apply titles to elements
-            if (Is.Element(elm)) {
-                elm.title = title;
-                if (elm.labels?.[0])
-                    elm.labels[0].title = elm.title;
+    if (response.ok)
+        response.json().then(json => {
+            let elm, id, title;
+            g.presets = json.presets;  // must precede loadNamed()/loadFinally()
+            loadNamed(isMulti, dir, pre, ns).then(namespace => {
+                ns_named = namespace;
+                awaitNamed.resolve();
+            }).catch(
+                awaitNamed.reject      // let Promise.all() handle it
+            );
+            getNamed();                // populate elms.named from localStorage
+            ns.getEasies(hasVisited);  // populate lists for E.steps || multi
+            for ([id, title] of Object.entries(json.titles)) {
+                elm = elms[id];        // apply titles to elements
+                if (Is.Element(elm)) {
+                    elm.title = title;
+                    if (elm.labels?.[0])
+                        elm.labels[0].title = elm.title;
+                }
             }
-        }
-        awaitJSON.resolve();
-    });
+            awaitJSON.resolve();
+        }).catch(err => alert(`${msg}:\n${err.stack ?? err}`));
+    else
+        alert(`${msg}:\nHTTP error ${response.status} ${response.statusText}`);
 }
 //==============================================================================
 // loadFinally() executes on Promise.all().then(), could be inlined & indented
 function loadFinally(hasVisited, restore, id) {
     let obj;
-    ns.resizeWindow();
-    elms.x.value = 0;        // re-opening the page might use previous value
-
     if (hasVisited) {        // user has previously visited this page
         const name = localStorage.getItem(g.keyName);
         const item = getLocalNamed(name);
+        elms.x.value = 0;    // re-opening the page might use previous value
+        elms.named.value = name;
         disableSave(item == restore);
         disablePreset(name, item);
         disableDelete(name);
-        elms.named.value = name;
         obj = ns_named.formFromObj(JSON.parse(restore));
     }
     else {                   // user has never visited this page
@@ -132,27 +129,28 @@ function loadFinally(hasVisited, restore, id) {
         obj = ns_named.objFromForm(hasVisited);
         setNamed(DEFAULT_NAME, JSON.stringify(obj));
     }
+    ns.resizeWindow();
 
     ezX = new Easy({time:msecs, end:MILLI}); //*05
     raf = new AFrame;
     if (!ns.initEasies(obj)) // sets g.easies, raf.targets = g.easies
         return;
     //--------------------
+    ns.updateAll(true);
+    Object.seal(g);
+    Object.freeze(elms);
+
     const af = new AFrame;
-    af.fpsBaseline()         // estimate the device frame rate
+    af.fpsBaseline()         // discover the device's screen refresh rate
       .then(fps => {
         const rounded = AFrame.fpsRound(fps.value);
         if (elms.fps)        // multi only
             elms.fps.textContent = `${rounded}fps`;
         FPS = rounded;
         logBaseline(fps, rounded);
-      })
-      .catch(err => errorLog(err, "fpsBaseline() failed"))
-      .finally(() => {       // .catch(fpsBaseLine() only), the show can go on
-        ns.updateAll(true);
-        Object.seal(g);
-        Object.freeze(elms);
-                             // fade document.body into view
+    }).catch(err =>          // .catch = fpsBaseLine() only, the show can go on
+        errorLog(err, "fpsBaseline() failed")
+     ).finally(() => {       // fade document.body into view
         const ez = new Easy({time:800, type:E.expo, io:E.in});
         ez.newTarget({elm:document.body, prop:P.o});
         af.newEasies([ez]);
@@ -169,8 +167,7 @@ function loadFinally(hasVisited, restore, id) {
                     if (reg.active)
                         sw.postMessage({id});
                     else     // wait until activated
-                        sw.addEventListener("statechange", (evt) => {
-                            console.log("state:", evt.target.state);
+                        sw.addEventListener("statechange", evt => {
                             if (evt.target.state == "activated")
                                 sw.postMessage({id});
                         });

@@ -1,27 +1,20 @@
 // export everything via import(), explicitly imported: redraw, all functions
 export {redraw, getPoint, pointZero, updateX, setSidebar, formatDuration,
-        formatFrames, formatClip};
+        formatPlayback, formatFrames};
 
-import {E, U, Is, P, Easy} from "../../raf.js";
+import {E, U, Is, F, P, Easy} from "../../raf.js";
 
 import {pad, eGet, pseudoAnimate}  from "../update.js";
 import {storeCurrent}              from "../local-storage.js";
 import {COUNT, elms, formatNumber} from "../common.js";
 
-import {clipDist, clipEnd, clipStart, initEasies} from "./_load.js";
-import {MASK_X, clip, easys, measer}              from "./index.js";
-import {setEasy}                                  from "./events.js";
+import {clipDist, clipEnd, clipStart, measer} from "./_load.js";
+import {MASK_X, clip, easys}                  from "./index.js";
 //==============================================================================
 // redraw() called by updateAll(), changeEKey(), changeStop(), play.js needs the
 //          function dynamically imported by update.js, easings vs multi.
-function redraw(evt) {
+function redraw() {
     let down, flip, i, j, l, val;
-    const tar = evt?.target;
-    if (elms.easy.includes(tar)) {
-        setEasy(Number(tar.id.at(-1)), tar.value);
-        if (!initEasies())
-            return;
-    }
     for (i = 0, j = 0, l = MASK_X.length; i < l; j++) {
         down = easys[j].start > easys[j].end;
         flip = (elms.eKey[j].value == E.comp);
@@ -83,20 +76,18 @@ function setSidebar(p, defD) {
     }
 }
 function formatDuration(val, d) {
-    const txt = val.toFixed(d) + U.seconds;
-    pad.secs  = txt.length - 1;
-    return txt;
+    return val.toFixed(d) + U.seconds;
+}
+// formatPlayback() helps changeStop(), formatPlay()
+function formatPlayback(isPlaying, b = true) {
+    if (b) {
+        elms.clip.style.opacity = elms.clip.opacity[Number(isPlaying)]; // see multi.loadIt()
+        for (var i = 0; i < COUNT; i++) //!!if this can be elms.value[i], then ucvDivs is a local var for _load!!
+            P.visible(elms.ucvDivs[i].firstElementChild, !isPlaying);
+    }
+    return true;
 }
 //====== multi-only ============================================================
 function formatFrames(txt) {
-    pad.frame = txt.length;
     return txt + "f";
-}
-function formatClip(b, isStopping) {
-    if (b) {
-        elms.clip.style.opacity = elms.clip.opacity[Number(isStopping)]; // see multi.loadIt()
-        for (var i = 0; i < COUNT; i++) //!!if this can be elms.value[i], then ucvDivs is a local var for _load!!
-            P.visible(elms.ucvDivs[i].firstElementChild, isStopping);
-    }
-    return true;
 }

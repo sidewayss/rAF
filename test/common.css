@@ -83,19 +83,20 @@ circle {
   stroke:var(--dark-blue);
   stroke-width:3px;
 }
-text, tspan, span {
-  white-space:pre;
-}
-span  {
-  font-weight:500;
-  color:var(--dark-blue);
-}
+
 p {
   margin:var(--8th) 0;
   color:var(--charcoal);
   white-space:nowrap;
 }
-label, pre { /* I use <pre> instead of labels w/o for attribute */
+span  {
+  font-weight:500;
+  color:var(--dark-blue);
+}
+label, span {
+  white-space:pre;
+}
+label, pre { /* I use <pre> instead of labels w/o "for" attribute */
   margin: 0;
   padding:0 var(--3-16ths) 0 0;
   color:var(--charcoal);
@@ -159,11 +160,8 @@ input[type=color]:active:hover {
 
 /* <input type=range> */
 #time { width:16ch; }
-#x {
-  width:calc(100% - 0.25rem);
-  position:relative;
-  top:0.25rem;
-}
+
+#x { width:calc(100% - 0.25rem); }
 #x:disabled {
   color:var(--medium-blue);
 }
@@ -174,13 +172,9 @@ input[type=color]:active:hover {
   font-size:  1.5rem;
   line-height:1.5rem;
   padding:    0;
-  margin-left:var(--5-8ths);
   width: var(--butt-size);
   height:var(--butt-size);
   border:var(--border-gray);
-}
-#save, #data {
-  margin-left:var(--16th);
 }
 
 /* <select>, <span>, <p>, #mid - hi/lo */

@@ -1,38 +1,104 @@
-export {VALUES, TIMING, EASY, USER, loadSteps, stepsFromLocal, stepsFromForm,
+export {TIMING, EASY, loadSteps, loadVT, stepsFromLocal, stepsFromForm,
         updateVT, vtFromElm, drawSteps, isSteps};
 
 import {E, Is, Ez, P, Easy} from "../../raf.js";
 
-import {points}       from "../update.js";
-import {getNamedEasy} from "../local-storage.js";
-import {MILLI, COUNT, CHANGE, elms, g, addEventToElms, formatInputNumber,
-        twoToCamel}   from "../common.js";
+import {points}                        from "../update.js";
+import {getNamed, getNamedEasy}        from "../local-storage.js";
+import {SELECT, MILLI, COUNT, CHANGE, elms, g, addEventToElms, toCamel,
+        formatInputNumber, initialCap} from "../common.js";
 
 import {redraw}               from "./_update.js";
 import {chart, isOutOfBounds} from "./chart.js";
-import {pointToString}        from "./index.js";
+import {OTHER, pointToString} from "./index.js";
 
+let STEPS;
 const VALUES = "values";
 const TIMING = "timing";
 const EASY   = "easy";
 const USER   = "user";
+const DIV    = "div";
+
+
+const IDX_LINEAR = 0;
+const IDX_EASY   = 1;
+const IDX_USER   = 2;
 //==============================================================================
 // loadSteps() called by easings.loadIt()
 function loadSteps() {
-    let elm, i, str;
-    Ez.readOnly(elms, "divsSteps", document.getElementsByClassName("div-steps"));
-    addEventToElms(CHANGE, document.getElementsByClassName("steps"), changeSteps);
+    let i, sel, str;
+    STEPS = Easy.type[E.steps]; // must wait for PFactory.init() to run
 
-    elm = elms.steps;
+    const divs = document.getElementsByClassName(`${DIV}-${STEPS}`);
+    Ez.readOnly(elms, toCamel(`${DIV}s`, STEPS), divs);
+
+    sel = elms.steps;
     for (i = 1; i <= 30; i++)
-        elm.add(new Option(i));
+        sel.add(new Option(i));
 
-    elm = elms.jump;
+    sel = elms.jump;
     for (str of Easy.jump)
-        elm.add(new Option(str, E[str]));
+        sel.add(new Option(str, E[str]));
 }
-function changeSteps(evt) { // #steps, #jump, #values, #timing, #v0-3, #t0-3,
-    const tar = evt.target; // #easeValues, #easeTiming
+function loadVT() { // called exclusively by getEasies() during page load
+    let arr, clone, div, elm, i, isT, lbl, sel, selNamed;
+    let divUser = elms[toCamel(USER, STEPS)].firstElementChild;
+
+    const cfg = [[VALUES, 0 - 100,  MILLI + 100,  MILLI / COUNT, "1"],
+                 [TIMING, 0, 2, elms.time.valueAsNumber / COUNT, ".001"]];
+
+    for (let [id, min, max, val, step] of cfg) {
+        div = elms[toCamel(DIV, id)];        // divValues, divTiming
+        lbl = document.createElement("label");
+        lbl.htmlFor = id;
+        lbl.textContent = `${initialCap(id)}:`;
+
+        sel = document.createElement(SELECT);
+        sel.className = STEPS;
+        sel.add(new Option("linear"));
+        sel.add(new Option("easing"));
+        sel.id   = id;
+        elms[id] = sel;
+
+        isT = (id == TIMING);
+        if (isT)
+            id = divUser.firstElementChild.textContent.slice(0, -1); //strip ':'
+        sel.add(new Option(id));
+
+        selNamed = selNamed?.cloneNode(true) // only non-steps Easys: false
+                ?? getNamed(document.createElement(SELECT), false);
+
+        selNamed.className = `${STEPS} named ml1-2`;
+
+        div.appendChild(lbl);
+        div.appendChild(sel);
+        div.appendChild(selNamed);
+        Ez.readOnly(sel, OTHER, [selNamed, divUser]);
+
+        elm = divUser.lastElementChild;      // userValues, userTiming
+        arr = [elm];
+        for (i = 1; i < COUNT; i++) {
+            clone = elm.cloneNode(true);
+            divUser.appendChild(clone);
+            arr.push(clone);
+        }
+        if (isT)
+            arr = arr.map(e => e.firstElementChild);
+
+        i = 1;
+        for (elm of arr) {                   // arr = [<input type="number">]
+            elm.min   = min;
+            elm.max   = max;
+            elm.step  = step;
+            elm.value = (val * i++).toFixed(step.length - 1);
+        }
+        elms[toCamel(USER, id)] = arr;
+        divUser = divUser.nextElementSibling;
+    }
+    addEventToElms(CHANGE, document.getElementsByClassName(STEPS), changeSteps);
+}
+function changeSteps(evt) { // #steps, #jump, #values, #timing,
+    const tar = evt.target; // #values/timing.other[0], elms.userValues/Timing
     if (tar === elms.values || tar === elms.timing)
         updateVT();
     redraw(tar, 0, false, true, isOutOfBounds());
@@ -40,27 +106,32 @@ function changeSteps(evt) { // #steps, #jump, #values, #timing, #v0-3, #t0-3,
 //==============================================================================
 // stepsFromLocal() called exclusively by formFromObj()
 function stepsFromLocal(obj) {
-    let val = obj.steps;
-    if (Is.A(val))
-        vtArray(val, elms[VALUES]);
-    else if (val)
-        elms.steps.value = val;
-    else // if (obj.easy)
-        vtEasy(val, elms[VALUES]);
+    let val, sel;
+    elms[STEPS].value = obj[STEPS];
 
-    val = obj[TIMING];
-    if (Is.A(val))
-        vtArray(val, elms[TIMING]);
-    else if (val)
-        vtEasy(val, elms[TIMING]);
-
+    for (const [s, vt, e] of [[STEPS, VALUES, EASY],[TIMING, TIMING, TIMING]]) {
+        val = obj[s];
+        sel = elms[vt];
+        if (Is.A(val)) {
+            const inputs  = elms[toCamel(USER, sel.id)];
+            const divisor = getDF(sel);
+            for (var i = 0; i < COUNT; i++)
+                formatInputNumber(inputs[i], val[i] / divisor);
+            sel.selectedIndex = IDX_USER;
+        }
+        else if (obj[e]) {
+            sel[OTHER][0].value = val;
+            sel.selectedIndex = IDX_EASY;
+        }
+        else
+            sel.selectedIndex = IDX_LINEAR;
+    }
     if (Is.def(obj.jump))
         elms.jump.value = obj.jump;
 
     updateVT();
     g.type = E.steps;
     g.io   = E.in;
-    return obj;
 }
 // stepsFromForm() called exclusively objFromForm()
 function stepsFromForm(obj) {
@@ -82,9 +153,8 @@ function stepsFromForm(obj) {
 //==============================================================================
 // updateVT() called by stepsFromLocal(), redraw(), updateAll()
 function updateVT() {
-    let elm, sel;
-    const notT  = !isUserVT(elms[TIMING].value);
-    const notVT = notT && !isUserVT(elms[VALUES].value);
+    const notT  = !isUserVT(elms[TIMING]);
+    const notVT = notT && !isUserVT(elms[VALUES]);
 
     P.displayed(elms.steps,  notVT);
     P.displayed(elms.count, !notVT);
@@ -94,47 +164,38 @@ function updateVT() {
     if (notVT && !elms.steps.selectedIndex && !elms.jump.selectedIndex)
         elms.steps.selectedIndex = 1; // {steps:1, jump:E.none} is not valid
 
-    for (sel of [elms[VALUES], elms[TIMING]])
-        for (elm of sel.other)
-            P.visible(elm, elm.id == sel.value);
+    let id, idx, sel;
+    for (id of [VALUES, TIMING]) {
+        sel = elms[id];
+        idx = sel.selectedIndex - 1;
+        sel[OTHER].forEach((elm, i) => P.visible(elm, i == idx));
+    }
 }
 // isUserVT() called by updateVT(), vtFromElm()
-function isUserVT(val) {
-    return val.startsWith("u");
-}
-// vtArray() helps stepsFromLocal()
-function vtArray(val, elm) {
-    const char    = elm.id[0]
-    const divisor = (char == "t") ? MILLI : 1;
-
-    elm.value = twoToCamel(USER, elm.id);
-    for (var i = 0; i < COUNT; i++)
-        formatInputNumber(elms[char + i], val[i] / divisor);
-}
-// vtEasy() helps stepsFromLocal()
-function vtEasy(val, elm) {
-    const name = twoToCamel(EASY, elm.id);
-    elm.value  = name;
-    elms[name].value = val;
+function isUserVT(sel) {
+    return sel.selectedIndex = IDX_USER;
 }
 // vtFromElm() called by stepsFromForm(), isOutOfBounds()
-function vtFromElm(elm, useName) {
-    let v;
-    const val    = elm.value;
-    const char   = elm.id[0];
-    const factor = (char == "t") ? MILLI : 1;
-
-    if (isUserVT(val)) { // userValues or userTiming
-        v = [];
+function vtFromElm(sel, useName) {
+    let vt;
+    if (isUserVT(sel)) { // userValues or userTiming
+        const inputs = elms[toCamel(USER, sel.id)];
+        const factor = getDF(sel);
+        vt = new Array(COUNT);
         for (let i = 0; i < COUNT; i++)
-            v.push(elms[char + i].valueAsNumber * factor);
+            vt[i] = inputs[i].valueAsNumber * factor;
     }
-    else if (val) {      // easyValues or easyTiming
-        const name = elm.other[0].value;
+    else if (sel.selectedIndex == IDX_EASY) { // easyValues or easyTiming
+        const name = sel[OTHER][0].value;
         if (name)        // in case .selectedIndex == -1
-            v = useName ? name : getNamedEasy(name);
+            vt = useName ? name : getNamedEasy(name);
+        else
+            ;            //!!
     }
-    return v;            // else linear: v is undefined
+    return vt;            // else linear: vt is undefined
+}
+function getDF(sel) { // divisor or factor
+    return (sel.id == VALUES) ? 1 : MILLI;
 }
 //==============================================================================
 // drawSteps() helps drawLine()

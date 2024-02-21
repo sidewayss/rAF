@@ -1,21 +1,21 @@
 // export everything
 export {loadIt, getEasies, initEasies, updateAll, getMsecs, resizeWindow};
 
-import {U, P, Pn, Ez, Easies} from "../../raf.js";
+import {E, U, P, Pn, Ez, Ease, Easy, Easies} from "../../raf.js";
 
-import {ezX, raf}           from "../load.js";
-import {inputX, updateTime} from "../update.js";
-import {getNamed, getLocal} from "../local-storage.js";
-import {LENGTH, elms, g, twoToCamel, isTag, errorAlert}
-                            from "../common.js";
-import {redraw}                                          from "./_update.js";
-import {OTHER, updateEzXY, trip}                         from "./index.js";
-import {chart, range, loadChart}                         from "./chart.js";
-import {loadTIOPow, setLink, updateTypeIO}               from "./tio-pow.js";
-import {loadMSG, updateMidSplit, updateSplitGap}         from "./msg.js";
-import {VALUES, TIMING, EASY, USER, loadSteps, updateVT} from "./steps.js";
-import {loadEvents, inputTime, changePlays, changeLoopByElm, changeReset,
-        changeZero}                                      from "./events.js";
+import {ezX, raf}                           from "../load.js";
+import {inputX, updateTime}                 from "../update.js";
+import {getLocal}                           from "../local-storage.js";
+import {LENGTH, elms, g, isTag, errorAlert} from "../common.js";
+
+import {redraw}                                  from "./_update.js";
+import {updateEzXY, trip}                        from "./index.js";
+import {chart, range, loadChart}                 from "./chart.js";
+import {loadTIOPow, setLink, updateTypeIO}       from "./tio-pow.js";
+import {loadMSG, updateMidSplit, updateSplitGap} from "./msg.js";
+import {loadSteps, loadVT, updateVT}             from "./steps.js";
+import {loadEvents, inputTime, changeLoopByElm,
+        changePlays, changeReset, changeZero}    from "./events.js";
 //==============================================================================
 // loadIt() is called by loadCommon()
 function loadIt(byTag, hasVisited) {
@@ -49,8 +49,8 @@ function loadIt(byTag, hasVisited) {
     for (i = 0; i <= 5; i++)
         elm.add(new Option((i / 10).toFixed(1) + U.seconds, i * 100));
 
-    const id  = "tripWait";             // tripWait is a clone of loopWait
-    const div = elms.autoTrip.nextElementSibling;
+    let id  = "tripWait";               // tripWait is a clone of loopWait
+    let div = elms.autoTrip.nextElementSibling;
 
     clone = elm.labels[0].cloneNode(true);
     clone.htmlFor = id;
@@ -65,6 +65,35 @@ function loadIt(byTag, hasVisited) {
     const checks = byTag.at(-1);        // <check-box>s
     Ez.readOnly(g, "trips", checks.filter(e => e.id.endsWith("Trip")));
     g.trips.push(clone);                // <select> = tripWait = clone
+
+    id  = Easy.type[E.bezier];
+    div = elms[id];                     // clone/create bezier inputs
+    elm = div.firstElementChild;        // elm is <div> wrapper for <input>
+    const lpar = elm.removeChild(elm.firstElementChild);
+    const rpar = elm.removeChild(elm.lastElementChild);
+    const size = 4;
+    elms.beziers = [elm];
+    for (i = 1; i < size; i++)
+        elms.beziers.push(div.appendChild(elm.cloneNode(true)));
+
+    const ease = Ease.ease[0][id];      // default CSS "ease" as bezier array
+    for (i = 0; i < size; i++) {        // elm is the <input>
+        elm = elms.beziers[i].lastElementChild;
+        elm.value = ease[i];
+        elm.id    = id + i;             // bezier0 - bezier3
+        if (i % 2) {                    // y values can be out of bounds
+            elm.min ="-0.9";
+            elm.max = "1.9";
+        }
+        else {
+            elm.min = "0";
+            elm.max = "1";
+        }
+    }
+    elm = elms.beziers[0];
+    elm.removeChild(elm.firstElementChild);         // leading comma
+    elm.insertBefore(lpar, elm.firstElementChild);  // leading parenthesis
+    elms.beziers[3].appendChild(rpar);              // trailing parenthesis
 
     loadEvents(checks);
     loadTIOPow();       // type, io, pow, clones #type to create #type2
@@ -83,16 +112,7 @@ function loadIt(byTag, hasVisited) {
 }
 //==============================================================================
 function getEasies() {
-    const EV = twoToCamel(EASY, VALUES);
-    const ET = twoToCamel(EASY, TIMING);
-    getNamed(elms[EV], false);            // only non-steps Easys
-    const sel = elms[EV].cloneNode(true);
-
-    sel.id   = ET;
-    elms[ET] = sel;
-    elms[TIMING].parentNode.appendChild(sel);
-    Ez.readOnly(elms[VALUES], OTHER, [elms[EV], elms[twoToCamel(USER, VALUES)]]);
-    Ez.readOnly(elms[TIMING], OTHER, [elms[ET], elms[twoToCamel(USER, TIMING)]]);
+    loadVT();  // it's all related to E.steps, so the code is in steps.js
 }
 function initEasies(obj) {
     try {
@@ -145,7 +165,6 @@ function resizeWindow() {                 // margin changes w/zoom
                                     : Math.floor(availableW); //*02
     chart.svg.style.width  = n + U.px;
     range.svg.style.height = n + U.px;
-    elms.left.firstElementChild.style.width = elms.sidebar.offsetWidth + U.px;
 
     // Center #copied in the available space
     n  = elms.code.offsetLeft + elms.code.offsetWidth;
@@ -155,8 +174,9 @@ function resizeWindow() {                 // margin changes w/zoom
 
     // Set diptych left's width for better vertical alignment
     elms.left.firstElementChild.style.width =
-        Math.round((chart.svg.clientWidth / 2)
-                 + elms.sidebar.parentNode.clientWidth
-                 - parseFloat(getComputedStyle(elms.left).paddingRight)
-                  ) + U.px;
+        Math.round(
+            (chart.svg.clientWidth / 2)
+          + elms.sidebar.offsetWidth
+          - parseFloat(getComputedStyle(elms.left).paddingRight)
+        ) + U.px;
 }

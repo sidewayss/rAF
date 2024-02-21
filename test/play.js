@@ -8,7 +8,7 @@ import {updateSidebar, updateTime, setDuration, setFrames}
 import {MILLI, ZERO, ONE, TWO, LITE, CHANGE, elms, g, toggleClass, errorAlert}
                   from "./common.js";
 
-let ns; // _update.js namespace: redraw, flipZero (easings), formatClip (multi)
+let ns; // _update.js namespace: redraw, formatPlay, flipZero (easings)
 //==============================================================================
 // -- Button States --
 // initial: PLAY   STOP  = stop disabled
@@ -35,8 +35,8 @@ function changePlay() {
         formatPlay(true);
         disablePlay(true);
         if (elms.play.value == PLAY) {
-            g.frame = 0;            // play it, formatClip() is multi only
-            ns.formatClip?.(true, false)
+            g.frame = 0;            // play it
+            ns.formatPlayback(true);
         }
         raf.play().then(sts => {    // ...some time later:
             resetPlay();
@@ -80,8 +80,8 @@ function changeStop(evt) {  // <= pseudoAnimate(), openNamed(), changeCheck(),
     elms.x.value = 0;               // reset everything to zero
     elms.stop.value = STOP;
     elms.stop.disabled = true;
-    elms.play.disabled = false;     // formatClip is multi only:
-    ns.formatClip?.(evt, true) ?? formatSidebar(false);
+    elms.play.disabled = false;
+    ns.formatPlayback(false, Boolean(evt));
     if (!raf.atOrigin)              //!!loading page yes, but loading named too??
         updateSidebar(0);
 }
@@ -90,23 +90,15 @@ function changeStop(evt) {  // <= pseudoAnimate(), openNamed(), changeCheck(),
 function resetPlay() {
     formatPlay(false);
     disablePlay(false);
-    toggleClass(elms.mid, LITE[0], false);
     elms.play.value = PLAY;
+    if (elms.mid)           // easings only
+        toggleClass(elms.mid, LITE[0], false);
 }
 // formatPlay() helps changePlay(), changeStop() via resetPlay()
 function formatPlay(isPlaying) { // isPlaying is true or false, never undefined
     const lite = LITE[1];        // "hi"
     for (var elm of g.playback)  // [#play, #stop]
         toggleClass(elm, lite, isPlaying);
-    if (!ns.formatClip)           // easings only
-        formatSidebar(isPlaying);
-}
-// formatSidebar() helps changeStop(), formatPlay()
-function formatSidebar(isPlaying) {
-    let arr, elm, lite;
-    for ([arr, lite] of [[g.sideElms, LITE[0]], [g.sideLbls, LITE[1]]])
-        for (elm of arr)
-            toggleClass(elm, lite, isPlaying);
 }
 // disablePlay() helps changePlay(), changeStop() via resetPlay()
 //               .enabled is an unauthorized extension of HTMLButtonElement

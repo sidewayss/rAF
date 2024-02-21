@@ -1,17 +1,16 @@
 // export everything but changeColor, all functions
-export {clipDist, clipEnd, clipStart,
+export {clipDist, clipEnd, clipStart, measer,
         loadIt, getEasies, initEasies, updateAll, getMsecs, resizeWindow};
-let clipDist, clipEnd, clipStart;
+let clipDist, clipEnd, clipStart, measer;
 
-import {E, U, Is, P, Easies} from "../../raf.js";
+import {F, U, Is, Easies} from "../../raf.js";
 
-import {setTime}                      from "../load.js";
-import {updateTime, setDuration}      from "../update.js";
-import {DEFAULT_NAME}                 from "../named.js";
-import {ezCopy}                       from "../copy.js";
-import {getNamed, getNamedEasy, getLocal, setLocal}
-                                      from "../local-storage.js";
-import {COUNT, ZERO, CHANGE, elms, g} from "../common.js";
+import {ezX, raf, setTime}       from "../load.js";
+import {updateTime, setDuration} from "../update.js";
+import {DEFAULT_NAME}            from "../named.js";
+import {changeStop}              from "../play.js";
+import {getNamed, getNamedEasy, getLocal, setLocal} from "../local-storage.js";
+import {COUNT, ZERO, CHANGE, EASY_, elms, g, errorAlert} from "../common.js";
 
 import {redraw}                          from "./_update.js";
 import {loadEvents}                      from "./events.js";
@@ -20,13 +19,12 @@ import {MASK_X, clip, easys, meFromForm} from "./index.js";
 // loadIt() is called by loadCommon()
 function loadIt() {
     let elm, opt, val;
-
     g.notLoopWait = new Array(COUNT);
     g.notTripWait = new Array(COUNT);
 
     opt = new Option(DEFAULT_NAME, DEFAULT_NAME, true, true);
     opt.innerHTML = "&mdash;";   // must be set this way
-    elms.play0.add(opt, elms.play0.firstElementChild);
+    elms.plays0.add(opt, elms.plays0.firstElementChild);
 
     for (elm of [elms.color0, elms.color1]) {
         elm.addEventListener(CHANGE, changeColor, false);
@@ -35,11 +33,10 @@ function loadIt() {
             elm.value = val;
     }
     elms.copy = elms.data.previousElementSibling; // Copy: label
-    elms.clip.opacity = [getComputedStyle(elms.clip).opacity, 1]; // unauthorized
+    elms.clip.opacity = [1, getComputedStyle(elms.clip).opacity]; // unauthorized
     elms.ucvDivs = [];
     changeColor();
 
-    ezCopy.newTarget({elm:elms.copy, prop:P.o, eKey:E.comp});
     for (const m of [0, 30, 1, 3])  // x-axis = even, y-axis = odd
         clip[m] = 0;                // the zero values in clip never change
 }
@@ -54,7 +51,7 @@ function changeColor(evt) { // not exported, helps loadIt()
 // getEasies() populates easy0 <select> and clones its <div>, <= loadJSON()
 function getEasies(hasVisited) {
     let clone, elm, i, id, j, tag;
-    const TAGS = ["select","button","use","span"];
+    const TAGS = ["select","button","span","check-tri"];
     const src = elms.template;          // source container element for cloning
     const sib = src.nextElementSibling; // second arg to insertBefore()
     const par = src.parentNode;         // for par.insertBefore(clone, sib)
@@ -108,14 +105,13 @@ function initEasies() {
 //==============================================================================
 // updateAll() called by loadFinally(), openNamed()
 function updateAll(isLoading) {
-    if (isLoading)
-        changeStop();
-    else
-        setTime();  // load.js:setTime() calls getMsecs() below
-
+    if (!isLoading)
+        setTime();    // load.js:setTime() calls this module's getMsecs()
     updateTime();
     setDuration();
     redraw();
+    if (isLoading)
+        changeStop(); // must follow redraw or no points set
 }
 // getMsecs() returns the current duration in milliseconds
 function getMsecs() {

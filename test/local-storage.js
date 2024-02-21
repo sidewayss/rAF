@@ -4,8 +4,9 @@ export {getNamed, getNamedEasy, getLocalNamed, getLocal, setLocal, setNamed,
 
 import {E, Is, Easy} from "../raf.js";
 
-import {DEFAULT_NAME, ns, preClass, preDoc, presets} from "./named.js";
-import {EASY_, elms, g, boolToString}                from "./common.js";
+import {DEFAULT_NAME, ns, preClass, preDoc, presets, disableSave}
+                                                  from "./named.js";
+import {EASY_, elms, g, boolToString, errorAlert} from "./common.js";
 
 import {isSteps} from "./easings/steps.js";
 //==============================================================================
@@ -33,15 +34,18 @@ function getNamed(sel = elms.named, isStp = isSteps(), pre = preClass) {
 
     const opt = sel.options[0];
     if (opt.value == DEFAULT_NAME) {
+        opt.value = DEFAULT_NAME;
         opt.textContent     = "default";
         opt.style.fontStyle = "italic";
     }
+    return sel;
 }
 // getNamedEasy() called by multi getEasies(), setEasy(), steps vtFromElm()
 function getNamedEasy(name) {
     let ez
     try {
-        ez = new Easy(JSON.parse(localStorage.getItem(EASY_ + name)));
+        ez = new Easy(g.presets[EASY_][name]
+                   ?? JSON.parse(localStorage.getItem(EASY_ + name)));
     } catch(err) {
         errorAlert(err);
     }

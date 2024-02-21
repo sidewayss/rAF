@@ -11,6 +11,7 @@ export const PLAYS  = "plays";
 export const CHANGE = "change"; // event names
 export const CLICK  = "click";
 export const INPUT  = "input";
+export const SELECT = "select";
 export const EASY_  = "Easy-";  // localStorage
 
 export const LITE   = ["lo","hi"];
@@ -46,14 +47,14 @@ export function addEventsByElm(evt, elms, obj, noDigits) {
 export function initialCap(str) {
     return str[0].toUpperCase() + str.slice(1)
 }
-export function twoToCamel(one, two) {
-    return one + initialCap(two)
+export function toCamel(...strings) {
+    return strings.reduce((acc, cur) => acc + initialCap(cur));
 }
 export function camelCase(str) {
     return str.replace(/-(.)/g, chars => chars[1].toUpperCase());
 }
 export function toFunc(prefix, name, obj = window) { // returns a function
-    return obj[twoToCamel(prefix, name)];
+    return obj[toCamel(prefix, name)];
 }
 export function boolToString(b) { // for localStorage and <button>.value
     return b ? "true" : "";
@@ -112,7 +113,7 @@ export function errorLog(err, msg) {
 }
 // errorMessage() consolidates code for errorAlert(), errorLog(), not exported
 function errorMessage(err, msg) { // Error.prototype.stack not 100% supported
-    return `${msg ? msg + ":\n" : ""}${err}\n${err.stack ?? ""}`;
+    return `${msg ? msg + ":\n" : ""}${err.stack ?? err}`;
 }
 //====== miscellaneous =========================================================
 // toggleClass() adds or removes a class from classList, optionally toggling

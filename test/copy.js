@@ -1,5 +1,4 @@
-export {ezCopy, loadCopy};
-let ezCopy;
+export {loadCopy};
 
 import {E, P, Easy, Easies, AFrame} from "../raf.js";
 
@@ -11,7 +10,7 @@ import {TYPE, IO}              from "./easings/tio-pow.js"; // instead of
 import {TIMING, EASY, isSteps} from "./easings/steps.js";   // import(_copy.js)
 import {meFromForm}            from "./multi/index.js";      //
 
-let isMulti, ns, rafCopy; // ns imports objFromForm via _named.js
+let ezCopy, isMulti, ns, rafCopy; // ns imports objFromForm via _named.js
 //==============================================================================
 function loadCopy(b, _named) {
     isMulti = b;
@@ -22,12 +21,16 @@ function loadCopy(b, _named) {
                 roundTrip:true, autoTrip:true, tripWait:250
             });
     ezCopy.newTarget({elm:elms.copied, prop:P.o});
+    if (isMulti)
+        ezCopy.newTarget({elm:elms.copy, prop:P.o, eKey:E.comp});
+
     rafCopy = new AFrame(new Easies([ezCopy]));
 }
 //==============================================================================
 // handlers includes both the easings and multi code because that code shares
 // variables and helper functions which reside here. Not a bad thing to have all
-// this code in one place, and it's not much code in total.
+// this code in one place, and it's not much code in total, including isMulti as
+// a module-level variable.
 const handlers = {
     clickCode() {   // copies JavaScript code that creates the current animation
         let i, p, txt;
@@ -36,7 +39,7 @@ const handlers = {
             const set  = new Set;
             const vars = obj.names.map(nm => {
                 if (!nm)        // DEFAULT_NAME = ""
-                    nm =  EASY; // it must have a variable name
+                    nm =  EASY; // the variable must have a name
                 i   = 2;
                 txt = nm;       // user can select the same name in every <select>
                 while (set.has(nm))
@@ -60,7 +63,7 @@ const handlers = {
                         (_, v) => `${p}:${E.prefix}${Easy[p][v]},`
                     );
 
-            txt = `const ez = new Easy(${txt});\n`; // insert Easy declaration(s)
+            txt = `const ${EASY} = new Easy(${txt});\n`;
             if (isSteps())
                 for (p of [TIMING, EASY])
                     if (txt.includes(p))

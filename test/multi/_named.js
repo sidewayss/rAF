@@ -1,6 +1,7 @@
 // export: everything via import(), explicit: objFromForm, all functions
 export {formFromObj, objFromForm, updateNamed};
 
+import {setTime}      from "../load.js";
 import {DEFAULT_NAME} from "../named.js";
 import {COUNT, elms}  from "../common.js";
 
@@ -16,7 +17,8 @@ import {OVERRIDES}  from "./index.js";
 // formFromObj() <= loadFinally(), openNamed()
 function formFromObj(obj) {
     for (var i = 0; i < COUNT; i++)
-        setEasy(i, obj.names[i], obj); // update the form controls, layout
+        setEasy(i, (elms.easy[i].value = obj.names[i]), obj);
+    setTime();
     return obj;
 }
 // objFromForm() <= loadFinally(), storeCurrent(), clickCode(), meFromForm()

@@ -1,13 +1,13 @@
 // export everything, all functions
-export {redraw, getPoint, vucPoint, pointZero, flipZero, updateX, setSidebar,
-        formatDuration};
+export {redraw, getPoint, pointZero, updateX, setSidebar, formatDuration,
+        formatPlayback, vucPoint, flipZero};
 
 import {E, U, P, Easy} from "../../raf.js";
 
-import {ezX}                                 from "../load.js";
-import {points, inputX, pseudoAnimate}       from "../update.js";
-import {storeCurrent}                        from "../local-storage.js";
-import {MILLI, COUNT, elms, g, formatNumber} from "../common.js";
+import {ezX}                           from "../load.js";
+import {points, inputX, pseudoAnimate} from "../update.js";
+import {storeCurrent}                  from "../local-storage.js";
+import {MILLI, COUNT, LITE, elms, g, formatNumber, toggleClass} from "../common.js";
 
 import {drawLine}                       from "./events.js";
 import {isSteps}                        from "./steps.js";
@@ -26,8 +26,8 @@ function redraw(tar, n, has2 = twoLegs(),
             obj = newEzY();
             if (!obj) {
                 switch (tar) {  // newEzY() failed:
-                case elms.values: case elms.easyValues: // easy type = E.steps or
-                case elms.timing: case elms.easyTiming: // easy changes direction
+                case elms.values: case elms.values.other[0]: // easy type = E.steps or
+                case elms.timing: case elms.timing.other[0]: // easy changes direction
                     elms.easyTiming.selectedIndex = 0;  // time only goes up
                     break;
                 case elms.steps: case elms.jump:        // {steps:1, jump:E.none}
@@ -121,4 +121,11 @@ function setSidebar(p, d, pad) {
 }
 function formatDuration(val, d) {
     return val.toFixed(val < 10 ? d : d - 1) + U.seconds;
+}
+// formatPlayback() helps changeStop(), formatPlay()
+function formatPlayback(isPlaying) {
+    let arr, elm, lite;
+    for ([arr, lite] of [[g.sideElms, LITE[0]], [g.sideLbls, LITE[1]]])
+        for (elm of arr)
+            toggleClass(elm, lite, isPlaying);
 }

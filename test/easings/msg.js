@@ -1,45 +1,73 @@
 // #mid, #split, #gap are all <input type="number">
 // export everything but LOCK, LOCKED, handlers, changeMSG
-export {loadMSG, updateMidSplit, midSplitGap, updateSplitGap, setSplitGap};
+export {MSG, loadMSG, updateMidSplit, disableClear, updateSplitGap, setSplitGap};
+const MSG = ["mid","split","gap"];
 
-import {Is, Ez, P} from "../../raf.js";
+import {Ez, P, U} from "../../raf.js";
 
 import {msecs, secs} from "../load.js";
 import {MILLI, CLICK, INPUT, CHANGE, elms, g, addEventToElms, addEventsByElm,
         addEventByClass, formatInputNumber, changeNumber, toggleClass,
-        initialCap, twoToCamel, toFunc} from "../common.js";
+        initialCap, toCamel, toFunc, isTag} from "../common.js";
 
 import {redraw}          from "./_update.js";
 import {chart}           from "./chart.js";
 import {isSteps}         from "./steps.js";
 import {OTHER, isBezier} from "./index.js";
 
+let sgInputs;
 const LOCK   = "lock";
 const LOCKED = "locked"
+const locks  = ["lock_open", LOCK]; // boolean acts as index
 //==============================================================================
 // loadMSG() is called by easings.loadIt(), once per session
 function loadMSG() {
-    let arr, elm, elm2, prop;
+    let elm, id, key, obj, val;
     const CLEAR = "clear";
-    const MSG   = [elms.mid, elms.split, elms.gap]
 
-    Ez.readOnly(g, "locks", ["lock_open", LOCK]); // boolean acts as index
+    elm = elms.clearMid;
+    Ez.readOnly(elm, OTHER, elms.mid);
+    Ez.readOnly(elms.mid, CLEAR, elm);
 
-    for ([prop, arr] of [[CLEAR, MSG], [LOCK, MSG.slice(1)]]) {
-        for (elm of arr) {
-            elm2 = elms[twoToCamel(prop, elm.id)];
-            Ez.readOnly(elm,  prop,  elm2);
-            Ez.readOnly(elm2, OTHER, elm); // lock.other is unused!!
+    const div    = elms.divSplit;
+    const divGap = toCamel("div", MSG[2]);
+    div.id = "";
+    elms[divGap] = div.cloneNode(true);
+    elms.divGap.style.marginTop = "1" + U.px;
+
+    for (id of MSG.slice(1)) {  // split, gap
+        obj = {};
+        for (elm of elms[toCamel("div", id)].children) {
+            if (isTag(elm, INPUT)) {
+                elm.id   = id;
+                elms[id] = elm;
+                Ez.readOnly(obj[CLEAR], OTHER, elm);
+                for ([key, val] of Object.entries(obj))
+                    Ez.readOnly(elm, key, val);
+            }
+            else if (isTag(elm, "label")) {
+                elm.htmlFor = id;
+                if (!elm.textContent)                    // 5 = "split".length
+                    elm.innerHTML = initialCap(id).padStart(5) + ":";
+            }
+            else    // <button>s precede <input> in html, so they're saved here
+                obj[elm.className] = elm;
         }
     }
-    elms.mid  .default = () => MILLI  / 2; // constant
-    elms.split.default = () => secs / 2; // variable
-    elms.gap  .default = () => 0;          // constant
+    formatInputNumber(elms.split, elms.time.valueAsNumber / 2);
+    formatInputNumber(elms.gap, 0);
+    div.parentNode.insertBefore(elms[divGap], div.nextElementSibling);
 
-    addEventByClass(CLICK,  CLEAR, null,      handlers);
-    addEventByClass(CLICK,  LOCK,  null,      handlers);
-    addEventsByElm (INPUT,  MSG.slice(0, -1), handlers);
-    addEventToElms (CHANGE, MSG, changeMSG);
+    elms.mid  .default = () => MILLI / 2;   // constant
+    elms.split.default = () => secs  / 2;   // variable
+    elms.gap  .default = () => 0;           // constant
+
+    const msgInputs = MSG.map(v => elms[v]);
+    sgInputs = msgInputs.slice(1);
+    addEventByClass(CLICK,  CLEAR, null, handlers);
+    addEventByClass(CLICK,  LOCK,  null, handlers);
+    addEventsByElm (INPUT,  msgInputs.slice(0, -1), handlers); // mid, split
+    addEventToElms (CHANGE, msgInputs, changeMSG);
 }
 const handlers = {
 //  inputMid()   input event handler for #mid, <= updateMidSplit()
@@ -56,12 +84,11 @@ const handlers = {
     },
 //  clickClear() click event handler for #clearMid, #clearSplit, #clearGap
     clickClear(evt) {
-        const elm = evt.target.other; // #mid, #split, or #gap
-        const id  = elm.id;
+        const elm = evt.target[OTHER]; // #mid, #split, or #gap
         const n   = elm.default();
-        formatInputNumber(elm, n);    // toFunc() = inputMid() or inputSplit()
-        toFunc(INPUT, initialCap(id), handlers)?.();
-        midSplitGap(elm, n, false, id);
+        formatInputNumber(elm, n);     // toFunc() = inputMid() or inputSplit()
+        toFunc(INPUT, initialCap(elm.id), handlers)?.();
+        disableClear(elm, n, false);
         redraw(elm, 0, true);
     },
 //  clickLock()  click event handler for #lockSplit, #lockGap
@@ -69,7 +96,7 @@ const handlers = {
         const tar = evt.target;
         const b   = isUnlocked(tar);
         toggleClass(tar, LOCKED, b);
-        tar.textContent = g.locks[Number(b)];
+        tar.textContent = locks[Number(b)];
     }
 };
 // changeMSG()  change event handler for #mid, #split, #gap
@@ -77,29 +104,28 @@ function changeMSG(evt) {   // outside of handlers for convenience
     const tar = evt.target;
     const n   = changeNumber(tar);
     if (n !== null) {
-        midSplitGap(tar, n, true, tar.id);
+        disableClear(tar, n, true);
         redraw(tar, 0, true);
     }
 }
 //==============================================================================
-// updateMidSplit() makes exporting these two easier, called by updateAll()
+// updateMidSplit() makes exporting this pair easier, called by updateAll()
 function updateMidSplit() {
     handlers.inputMid();
     handlers.inputSplit();
 }
-// midSplitGap() helps changeMSG() and clickClear(), also called by
+// disableClear() helps changeMSG() and clickClear(), also called by
 //               easingFromLocal(), returns a factor/divisor.
-function midSplitGap(elm, n, isDef, id) {
+function disableClear(elm, n, isDef) {
     elm.clear.disabled = !isDef || n == elm.default();
     elm.clear.enabled  = !elm.clear.disabled;
-    return id.endsWith("d") ? 1 : MILLI;    // "mid" ends with "d"
 }
 // updateSplitGap() is called by updateAll() and changeTime()
 function updateSplitGap() {
     elms.split.max = Math.max(secs - 0.1, 0);
     elms.gap  .max = Math.max(secs - elms.split.valueAsNumber - 0.1, 0);
 
-    for (const elm  of [elms.split, elms.gap])
+    for (const elm of sgInputs)
         if (elm.valueAsNumber > elm.max)
             formatInputNumber(elm, elm.max);
 }
@@ -108,7 +134,7 @@ function updateSplitGap() {
 //               and inputTime().
 function setSplitGap(time = msecs) {
     if (!isBezier() && !isSteps())
-        for (const elm of [elms.split, elms.gap])
+        for (const elm of sgInputs)
             if (isUnlocked(elm.lock))
                 if (!elm.clear.disabled) {
                     if (time != msecs)       // scale value by time
