@@ -3,12 +3,12 @@ export {TIMING, EASY, loadSteps, loadVT, stepsFromLocal, stepsFromForm,
 
 import {E, Is, Ez, P, Easy} from "../../raf.js";
 
-import {points}                        from "../update.js";
-import {getNamed, getNamedEasy}        from "../local-storage.js";
-import {SELECT, MILLI, COUNT, CHANGE, elms, g, addEventToElms, toCamel,
-        formatInputNumber, initialCap} from "../common.js";
+import {frames}                 from "../update.js";
+import {getNamed, getNamedEasy} from "../local-storage.js";
+import {SELECT, MILLI, COUNT, CHANGE, elms, g, addEventToElms,
+        formatInputNumber}      from "../common.js";
 
-import {redraw}               from "./_update.js";
+import {refresh}              from "./_update.js";
 import {chart, isOutOfBounds} from "./chart.js";
 import {OTHER, pointToString} from "./index.js";
 
@@ -30,7 +30,7 @@ function loadSteps() {
     STEPS = Easy.type[E.steps]; // must wait for PFactory.init() to run
 
     const divs = document.getElementsByClassName(`${DIV}-${STEPS}`);
-    Ez.readOnly(elms, toCamel(`${DIV}s`, STEPS), divs);
+    Ez.readOnly(elms, Ez.toCamel(`${DIV}s`, STEPS), divs);
 
     sel = elms.steps;
     for (i = 1; i <= 30; i++)
@@ -42,16 +42,16 @@ function loadSteps() {
 }
 function loadVT() { // called exclusively by getEasies() during page load
     let arr, clone, div, elm, i, isT, lbl, sel, selNamed;
-    let divUser = elms[toCamel(USER, STEPS)].firstElementChild;
+    let divUser = elms[Ez.toCamel(USER, STEPS)].firstElementChild;
 
     const cfg = [[VALUES, 0 - 100,  MILLI + 100,  MILLI / COUNT, "1"],
                  [TIMING, 0, 2, elms.time.valueAsNumber / COUNT, ".001"]];
 
     for (let [id, min, max, val, step] of cfg) {
-        div = elms[toCamel(DIV, id)];        // divValues, divTiming
+        div = elms[Ez.toCamel(DIV, id)];     // divValues, divTiming
         lbl = document.createElement("label");
         lbl.htmlFor = id;
-        lbl.textContent = `${initialCap(id)}:`;
+        lbl.textContent = `${Ez.initialCap(id)}:`;
 
         sel = document.createElement(SELECT);
         sel.className = STEPS;
@@ -65,8 +65,8 @@ function loadVT() { // called exclusively by getEasies() during page load
             id = divUser.firstElementChild.textContent.slice(0, -1); //strip ':'
         sel.add(new Option(id));
 
-        selNamed = selNamed?.cloneNode(true) // only non-steps Easys: false
-                ?? getNamed(document.createElement(SELECT), false);
+        selNamed = selNamed?.cloneNode(true) // false = only non-steps Easys
+                ?? getNamed(document.createElement(SELECT), undefined, false);
 
         selNamed.className = `${STEPS} named ml1-2`;
 
@@ -92,7 +92,7 @@ function loadVT() { // called exclusively by getEasies() during page load
             elm.step  = step;
             elm.value = (val * i++).toFixed(step.length - 1);
         }
-        elms[toCamel(USER, id)] = arr;
+        elms[Ez.toCamel(USER, id)] = arr;
         divUser = divUser.nextElementSibling;
     }
     addEventToElms(CHANGE, document.getElementsByClassName(STEPS), changeSteps);
@@ -101,7 +101,7 @@ function changeSteps(evt) { // #steps, #jump, #values, #timing,
     const tar = evt.target; // #values/timing.other[0], elms.userValues/Timing
     if (tar === elms.values || tar === elms.timing)
         updateVT();
-    redraw(tar, 0, false, true, isOutOfBounds());
+    refresh(tar, 0, false, true, isOutOfBounds());
 }
 //==============================================================================
 // stepsFromLocal() called exclusively by formFromObj()
@@ -113,7 +113,7 @@ function stepsFromLocal(obj) {
         val = obj[s];
         sel = elms[vt];
         if (Is.A(val)) {
-            const inputs  = elms[toCamel(USER, sel.id)];
+            const inputs  = elms[Ez.toCamel(USER, sel.id)];
             const divisor = getDF(sel);
             for (var i = 0; i < COUNT; i++)
                 formatInputNumber(inputs[i], val[i] / divisor);
@@ -151,15 +151,14 @@ function stepsFromForm(obj) {
     return Object.assign(obj, {steps, jump, easy, timing});
 }
 //==============================================================================
-// updateVT() called by stepsFromLocal(), redraw(), updateAll()
+// updateVT() called by stepsFromLocal(), refresh(), updateAll()
 function updateVT() {
     const notT  = !isUserVT(elms[TIMING]);
     const notVT = notT && !isUserVT(elms[VALUES]);
 
     P.displayed(elms.steps,  notVT);
     P.displayed(elms.count, !notVT);
-    P.visible  (elms.steps,           notT);
-    P.visible  (elms.jump.parentNode, notT);
+    P.visible  ([elms.steps, elms.jump.parentNode], notT);
 
     if (notVT && !elms.steps.selectedIndex && !elms.jump.selectedIndex)
         elms.steps.selectedIndex = 1; // {steps:1, jump:E.none} is not valid
@@ -179,7 +178,7 @@ function isUserVT(sel) {
 function vtFromElm(sel, useName) {
     let vt;
     if (isUserVT(sel)) { // userValues or userTiming
-        const inputs = elms[toCamel(USER, sel.id)];
+        const inputs = elms[Ez.toCamel(USER, sel.id)];
         const factor = getDF(sel);
         vt = new Array(COUNT);
         for (let i = 0; i < COUNT; i++)
@@ -200,18 +199,18 @@ function getDF(sel) { // divisor or factor
 //==============================================================================
 // drawSteps() helps drawLine()
 function drawSteps() {
-    const str = new Array(points.length);
-    const max = points.length - 1;
-    points.forEach((p, i) => {
-        str[i] = `${pointToString(p.x, p.y)}`;
-        if (i < max && p.y != points[i + 1].y) {
-            str[i] += !i ? ` ${pointToString(p.x, points[i + 1].y)}`
-                         : ` ${pointToString(points[i + 1].x, p.y)}`;
+    const str = new Array(frames.length);
+    const max = frames.length - 1;
+    frames.forEach((frm, i) => {
+        str[i] = `${pointToString(frm.x, frm.y)}`;
+        if (i < max && frm.y != frames[i + 1].y) {
+            str[i] += !i ? ` ${pointToString(frm.x, frames[i + 1].y)}`
+                         : ` ${pointToString(frames[i + 1].x, frm.y)}`;
         }
     });
     P.points.set(chart.line, str.join(E.sp));
 }
 // isSteps() works for modules in "../" because multi g.type is undefined
-function isSteps(val = g.type) {    // val only defined by formFromObj()
+function isSteps(val = g.type) { // val only defined by formFromObj()
     return val == E.steps;
 }

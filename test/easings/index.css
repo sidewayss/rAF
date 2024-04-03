@@ -7,7 +7,7 @@ p.hi { font-weight:500; }
   position:relative;
   top:0.25rem;
 }
-.symButt {
+.symBtn {
   margin-left:var(--5-8ths);
 }
 #save, #revert {
@@ -28,6 +28,8 @@ p.hi { font-weight:500; }
 }
 
 /* for this page only */
+#time { width:16ch; }
+
 #mid {
   padding-top:0;
   margin-left:var(--5-8ths);
@@ -60,6 +62,45 @@ pre.secs {
 .secs:focus + label, #split:focus + label, #gap:focus + label {
   visibility:hidden;
 }
+
+/* <div> */
+#diptych {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  row-gap:0.5rem;
+}
+#triptych {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+}
+#left  {
+  display:flex;
+  justify-content:flex-end;
+  text-align:end;
+  padding-right:var(--5-8ths);
+}
+#right {
+  display:flex;
+  border-left:1px solid;
+}
+#sidebar {
+  padding:0.25rem 0.5rem;
+  margin:0.5rem 0;
+  border:1px solid #BBB;
+  border-radius:var(--5-16ths);
+  background-color:var(--sidebar-white);
+}
+#placeholder {
+  height:calc(1rem + var(--11-16ths)); /* .row height + 2px for borders?? */
+}
+#divCopy {
+  padding:0.75rem 0 0.5rem var(--3-16ths);
+  margin-top:var(--9-16ths);
+}
+#divSave {
+  padding:0.5rem 0 0.5rem calc(5ch + var(--3-8ths));
+}
+
 /* <button> */
 #clearMid {
   line-height:1.5rem;

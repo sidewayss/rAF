@@ -4,7 +4,7 @@ export {MEBase, MEaser, MEaserByElm};
 import {EBase} from "./easer.js";
 import {ECalc} from "./ecalc.js";
 
-import {Ez}    from "../ez.js";
+import {Ez}    from "../raf.js";
 
 class MEBase extends EBase { // M = multi E = Easer, the multi-ease base class
     #easies; #loopEasy;
@@ -67,7 +67,7 @@ class MEaser extends MEBase {        //\ Multi-ease Easer
         Object.seal(this);
     }
     _apply(val) {
-        console.log("val:", val);
+      //console.log("val:", val);
         val.forEach((v, i) => this.#calcs[i].calculate(v));
         this._set(); //!!no easy.e or collection thereof
     }

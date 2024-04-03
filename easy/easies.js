@@ -1,11 +1,10 @@
-import {Easy}   from "./easy.js";
 import {create} from "./efactory.js";
 import {MEBase} from "./measer.js";
 
-import {E, Ez} from "../raf.js";
+import {E, Ez, Easy} from "../raf.js";
 
 export class Easies {
-    #active; #byEasy; #byTarget; #easy2ME; #onArrival; #peri; #post;
+    #active; #byEasy; #byTarget; #easy2ME; #oneShot; #peri; #post;
     #easies; #targets;
 //  #easies, #targets are sets. It prevents duplicates and makes removing items
 //  easier. Easies implements iteration protocol for #easies and a few other
@@ -13,7 +12,6 @@ export class Easies {
 //  (except add() doesn't return a value because that value would be a reference
 //  to #easies, and I don't want users modifying it directly).
     constructor(easies, onArrival, post) {
-        // These will be <10 items, so let toArray() handle the validation
         this.#easies = new Set(Ez.toArray(easies, "new Easies(arg1, ...): arg1",
                                           Easy._validate, ...Ez.okEmptyUndef));
         this.#targets  = new Set; // Set(MEaser)
@@ -70,7 +68,7 @@ export class Easies {
 
 //  newTarget() creates a MEaser or MEaserByElm instance and adds it to #targets
     newTarget(o) {
-        return create(o, this.#targets, o.easies, "single", "Easy");
+        return create(o, this.#targets, Boolean(o.easies), "Single", Easy.name);
     }
 //  addTarget() validates a MEaser instance, adds it to #targets. returns it
     addTarget(t) {
@@ -106,37 +104,47 @@ export class Easies {
     get post()    { return this.#post; }
     set post(val) { this.#post = Ez._validFunc(val, "easies.post"); }
 
-// this.onArrival
-    get onArrival()    { return this.#onArrival; }
-    set onArrival(sts) { this.#onArrival = Easy._validArrival(sts, "Easies"); }
+// this.oneShot causes _reset() to call clearTargets()
+    get oneShot()    { return this.#oneShot; }
+    set oneShot(val) { this.#oneShot = Boolean(val); }
 
 //  restore() and init()
-    restore()     { for (const ez of this.#easies) ez.restore();     }
-    init(applyIt) { for (const ez of this.#easies) ez.init(applyIt); }
-
-//!!last() returns the Easy that finishes last.
-//  Useful when RAF.post is defined for the session and you need to run
-//  another function at the end of full animation. AFrame.post could be
-//  an array, as could .peri, but how often do you need this?
-    last() {
-        return Array.from(this.#easies)
-                    .toSorted((a, b) => a.total - b.total)
-                    .at(-1);
+    restore() {
+        for (const ez of this.#easies)
+            ez.restore();
+        for (const mezr of this.#targets)
+            mezr._restore();
     }
+    init(applyIt) {
+        for (const ez of this.#easies)
+            ez.init(applyIt);
+        //!!how to init #targets?? might need MEBase.init()!!
+    }
+//!!last() returns the Easy that finishes last.
+//!!Useful when RAF.post is defined for the session and you need to run
+//!!another function at the end of full animation. AFrame.post could be
+//!!an array, as could .peri, but how often do you need this??
+//!!last() {
+//!!    return Array.from(this.#easies)
+//!!                .toSorted((a, b) => a.total - b.total) //!!total time not simple to calculate!!
+//!!                .at(-1);
+//!!}
 //==============================================================================
 // "Protected" methods, called by AFrame instances:
 //  _zero() helps AFrame.prototype.play() zero out before first call to _next()
-    _zero(now) {
+    _zero(now = 0) {
         let e2M, easies, easy, map, plays, set, t, tplays;
-        this.#active = new Set(this.#easies);
+        this.#active = new Set(this.#easies); // init the "live" set
+
         this.#byEasy.clear();
         for (easy of this.#easies) {
+            easy._zero(now);       // cascade the zeroing-out process down
             map = new Map;         // map target to plays
             for (t of easy.targets)
                 map.set(t, t.plays || easy.plays);
             this.#byEasy.set(easy, map);
         }
-        this.#byTarget .clear();
+        this.#byTarget.clear();
         e2M = this.#easy2ME;
         e2M.clear();
         for (t of this.#targets) {
@@ -156,8 +164,6 @@ export class Easies {
             });
             this.#byTarget.set(t, plays);
         }
-        for (const ez of this.#easies)
-            ez._zero(now);
     }
 //  _resume() helps AFrame.prototype.play() reset #zero before resuming playback
     _resume(now) {
@@ -165,9 +171,11 @@ export class Easies {
             ez._resume(now);
     }
 //  _reset(): helps AFrame.prototype.#cancel() reset this to the requested state
-    _reset(sts) {
+    _reset(sts, forceIt) {
         for (const ez of this.#easies)
-            ez._reset(sts);
+            ez._reset(sts, forceIt);
+        if ((forceIt && sts == E.empty) || this.#oneShot)
+            this.clearTargets();
     }
 //  _runPost() helps AFrame.prototype.#cancel() run .post() for unfinished ACues
     _runPost() {
@@ -175,6 +183,7 @@ export class Easies {
             ez.post?.(ez);
         this.#post?.(this);
     }
+//==============================================================================
 //  _next() is the animation run-time. The name matches ACues.protytope._next().
 //   AFrame.prototype.#animate() runs it once per frame. It runs ez._easeMe() to
 //   get eased values, and t._apply() to apply those values to #targets.

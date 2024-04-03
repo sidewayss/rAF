@@ -1,61 +1,61 @@
 // export everything
-export {getNamed, getNamedEasy, getLocalNamed, getLocal, setLocal, setNamed,
-        storeCurrent, setLocalBool};
+export {getNamed, getNamedEasy, getNamedJSON, getLocalNamed, getLocal,
+        setLocal, setNamed, storeCurrent, setLocalBool};
 
-import {E, Is, Easy} from "../raf.js";
+import {E, Easy} from "../raf.js";
 
-import {DEFAULT_NAME, ns, preClass, preDoc, presets, disableSave}
-                                                  from "./named.js";
-import {EASY_, elms, g, boolToString, errorAlert} from "./common.js";
-
-import {isSteps} from "./easings/steps.js";
+import {preDoc} from "./load.js";
+import {DEFAULT_NAME, ns, preClass, presets, disableSave} from "./named.js";
+import {EASY_, elms, g, boolToString, errorAlert}         from "./common.js";
 //==============================================================================
 // getNamed() populates a <select> with names of stored objects, called only
 //            during the load process by loadJSON(), getEasies().
-function getNamed(sel = elms.named, isStp = isSteps(), pre = preClass) {
-    let entries  = Object.entries(g.presets[pre]);
-    const getAll = !Is.def(isStp);            // get values for all keys?
-    if (!getAll)
-        entries = entries.filter(obj => (obj.type == E.steps) == isStp);
+//            The list of named objects contains both presets and user items
+//            from localStorage. Those names can overlap, in which case the
+//            user item overrides the preset.
+function getNamed(sel = elms.named, pre = preClass, getAll = true) {
+    let entries = Object.entries(g.presets[pre]);
+    if (!getAll)                              // !getAll = exclude E.steps
+        entries = entries.filter(obj => obj.type != E.steps);
 
     let i, key, val;
     const lenPre = pre.length;                // the prefix string length
     const names  = new Set(entries.map(v => v[0]));
     i = 0;
-    while ((key = localStorage.key(i++))) {
+    while ((key = localStorage.key(i++))) {   // localStorage has no querying
         if (key.startsWith(pre)) {            // for a single prefix/document
-            val = localStorage.getItem(key);
-            if (getAll || val.includes("type:9") == isStp)
-                names.add(key.slice(lenPre)); // all or (Easy: steps or easings)
-        }
+            val = localStorage.getItem(key);  // !getAll = exclude E.steps
+            if (getAll || !val.includes("type:9"))
+                names.add(key.slice(lenPre)); // shame it has to check here, but
+        }                                     // names and opt don't have type.
     }
     for (key of Array.from(names).sort())
         sel.add(new Option(key));
 
     const opt = sel.options[0];
-    if (opt.value == DEFAULT_NAME) {
-        opt.value = DEFAULT_NAME;
+    if (opt.value == DEFAULT_NAME) {          // value implied from textContent
+        opt.value = DEFAULT_NAME;             // must be set explicitly
         opt.textContent     = "default";
         opt.style.fontStyle = "italic";
     }
     return sel;
 }
-// getNamedEasy() called by multi getEasies(), setEasy(), steps vtFromElm()
+//==============================================================================
+// getNamedEasy() returns an Easy instance for a named item
 function getNamedEasy(name) {
-    let ez
-    try {
-        ez = new Easy(g.presets[EASY_][name]
-                   ?? JSON.parse(localStorage.getItem(EASY_ + name)));
-    } catch(err) {
-        errorAlert(err);
-    }
-    return ez;
+    try         { return new Easy(getNamedJSON(name, EASY_)); }
+    catch (err) { errorAlert(err); }
 }
-// getLocalNamed() called by storeCurrent(), loadFinally(), easings initDoc()
-function getLocalNamed(name) {
-    return localStorage.getItem(preClass + name);
+// getNamedJSON() returns a JSON object from localStorage or presets, in that
+//                order, localStorage can override a preset of the same name.
+function getNamedJSON(name, pre = preClass) {
+    return JSON.parse(getLocalNamed(name, pre)) ?? g.presets[pre][name];
 }
-// getLocal() called easings initDoc(), multi.loadIt()
+// getLocalNamed() called by storeCurrent(), loadFinally(), openNamed()
+function getLocalNamed(name, pre = preClass) {
+    return localStorage.getItem(pre + name);
+}
+// getLocal() called by loadIt()
 function getLocal(elm) {
     return localStorage.getItem(preDoc + elm.id);
 }
@@ -64,17 +64,23 @@ function getLocal(elm) {
 function setLocal(elm, val = elm.value) {
     localStorage.setItem(preDoc + elm.id, val);
 }
-// setNamed() called by openNamed(), loadFinally()
+// setNamed() called by loadFinally(), openNamed()
 function setNamed(name, item) {
     localStorage.setItem(g.keyName, name);
-    localStorage.setItem(g.restore, item);
+    if (elms.save)
+        localStorage.setItem(g.restore, item);
 }
-// storeCurrent() called by both redraw()s, changePlays(), changeWait(),
+// setLocalBool() is for checkboxes and boolean buttons
+function setLocalBool(elm, b = elm.checked) {
+    setLocal(elm, boolToString(b));
+}
+//==============================================================================
+// storeCurrent() is called by both refresh()s, changePlays(), changeWait(),
 //                changeLoopByElm(), changeCheck(), changeTrip(), clickOk(),
 //                only clickOK() passes in a key, "" is DEFAULT_NAME and is
 //                the one read-only preset.
-function storeCurrent(key, obj) {
-    const str = JSON.stringify(obj ?? ns.objFromForm());
+function storeCurrent(key, obj = ns.objEz) {
+    const str = JSON.stringify(obj);
     localStorage.setItem(g.restore, str);
     if (key) {
         localStorage.setItem(key, str);
@@ -84,9 +90,4 @@ function storeCurrent(key, obj) {
         disableSave(str == (getLocalNamed(elms.named.value)
                          ?? JSON.stringify(presets[elms.named.value])));
     return str;
-}
-//==============================================================================
-// setLocalBool() called by drawEasing(), changeCheck() (easings only)
-function setLocalBool(elm, b = elm.checked) {
-    setLocal(elm, boolToString(b));
 }

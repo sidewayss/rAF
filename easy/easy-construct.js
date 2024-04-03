@@ -1,11 +1,9 @@
 // Not exported by raf.js
-// export everything except toNumberArray and it's two validators
+// export everything
 export {override, spreadToEmpties, legText, legNumber, getType, legType, getIO,
-        toBezier};
+        splitIO, toBezier, toNumberArray};
 
-import {Easy} from "./easy.js";
-
-import {E, Ez, Is} from "../raf.js";
+import {E, Ez, Is, Easy} from "../raf.js";
 //==============================================================================
 // override() overrides o vs leg for start, end, wait, time|count
 //            prop is a string property name, not a Prop instance
@@ -110,6 +108,13 @@ function getIO(io, defaultEase = E.in) {
             Ez._invalidErr(name, io, Easy._listE(name));
     }
 }
+// splitIO() splits two-legged io values into a 2 element array
+//           first leg = in:0, out:1, second leg = _in:2, _out:4
+function splitIO(io, fillTwo) {
+    return io > E.out ? [io % 2, (io & 4) / 4] // 4 = _out = 2nd leg E.out
+           : fillTwo  ? [io, io]
+                      : [io];
+}
 //==============================================================================
 function toBezier(val, time, name = Easy.type[E.bezier]) {
     try {
@@ -127,7 +132,6 @@ function toBezier(val, time, name = Easy.type[E.bezier]) {
     }
     return val;
 }
-//====== not exported ==========================================================
 function toNumberArray(val, name, notNeg) {
     return Ez.toArray(val, name, notNeg ? validNotNeg
                                         : validNumber);

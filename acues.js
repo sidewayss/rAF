@@ -137,10 +137,10 @@ export class ACues {
         try {  //++adding let/net: better to preset plugs, as with Easer
             for (const elm of cue.elms ?? this.#elms)
                 (cue.prop ?? this.#prop).setIt(elm, cue.value);
-        } catch (e) {
+        } catch (err) {
             throw new Error(`default(cue): cue = ${cue}, `
                            + `this.elms = ${this.#elms}, `
-                           + `this.prop = ${this.#prop}\n${e}`);
+                           + `this.prop = ${this.#prop}\n${err}`);
         }
     }
 //==============================================================================

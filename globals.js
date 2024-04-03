@@ -1,5 +1,7 @@
 export {E, Ease, F, Fn, HD, Is, P, Pn, U};
 
+import {Ez} from "./raf.js";
+
 // All consts, except Is, are fully or partially populated by PFactory.init():
 const U  = {pct:"%"};  // units, e.g. "px", "deg"
 const HD = {};         // bitmasks for CSS L4 (UHD) color functions
@@ -17,7 +19,7 @@ const Ease = {         // preset easing names/values
 };
 const Is = {           // boolean functions wrapped in a const, very inlineable
   def     (v) { return v !== undefined;  },
-  Number  (v) { return typeof v == "number"; }, //++return "toFixed" in Object(v);
+  Number  (v) { return typeof v == "number"; },
   String  (v) { return typeof v == "string"; },
   Element (v) { return v?.tagName  !== undefined; },
   CSSRule (v) { return v?.styleMap !== undefined; },
@@ -47,19 +49,25 @@ const F  = {           // Func, CFunc, ColorFunc, SRFunc instances by name
         return str + arr[i] + u + E.rp;     // no trailing separator
     },
 };
-const P  = {           // Prop, Bute, PrAtt, Bute2 instances by name
- // visible is useful as a boolean, for one element at a time
-    visible(elm, b) {
-        this.visibility.setOne(elm, b ? "visible" : "hidden");
+const P  = {           // Prop, Bute, PrAtt, HtmlBute instances by name
+ // visible is useful as a boolean, for one or more elements
+    visible(elms, b) {
+        const val = b ? "visible" : "hidden";
+        elms = Ez.toElements(elms);
+        for (const elm of elms)
+            this.visibility.setOne(elm, val);
     },
-    isVisible(elm) {
+    isVisible(elm) { // one element at a time
         return elm.style.visibility == "visible";
     },
  // displayed does the same for display:"none" and ""
-    displayed(elm, b = true, value="") {
-        this.display.setOne(elm, b ? value : "none");
+    displayed(elms, b = true, value="") {
+        const val = b ? value : "none";
+        elms = Ez.toElements(elms);
+        for (const elm of elms)
+            this.display.setOne(elm, val);
     },
-    isDisplayed(elm) {
+    isDisplayed(elm) { // one element at a time
         return elm.style.display != "none";
     }
 };

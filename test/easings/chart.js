@@ -9,7 +9,7 @@ import {updateTime}       from "../update.js";
 import {COUNT, CHANGE, elms, g, addEventsByElm, changeNumber}
                           from "../common.js";
 
-import {redraw}                         from "./_update.js";
+import {refresh}                        from "./_update.js";
 import {updateSplitGap}                 from "./msg.js";
 import {updateTypeIO}                   from "./tio-pow.js";
 import {isSteps, vtFromElm}             from "./steps.js";
@@ -19,10 +19,13 @@ function loadChart() {
     const byClass = document.getElementsByClassName("chart");
     addEventsByElm(CHANGE, byClass, handlers, true);
 }
-const handlers = { // event handlers: function name = toCamel(CHANGE, elm.id)
+//==============================================================================
+// event handlers: each function name = Ez.toCamel(CHANGE, elm.id)
+//                 they all call refresh()
+const handlers = {
     changeTime(evt) {
         let oldEzY;
-        updateTime();
+        updateTime(false);
         if (isSteps()) {        // crude, but viable, setting all three the same
             for (let i = 0; i < COUNT; i++)
                 elms["t" + i].max = secs;
@@ -34,18 +37,18 @@ const handlers = { // event handlers: function name = toCamel(CHANGE, elm.id)
                  && (isUnlocked(elms.gap) || elms.gap.clear.disabled);
         }
         ezX.time = msecs;
-        redraw(evt.target, oldEzY ? msecs : 0);
+        refresh(evt.target, oldEzY ? msecs : 0);
     },
     changeDirection(evt) {
         const txt = elms.end.textContent;
         elms.end  .textContent = elms.start.textContent;
         elms.start.textContent = txt;
-        redraw(evt.target);
+        refresh(evt.target);
     },
     changeIo(evt) {
         g.io = Number(evt.target.value);
         updateTypeIO(true);
-        redraw(evt.target, 0, updateTypeIO(true), false);
+        refresh(evt.target, 0, updateTypeIO(true), false);
     },
     changeType(evt) {   // #type, #type2
         let n, has2, isBS, oobOld, wasBS;
@@ -73,14 +76,14 @@ const handlers = { // event handlers: function name = toCamel(CHANGE, elm.id)
         if (has2)         // has2 depends on g.io
             oobOld |= isOutOfBounds(Number(elms.type2.value));
 
-        redraw(tar, 0, has2, isBS, oobOld);
+        refresh(tar, 0, has2, isBS, oobOld);
     },
     changePow(evt) {    // #pow, #pow2
         if (changeNumber(evt.target) !== null)
-            redraw(tar, 0, undefined, false);
+            refresh(evt.target, 0, undefined, false);
     },
     changeBezier(evt) { // #bezier0-3
-        redraw(evt.target, 0, false, true, isOutOfBounds());
+        refresh(evt.target, 0, false, true, isOutOfBounds());
     }
 };
 //===========================================================================

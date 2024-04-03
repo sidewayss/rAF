@@ -2,14 +2,14 @@ import {easings}            from "./easings.js";
 import {create}             from "./efactory.js";
 import {EBase}              from "./easer.js";
 import {steps, stepsToLegs} from "./easy-steps.js"
-import {override, spreadToEmpties, legNumber, getType, legType, getIO}
+import {override, spreadToEmpties, legNumber, getType, legType, getIO, splitIO}
                             from "./easy-construct.js"
 
-import {E, Ez, Is} from "../raf.js";
+import {E, Ez, Is, Easies} from "../raf.js";
 
 export class Easy {
-    #autoTrip; #base; #dist; #e; #end; #flipTrip; #firstLeg; #lastLeg;
-    #legsWait; #loopWait; #onArrival; #onLoop; #peri; #plays; #post; #pre;
+    #autoTrip; #base; #dist; #e; #end; #flipTrip; #firstLeg; #lastLeg; #legsWait;
+    #loopWait; #onArrival; #onLoop; #oneShot; #peri; #plays; #post; #pre;
     #reversed; #roundTrip; #start; #targets; #time; #tripWait; #wait; #zero;
 
     _leg; _now; _inbound; // shared with Incremental.prototype._calc()
@@ -35,6 +35,7 @@ export class Easy {
         this.post = o.post;
         this.loop = o.loop;
         this.onArrival = o.onArrival;
+        this.oneShot   = o.oneShot;
         Ez.is(this);                // required before the end of constructor
 
         if (Is.def(o.legs))         // format\validate user-defined legs
@@ -45,7 +46,7 @@ export class Easy {
 
         o[t] = Ez.toNumber(o[t], t, ...Ez.undefGrThan0);
         if (!o.legs) {              // create default legs
-            const ios = Easy.splitIO(io);
+            const ios = splitIO(io);
             const leg = {type, io:ios[0]};
             o.legs = [leg];
             if (ios.length == 2) {
@@ -327,21 +328,34 @@ export class Easy {
     get onArrival()    { return this.#onArrival; }
     set onArrival(sts) {  // Easy has an extra legit status for round-trip
         this.#onArrival = (sts !== E.tripped)
-                        ? Easy._validArrival(sts, "Easy")
+                        ? Easy._validArrival(sts, Easy.name)
                         : sts;
     }
-//  static _validArrival() enforces the 4 legit statuses for arrival
+// this.oneShot is *not* an alias/shortcut for onArrival(E.empty), it is an
+//              additional property that you set separately. If #onArrival is
+//              E.empty, it is ignored; else clearTargets() after t._apply().
+    get oneShot()  { return this.#oneShot; }
+    set oneShot(b) {
+        this.#oneShot = Boolean(b);
+    }
+//  static _validArrival() enforces the legit statuses for arrival
     static _validArrival(sts, name, noErr) {
+        let isEasy;
         switch (sts) {
         case undefined:
-        case E.arrived: case E.original: case E.initial: case E.empty:
+        case E.arrived: case E.initial: case E.original: case E.empty:
             return sts;
+        case E.tripped:
+            isEasy = (name == Easy.name);
+            if (isEasy)
+                return sts;
         default:
-            if (noErr) return false;
-            //----------------------
-            const txt = (name == "Easy") ? " E.tripped," : "";
+            if (noErr)
+                return false;
+            //--------------------------------------
+            const txt = isEasy ? " E.tripped," : "";
             Ez._mustBeErr(name + ".prototype.onArrival is a status value and",
-                 `set to E.original, E.initial, E.empty,${txt} or E.arrived`);
+                `set to E.arrived,${txt} E.initial, E.original, or E.empty`);
         }
     }
 // this.plays
@@ -389,10 +403,10 @@ export class Easy {
 
     #setWait(val, name) { return Ez.toNumber(val, name, ...Ez.defZero); }
 
-// this.loopTime and this.firstTime are used by new Measer
-    get loopTime()  { return this.#firstLoop(this.#loopWait); }
-    get firstTime() { return this.#firstLoop(this.#wait); }
-    #firstLoop(wait) {
+// this.firsTime and this.loopTime are used by new MEaser
+    get firstTime() { return this.#playTime(this.#wait); }
+    get loopTime()  { return this.#playTime(this.#loopWait); }
+    #playTime(wait) { // the duration of one play
         let val = wait + this.#time;
         if (this.#roundTrip && this.#autoTrip) // #autoTrip in case anything else uses it
             val += this.#tripWait + this.#time;
@@ -440,9 +454,10 @@ export class Easy {
         this.#targets = new Set(Ez.toArray(val, "targets", EBase._validate,
                                            ...Ez.okEmptyUndef));
     }
-//  newTarget() creates an Easer or EaserByElm instance and adds it to #targets
-    newTarget(o) {
-        return create(o, this.#targets, !o.easies, "multi", "Easies");
+//  newTarget() creates an Easer or EaserByElm instance, ~ adds it to #targets
+    newTarget(o, addIt = true) {
+        const set = addIt ? this.#targets : null;
+        return create(o, set, !o.easies, "Multi", Easies.name);
     }
 //  addTarget() validates t and adds it to #targets
     addTarget(t) {
@@ -454,12 +469,49 @@ export class Easy {
 //  clearTargets() clears #targets
     clearTargets() { this.#targets.clear(); }
 //==============================================================================
+//  _zero() and _resume() help AFrame.prototype.play() via Easies
+    _zero(now = 0) {
+        if (this.e.status == E.tripped) {
+            this.#zero    = now + this.#lastLeg.wait + this.#tripWait;
+            this.e.status = E.inbound;
+        }
+        else {
+            this.#zero    = now + this.#firstLeg.wait + this.#wait;
+            this.e.status = E.outbound;
+        }
+        for (const t of this.#targets)
+            t._zero(this);
+    }
+    _resume(now) {
+        if (this.e.status) // E.arrived == 0
+            this.#zero = now - this._now;
+    }
+//==============================================================================
 // Reset methods:
+//  _reset() helps AFrame.prototype.#cancel() via Easies, calls one of the
+//           public reset methods below or does nothing.
+    _reset(sts, forceIt) {
+        if (!forceIt)
+            sts = this.#onArrival;
+        switch (sts) {
+        case E.arrived:
+            this.arrive();        break;
+        case E.tripped:
+            this.initRoundTrip(); break;
+        case E.initial:
+            this.init();          break;
+        case E.original:
+            this.restore();       break;
+        default: // E.empty or undefined == noop
+        }
+        if (this.#oneShot || sts == E.empty)
+            this.clearTargets();
+    }
 //  arrive()
     arrive() {
         let apply;
         if (this.e.status > E.tripped) {
-            apply = (e) => {
+            apply = (e) => {            // fast-forward to the end
                 while (this._leg.next)
                     this._leg = this._leg.next;
                 this.#set_e(e, this._leg.end ?? this._value, this._leg.unit);
@@ -469,6 +521,16 @@ export class Easy {
         }
         this.#setup(E.arrived, apply);
     }
+//  initRoundTrip() sets up for starting the inbound trip
+    initRoundTrip() {
+        if (!this.#roundTrip)
+            this.roundTrip = true;
+        this.#setup(E.tripped, this.#initOrTrip, true);
+    }
+//  init()
+    init(applyIt = true) {
+        this.#setup(E.initial, applyIt ? this.#initOrTrip : null);
+    }
 //  restore()
     restore() {
         this.#setup(E.original, () => {
@@ -476,17 +538,7 @@ export class Easy {
                 t._restore();
         });
     }
-//  init()
-    init(applyIt = true) {
-        this.#setup(E.initial, applyIt ? this.#initOrTrip : null);
-    }
-//  initRoundTrip() sets up for starting the inbound trip
-    initRoundTrip() {
-        if (!this.#roundTrip)
-            this.roundTrip = true;
-        this.#setup(E.tripped, this.#initOrTrip, true);
-    }
-//  #setup() does the work for arrive(), restore(), init(), and initRoundTrip()
+//  #setup() does the work for arrive(), initRoundTrip(), init(), and restore()
     #setup(sts, apply, isRT) {
         const e = this.e
         if (sts && sts == e.status) return; // let E.arrived fall through
@@ -507,6 +559,7 @@ export class Easy {
         apply?.bind(this)(e);
         this.#init_e(sts);
     }
+//  #initOrTrip() helps init() and initRoundTrip()
     #initOrTrip(e) {
         let peri
         if (this.isIncremental)
@@ -515,72 +568,15 @@ export class Easy {
             this.#set_e(e, this._leg.prev.end, this._leg.prev.unit);
 
         for (const t of this.#targets) {
-            peri   = t.peri;    // don't want to run target.peri() if it exists
-            t.peri = undefined;
-            if (t.loopByElm)
-                do {
+            if (t.elmCount) {       // no elms = nothing to apply
+                peri   = t.peri;    // don't want to run target.peri()
+                t.peri = undefined;
+                if (t.loopByElm)
+                    do {t._apply(e)} while (t._nextElm());
+                else
                     t._apply(e);
-                } while (t._nextElm());
-            else
-                t._apply(e);
-            t.peri = peri;
-        }
-    }
-//==============================================================================
-    #init_e(status) {
-        Object.assign(this.e,  this.#e);
-        this.e.status = status;
-        Object.assign(this.e2, this.#e);
-    }
-    #set_e(e, value, unit) {
-        e.value = value;
-        e.unit  = unit;
-        e.comp  = Ez.flip(unit);
-    }
-//==============================================================================
-//  static splitIO() splits two-legged io values into a 2 element array
-//                   first leg = in:0, out:1, second leg = _in:2, _out:4
-    static splitIO(io, fillTwo) {
-        return io > E.out ? [io % 2, (io & 4) / 4] // 4 = _out = 2nd leg E.out
-               : fillTwo  ? [io, io]
-                          : [io];
-    }
-//  static _listE() returns a comma+space-separated list of E.xxx values
-    static _listE(name, start = 0, end = Infinity) {
-        return this[name].slice(start, end)
-                         .map(v => E.prefix + v)
-                         .join(", ");
-    }
-//==============================================================================
-//  _zero() and _resume() help AFrame.prototype.play() via Easies
-    _zero(now) {
-        if (this.e.status == E.tripped) {
-            this.#zero    = now + this.#lastLeg.wait + this.#tripWait;
-            this.e.status = E.inbound;
-        }
-        else {
-            this.#zero    = now + this.#firstLeg.wait + this.#wait;
-            this.e.status = E.outbound;
-        }
-        for (const t of this.#targets)
-            t._zero(this);
-    }
-    _resume(now) {
-        if (this.e.status) // E.arrived == 0
-            this.#zero = now - this._now;
-    }
-//  _reset() helps AFrame.prototype.#cancel() via Easies
-    _reset(sts) {
-        switch (sts) {
-        case E.arrived:
-            this.arrive();  break;
-        case E.original:
-            this.restore(); break;
-        case E.initial:
-            this.init();    break;
-        case E.tripped:
-            this.initRoundTrip();
-        default: // undefined or E.empty == noop
+                t.peri = peri;
+            }
         }
     }
 //==============================================================================
@@ -628,7 +624,7 @@ export class Easy {
         const unit = leg.prev.unit + (leg.down ? -val : val);
         this.#set_e(e, unit * this.#dist + this.#base, unit);
     }
-//  _nextLeg helps both _calc()s get time-based next leg
+//  _nextLeg helps both _calc()s to get time-based next leg
     _nextLeg(leg, e) {
         let wait;
         let next   = leg.next;
@@ -668,5 +664,23 @@ export class Easy {
         if (this.#roundTrip)
             this._inbound = !this._inbound;
         e.status = this._inbound ? E.tripped : E.arrived;
+    }
+//==============================================================================
+// Miscellaneous:
+    #init_e(status) {
+        Object.assign(this.e,  this.#e);
+        this.e.status = status;
+        Object.assign(this.e2, this.#e);
+    }
+    #set_e(e, value, unit) {
+        e.value = value;
+        e.unit  = unit;
+        e.comp  = Ez.flip(unit);
+    }
+//  static _listE() returns a comma+space-separated list of E.xxx values
+    static _listE(name, start = 0, end = Infinity) {
+        return this[name].slice(start, end)
+                         .map(v => E.prefix + v)
+                         .join(", ");
     }
 }

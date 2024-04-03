@@ -3,17 +3,17 @@ export {loadPlay, changeStop};
 import {E} from "../raf.js";
 
 import {ezX, raf} from "./load.js";
-import {updateSidebar, updateTime, setDuration, setFrames}
+import {updateCounters, updateTime, setDuration, setFrames}
                   from "./update.js";
 import {MILLI, ZERO, ONE, TWO, LITE, CHANGE, elms, g, toggleClass, errorAlert}
                   from "./common.js";
 
-let ns; // _update.js namespace: redraw, formatPlay, flipZero (easings)
+let ns; // _update.js namespace: refresh, formatPlay, flipZero (easings)
 //==============================================================================
 // -- Button States --
 // initial: PLAY   STOP  = stop disabled
-// playing: PAUSE  STOP  = hilite, disable everything else
-// pausing: RESUME STOP  = hilite, re-enable everything else
+// playing: PAUSE  STOP  = hiLite, disable everything else
+// pausing: RESUME STOP  = hiLite, re-enable everything else
 // arrived: PLAY   RESET = play disabled
 
 // <state-button>.value
@@ -29,29 +29,31 @@ function loadPlay(_update) {
     elms.stop.addEventListener(CHANGE, changeStop, false);
 }
 function changePlay() {
-    if (elms.play.value == PAUSE)   // pause it
+    if (elms.play.value == PAUSE)       // pause it
         raf.pause();
-    else {                          // play it, resume it
+    else {                              // play it or resume it
         formatPlay(true);
         disablePlay(true);
         if (elms.play.value == PLAY) {
-            g.frame = 0;            // play it
-            ns.formatPlayback(true);
+            g.frameIndex = 0;           // play it
+            ns.newTargets();
+            ns.formatPlayback?.(true);
         }
-        raf.play().then(sts => {    // ...some time later:
+        raf.play()
+          .then(sts => {                // ...some time later:
             resetPlay();
-            if (sts == E.pausing)   // user pressed pause
+            if (sts == E.pausing)       // user pressed pause
                 elms.play.value = RESUME;
-            else {                  // stopped by user or animation ends
+            else {                      // user clicked #stop or animation ends
                 if (ezX.e.status > E.tripped)
-                    return;         // user clicked #stop, called raf.stop()
-                //-----------------
-                setFrames(g.frame); // arrived at end of animation
+                    return;             // user clicked #stop, calls raf.stop()
+                //----------------------
+                setFrames(g.frameIndex);
                 setDuration(raf.elapsed / MILLI);
-                ns.flipZero?.();    // !multi //!!what about multi??
-                elms.x.value = g.frame;
+                ns.flipZero?.();        // !multi //!!what about multi??
+                elms.x   .value = g.frameIndex;
                 elms.stop.value = RESET;
-                if (!ezX.e.status)  // !non-autoTrip outbound finished
+                if (!ezX.e.status)      // !non-autoTrip outbound finished
                     elms.play.disabled = true;
             }
         }).catch(errorAlert);
@@ -69,7 +71,7 @@ function changeStop(evt) {  // <= pseudoAnimate(), openNamed(), changeCheck(),
         if (evt && elms.stop.value == RESET) {
             updateTime();
             raf.init();
-            ns.redraw();
+            ns.refresh();
         }
     }
     else {                          // PAUSE || RESUME: pause defines evt
@@ -81,9 +83,9 @@ function changeStop(evt) {  // <= pseudoAnimate(), openNamed(), changeCheck(),
     elms.stop.value = STOP;
     elms.stop.disabled = true;
     elms.play.disabled = false;
-    ns.formatPlayback(false, Boolean(evt));
+    ns.formatPlayback?.(false, Boolean(evt));
     if (!raf.atOrigin)              //!!loading page yes, but loading named too??
-        updateSidebar(0);
+        updateCounters();
 }
 //==============================================================================
 // resetPlay() helps changePlay(), changeStop()

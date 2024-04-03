@@ -1,0 +1,132 @@
+/* duplicated in multi/index.css */
+body {
+  margin:0.5rem 0 0 0;
+}
+select, label, pre {
+  font-weight:400;
+}
+#controls {
+  background-color:var(--bg-white);
+}
+#x {
+  flex-grow: 1;
+  width:auto;
+  padding:0.5rem 0;
+  margin-right:0.25rem;
+}
+
+#stop { margin:0 0.5rem }
+
+.slash {
+  position:relative;
+  top:1px;
+  font-size:calc(1rem + var(--8th));
+  margin:0 var(--8th);
+}
+
+.font400 { font-weight:400 }
+
+.ml3-8  { margin-left:  var(--3-8ths) }
+
+.counter  { /* only partially duplicated, padding is different */
+  align-items:baseline;
+  margin:0;
+  padding-top:var(--16th);
+  color:var(--dark-blue);
+  border-bottom:var(--border-gray);
+}
+/* not duplicates */
+html * {
+  accent-color:#111;
+}
+button, input[type=text],
+select, span {
+  color:var(--charcoal);
+}
+input[type=text] { /* #startColor, #endColor */
+  flex-grow: 1;
+  align-self:stretch;
+  border:var(--border-gray);
+}
+.invalid {
+  background-color: rgb(139 0 0 0.1);
+  border-color: darkred;
+}
+#triptych {
+  display:grid;
+  grid-template-columns:calc(1rem + var(--5-8ths)) 1fr 1fr;
+  grid-template-rows:   calc(1rem + var(--11-16ths)) repeat(4, 1.5rem);
+  justify-items:start;  /* defaults to stretch */
+  align-items:  start;  /* ditto */
+}
+.black, span.black {
+  color:black;
+}
+.symSpan, .display, .number {
+  color:var(--darker-gray);
+}
+.symSpan {
+  font-family:"Material Symbols Rounded";
+  font-size:calc(1rem + var(--7-16ths));
+  justify-self:center;
+  cursor:default;
+}
+.display {
+  font-weight:400;
+  font-style:italic;
+  padding-top:1px;
+}
+.number {
+  padding-top:1px;
+}
+.left {
+  margin-left:0.5rem;
+}
+.right {
+  margin-left:var(--5-8ths);
+}
+.canvas {
+  border:1px solid black;
+}
+#canvas {
+  margin-top:0.5em;
+}
+#startCanvas, #endCanvas {
+  width:calc(1rem + var(--9-16ths)); /* same as <select> height */
+  align-self:stretch;
+}
+#leftCanvas, #rightCanvas {
+  width:50%;
+}
+#time {
+  width: 7ch;
+  flex-grow: 1;
+  margin-left:0.5rem;
+}
+.spaces {
+  padding-top:0;
+  padding-bottom:var(--3-16ths);
+}
+.symBtn {
+  border:none;
+  background-color:transparent;
+}
+.symBtn:disabled {
+  background-color:transparent;
+}
+/* <state-button> overrides - #play, #stop */
+state-button {
+  fill  :black;
+  stroke:black;
+}
+state-button:hover {
+  fill  :var(--accent-blue);
+  stroke:var(--accent-blue);
+}
+state-button:active {
+  fill  :var(--dark-blue);
+  stroke:var(--dark-blue);
+}
+@media (width < 375px) { /* squeeze it into 360px */
+  span  { font-size:var(--15-16ths) }
+}

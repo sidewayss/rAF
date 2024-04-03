@@ -1,6 +1,5 @@
 // export everything but changeWait, all functions
-export {loadEvents, inputTime, changePlays, changeLoopByElm, changeCheck,
-        changeReset, changeZero, drawLine, setNoWaits};
+export {loadEvents, changePlays, changeLoopByElm, drawLine, setNoWaits};
 
 import {E, P} from "../../raf.js";
 
@@ -11,11 +10,12 @@ import {storeCurrent, setLocalBool} from "../local-storage.js";
 import {CHANGE, INPUT, elms, g, addEventToElms, elseUndefined}
                                     from "../common.js";
 
-import {drawSteps, isSteps}    from "./steps.js";
-import {drawEasing}            from "./not-steps.js";
-import {chart, range}          from "./chart.js";
-import {setSplitGap}           from "./msg.js";
-import {ezY, trip, newTargets} from "./index.js";
+import {objEz}              from "./_named.js";
+import {drawSteps, isSteps} from "./steps.js";
+import {drawEasing}         from "./not-steps.js";
+import {chart, range}       from "./chart.js";
+import {setSplitGap}        from "./msg.js";
+import {ezY, trip}          from "./index.js";
 //==============================================================================
 function loadEvents(checks) {
     elms.time     .addEventListener(INPUT,  inputTime, false);
@@ -26,9 +26,9 @@ function loadEvents(checks) {
 }
 // inputTime() is the input event for #time, called prior to change event
 //             also called by formFromObj(), openNamed()
-function inputTime(_, isLoading) { // _ = event object, unused
+function inputTime(evt) {
     let prev;
-    if (!isLoading) {
+    if (!evt.isLoading) {
         prev = msecs;
         setTime();   // sets msecs and secs
     }
@@ -40,9 +40,8 @@ function inputTime(_, isLoading) { // _ = event object, unused
 function changePlays(evt) {
     const plays = Number(elms.plays.value);
     const b     = plays > 1;
-    P.visible(elms.loopWait, b);
-    P.visible(elms.loopWait.labels[0], b);
-    if (evt) {
+    P.visible([elms.loopWait, elms.loopWait.labels[0]], b);
+    if (evt) {              // this check on evt requires exporting changePlays
         ezX.plays = plays;
         if (ezY)
             ezY.plays = plays;
@@ -54,24 +53,18 @@ function changePlays(evt) {
 }
 // changeLoopByElm() handles the change event for #loopByElm, <= updateAll()
 function changeLoopByElm(evt) {
-    const lbe = elms.loopByElm.checked;
-    for (var cr of [chart, range]) {
-        cr.byElm.forEach(elm => P.visible(elm, lbe));
-        cr.active.length = 0;
-        cr.active.push(cr.dots[0]);
-        if (lbe)
-            cr.active.push(...cr.byElm)
-    }
-    ezY.clearTargets();
-    newTargets(lbe);
-    if (evt) {      // reset stuff, store the current state
-        changeStop();
+    const loopByElm = elms.loopByElm.checked;
+    for (var cr of [chart, range])              // exclude one dot per cr
+        P.visible(cr.dots.slice(1), loopByElm);
+    if (evt) {          // this check on evt requires exporting changeLoopByElm
+        changeStop();   // resets stuff
+        objEz.loopByElm = loopByElm;
         storeCurrent();
     }
 }
 // changeCheck() handles the change event for #roundTrip, #autoTrip, #flipTrip,
 //               #reset, #zero, and #drawSteps.
-function changeCheck(evt) { //!!imported by _load.js, but I'd like to delete that
+function changeCheck(evt) {
     const tar = evt.currentTarget;
     switch (tar) {
     case elms.roundTrip:
@@ -99,11 +92,11 @@ function changeCheck(evt) { //!!imported by _load.js, but I'd like to delete tha
     }
     setLocalBool(tar);
 }
-// changeReset() called by changeCheck(), updateAll()
+// changeReset() called by changeCheck()
 function changeReset(tar) {
     raf.onArrival = elseUndefined(tar.checked, E.initial);
 }
-// changeZero() called by changeCheck(), updateAll()
+// changeZero() called by changeCheck()
 function changeZero(tar) {
     raf.frameZero = tar.checked;
 }
@@ -121,7 +114,7 @@ function changeWait(evt) {
 }
 //==============================================================================
 // drawLine() routes the job to drawSteps() or drawEasing(),
-//            <= changeCheck(), flipZero(), redraw().
+//            <= changeCheck(), flipZero(), refresh().
 function drawLine() {
     isSteps() ? drawSteps() : drawEasing();
 }

@@ -1,20 +1,19 @@
 // export everything but changeColor, all functions
-export {clipDist, clipEnd, clipStart, measer,
-        loadIt, getEasies, initEasies, updateAll, getMsecs, resizeWindow};
-let clipDist, clipEnd, clipStart, measer;
+export {loadIt, getEasies, initEasies, updateAll, getMsecs, resizeWindow};
+export let clipDist, clipEnd, clipStart;
 
-import {F, U, Is, Easies} from "../../raf.js";
+import {U, Is, Easies} from "../../raf.js";
 
-import {ezX, raf, setTime}       from "../load.js";
+import {raf, setTime}            from "../load.js";
 import {updateTime, setDuration} from "../update.js";
 import {DEFAULT_NAME}            from "../named.js";
 import {changeStop}              from "../play.js";
 import {getNamed, getNamedEasy, getLocal, setLocal} from "../local-storage.js";
-import {COUNT, ZERO, CHANGE, EASY_, elms, g, errorAlert} from "../common.js";
+import {COUNT, CHANGE, EASY_, elms, g, is, errorAlert} from "../common.js";
 
-import {redraw}                          from "./_update.js";
-import {loadEvents}                      from "./events.js";
-import {MASK_X, clip, easys, meFromForm} from "./index.js";
+import {loadEvents} from "./events.js";
+import {MASK_X, clip, easys, refresh, setClipPair, setClipPath}
+                    from "./_update.js";
 //==============================================================================
 // loadIt() is called by loadCommon()
 function loadIt() {
@@ -39,6 +38,8 @@ function loadIt() {
 
     for (const m of [0, 30, 1, 3])  // x-axis = even, y-axis = odd
         clip[m] = 0;                // the zero values in clip never change
+
+    return is();
 }
 function changeColor(evt) { // not exported, helps loadIt()
     const val = "linear-gradient(to bottom right, "
@@ -65,7 +66,7 @@ function getEasies(hasVisited) {
             elms[id] = [elm,,];         // e.g. elms.easy[i] vs elms[`easy${i}`]
         }
     }
-    getNamed(elms.easy0, undefined, EASY_); // easy0 is inside #template
+    getNamed(elms.easy0, EASY_);        // easy0 is inside #template
     elms.ucvDivs.push(src.lastElementChild);
     for (i = 1; i < COUNT; i++) {       // clone 'em
         clone = par.insertBefore(src.cloneNode(true), sib);
@@ -79,7 +80,7 @@ function getEasies(hasVisited) {
             }
         }
         for (elm of clone.getElementsByTagName("label"))
-            elm.htmlFor = elm.htmlFor.replace(ZERO, i);
+            elm.htmlFor = elm.htmlFor.slice(0, -1) + i;
     }
     loadEvents();                    // must wait until after cloning
 
@@ -90,28 +91,28 @@ function getEasies(hasVisited) {
             easys[i] = getNamedEasy(elm.value);
         }
 }
-// initEasies() is called by loadFinally(), redraw(), updateNamed()
+//==============================================================================
+// initEasies() is called by loadFinally(), updateNamed(), changeEasy()
 function initEasies() {
-    try {
-        g.easies    = new Easies([...easys, ezX]);
-        raf.targets = g.easies;
-        measer      = g.easies.newTarget(meFromForm());
-        return true;
-    } catch(err) {
+    try { g.easies = new Easies([...easys]); }
+    catch (err) {
         errorAlert(err);
         return false;
     }
+    g.easies.oneShot = true;    // test Easies.proto.oneShot, see newTargets()
+    raf.targets = g.easies;
+    return true;
 }
 //==============================================================================
 // updateAll() called by loadFinally(), openNamed()
 function updateAll(isLoading) {
     if (!isLoading)
         setTime();    // load.js:setTime() calls this module's getMsecs()
-    updateTime();
+    updateTime(true); // creates targetInputX, assigns it to ezX
     setDuration();
-    redraw();
+    refresh();
     if (isLoading)
-        changeStop(); // must follow redraw or no points set
+        changeStop(); // must follow refresh or no frames values set
 }
 // getMsecs() returns the current duration in milliseconds
 function getMsecs() {
@@ -167,12 +168,9 @@ function resizeWindow(evt) {
     i = 0;
     for (elm of elms.ucvDivs) {
         val = elm.offsetTop - top;
-        clip[mask[i++]] = val;           // pair 0
-        clip[mask[i++]] = val;
-
+        i = setClipPair(val, i, mask);   // pair 0
         val += elm.offsetHeight;
-        clip[mask[i++]] = val;           // pair 1
-        clip[mask[i++]] = val;
+        i = setClipPair(val, i, mask);   // pair 1
     }
-    elms.clip.style.clipPath = F.joinCSSpolygon(clip);
+    setClipPath();
 }

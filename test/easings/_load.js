@@ -3,19 +3,19 @@ export {loadIt, getEasies, initEasies, updateAll, getMsecs, resizeWindow};
 
 import {E, U, P, Pn, Ez, Ease, Easy, Easies} from "../../raf.js";
 
-import {ezX, raf}                           from "../load.js";
-import {inputX, updateTime}                 from "../update.js";
-import {getLocal}                           from "../local-storage.js";
-import {LENGTH, elms, g, isTag, errorAlert} from "../common.js";
+import {ezX, raf}   from "../load.js";
+import {updateTime, updateCounters} from "../update.js";
+import {getLocal}   from "../local-storage.js";
+import {INPUT, CHANGE, elms, g, is, isTag, errorAlert}
+                    from "../common.js";
 
-import {redraw}                                  from "./_update.js";
-import {updateEzXY, trip}                        from "./index.js";
-import {chart, range, loadChart}                 from "./chart.js";
-import {loadTIOPow, setLink, updateTypeIO}       from "./tio-pow.js";
-import {loadMSG, updateMidSplit, updateSplitGap} from "./msg.js";
-import {loadSteps, loadVT, updateVT}             from "./steps.js";
-import {loadEvents, inputTime, changeLoopByElm,
-        changePlays, changeReset, changeZero}    from "./events.js";
+import {refresh}                                  from "./_update.js";
+import {updateEzXY, trip}                         from "./index.js";
+import {chart, range, loadChart}                  from "./chart.js";
+import {loadTIOPow, setLink, updateTypeIO}        from "./tio-pow.js";
+import {loadMSG, updateMidSplit, updateSplitGap}  from "./msg.js";
+import {loadSteps, loadVT, updateVT}              from "./steps.js";
+import {loadEvents, changeLoopByElm, changePlays} from "./events.js";
 //==============================================================================
 // loadIt() is called by loadCommon()
 function loadIt(byTag, hasVisited) {
@@ -31,12 +31,11 @@ function loadIt(byTag, hasVisited) {
         for (elm of cr.svg.children)    // they all have ids
             Ez.readOnly(cr, elm.id, elm);
 
+    const LENGTH = {length:COUNT};
     Ez.readOnly(chart, "dots", Array.from(LENGTH, (_, i) => chart["dot"  + i]));
     Ez.readOnly(range, "dots", Array.from(LENGTH, (_, i) => range["dotY" + i]));
     Ez.readOnly(chart, "active", []);   // visible dots determined by loopByElm
     Ez.readOnly(range, "active", []);   // ditto
-    Ez.readOnly(chart, "byElm", chart.dots.slice(1)); // loopByElm dots
-    Ez.readOnly(range, "byElm", range.dots.slice(1)); // ditto
 //!!Ez.readOnly(chart, "styles",        // all dot styles in one place
 //!!            [...chart.dots, ...range.dots].map(dot => dot.style));
 
@@ -105,41 +104,48 @@ function loadIt(byTag, hasVisited) {
         for (elm of [elms.reset, elms.zero, elms.drawSteps])
             elm.checked = getLocal(elm);
     else {          // user is new to this page
-        elms.io.selectedIndex = 0;
+        elms.io.selectedIndex = 0; //!!necessary??
         for (elm of [elms.linkType, elms.linkPow])
             setLink(elm, true);
     }
+    return is();
 }
 //==============================================================================
 function getEasies() {
     loadVT();  // it's all related to E.steps, so the code is in steps.js
 }
+// initEasies() called once per session by loadFinally()
 function initEasies(obj) {
     try {
-        g.easies    = new Easies(ezX);
+        g.easies = new Easies(ezX);
         raf.targets = g.easies;
-    } catch(err) {
+    } catch (err) {
         errorAlert(err);
         return false;
     }
     return updateEzXY(obj);
 }
+//==============================================================================
 function updateAll(isLoading) { // called by loadFinally(), openNamed()
     if (isLoading) {
-        changeReset(elms.reset);
-        changeZero (elms.zero);
+        let evt = new Event(CHANGE);
+        elms.reset.dispatchEvent(evt); // calls changeReset()
+        elms.zero .dispatchEvent(evt); // calls changeZero()
+        evt = new Event(INPUT);
+        evt.isLoading = true;
+        elms.time.dispatchEvent(evt);  // calls inputTime()
         trip();
-        updateVT();     // E.steps
-        inputTime(null, isLoading);
+        updateVT();                    // E.steps
     }
-    updateTime();
+    updateTime(false);  // creates targetInputX, does not assign it to ezX
     updateSplitGap();
     updateTypeIO();
     changeLoopByElm();
     changePlays();      // calls setNoWaits()
-    redraw();
-    inputX();           // must follow redraw()
+    refresh();          // must follow updateTime()
     updateMidSplit();
+    if (isLoading)
+        updateCounters();
 }
 function getMsecs() {
     return elms.time.valueAsNumber;

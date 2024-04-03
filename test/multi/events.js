@@ -1,14 +1,16 @@
 export {loadEvents, setEasy};
 
+export const OVERRIDES = ["plays","eKey","trip"];
+
 import {E, P} from "../../raf.js";
 
 import {storeCurrent, getNamedEasy}   from "../local-storage.js";
 import {COUNT, PLAYS, CHANGE, LITE,
         elms, g, orUndefined, toFunc} from "../common.js";
 
-import {measer}           from "./_load.js";
-import {redraw}           from "./_update.js";
-import {OVERRIDES, easys} from "./index.js";
+import {initEasies}     from "./_load.js";
+import {easys, refresh} from "./_update.js";
+import {objFromForm}    from "./_named.js";
 
 const EZ_ = "ez-";
 //==============================================================================
@@ -26,45 +28,43 @@ const handlers = {     // change event handlers for easy, plays, eKey, and trip
     changePlays(evt) { // not to be confused with changePlay()
         const tar     = evt.target; // <select>.value = "1"|"2"|"3"|DEFAULT_NAME
         const [i, id] = i_id(tar);
-        this.setPlays(i, id, orUndefined(tar.value), tar);
+        handlers.setPlays(i, id, orUndefined(tar.value), tar);
         multiNoWaits(i);
-        storeCurrent();
+        storeCurrent(objFromForm());
     },
     changeEKey(evt) {
         const tar = evt.currentTarget; //!!or evt.target??
-        this.setEKey(...i_id(tar), tar.value); // <button>.value is a string
-        redraw();      // calls storeCurrent()
+        handlers.setEKey(...i_id(tar), tar.value); // <button>.value is a string
+        objFromForm();
+        refresh();      // calls storeCurrent()
     },
-    changeTrip(evt) {  // autoTrip
+    changeTrip(evt) {   // autoTrip
         const tar = evt.currentTarget; //!!or evt.target??
         const [i, _] = i_id(tar);
-        this.setTrip(i, tar.checked); //!!2nd arg...
         multiNoWaits(i);
-        storeCurrent();
+        storeCurrent(objFromForm());
     },
     changeEasy(evt) {
         const tar = evt.target;
         setEasy(Number(tar.id.at(-1)), tar.value);
-        if (initEasies())
-            redraw();
+        if (initEasies(objFromForm()))
+            refresh();
     },
  // "set" helpers for the event handlers, setEasy() is the only one exported.
  // Your editor will tell you that setPlays(), setEKey(), and setTrip() are only
  // referenced once, but they are also called near the beginning of setEasy()
  // via toFunc("set" + ...)().
-    setPlays(i, id, val = null, sel = undefined) {
-        measer?.mePlays(i, orUndefined(val));
-        if (!sel) {             // not called by multiPlays()
-            sel  = elms[id][i];
+    setPlays(i, id, val = "", sel) {
+        if (!sel) {                      // called by setEasy()
+            sel = elms[id][i];
             sel.value = val;
         }
-        const b = Boolean(val); // DEFAULT_NAME, "1", "2", or "3"
+        const b = Boolean(val);          // val = "", "1", "2", or "3"
         swapTo  (sel, b);
         swapFrom(toElm(EZ_, id, i), b)
     },
-    setEKey(i, id, val = E.unit, sel = undefined) {
-        measer?.meEKey(i, val);
-        if (!sel)                   // not called by changeEKey()
+    setEKey(i, id, val = E.unit, sel) {
+        if (!sel)                        // called by setEasy()
             elms[id][i].value = val;
 
         const elm = elms[val][i];
@@ -78,13 +78,12 @@ const handlers = {     // change event handlers for easy, plays, eKey, and trip
             swapTo(v.parentNode, j);     // <p>
         })
     },
-    setTrip(i, b) { // no third argument
-        measer?.meTrip(i, b); //!!2nd argument!!
-    }
+    setTrip(i, b) {                      // no longer has anything to do...
+    }                                    // called exclusively by setEasy()...
 };
-// setEasy() is called by fromFromObj() with obj defined
-function setEasy(i, name, obj) {
-    for (var id of OVERRIDES)
+// setEasy() is called by changeEasy(), fromFromObj()
+function setEasy(i, name, obj) { // formFromObj() defines obj
+    for (const id of OVERRIDES)  // call setPlays(), setEKey(), setTrip()
         toFunc("set", id, handlers)(i, id, obj?.[id][i]);
 
     const ez = getNamedEasy(name);

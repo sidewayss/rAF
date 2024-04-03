@@ -1,7 +1,9 @@
 // Not exported by raf.js
 export {steps, stepsToLegs};
-import {Easy} from "./easy.js";
-import {E, Ez, Is} from "../raf.js";
+
+import {toNumberArray} from "./easy-construct.js"
+
+import {E, Ez, Is, Easy} from "../raf.js";
 //==============================================================================
 // steps() consolidates code in #prepLegs()
 //         Each step becomes a leg to make processing simpler during animation.
@@ -100,6 +102,8 @@ function stepsToLegs(o, leg, ez, idx, last) {
         waits = leg.waits.map(v => v * leg.time);
 
     let l = waits.length;
+    const LENGTH = {length:l};
+    const legs   = Array.from(LENGTH, () => new Object);
     if (leg.stepsReady)         // leg.steps is an array of step values
         ends = leg.steps;
     else if (leg.easy)          // auto-generate eased steps
@@ -108,11 +112,10 @@ function stepsToLegs(o, leg, ez, idx, last) {
     else {                      // auto-generate linear step values
         const j = leg.dist / l;
         ends    = leg.down
-                ? Array.from({length:l}, (_, i) => leg.start - ((i + 1) * j))
-                : Array.from({length:l}, (_, i) => (i + 1) * j + leg.start);
+                ? Array.from(LENGTH, (_, i) => leg.start - ((i + 1) * j))
+                : Array.from(LENGTH, (_, i) => (i + 1) * j + leg.start);
     }
 
-    const legs = Array.from({length:l}, () => new Object);
     legs.forEach((obj, i) => {
         obj.type = E.steps;
         obj.io   = E.in;        // must be defined

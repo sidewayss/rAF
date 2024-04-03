@@ -1,49 +1,45 @@
 // export: everything via import(), explicit: objFromForm, all functions
 export {formFromObj, objFromForm, updateNamed};
+export let objEz;
 
 import {setTime}      from "../load.js";
-import {DEFAULT_NAME} from "../named.js";
 import {COUNT, elms}  from "../common.js";
 
-import {initEasies} from "./_load.js";
-import {setEasy}    from "./events.js";
-import {OVERRIDES}  from "./index.js";
+import {initEasies}         from "./_load.js";
+import {OVERRIDES, setEasy} from "./events.js";
+
 //==============================================================================
 // For multi, these 2 functions convert between localStorage JSON and the form,
 // but the JSON does not convert directly to Easy, Easies, or MEaser, it uses
 // the names of three previously stored objects, not the objects themselves.
-// Thus index.js has meFromForm() to create the MEaser object.
+// Thus index.js has meFromObj() to create the MEaser object.
 //==============================================================================
-// formFromObj() <= loadFinally(), openNamed()
+// formFromObj() updates the form based on obj, <= loadFinally(), openNamed()
 function formFromObj(obj) {
     for (var i = 0; i < COUNT; i++)
-        setEasy(i, (elms.easy[i].value = obj.names[i]), obj);
+        setEasy(i, (elms.easy[i].value = obj.easy[i]), obj);
     setTime();
-    return obj;
+    objEz = obj;
 }
-// objFromForm() <= loadFinally(), storeCurrent(), clickCode(), meFromForm()
+// objFromForm() called exclusively by loadFinally()
 function objFromForm(hasVisited = true) {
-    let i, id, iElm, name;
-    const obj = {};
-
-    for (name of ["names", ...OVERRIDES])
-        obj[name] = new Array(COUNT);
-
-    name = DEFAULT_NAME;
-    iElm = 0;
-    for (i = 0; i < COUNT; i++) {
-        if (hasVisited) {
-            name = elms.easy[i].value;
-            iElm = i;
-        }
-        obj.names[i] = name;
-        for (id of OVERRIDES)
-            obj[id][i] = elms[id][iElm].value;
+    let elm, i, id, obj;
+    const ids = ["easy", ...OVERRIDES];
+    if (!hasVisited) {  // else always defined with the same structure
+        objEz = {};
+        for (id of ids)
+            objEz[id] = new Array(COUNT);
     }
-    return obj;
+    for (id of ids) {   // assign the form values to objEz
+        obj = objEz[id];
+        elm = elms[id];
+        for (i = 0; i < COUNT; i++)
+            obj[i] = elm[i].value;
+    }
+    return objEz;
 }
 //==============================================================================
 // updateNamed() helps openNamed()
-function updateNamed() {
-    return initEasies();
+function updateNamed(obj) {
+    return initEasies(obj);
 }

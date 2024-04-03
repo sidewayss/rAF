@@ -1,15 +1,16 @@
-// export: everything via import(), explicit import: objFromForm
-export {formFromObj, objFromForm, updateNamed};
+// export: everything via dynamic import(), static import: objFromForm
+export {formFromObj, objFromForm, updateNamed, ok};
+export let objEz;
 
 import {E, Is} from "../../raf.js"
 
 import {msecs}        from "../load.js";
 import {pad}          from "../update.js";
 import {DEFAULT_NAME} from "../named.js";
-import {MILLI, elms, g, formatNumber, orUndefined, elseUndefined}
-                       from "../common.js";
+import {MILLI, INPUT, elms, g, formatNumber, orUndefined, elseUndefined}
+                      from "../common.js";
 
-import {inputTime, setNoWaits}                    from "./events.js";
+import {setNoWaits}                               from "./events.js";
 import {easingFromLocal, easingFromForm}          from "./not-steps.js";
 import {stepsFromLocal,  stepsFromForm, isSteps}  from "./steps.js";
 import {updateEzXY,      trip,          isBezier} from "./index.js";
@@ -49,13 +50,13 @@ function formFromObj(obj) {
             elm.value = val ?? 0; // tripWait default = 0
     }
     elms.loopByElm.checked = obj.loopByElm;
-    inputTime();
+    elms.time.dispatchEvent(new Event(INPUT)); // calls inputTime()
     setNoWaits();
     (isSteps(obj.type) ? stepsFromLocal : easingFromLocal)(obj, legs);
-    return obj;
+    objEz = obj;
 }
-// objFromForm() creates an object from control values,
-//               <= loadFinally(), storeCurrent(), clickCode(), newEzY()
+// objFromForm() creates an object from form element values,
+//               called by loadFinally(), clickCode().
 function objFromForm(hasVisited = true) {
     let autoTrip, flipTrip, loopWait, plays, tripWait;
     const start = Number(elms.start.textContent);
@@ -84,14 +85,34 @@ function objFromForm(hasVisited = true) {
                   start, end, plays, loopWait, loopByElm,
                   roundTrip, autoTrip, flipTrip, tripWait};
 
-    return func(obj, true);
+    objEz = func(obj, true);
+    return objEz;
 }
 //==============================================================================
 function updateNamed(obj) {
-    inputTime();
+    elms.time.dispatchEvent(new Event(INPUT)); // calls inputTime()
     if (!updateEzXY(obj))
         return false;
-    //-----
-    trip();     // updateAll() only calls it if (isLoading)
+    //---------------
+    trip();           // updateAll() only calls it if (isLoading)
     return true;
+}
+//==============================================================================
+function ok(name) {            // called exclusively by clickOk(), easings only
+    const isStp = isSteps();   // easeValues, easeTiming exclude E.steps
+    const vals  = Array.from(elms.easeValues.options)
+                        .map (opt => opt.value);
+    i = vals.indexOf(name);
+    if (i < 0) {               // new name
+        if (!isStp) {          // maintain a-z sort order
+            const opt = new Option(name);
+            i = vals.findIndex(v => v > name);
+            elms.easeValues.add(opt, i);
+            elms.easeTiming.add(opt, i);
+        }
+    }
+    else if (isStp) {          // existing name
+        elms.easeValues.remove(i);
+        elms.easeTiming.remove(i);
+    }
 }

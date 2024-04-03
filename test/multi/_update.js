@@ -1,80 +1,89 @@
-// export everything via import(), explicitly imported: redraw, all functions
-export {redraw, getPoint, pointZero, updateX, setSidebar, formatDuration,
-        formatPlayback, formatFrames};
+// export everything via import(), explicitly imported: refresh, all functions
+export {refresh, getFrame, initPseudo, updateX, setCounters, setClipPair,
+        setClipPath, formatDuration, formatPlayback, formatFrames};
+export const
+    MASK_X = [6,8, 14,16, 22,24],  // polygon's animated x-value indexes
+    clip   = new Array(32),        // there are 32 polygon numbers
+    easys  = new Array(COUNT)      // easys = [Easy x 3], g.easies = Easies
+;
+import {E, U, F, P, Easy} from "../../raf.js";
 
-import {E, U, Is, F, P, Easy} from "../../raf.js";
+import {ezX}                              from "../load.js";
+import {frames, pad, eGet, pseudoAnimate} from "../update.js";
+import {storeCurrent}                     from "../local-storage.js";
+import {COUNT, elms, g, formatNumber}     from "../common.js";
 
-import {pad, eGet, pseudoAnimate}  from "../update.js";
-import {storeCurrent}              from "../local-storage.js";
-import {COUNT, elms, formatNumber} from "../common.js";
-
-import {clipDist, clipEnd, clipStart, measer} from "./_load.js";
-import {MASK_X, clip, easys}                  from "./index.js";
+import {clipEnd, clipStart} from "./_load.js";
+import {meFromObj}          from "./index.js";
 //==============================================================================
-// redraw() called by updateAll(), changeEKey(), changeStop(), play.js needs the
-//          function dynamically imported by update.js, easings vs multi.
-function redraw() {
+// refresh() called by updateAll(), changeEKey(), changeEasy(), changeStop(),
+//           play.js gets it via dynamic import by update.js.
+function refresh() {
     let down, flip, i, j, l, val;
     for (i = 0, j = 0, l = MASK_X.length; i < l; j++) {
         down = easys[j].start > easys[j].end;
         flip = (elms.eKey[j].value == E.comp);
         val  = (down == flip) ? clipStart : clipEnd;
-        clip[MASK_X[i++]] = val;
-        clip[MASK_X[i++]] = val;
+        i = setClipPair(val, i);
         formatNumber(val, pad.value, 0, elms.value[j]);
     }
-    elms.clip.style.clipPath = F.joinCSSpolygon(clip);
+    setClipPath();
     pseudoAnimate();
     storeCurrent();
 }
 //==============================================================================
-// getPoint() <= update() and pseudoAnimate(), which can't use easies._next()
+// initPseudo() sets frames[0], creates targets w/o elements, assumes that
+//              clip-path is set at elapsed = 0, called by pseudoAnimate().
+function initPseudo() {
+    frames[0] = getFrame(0, MASK_X, true);
+    newTargets(true);
+}
+// newTargets() calls Easies.proto.newTarget(), with and w/o .prop and .elms,
+//              always calls g.easies.newTarget() 'cuz g.easies.oneShot = true,
+//              called by changePlay(), initPseudo(true).
+function newTargets(isPseudo = false) { // meFromObj() relies on false vs undef
+    g.easies[isPseudo ? "delete" : "add"](ezX);
+    g.easies.newTarget(meFromObj(easys, true, isPseudo));
+}
+//==============================================================================
+// getFrame() <= update() and pseudoAnimate(), which can't use easies._next()
 //            because it applies values, but _easeMe() doesn't have the
 //            factor/addend/max/min calcs, so that's extra work here.
-function getPoint(t, val, flag) {
-    let e, i, keys, value;
-    const p = {t, x:new Array(COUNT)};
+//            initPseudo():   t = 0,           oneD = MASK_X, isMask = true
+//            updateFrame():  t = raf.elapsed, oneD = oneD
+//            pseudoUpdate(): t = 0,           oneD = oneD
+function getFrame(t, oneD, isMask) {
+    let e, i, value;
+    const frm = {t, x:new Array(COUNT)};
 
-    if (flag)                        // flag can be true, false, or undefined
-        keys = measer.eKey;
     for (i = 0; i < COUNT; i++) {
-        e = eGet(easys[i]);
-        if (flag)                    // pseudo-animation, val = clipDist
-            value = e[keys[i]] * val + clipStart;
-        else {
-            value = val[i * 2]       // animation, val = measer.#oneD
-            if (Is.def(flag))
-                value = clip[value]; // or setting points[0], val = MASK_X
-        }
-        p.x[i] = {value, unit:e.unit, comp:e.comp};
+        e = eGet(easys[i]); // pseudo-animate could always be easys[i].e...
+        value = oneD[i * 2];
+        if (isMask)
+            value = clip[value];
+
+        frm.x[i] = {value, unit:e.unit, comp:e.comp};
     }
-    return p;
-}
-// pointZero() sets points[0] and returns easys vs g.easies
-function pointZero(pts, args) { // assumes that clip-path is set at elapsed=0
-    pts[0] = getPoint(0, MASK_X, false);
-    args.push(clipDist, true);
-    return easys;
+    return frm;
 }
 // updateX() is called exclusively by inputX()
-function updateX(p) {
-    let i, j, l, v;
-    for (i = 0, j = 0, l = MASK_X.length; i < l; j++) {
-        v = p.x[j].value;
-        clip[MASK_X[i++]] = v;
-        clip[MASK_X[i++]] = v;
-    }
-    elms.clip.style.clipPath = F.joinCSSpolygon(clip);
+function updateX(frm) {
+    for (var i = 0, j = 0, l = MASK_X.length; i < l; j++)
+        i = setClipPair(frm.x[j].value, i);
+    setClipPath();
 }
-function setSidebar(p, defD) {
+//==============================================================================
+// setCounters() is called exclusively by updateCounters()
+function setCounters(frm, defD) {
     let d, i, k, key;
     for (key of Easy.eKey) {
         d = (key[0] == "v") ? 0 : defD; // d for decimals, "v" = "value"
         k = pad[key];
         for (i = 0; i < COUNT; i++)
-            elms[key][i].textContent = formatNumber(p.x[i][key], k, d);
+            elms[key][i].textContent = formatNumber(frm.x[i][key], k, d);
     }
 }
+// formatDuration() is called exclusively by setDuration()
 function formatDuration(val, d) {
     return val.toFixed(d) + U.seconds;
 }
@@ -82,12 +91,22 @@ function formatDuration(val, d) {
 function formatPlayback(isPlaying, b = true) {
     if (b) {
         elms.clip.style.opacity = elms.clip.opacity[Number(isPlaying)]; // see multi.loadIt()
-        for (var i = 0; i < COUNT; i++) //!!if this can be elms.value[i], then ucvDivs is a local var for _load!!
-            P.visible(elms.ucvDivs[i].firstElementChild, !isPlaying);
+        P.visible(elms.ucvDivs.map(div => div.firstElementChild), !isPlaying); //!!if this can be elms.value[i], then ucvDivs is a local var for _load!!
     }
-    return true;
 }
-//====== multi-only ============================================================
+//==============================================================================
+// setClipPair() populates clip, pair by pair, mask by mask.
+function setClipPair(val, i, mask = MASK_X) {
+    clip[mask[i++]] = val;
+    clip[mask[i++]] = val;
+    return i;
+}
+// setClipPath() summarizes one line of code.
+function setClipPath() {
+    elms.clip.style.clipPath = F.joinCSSpolygon(clip);
+}
+//====== multi and color only ==================================================
+// formatFrames() is called exclusively by setFrames()
 function formatFrames(txt) {
     return txt + "f";
 }

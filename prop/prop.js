@@ -1,5 +1,5 @@
 // Not exported by raf.js
-export {Prop, Bute, PrAtt, Bute2}
+export {Prop, Bute, PrAtt, HtmlBute}
 
 import {PBase} from "./pbase.js";
 
@@ -28,21 +28,11 @@ class Prop extends PBase {
     required(f = this.func) { return f?.required ?? 1; }
 
 //  cut() aka remove() removes this property from one or more elements.
-//  removeProperty() requires a snake-case name.
+//  removeProperty() requires a kebab-case name.
     cut(elms) {
-        const name = this.name.replace(E.caps, cap => {
-                        return "-" + cap.toLowerCase()
-                     });
+        const name = Ez.camelToKebab(this.name);
         for (const elm of Ez.toElements(elms))
             elm.style.removeProperty(name);
-    }
-//  getOne() gets a single element's string value more efficiently than get()
-    getOne(elm, getComputed = true) { // elm must be pre-validated as an Element
-        const name  = this.name;
-        let   value = elm.style[name];
-        if (!value && getComputed)
-            value = getComputedStyle(elm)[name];
-        return value.trim();
     }
 }
 //==============================================================================
@@ -117,36 +107,23 @@ class PrAtt extends PBase {
 //  cut() aka remove() removes this property from one or more elements.
 //  An element can have a value in both the style.property and the element
 //  attribute. The both argument allows you to remove both at once.
-//  removeProperty() and removeAttribute() both require a snake-case name.
+//  removeProperty() and removeAttribute() both require a kebab-case name.
     cut(elms, both) {
-        const name = this.name.replace(E.caps, cap => {
-                        return "-" + cap.toLowerCase()
-                     });
+        const name = Ez.camelToKebab(this.name);
         for (const elm of Ez.toElements(elms)) {
             elm.style.removeProperty(name);
             if (both)
                 elm.removeAttribute?.(name); // elm can be a CSSStyleRule
         }
     }
-//  getOne() gets a single element's string value more efficiently than get()
-    getOne(elm, getComputed = true) { // elm must be pre-validated as Element
-        const name  = this.name;
-        let   value = elm.style[name];
-        if (!value) {
-            value = elm.getAttribute(name);
-            if (!value && getComputed)
-                value = getComputedStyle(elm)[name];
-        }
-        return value?.trim() ?? "";
-    }
 }
 //==============================================================================
-// Bute2 is for animation only. Why write P.value.set(elm, val) when you can
-// write elm.value = val? Currently only for <input>.value. Needs a better name
-// than Bute2. Is it an attribute or a property? "value" is both, attribute for
-// the initial value, then property for any other value the user or code might
-// set, but it's not a styleable property, it's a direct property on the object.
-class Bute2 extends PBase {
+// HtmlBute is for animation only. Why write P.value.set(elm, val) when you can
+// write elm.value = val? Currently only for <input>.value.
+// Is it an attribute or a property? "value" is both, attribute for the initial
+// value, then property for any other value the user or code might set, but it's
+// not a styleable property, it's a direct property on the object.
+class HtmlBute extends PBase {
     constructor() {
         super(...arguments);
         Ez.is(this);

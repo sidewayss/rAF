@@ -1,25 +1,10 @@
 // export everything but ns, D
-export {points, pad, loadUpdate, inputX, updateFrame, updateSidebar, updateTime,
+export {loadUpdate, inputX, updateFrame, updateCounters, updateTime,
         setDuration, setFrames, eGet, pseudoAnimate};
-
-import {E, Is, P} from "../raf.js";
-
-import {FPS, ezX, raf, secs}  from "./load.js";
-import {loadPlay, changeStop} from "./play.js";
-import {MILLI, LENGTH, INPUT, elms, g, formatNumber}
-                              from "./common.js";
-
-import {isSteps} from "./easings/steps.js";
-/*
-import(_update.js): getPoint, pointZero, updateX;
-                    redraw, flipZero, formatPlayback, and
-                    vucPoint, flipZero, formatFrames pass through to play.js.
-*/
-let ns;       // _update.js namespace
-const D = 3;  // D for decimals: .toFixed(D) = milliseconds, etc.
-
-const points = [];  // time, x, y, and eKey values by frame
-const pad = {       // string.pad() values for formatting numbers
+const D = 3;  // D for decimals: .toFixed(D) = milliseconds, etc., not exported
+export let targetInputX;    // only imported by easings/_update.js
+export const frames = [],   // time, x, y, and eKey values by frame
+pad = {                     // string.pad() values for formatting numbers
     frame:5,
     milli:MILLI.toString().length,
     secs: D + 3,
@@ -27,57 +12,71 @@ const pad = {       // string.pad() values for formatting numbers
     unit: D + 2,
     comp: D + 2
 };
+
+import {E, Is, P} from "../raf.js";
+
+import {FPS, ezX, raf, secs}  from "./load.js";
+import {loadPlay, changeStop} from "./play.js";
+import {MILLI, COUNT, INPUT, elms, g, formatNumber} from "./common.js";
+/*
+import(_update.js): getFrame, initPseudo, updateX;
+                    refresh, flipZero, formatPlayback,
+                    and formatFrames pass through to play.js.
+*/
+let ns; // _update.js namespace
 //==============================================================================
 // loadUpdate() is called by loadCommon()
 async function loadUpdate(isMulti, dir) {
-    if (isMulti) {
-        points[0] = {t:0, x:Array.from(LENGTH, () => new Object)};
+    if (isMulti) {                        // can't do: () => {}
+        frames[0] = {t:0, x:Array.from({length:COUNT}, () => new Object)};
         pad.value = pad.milli;
     }
-    Object.freeze(pad);
+    //!!Object.freeze(pad); //!!it's color page's fault
 
     elms.x.addEventListener(INPUT, inputX, false);
     return import(`${dir}_update.js`).then(namespace => {
         ns = namespace;
         loadPlay(ns);
-        return ns;
+        return ns; //!!why not return undefined??return value not used
     }); // .catch(errorAlert) in Promise.all() in loadCommon()
 }
 //==============================================================================
-// inputX() handles input events for #x, called by easings redraw(), updateAll()
+// inputX() handles input events for #x, called by easings refresh() w/o evt
 function inputX(evt) {
-    const f = elms.x.valueAsNumber; // f for frame
-    const p = points[f];            // p for point
-    updateSidebar(f, p);
-    ns.updateX(p, !Is.def(evt));    // 2nd arg easings only
+    const i   = elms.x.valueAsNumber;
+    const frm = frames[i];
+    updateCounters(i, frm);
+    ns.updateX(frm, !Is.def(evt)); // 2nd arg easings only
 }
 //==============================================================================
-// updateFrame() consolidates easy.peri() code, records points, updates textContent
-function updateFrame(arg0, arg1, arg2) {
-    const t = raf.elapsed;  // Chrome pre-v120 currentTime can be > first frame's timeStamp
-    if (t <= 0) return;     // ignore frameZero and Chrome pre-v120 first frame
-    //--------------------- // points[0] isn't modified by animation
-    points[++g.frame] = ns.getPoint(t, ...arguments);
-    updateSidebar(g.frame);
-}
-// updateSidebar() is called by updateFrame(), inputX(), and changeStop()
-function updateSidebar(frame, p = points[frame]) {
-    formatNumber(frame,       pad.frame, 0, elms.frame);
-    formatNumber(p.t / MILLI, pad.secs,  D, elms.elapsed);
-    ns.setSidebar(p, D, pad);
-}
-// updateTime() is called by changeTime(), changeStop(), and both updateAll()s
-function updateTime() {
-    const f = elms.x.valueAsNumber / g.frames;
-    setFrames(Math.ceil(secs * FPS));       // updates g.frames
-    elms.x.value = Math.round(f * g.frames);
+// updateTime() is called by changeTime(), changeStop(), and updateAll().
+//              !addIt is easings page, doesn't add targetInputX to ezX.targets
+//              because next run is pseudoAnimate() and a different target.
+function updateTime(addIt = !Is.def(ns.flipZero)) {
+    const f = elms.x.valueAsNumber / g.frameCount;
+    setFrames(Math.ceil(secs * FPS));   // sets g.frameCount = secs * FPS
+    elms.x.value = Math.round(f * g.frameCount);
 
-    ezX.cutTarget(g.targetX);
-    g.targetX = ezX.newTarget({
-        elm: elms.x,
-        prop: P.value,
-        factor: g.frames / MILLI
-    });
+    const obj = {elm:elms.x, prop:P.value, factor:g.frameCount / MILLI};
+    if (addIt)                          // changing factor requires new target
+        ezX.cutTarget(targetInputX);
+    targetInputX = ezX.newTarget(obj, addIt);
+}
+// updateFrame() consolidates easy.peri() code, records frames, sets textContent
+//         NOTE: Chrome pre-v120 currentTime can be > first frame's timeStamp.
+function updateFrame(...args) {
+    const t = raf.elapsed;      // frames[0] isn't modified by animation
+    if (t > 0) {                // ignore frameZero & Chrome pre-v120 1st frame
+        const frm = ns.getFrame(t, ...args)
+        frames[++g.frameIndex] = frm;
+        updateCounters(g.frameIndex, frm);
+    }
+}
+// updateCounters() is called by inputX(), updateFrame(), and changeStop()
+function updateCounters(i = 0, frm = frames[i]) {
+    formatNumber(i,             pad.frame, 0, elms.frame);
+    formatNumber(frm.t / MILLI, pad.secs,  D, elms.elapsed);
+    ns.setCounters(frm, D, pad);
 }
 //==============================================================================
 // setDuration() is called by changePlay(), changeStop(), multi updateAll(),
@@ -87,46 +86,40 @@ function setDuration(val = secs) {
 }
 // setFrames() is called by updateTime() and changePlay()
 function setFrames(val) {
-    points.length = val + 1;
-    elms.x.max = val;
-    g.frames = val;
+    elms.x.max    = val;
+    g.frameCount  = val;
+    frames.length = val + 1;
     let txt = val.toString();
-    if (ns.formatFrames)        // multi only
+    if (ns.formatFrames)            // multi and color only
         txt = ns.formatFrames(txt);
     elms.frames.textContent = txt;
 }
 //==============================================================================
-// eGet() chooses ez.e or ez.e2, called by multi.getPoint() and
-//                               easings.update()=>updateFrame()=>getPoint()
+// eGet() chooses ez.e or ez.e2, called by multi.getFrame() and
+//                               easings.update()=>updateFrame()=>getFrame()
 function eGet(ez) {
-    let e = ez.e;
-    if (!(e.unit % 1) && ((g.notLoopWait && e.status == E.outbound)
-                       || (g.notTripWait && e.status == E.inbound)))
-        return ez.e2;
-    else
-        return e;
+    const e = ez.e;
+    return !(e.unit % 1) && ((g.notLoopWait && e.status == E.outbound)
+                          || (g.notTripWait && e.status == E.inbound))
+           ? ez.e2
+           : e;
 }
 //==============================================================================
-// pseudoAnimate() does not apply values, intead it populates the points array,
-//                 called by both redraw()s.
+// pseudoAnimate() populates the frames array via the .peri() callbacks, does
+//                 not apply values or update counters, called by refresh().
 function pseudoAnimate() {
-    let ez, i, j, l, t;
-    const args = [];    //set points[0], args, ezs = easys or g.easies
-    const ezs  = ns.pointZero(points, args);
+    let i, l, t;
+    const ezs = g.easies;
 
+    ns.initPseudo();    // page-specific initialization, calls newTargets()
+    ezs._zero();        // zeros-out everything under ezs
     changeStop();       // resets stuff if necessary
-    for (ez of ezs)     // zero-out the Easys
-        ez._zero(0);
-                        // the pseudo-animation:
-   for (i = MILLI, j = 1, l = g.frames * MILLI; i <= l; i += MILLI, j++) {
-        t = i / FPS;
-        for (ez of ezs)
-            ez._easeMe(t);
-        points[j] = ns.getPoint(t, ...args);
+    g.frameIndex = 0;   // the pseudo-animation:
+    for (i = MILLI, l = g.frameCount * MILLI; i <= l; i += MILLI) {
+        t = i / FPS;    // more efficient to increment by MILLI/FPS, but I
+        ezs._next(t);   // prefer not to += floating point if I can avoid it.
+        frames[g.frameIndex].t = t; // EBase.proto.peri() doesn't have time
     }
-                        // E.steps needs cleanup (for pseudo-animation only)
-    if (isSteps() && elms.roundTrip.checked && elms.jump.value < E.end)
-        points.at(-1).y = Number(elms.end.textContent);
-
-    raf.init(true);     // force initialize after the pseudo-animation run
+    ns.postPseudo?.();  // easings page: E.steps has a pseudo-quirk
+    raf.init();         //!!force initialize after the pseudo-animation run
 }

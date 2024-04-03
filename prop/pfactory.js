@@ -1,7 +1,7 @@
 export {PFactory, ANGLES, EMPTY_PCT}; // ANGLES, EMPTY_PCT for func.js:CFunc
 
 import {Func, CFunc, ColorFunc, SRFunc} from "./func.js"
-import {Prop, Bute, PrAtt, Bute2}       from "./prop.js"
+import {Prop, Bute, PrAtt, HtmlBute}    from "./prop.js"
 
 import {C, HD, U, E, Ez, F, Fn, P, Pn, Is, Ease, Easy} from "../raf.js";
 
@@ -9,74 +9,71 @@ import {C, HD, U, E, Ez, F, Fn, P, Pn, Is, Ease, Easy} from "../raf.js";
 // C = <color>;  Un = gradients and other "unstructured" functions;
 // A = <angle>;  L  = <length> default units:px;
 // N = <number>; P  = <percentage>;
-// T = transform funcs; Tm = <time> default units:ms;
-// 2 = no abbreviated name created;
+// T = transform funcions; Tm = <time> default units:ms;
+// F = filter functions;    2 = no abbreviated name created;
 // units:
-const LENGTHS   = ["px","em","rem","vw","vh","vmin","vmax","pt","pc","mm","in"];
-const ANGLES    = ["deg","rad","grad","turn"];  // see CFunc.prototype.hueUnits
-const TIMES     = ["ms","s"];
-const EMPTY_PCT = ["", U.pct];                  // ditto .alphaUnits
-//  functions:
-const funcs   = ["url","var","cubic-bezier"];
-const funcUn  = ["color-mix","inset","path","polygon","calc","linear","steps"];
-const funcC   = ["rgb","hsl","hwb","lch","oklch","lab","oklab"];
-const funcGr  = ["linear-gradient","radial-gradient","conic-gradient",
-                 "repeating-linear-gradient","repeating-radial-gradient",
-                 "repeating-conic-gradient"];
-const funcSR  = ["circle", "ellipse"]; // SR = <shape-radius>
-                //!!filter functions broken out for class Elm
-const funcF   = ["brightness","contrast","grayscale","invert","opacity",
-                 "saturate","sepia"];
-const funcFA  = ["hue-rotate"];
-const funcFL  = ["blur","drop-shadow"];
-                //!!transform funcs broken out for class Elm
-const funcT   = ["matrix","scale","matrix3d","scale3d"];
-const funcTA  = ["rotate","rotateX","rotateY","rotateZ","rotate3d"];
-const funcTA2 = ["skew","skewX","skewY"];
-const funcTL  = ["perspective","translateZ"];
-const funcTLP = ["translate","translateX","translateY","translate3d"];
+const
+LENGTHS   = ["px","em","rem","vw","vh","vmin","vmax","pt","pc","mm","in"],
+ANGLES    = ["deg","rad","grad","turn"], // see CFunc.prototype.hueUnits
+TIMES     = ["ms","s"],
+EMPTY_PCT = ["", "U.pct"],                 // ditto .alphaUnits
+// functions:
+funcs   = ["url","var","cubic-bezier"],  //!!can any of these be animated??worth having here??
+        // color funcs
+funcC   = ["rgb","hsl","hwb","lch","oklch","lab","oklab"],
+        // isUn funcs
+funcUn  = ["color-mix","inset","path","polygon","calc","linear","steps"], //!!calc, linear, steps...
+funcGr  = ["linear-gradient","radial-gradient","conic-gradient",
+           "repeating-linear-gradient","repeating-radial-gradient",
+           "repeating-conic-gradient"],
+funcSR  = ["circle", "ellipse"],         // SR = <shape-radius>
+        // filter funcs
+funcF   = ["brightness","contrast","grayscale","invert","opacity","saturate","sepia"],
+funcFA  = ["hue-rotate"],
+funcFL  = ["blur","drop-shadow"],
+        // transform funcs
+funcT   = ["matrix","scale","matrix3d","scale3d"],
+funcTA  = ["rotate","rotateX","rotateY","rotateZ","rotate3d"],
+funcTA2 = ["skew","skewX","skewY"],
+funcTL  = ["perspective","translateZ"],
+funcTLP = ["translate","translateX","translateY","translate3d"],
 // CSS properties, class Prop:
-const css   = ["flexFlow","alignItems","alignSelf","justifyContent",
-               "fontFamily","fontWeight","overflowX","overflowY",
-               "pointerEvents","vectorEffect","textAnchor"];
-const css2  = ["cursor","display","flex","mask","overflow","position",
-               "left","right","top","bottom"]; // r is taken, no abbreviations
-const cssUn = ["border","clip-path","shape-outside"];
-const cssC  = ["color","backgroundColor","borderColor","borderLeftColor",
-               "borderRightColor","borderTopColor","borderBottomColor"];
-const cssLP = ["transformOrigin",
-               "maxHeight","maxWidth","minHeight","minWidth",
-               "padding",    "margin",
-               "paddingTop", "paddingBottom","paddingLeft","paddingRight",
-               "marginTop",  "marginBottom", "marginLeft", "marginRight",
-               "borderTop",  "borderBottom", "borderLeft", "borderRight",
-               "borderWidth","borderHeight", "borderImage"];
-              //++const cssTm = ["transitionDuration"];
-const bg    = ["backgroundAttachment","backgroundClip",  "backgroundOrigin",
-               "backgroundBlendMode", "backgroundImage", "backgroundRepeat"];
-const bgUn  = ["background",          "backgroundSize",  "backgroundPosition",
-               "backgroundPositionX", "backgroundPositionY"];
+css   = ["flexFlow","alignItems","alignSelf","justifyContent", //!!any of these animate??
+         "fontFamily","fontWeight","overflowX","overflowY",
+         "pointerEvents","vectorEffect","textAnchor"],
+css2  = ["left","right","top","bottom",  // r = <circle> radius, no abbreviations
+         "cursor","display","flex","mask","overflow","position"], //!!not all of these animate
+cssUn = ["border","borderImage","clip-path","offset-path","shape-outside"],
+cssC  = ["color","backgroundColor","borderColor","borderLeftColor",
+         "borderRightColor","borderTopColor","borderBottomColor"],
+cssLP = ["transformOrigin","maxHeight","maxWidth","minHeight","minWidth",
+         "padding",    "margin",         // border is in cssUn, above
+         "paddingTop", "paddingBottom","paddingLeft","paddingRight",
+          "marginTop",  "marginBottom", "marginLeft", "marginRight",
+          "borderTop",  "borderBottom", "borderLeft", "borderRight",
+          "borderWidth","borderHeight"],
+bg    = ["backgroundAttachment","backgroundClip", "backgroundOrigin",
+         "backgroundBlendMode", "backgroundRepeat"], //!!none of these animate, maybe repeat...
+bgUn  = ["background","backgroundImage","backgroundSize",
+         "backgroundPosition","backgroundPositionX","backgroundPositionY"],
 // CSS-SVG property-attributes, class PrAtt:
-const csSvg = ["font-style","visibility"];
-const csSvC = ["fill","stroke","stop-color"];
-const csSvN = ["font-size-adjust"];
-const csSvP = ["font-stretch"];
-const csSNP = ["opacity","fill-opacity","stroke-opacity","stop-opacity"];
-const csSLP = ["x","y","r","cx","cy",
-               "height","width","stroke-width","font-size"];
+csSvg = ["font-style","visibility"],
+csSvC = ["fill","stroke","stop-color"],
+csSvN = ["font-size-adjust"],
+csSvP = ["font-stretch"],
+csSNP = ["opacity","fill-opacity","stroke-opacity","stop-opacity"],
+csSLP = ["x","y","r","cx","cy","height","width","stroke-width","font-size"],
 // SVG attributes, class Bute:
-const svg   = ["class","href","lengthAdjust","preserveAspectRatio","type"];
-const svgUn = ["d","points"]; // CSS.supports("d","path('')")
-const svgN  = ["viewBox","baseFrequency","stdDeviation","surfaceScale"];
-const svgN2 = ["azimuth","elevation","k1","k2","k3","rotate","scale",
-               "seed","values"];
-const svgLP = ["dx","dy","startOffset","textLength","x1","x2","y1","y2"];
-// SVG attributes, class Bute:
-const htmlN = ["value"]; // for <input>
-//==============================================================================
-const vB = ["x","y","w","h"];
-
-const presets = [        // for Ease
+svg   = ["class","href","lengthAdjust","preserveAspectRatio","type"], //!!any of these animate??
+svgUn = ["d","points"], // CSS.supports("d","path('')")
+svgN  = ["viewBox","baseFrequency","stdDeviation","surfaceScale"],
+svgN2 = ["azimuth","elevation","k1","k2","k3","rotate","scale","seed","values"],
+svgLP = ["dx","dy","startOffset","textLength","x1","x2","y1","y2"],
+// HTML attributes, class HtmlBute:
+html  = ["value"],      // for <input type="range">
+// Miscellaneous:
+vB = ["x","y","w","h"], // SVG viewBox
+presets = [             // for Ease, see globals.js
     ["",1.685], ["Quad",2], ["Cubic",3], ["Quart",4], ["Quint",5],
     ["Sine"], ["Expo"], ["Circ"], ["Back"], ["Elastic"], ["Bounce"]
 ];
@@ -86,7 +83,7 @@ const PFactory = {
  // Pn. Call it once per session prior to using any of those objects or classes.
     init() {
         if (this.initialized) {
-            console.info("PFactory can only be initialized once per session.");
+            console.info(Ez._only("PFactory", "initialized once per session"));
             return;
         }
         // Fill collections, order is critical: U, Fn, F, Pn, P:
@@ -113,7 +110,6 @@ const PFactory = {
         add(cssUn,   99, Pn, P, "",    "isUn",      Prop);
         add(cssC,     0, Pn, P, "",    "_noU",      Prop, F.rgb);
         add(cssLP,    0, Pn, P, U.px,  "_lenPct",   Prop);
-    //++add(cssTm,    7, Pn, P, U.ms,  "_tm",       Prop);
         add(bg,      99, Pn, P, "",    "_noU",      Prop);
         add(bgUn,    99, Pn, P, "",    "_noU",      Prop);
         add(csSvg,   99, Pn, P, "",    "_noU",      PrAtt);
@@ -127,57 +123,71 @@ const PFactory = {
         add(svgN,     7, Pn, P, "",    "_noU",      Bute);
         add(svgN2,   99, Pn, P, "",    "_noU",      Bute);
         add(svgLP,   99, Pn, P, "",    "_lenPctN",  Bute);
-        add(htmlN,    0, Pn, P, "",    "_noU",      Bute2);
+        add(html,     0, Pn, P, "",    "_noU",      HtmlBute);
 
-        Fn.color = "color"; // CSS color() is special
-        F .color = new ColorFunc(Fn.color, "", "_noUPct");
+        let fp, keys;
+        const colorFuncs = [];
+        Fn.color   = "color";
+        this.funcC = funcC.slice();     // for Ez._invalidErr(, validList)
+        ColorFunc.spaces.forEach((id, i) => {
+            fp = new ColorFunc("", "_noUPct", id);
+            colorFuncs.push(fp);        // a ColorFunc for each color() space
+            this.funcC.push(id);
+            F[id] = fp;
+            if (id.includes("-")) {     // aliases out the wazoo:
+                F[Ez.kebabToCamel(id)]  = fp; // standard camelCase
+                F[id.replace("-", "_")] = fp; // snake_case for Color.js
+            }
+            if (ColorFunc.aliases[i])         // aliases for Color.js + CSS xyz
+                F[ColorFunc.aliases[i]] = fp;
+        });
 
-        F.rgba = F.rgb;     // elm.style and getComputedStyle(elm) use it
+        Fn.rgba = Fn.rgb + "a";         // elm.style, getComputedStyle() use it
+        F .rgba = F.rgb;
+        F .srgb = F.rgb;                // practically no one uses color(srgb)
 
-        // Read-only properties for this, F, P, and other objects:
+        // Properties for this, F, P:
+        // readOnly() for P because F and this get frozen, but P is extensible.
         // P._pct _len _ang _color help the static global property setters
         // FL, FA, CSSVC for drop-shadow, hue-rotate, stop-color camelCase
-        let f, keys;
         const funcLP = [...funcSR, ...funcTLP];
         const propLP = [...svgLP,  ...cssLP];
 
         keys = [[...funcLP, ...funcF,  ...funcC],  propLP];
-        Ez.readOnly(P, "_pct", keys2Objects([F, P], keys));
+        Ez.readOnly(this, "_pct", [...colorFuncs, ...keys2Objects([F, P], keys)]);
 
         keys = [[...funcLP, ...funcTL, ...FL], propLP];
-        Ez.readOnly(P, "_len", keys2Objects([F, P], keys));
+        Ez.readOnly(this, "_len", keys2Objects([F, P], keys));
 
         keys = [[...funcTA, ...funcTA2, ...FA, Fn.hsl, Fn.hwb]];
-        Ez.readOnly(P, "_ang", keys2Objects([F], keys));
+        Ez.readOnly(this, "_ang", keys2Objects([F], keys));
 
         keys = [[...cssC, ...CSSVC]];
-        Ez.readOnly(P, "_color", keys2Objects([P], keys));
+        Ez.readOnly(this, "_color", keys2Objects([P], keys));
+        for (fp of this._color)
+            Ez.is(fp, "Color");
 
-        Ez.readOnly(this, "funcC", [...funcC, Fn.color, "colorMix"]);
-        for (f of [...P._color, ...funcC.map(fn => F[fn])])
-            Ez.is(f, "Color");
-
-        for (f of [F.lch, F.oklch]) {
-            Ez.readOnly(f, "hueIndex", 2);
-            Ez.readOnly(f, "hasHue", true);
+        for (fp of [F.lch, F.oklch]) {
+            fp.hueIndex = 2;
+            fp.hasHue   = true;
         }
-        for (f of [F.hsl, F.hwb]) {
-            Ez.readOnly(f, "hueIndex", 0);
-            Ez.readOnly(f, "hasHue", true);
-            Ez.is(f, "HXX");
+        for (fp of [F.hsl, F.hwb]) {
+            fp.hueIndex = 0;
+            fp.hasHue   = true;
+            fp.isHXX    = true;
         }
-        for (f of [F.hsl, F.hwb, F.rgb]);
-            Ez.is(f, "LD")              // HD = High Def, LD = Low Def
+        for (fp of [F.hsl, F.hwb, F.rgb]);
+            fp.isLD = true;             // HD = High Def, LD = Low Def
 
-        Ez.is(F.rgb, "RGB");
-        Ez.is(F.hsl, "HSL");
+        F.rgb.isRGB = true;
+        F.hsl.isHSL = true;
 
         Pn.filter    = "filter";        // filter & transform are multi-function
         Pn.transform = "transform";     // transform has CSS and SVG variants
         P .filter    = new Prop(Pn.filter,    "", "_noU", F.saturate,  true);
         P .transform = new Prop(Pn.transform, "", "_noU", F.translate, true);
         P .transSVG  = new Bute(Pn.transform, "", "_noU", F.translate, true);
-        for (const p of [...P._color, P.filter, P.transform, P.transSVG])
+        for (const p of [...this._color, P.filter, P.transform, P.transSVG])
             Ez.readOnly(p, "needsFunc", true);
 
         U.percent      = U.pct;         // units aliases, long names
@@ -208,8 +218,10 @@ const PFactory = {
         let   arr  = ["R","G","B","A","C"];
         let   len  = arr.length;        // feColorMatrix has the most args at 20
         let   rgb  = arr.slice(0, len - 1);
-        const RGBC = Array.from({length:len * rgb.length},
-                                (_, i) => arr[i % len] + rgb[Math.floor(i / len)]);
+        const RGBC = Array.from(
+            {length:len * rgb.length},
+            (_, i) => arr[i % len] + rgb[Math.floor(i / len)]
+        );
         rgb = rgb.map(v => v.toLowerCase());
         const hsl = ["h","s","l"];      // the rest look better in lower case
         const hwb = [,"w"];
@@ -219,8 +231,10 @@ const PFactory = {
 
         arr = ["a","b","c","d"];        // matrix3d() has 16 args
         len = arr.length;
-        const abcd = Array.from({length:len * len},
-                                (_, i) => arr[i % len] + Math.floor(i / len + 1));
+        const abcd = Array.from(
+            {length:len * len},
+            (_, i) => arr[i % len] + Math.floor(i / len + 1)
+        );
         arr.push("e","f");              // SVG matrix()
 
         let n = 0.5;                    // create the bitmask values up front
@@ -229,17 +243,17 @@ const PFactory = {
                        [HD, [lab, lch, xyz]],
                        [Ez, [arr, abcd, vB]]];
         for (const [target, source] of pairs)
-            for (arr of source)
+            for (arr of source)         // create the bitmask properties
                 arr.forEach((v, i) => target[v] = bits[i]);
 
         Ez.tx = Ez.e;                   // for CSS matrix()
         Ez.ty = Ez.f;
-        Ez.w  = Ez.width;               // for convenience, consistency w/P
+        Ez.w  = Ez.width;               // for convenience, consistency with P
         Ez.h  = Ez.height;
         Ez.z  = Ez.w;                   // for transform3d
         Ez.angle = Ez.h;                // for rotate3d()
 
-        // E object, enumerations and eKey constants:
+        // E object, enumerations and string constants:
         let j, key;
         for (keys of [vB, Easy.status, Easy.type, Easy.io, Easy.jump, Easy.set]) {
             j = 0;
@@ -248,6 +262,8 @@ const PFactory = {
         }
         for (key of Easy.eKey)
             E[key] = key;
+        for (key of ColorFunc.spaces)   // Color.js uses snake_case, I use camel
+            E[Ez.kebabToCamel(key)] = key; //!!with F[spaceId] are these needed??
 
         // Popular arguments for Ez.toNumber() and Easy.legNumber():
         // Can't define these inside const Ez because ...Ez.xYZ not ready yet//!!??
@@ -274,10 +290,10 @@ const PFactory = {
         // Lock up as much as is plausible, P and Pn are extensible
         for (obj of [F, P])
             Object.values(obj).forEach(o => Object.seal(o));
-        for (obj of [C, E, Ease, Ez, F, Fn, HD, U])
+        for (obj of [C, E, Ease, Ez, F, Fn, HD, U, CFunc._funcs])
             Object.freeze(obj);
 
-        Ez.readOnly(this, "initialized", true);
+        this.initialized = true;
         Object.freeze(this);
     },
  // ----------------------------------------------------------------------------
@@ -312,7 +328,7 @@ const PFactory = {
  // _validUnits() helps Func and PBase validate units, obj can be an array of
     _validUnits(val, name, obj) { // string values or a Prop or Func instance.
         let arr;
-        if (Is.A(obj)) {
+        if (Is.A(obj)) {          // LENGTHS, ANGLES, EMPTY_PCT
             if (!obj.includes(val))
                 arr = obj;
         }
@@ -348,19 +364,19 @@ const PFactory = {
     },
  // ----------------------------------------------------------------
  // Setters to globally change units, func:
- // set lengthUnits() sets the units for all Props that use <length>
+ // set lengthUnits() sets units for Props/Funcs that use <length>
     set lengthUnits(val) {
         val = this._validUnits(val, "lengthUnits", LENGTHS);
         for (obj of this._len)
             obj._u = val;      // backdoor avoids double-validation
     },
- // set angleUnits() sets the units for all the Props that use <angle>
-    set angleUnits(val) {     // <angle>
+ // set angleUnits() sets units for Funcs that use <angle>
+    set angleUnits(val) {
         val = this._validUnits(val, "angleUnits", ANGLES);
-        for (const obj of this._ang) // they're all funcs
+        for (const obj of this._ang)
             obj._u = val;
     },
- // set percent() toggles U.pct for Props that use it
+ // set percent() toggles U.pct for Props/Funcs that use it
     set percent(b) {
         if (b)
             for (const obj of this._pct)
@@ -369,9 +385,9 @@ const PFactory = {
             for (const obj of this._pct)
                 obj._u = obj._lenPct ? U.px : "";
     },
- // set colorFunc() sets the CFunc for all color properties
+ // set colorFunc() sets the CFunc for all color Props
     set colorFunc(val) {
-        if (val?.isColor)
+        if (val?.isCFunc)
             for (const obj of this._color)
                 obj.func = val;
         else
@@ -381,12 +397,12 @@ const PFactory = {
  // These two are for class CFunc only:
     set alphaUnits(val) {
         val = this._validUnits(val, "alphaUnits", EMPTY_PCT);
-        for (const f of CFunc._funcs)
+        for (const f of Object.values(CFunc._funcs))
             f._u[CFunc.A] = val;
     },
     set hueUnits(val) {
         val = this._validUnits(val, "hueUnits", ANGLES);
-        for (const f of CFunc._funcs)
+        for (const f of Object.values(CFunc._funcs))
             if (f.hasHue)
                 f._u[f.hueIndex] = val;
     }

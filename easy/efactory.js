@@ -1,138 +1,233 @@
 // Not exported by raf.js
 // This module is its create() function, literally. Everything else is called
-// exclusively by create(). So the module is effectively one huge function.
+// exclusively by create(), so the module is effectively one huge function.
+// It is broken out into sub-functions to make it more manageable and readable.
 // It could be broken into sub-modules, but the sub-module functions will still
-// only be imported into and called from here.
+// only be imported into, and called from, here. This way at least you know the
+// scope & size of the code in one place, instead of having to dig through
+// however many modules it might occupy.
 export {create};
 
-import {Easy}                from "./easy.js";
 import {ECalc}               from "./ecalc.js";
 import {Easer,  EaserByElm}  from "./easer.js";
 import {MEaser, MEaserByElm} from "./measer.js";
 
-import {PBase} from "../prop/pbase.js";
+import {CFunc}    from "../prop/func.js";
+import {PBase}    from "../prop/pbase.js";
+import {rgbToHxx} from "../prop/color-convert.js";
 
-import {E, Ez, Is} from "../raf.js"
+import {E, Ez, Is, Easy} from "../raf.js"
 
 const keys   = ["f",           "a",           "max",      "min"     ];
 const calcs  = [ ECalc.f,       ECalc.a,       Math.min,   Math.max ];
 const byElms = ["factorByElm", "addendByElm", "maxByElm", "minByElm"];
 const noop   = {cNN:"_noop"};
 //==============================================================================
-function create(o, set, b, q, cls) {
-    if (!b)                 // q for quantity: "single" or "multi") {
-        throw new Error(`For ${q}-ease targets you must use ${cls}`
-                      + ".prototype.newTarget().");
-    //---------------------------------------------
-    o.prop = PBase._validate(o.prop, "prop", true);
-    o.func = o.func || o.prop.func;
-    o.peri = Ez._validFunc(o.peri, "peri");
+// create() instantiates a subclass of EBase and returns it. Internally, the b
+//          arg is always defined and is the initial error check for Easer vs
+//          MEaser. The q and cls args are purely for error messaging. b is set
+//          to true by default to allow external clients to call create with
+//          only the o and set args (or only o) and w/o the error check.
+function create(o, set, b = true, q, cls) {
+    if (!b)             // q for quantity: "Single" or "Multi")
+        throw new Error(`${q}-ease targets require ${cls}.prototype.newTarget().`);
+    //-----------------------------------------------------------------
+    o.elms = Ez.toElements(o.elms || o.elm || o.elements || o.element);
+    o.l    = o.elms.length;
 
-    if (o.func && !o.func.isFunc)
-        Ez._mustBeErr("func", "an instance of Func or undefined");
-    if (o.prop.isUn || o.func?.isUn)
-        o.set = E.net;           // just force it
+    let cv, is1Elm;
+    const hasElms = Boolean(o.l);
+    if (hasElms) {
+        is1Elm = (o.l == 1);        // elms requires prop
+        o.prop = PBase._validate(o.prop, "prop", true);
 
-    o.isNet = (o.set == E.net);
-    o.elms  = Ez.toElements(o.elms || o.elm || o.elements || o.element);
-    o.l     = o.elms.length;
-//??if (!o.l)
-//??    throw new Error("Every target must have elements.");
-//??//--------------------------------------------------------
-    o.loopByElm = o.l > 1 && (o.loopByElm ?? o.loopByElement);
-    o.calcByElm = o.loopByElm || o.l == 1;
+        o.loopByElm = !is1Elm && (o.loopByElm ?? o.loopByElement);
+        o.calcByElm = is1Elm || o.loopByElm;
 
-    if (o.isNet)
-        o.prop.getUnToObj(o);
-    else if (!o.noRestore)       // an obscure option, might as well...
-        getCV(o);                // for restore()
+        o.isSet = (o.set == E.set); // both these can be set to true later
+        o.isNet = (o.set == E.net) || o.prop?.isUn || o.func?.isUn;
 
-    if (o.byElm || o.byElement)
-        o.byElm = true;          // 1D arrays are by element
-    if (o.bAbE  || o.byArgbyElm)
-        o.bAbE = true;           // 2D arrays are [arg[elm]]
-
-    afcru (o);
-    config(o);
-    mask  (o);
-    easies(o);
-    if (!o.isNet)
-        optional(o);
-    else {
-        const lens = o.lens;
-        const c = o.mask.at(-1) + 1;
-        const i = lens.findIndex(len => len < c);
-        if (i >= 0)
-            throw new Error(`elms[${i}]'s value has fewer than ${c} numbers.`);
-        //-------------------
-        o.c  = c;
-        o.lm = o.mask.length;
-
-        // normalize .numBeg, .numEnd, .cv, and .seps across elements
-        o.numBeg = o.numBeg.every(b => b);
-        if (Math.max(...lens) > c){
-            let j, l, s;            // squeeze trailing cv & seps into last sep
-            o.cv.forEach((v, i) => {
-                l = lens[i];
-                if (l > c) {
-                    s = o.seps[i];
-                    for (j = c; j < l;)
-                        s[c] += v[j] + s[++j];
-                    v.length = c;
-                    s.length = c + 1;
-                }
-            });
-            o.numEnd = false;
-        }
-        else
-            o.numEnd = o.numEnd.every(b => b);
+        cv = getCV(o);              // cv = o.restore or o.currentValue
     }
-    maskCV   (o, o.l, o.mask, o.lm);
-    endToDist(o);
-    plugCV   (o); //!!careful with E.net and getUn() here!!
-    resetDims(o, o.dims);
-
-    let tar;              // tar for target, the return value
-    if (o.calcByElm) {
-        calcByElm(o);
-        tar = o.easies ? new MEaserByElm(o) : new EaserByElm(o);
+    else {                          // !elms requires peri
+        o.peri  = Ez._validFunc(o.peri, "peri", true);
+        o.isSet = true;
     }
-    else {
-        o.bAbE = true;    // default is bAbE, only one exception:
-        o.l2   = o.lm;    //  no 2D arrays and all 1D are byArg
-        o.l1   = o.l;     // bySame() handles the exception
-        bySame(o);
-        o.twoD = Array.from({length:o.l2}, () => new Array(o.l1));
-        if (o.easies) {
-            calcMEaser(o);
-            tar = new MEaser(o);
+
+    if (o.byElm || o.byElement)     // 1D arrays are by element
+        o.byElm = true;
+    if (o.bAbE  || o.byArgbyElm)    // 2D arrays are [arg[elm]]
+        o.bAbE  = true;
+
+    color(o, hasElms);              // o.cjs defined = ignore o.func
+    if (hasElms) {
+        if (!o.isNet) {             // o.func determines arg count, etc.
+            getFunc(o, cv);         // getFunc() can set o.func
+            o.isNet |= o.func?.isUn;
         }
+        if (o.isNet)                // gotta get o.cv early for arg count, etc.
+            o.prop.getUnToObj(o, cv);
+    }
+    afurc (o, hasElms);             // addend, factor, count, required, units
+    config(o, hasElms);             // configure addend, factor, max, min
+    mask  (o, hasElms);             // parse|create mask, o.c for isNet, !hasElms
+    easies(o, hasElms);             // process o.easies for MEaser, o.c is ready
+    if (hasElms) {
+        if (o.isNet)
+            parseUn(o);             // normalize stuff across elements
         else {
-            calc(o);
-            tar = new Easer(o);
+            optional(o);            // adjust o.c for unused optional arguments
+            current(o, cv, is1Elm); // process current values
         }
+        maskCV(o);                  // for configCV (config.param = E.cV)
     }
-    set.add(tar);
+    endToDist(o);                   // convert end to distance = factor
+    if (hasElms) {
+        plugCV(o, is1Elm);          // build squeezed o.values and reset o.mask
+        o.config.forEach((cfg, i) =>
+            o.dims[i] = cfg.dim     // maskCV() and endToDist() can modify .dim
+        );
+    }
+                            // calc functions are the final step
+    let tar;                // tar for target = the (M)Easer, the return value
+    const isME = Boolean(o.easies);
+    if (o.calcByElm)        // single element or loopByElm:
+        tar = calcByElm(o, isME);
+    else if (hasElms) {     // multi-element:
+        o.bAbE = true;      // default is bAbE, only one exception:
+        o.l2   = o.lm;      //  no 2D arrays and all 1D are byArg
+        o.l1   = o.l;
+        if (Math.max(...o.dims) == 1) {
+            const d1    = o.config.filter(cfg => cfg.dim == 1);
+            const byArg = d1.every(cfg => cfg.byArg);
+            if (byArg || d1.every(cfg => cfg.byElm)) {
+                o.bySame = true;   // see swapDims() and ECalc constructor()
+                if (byArg) {       // the one exception:
+                    delete o.bAbE; // true or undefined
+                    o.l2 = o.l;    // swap 'em
+                    o.l1 = o.lm;
+                }
+            }
+        }
+        o.twoD = Ez.newArray2D(o.l2, o.l1);
+        tar = isME ? calcMEaser(o, hasElms)
+                   : calcEaser (o, hasElms);
+    }
+    else                    // no elements, just calcs and .peri():
+        tar = calcNoElms(o, isME);
+
+    set?.add(tar);
     return tar;
 }
 //==============================================================================
 // Everything else is for portioning create() into manageable chunks
-// afcru() processes addend, factor, count, required, units
-function afcru(o) {
-    //    okNull is because E.cV === null is a legit value for o.a and o.f
-    const okNull = [undefined, false, false, false, false, false];
+function getCV(o) {
+    let cv;
+    cv = o.currentValue;
+    if (cv) {                              // initial validation of user values
+        cv = Ez.toArray(cv, "getCV");      // see current() for final validation
+        if (cv.length != o.l)
+            Ez._mustBeErr("currentValue", "an array the same length as elms");
+        //----------------------
+        o.cvDims = Ez._dims(cv);
+        if (o.cvDims == 2 || Is.Number(cv[0]))
+            if (!o.func && !o.cjs && o.prop.needsFunc) {
+                const pre = `${o.prop.name} requires a function, and `;
+                const suf = " you must set the func property, e.g {func:F.rgb}";
+                throw new Error(o.cvDims == 2
+                  ? `${pre}currentValue 2D arrays can't include functions;${suf}`
+                  : `${pre}if currentValue is an array of Number,${suf}`
+                );
+            }
+            else if (o.isNet)              // E.net requires full CSS values
+                Ez._mustBeErr("currentValue for {set:E.net}",
+                              "an array of strings by element");
+    }
+    else if (!o.l && !o.isSet)
+        Ez._cantErr("Unless you define {set:E.set}, you",
+                    "leave elements and currentValue undefined");
+    //---------------------------
+    if (!cv || o.enableRestore) {
+        o.restore = o.prop.getMany(o.elms);
+        if (!cv)
+            cv = o.restore;
+    }
+    return cv;
+}
+//==============================================================================
+function getFunc(o, cv) {
+    if (o.cjs)
+        return;
+    if (o.func && !o.func.isFunc)
+        Ez._mustBeErr("func", "an instance of Func");
+    //------
+    let idx;
+    const names = new Array(o.l);
+    cv.forEach((v, i) => {
+        idx = v.indexOf(E.lp);
+        names[i] = (idx >= 0) ? v.slice(0, idx) : "";
+    });
+    if (!o.func)
+        o.func = names[0] ? F[names[0]] : o.prop.func;
+    if (!o.func) {
+        if (o.prop.needsFunc)
+            throw new Error(`${o.prop.name} requires a function.`);
+    }                           // color funcs validated via current()
+    else if (!o.isSet && !o.func.isCFunc
+          && (idx = names.findIndex(v => v != o.func.name)) >= 0)
+        throw new Error(`Element ${idx}'s function, ${names[idx]}, does not match {func:F.${o.func.name}}`);
+}
+//==============================================================================
+// isCjs() validates that val is an instance of Color, but Color is not imported
+//         here, so can't use `val instanceof Color`. ditto isCjsSpace().
+function isCjs(obj) {
+    try   { return obj?.constructor.name == "Color" && "cam16_jmh" in obj; }
+    catch { return false; }
+}
+function isCjsSpace(obj) {  // `in` throws if obj is Number, String
+    try { return obj?.constructor.name == "ColorSpace" && "gamutSpace" in obj; }
+    catch { return false; }
+}
+// color() sets o.cjs, the primary Color instance
+function color(o, hasElms) {
+    if (o.colorjs)  // alt long name for users
+        o.cjs = o.colorjs;
+    if (o.cjs) {
+        if (hasElms && !o.prop.isColor) //!!until .isNet and gradients/color-mix!!
+            Ez._cantErr("You", `use colorjs with ${o.prop.name}`);
+        else if (!isCjs(o.cjs))
+            Ez._mustBeErr("colorjs", "an instance of Color");
 
+        if (o.displaySpace) {
+            let ds = o.displaySpace;
+            if (isCjsSpace(ds))         // it's a ColorSpace instance
+                ds = ds.id;             // - we want the string id
+            o.displaySpace = {space:ds};
+
+            try { o.cjs.display(o.displaySpace); }
+            catch (err) {               // let Color.js validate the space id
+                err.message = "displaySpace property - " + err.message;
+                throw err;
+             }
+        }
+        o.space = o.cjs.spaceId.replace("-", "_"); // kebab-case to snake_case
+    } //o.space is used only once, in current(), but it's simpler to set it here
+}
+//==============================================================================
+// afurc() processes addend, factor, units, required, count
+function afurc(o, hasElms) {
     // addend and factor can be undefined (unused) or null (E.currentValue)
     // if defined, o.start is addend and o.end is factor
+    const okNull = [undefined, false, false, false, false, false];
     o.start = Ez.toNumber(o.start, "start", ...okNull);
     o.end   = Ez.toNumber(o.end,   "end",   ...okNull);
 
-    // o.a = addend: if it's zero, set it undefined, adding 0 is pointless
+    // o.a = addend: if it's zero, set it to undefined, adding 0 is pointless
     o.a = o.start ?? Ez.toNumber(o.addend, "addend", ...okNull);
     if (o.a === 0)
         o.a = undefined;
 
-    // o.f = factor: can only be 0 if it's o.end, else multiply by 0
+    // o.f = factor: can only be 0 if it's o.end, else it would be multiply by 0
     o.isTo = Is.def(o.end); // o.f = end instead of distance
     if (o.isTo) {
         if (o.end === o.a)  // more validation in endToDist()
@@ -142,102 +237,117 @@ function afcru(o) {
     }
     else {                  // more alt names for factor
         const name = Is.def(o.factor)   ? "factor"
-                    : Is.def(o.distance) ? "distance"
-                    : Is.def(o.dist)     ? "dist"
+                   : Is.def(o.distance) ? "distance"
+                   : Is.def(o.dist)     ? "dist"
                                         : "";
         okNull[2] = true    // factor can't be zero
         o.f = name ? Ez.toNumber(o[name], name, ...okNull)
                     : undefined;
     }
 
-    // o.c and o.r are not user-defined, o.u is user-optional w/default
-    if (!o.isNet) {                    // isNet = (o.set == E.net);
-        o.c = o.prop.count(o.func);    // c = arg count
-        o.r = o.prop.required(o.func); // r = required arg count
-        o.u = o.units                  // u = units, Prop provides default
-            ?? o.prop._unitz(o.func);
+    // o.u is user-optional w/default, o.r and o.c are not user-defined
+    // o.isNet has no units or required, mask() sets o.c = last mask index
+    // !hasElms has no prop, so it only defines o.c, in create(), after afurc()
+    if (hasElms && !o.isNet) {
+        o.u = o.units               // o.u = units, prop provides default
+           ?? o.prop._unitz(o.func);
+        o.r = o.cjs ? CFunc.A       // o.r = required arg count, constant
+                    : o.prop.required(o.func);
+        o.c = o.cjs ? CFunc.A + 1   // o.c = total arg count, varies down to o.r
+                    : o.prop.count(o.func);
+        o.maxArgs = o.c;            // useful in case it varies
     }
 }
-// config() processes factor, addend, max, and min into o.config.
-// 1D config.param arrays can be byArg (the default) or byElm. Users can
-// explicitly set byElm for all 1D arrays or for each one separately.
-// There are also obvious cases where byElm can be implied.
-function config(o) {
+//==============================================================================
+// config() processes factor, addend, max, and min into o.config and o.dims.
+//          1D config.param arrays can be byArg (the default) or byElm.
+//          Users can set byElm for all 1D arrays or for each separately.
+//          There are also obvious cases where byElm can be implied.
+function config(o, hasElms) {
     let cfg, hasCV, j, l, prm;
 
-    Object.assign(o, {config:[], dims:[]});
+    o.config = [];
+    o.dims   = [];
     keys.forEach((key, i) => {
         prm = o[key];
         if (Is.def(prm)) {
-            cfg = { param: prm,
-                    calc:  calcs[i],
-                    dim:   Ez._dims(prm)   };
-
-            switch (cfg.dim) {
-            case 0:
-                hasCV = (prm === E.cV);
-                break;
-            case 1:                // .byElm and .bAbE are true or undefined
-                l     = prm.length;
-                hasCV = prm.includes(E.cV);
-                if (o.byElm || Object.hasOwn(o, byElms[i]))
-                    cfg.byElm = true;
-                else if (o.c == 1)
-                    cfg.byElm = true;
-                else if (l > o.c && l <= o.l)
-                    cfg.byElm = true;
-                paramLength(l, key, cfg.byElm);
-                if (!cfg.byElm)    // .byArg is duplicative, but useful
-                    cfg.byArg = true;
-                break;
-            case 2:
-                cfg.bAbE = o.bAbE; // maskCV() & endToDist() can alter this
-                paramLength(l, key, !cfg.bAbE);
-                l     = prm.length;
-                hasCV = false;
-                for (j = 0; j < l; j++) {
-                    paramLength(prm[j].length, key, cfg.bAbE);
-                    if (!hasCV)
-                        hasCV = !Is.def(prm[j]) || prm[j].includes(E.cV);
+            cfg = {                // configure cfg:
+                param: prm,
+                calc:  calcs[i],
+                dim:   Ez._dims(prm)
+            };
+            if (hasElms) {             // animation applied to element(s)
+                switch (cfg.dim) {
+                case 0:
+                    hasCV = (prm === E.cV);
+                    break;
+                case 1:                // .byElm and .bAbE are true or undefined
+                    l     = prm.length;
+                    hasCV = prm.includes(E.cV);
+                    if (!o.isNet) {    //!!what's the deal with isNet and byElm/byArg/bAbE/bEbA?
+                        if (o.byElm || o[byElms[i]])
+                            cfg.byElm = true;
+                        else if (o.c == 1) //!!isNet doen't have o.c defined yet!!
+                            cfg.byElm = true;
+                        else if (l > o.c && l <= o.l) //!!ditto
+                            cfg.byElm = true;
+                        paramLength(l, key, cfg.byElm);
+                        if (!cfg.byElm)    // .byArg is duplicative, but useful
+                            cfg.byArg = true;
+                    }
+                    break;
+                case 2:
+                    cfg.bAbE = o.bAbE; // maskCV() & endToDist() can alter this
+                    paramLength(l, key, !cfg.bAbE);
+                    l     = prm.length;
+                    hasCV = false;     // populate cfg with current values?
+                    for (j = 0; j < l; j++) {
+                        paramLength(prm[j].length, key, cfg.bAbE);
+                        if (!hasCV)
+                            hasCV = !Is.def(prm[j]) || prm[j].includes(E.cV);
+                    }
                 }
             }
-            o.config.push(cfg);
+            else if (cfg.dims > 1)     // no elms: cfg.param can't be >1D array
+                Ez._cantErr(`The ${key} array`, "have more than 1 dimension");
+            //---------------------
+            o.config.push(cfg);    // spread cfg back around to o:
             o.dims  .push(cfg.dim);
             if (hasCV) {
-                if (!o.configCV)
-                    o.configCV = [cfg];
-                else
+                if (o.configCV)
                     o.configCV.push(cfg);
+                else
+                    o.configCV = [cfg];
             }
         }
-    });
-    if (o.configCV)
-        o.oneArg = (o.c == 1);     // see maskCV()
+    }); // end keys.forEach()
 }
-// paramLength() helps config()
+// paramLength() helps config() validate cfg.param.length
 function paramLength(l, key, byElm) {
-    const elmArg = [[o.l, "elements"], [o.c, "arguments"]]
-                    [!byElm];
-    if (l > elmArg[0])
+    const pairs = [[o.l, "elements"], [o.c, "arguments"]];
+    const pair  = pairs[Number(!byElm)];
+    if (l > pair[0])
         throw new Error(`${key} array length exceeds the number of `
-                        `${elmArg[1]}: ${l} > ${elmArg[0]}`);
+                        `${pair[1]}: ${l} > ${pair[0]}`);
 }
+//==============================================================================
 // mask() sets o.mask to a dense array of sorted argument indexes.
-// Valid user mask types are:
-//  - dense array of arg indexes (pre-formatted by user)
-//  - bitmask int:  Ez defines them for specific func/prop arguments
-//  - sparse array: non-empty slots = masked indexes
-//  - o.config:     sequential indexes 0 to array.length - 1
-//  - undefined:    sequential indexes 0 to o.r - 1
-// For all mask types except the first one, o.mask is code-generated.
-// PBase.prototype._mask() validates the first type to prevent errors later.
-function mask(o) {
+//        Valid user mask types are:
+//         - dense array:  user-generated, validated by PBase.prototype._mask())
+//         - bitmask int:  Ez defines them for specific func/prop arguments
+//         - sparse array: non-empty slots = masked indexes
+//         - o.config:     sequential indexes 0 to array.length - 1
+//         - undefined:    sequential indexes 0 to o.r - 1
+//        For all mask types except dense array, o.mask is code-generated.
+function mask(o, hasElms) {
     const count = o.isNet ? Math.min(...o.cv.map(arr => arr.length))
-                            : o.c;
-    if (o.mask)                      // user mask: validate/format it
-        o.mask = o.prop._mask(o.mask, o.func, count);
+                          : o.c;
+    if (o.mask) {
+        if (hasElms)                // user mask: validate/format it
+            o.mask = o.prop._mask(o.mask, o.func, count);
+    }
     else if (o.dims.some(dim => dim > 0)) {
-        const l = [];                // the longest cfg.param array is mask:
+        const l = [];               // the longest cfg.param array is mask:
         o.config.forEach((cfg, i) => { // treats array contents as dense &
             switch (cfg.dim) {         // sequential from 0 to length - 1.
             case 2:                    // empty array slots are noops for
@@ -254,30 +364,46 @@ function mask(o) {
         });
         o.mask = PBase._maskAll(Math.min(count, Math.max(...l)));
     }
-    else if (o.isNet)                // undefined: mask all required args
+    else if (o.isNet)               // undefined: mask all required args
         o.mask = PBase._maskAll(count);
-    else {                           // ditto
+    else if (hasElms) {             // ditto, but not for pseudo-animation
         o.mask = PBase._maskAll(o.r);
         o.c = o.r;
     }
-    o.lm = o.mask.length;
-    if (!o.isNet && o.lm == o.c)
-        o.set = E.set;
+
+    if (!hasElms)                   // pseudo-animation doesn't use mask
+        o.c  = o.mask?.length || 1;
+    else {
+        o.lm = o.mask.length;
+        if (o.isNet)
+            o.c = o.mask.at(-1) + 1;
+        else if (o.lm == o.c)
+            o.isSet = true;
+        else if (o.isSet && o.lm < o.r)
+            throw new Error("{set:E.set} requires that all arguments be masked. "
+                        + o.func?.name ?? o.cjs?.space ?? o.prop.name
+                        + ` requires ${o.r} arguments.`)
+    }
+    //------------------------------------------------
+    if (o.configCV)
+        o.oneArg = (o.c == 1);       // see maskCV()
+
 }
+//==============================================================================
 // easies() processes o.easies for MEasers.
-// Consolidates array of easies into a Map: easy => mask indexes.
-// These are indexes into cfg.param/o.mask, not into prop/func args.
-// o.easies cannot be sparse and must be the same length as o.mask.
-function easies(o) {
+//          Consolidates array of easies into a Map: easy => mask indexes.
+//          These are indexes into cfg.param/o.mask, not into prop/func args.
+//          o.easies cannot be sparse and must be the same length as o.mask.
+function easies(o, hasElms) {
     const easies = "easies";
     if (o[easies]) {
         o[easies] = Ez.toArray(o[easies], easies, Easy._validate)
-        if (o[easies].length != o.lm)
+        if (hasElms && o[easies].length != o.lm)
             Ez._mustBeErr(easies, "the same length as mask");
     }
     else
         return;
-    //--------------------
+    //----------------------------
     o.easy2Mask = new Map;
     o[easies].forEach((ez, i) => {
         if (o.easy2Mask.has(ez))
@@ -289,36 +415,193 @@ function easies(o) {
     o[easies] = Array.from(o.easy2Mask.keys());
     o.lz = o[easies].length;
 }
-// getCV() gets current values and parses them into a 2D array of strings
-// by element by argument: [elm[arg]]
-function getCV(o) {
-    o.cvRaw = o.prop.getMany(o.elms);
-    o.cv    = o.cvRaw.map(v => o.prop.parse(v, o.func));
+//==============================================================================
+function parseUn(o) {       // o.isNet only
+    const lens = o.lens;    // lengths by element
+    const c = o.c;
+    const i = lens.findIndex(len => len < c);
+    if (i >= 0)
+        throw new Error(`Your mask has ${c} arguments. elms[${i}] only has ${o.lens[i]}.`);
+    //-------------------
+    o.lm = o.mask.length;   // normalize .numBeg, o.numEnd, o.cv, o.seps
+    o.numBeg = o.numBeg.every(b => b);
+    if (Math.max(...lens) > c){
+        let j, l, s;            // squeeze trailing cv & seps into last sep
+        o.cv.forEach((v, i) => {
+            l = lens[i];
+            if (l > c) {
+                s = o.seps[i];
+                for (j = c; j < l;)
+                    s[c] += v[j] + s[++j];
+                v.length = c;
+                s.length = c + 1;
+            }
+        });
+        o.numEnd = false;
+    }
+    else
+        o.numEnd = o.numEnd.every(b => b);
 }
+//==============================================================================
 // optional() sets o.c to the actual number of arguments provided, adjusting it
-// downward if optional parameters are not provided.
-function optional(o) {
-    if (o.r == o.c || o.lm == o.c)
-        return;
-    ///////////
-    let l = o.mask.at(-1) + 1;
-    if (l == o.c)
-        return;
-    ///////////
-    let c;
-    if(o.set == E.set)          // sets c < o.c
-        c = Math.max(o.r, l);
-    else {                      // sets c <= o.c
-        if (!Is.def(o.cv))      // o.cv is an array or not yet defined
-            getCV(o);
-        c = o.cv ? Math.max(...o.cv.map(v => v.length)) : 0;
-        c = Math.max(o.r, l, c);
+//            downward if optional arguments are not masked. current() can
+//            adjust it back up if current values includes more arguments.
+function optional(o) { // not for o.isNet
+    // (count == required || count = mask.length)
+    if (o.c == o.r || o.c == o.lm) return;
+    //-------------------------------------
+    o.c = Math.max(o.r, o.mask.at(-1) + 1);
+    if (o.c == o.lm)
+        o.isSet = true;
+}
+//==============================================================================
+// current() processes cv (user-supplied currentValue or o.restore).
+//           It can adjust o.c (argument count) upwards.
+function current(o, cv, is1Elm) { // not for o.isNet, shouldn't be for o.isSet...
+    const lastPlug = o.mask.findLastIndex((v, i, arr) => arr[i - 1] != v - 1)
+                   - 1;
+    if (o.currentValue) {  // user-supplied current value
+        // Up-front validation makes the o.currentValue loops more efficient,
+        // and is enabled by forcing all values to be of the same type. Mixing
+        // types would be unusual, so it's not much of a loss. Values are not
+        // validated beyond typeof and isCjs(), except for 1D array of strings.
+        const name = "currentValue";
+        const flat = cv.flat();
+        const type = typeof flat[0];
+        const isString = (type == "string");
+        const isNumber = (type == "number");
+        if (!isString && !isNumber) {
+            if (o.cvDims == 2)
+                typeError(flat[0], name);
+            else if(!isCjs(flat[0]))
+                typeError(flat[0], name, true);
+            else if (!o.cjs)
+                Ez._mustBeErr("The colorjs property", `set to use Color objects in ${name}`);
+            else if (flat.some(v => !isCjs(v)))
+                Ez._cantErr("You", "mix Color with other types in currentValue");
+        }
+        else if (flat.some(v => typeof v != type))
+            Ez._mustBeErr(`${name} array elements`,
+                          `all the same type. You are mixing ${type} and {typeof v}`);
+        //-------------------------------------
+        if (o.cvDims == 2) { // convert numbers
+            const isAu = Is.A(o.u);
+            const map  = isString ? v => v
+                       : !isAu    ? v => v + o.u
+                                  : (v, j) => v + o.u[j];
+            o.cv = new Array(o.l);
+            cv.forEach((args, i) => {
+                o.c = Math.max(o.c, validCount(o, args.length, lastPlug, name, i));
+                o.cv[i] = args.map(map);
+            });
+        }
+        else if (isString) { // if (dims == 1) convert and/or parse values
+            if (o.cjs)       // assumes it's a color property
+                o.cv = cjsTo(o, cv);
+            else {
+                let c, parsed;
+                o.cv = cv.map((v, i) => {
+                    if (!CSS.supports(o.prop.name, v))
+                        throw new Error(`currentValue[${i}]: ${v} is not valid for ${o.prop.name}`);
+                    //------------------------------------------
+                    parsed = o.prop.parse(v, o.func, o.u, true);
+                    c   = parsed.length - (parsed[0] == Fn.color) - 1;
+                    o.c = Math.max(o.c, validCount(o, c, lastPlug, name, i));
+                    return parsed;
+                });
+            }
+        }
+        else if (isNumber) {
+            if (o.c > 1)
+                Ez._cantBeErr("currentValue",
+                              `a 1D array of Numbers because ${o.prop.name} requires more than one argument`);
+            //--------------------------
+            o.cv = cv.map(v => v + o.u);
+        }
+        else             // Color instance as current value
+            o.cv = cv.map(v => [...v[o.space], v.alpha]);
     }
-    if (c < o.c) {
-        if (c == l)
-            o.set = E.set;
-        o.c = c;
+    else { // if (!o.currentValue) parse o.restore, except for o.cjs && is1Elm
+        if (o.cjs) {         // o.cv = all 4 args as numbers, until plugCV()
+            if (is1Elm)
+                o.cv = [[...o.cjs.coords, o.cjs.alpha]];
+            else {           // convert current values to o.cjs's color space
+                parseCV(o, cv);
+                cjsTo(o, o.cv);
+            }
+        }
+        else {               // o.cv = parsed DOM values as strings
+            const isColor = o.prop.isColor;
+            parseCV(o, cv, isColor);
+            if (isColor) {   // handle the CSS color funkiness
+                const space = o.func.space ?? o.func.name;
+                o.cv.forEach((v, _, arr) => {
+                    if (v[0] != o.func.name) {
+                        if (v[0] == Fn.rgba && !o.func.name.startsWith(Fn.rgb)) {
+                            if (o.func.isHXX)
+                                arr.splice(0, CFunc.A, ...rgbToHxx(o.func, arr, o.u));
+                            else
+                                throw new Error(`rgb to ${space} conversion not supported w/o Color.js`);
+                        }
+                        else
+                            throw new Error(`${v[0]} to ${space} conversion not supported w/o Color.js`);
+                    }
+                });
+            } //------------ // adjust o.c upwards if appropriate:
+            o.c = Math.max(o.c, Math.max(...o.cv.map((args, i) => {
+                if (args[0]) // invalid DOM values are the user's problem,
+                    return args.length;
+                else         // but empty values are rejected.
+                    throw new Error(`elms[${i}] has no value for ${o.prop.name}, `
+                                  + "and you have not provided a currentValue.");
+            })));
+        }
     }
+}
+// parseCV() gets current values and parses them into a 2D array of strings,
+//         byElmByArg: [elm[arg]]. getMany() returns an array byElm. parse()
+//         separates each string into an array of arguments w/o separators.
+function parseCV(o, cv, includeFunc) { // not for o.isNet
+    o.cv = cv.map(v => o.prop.parse(v, o.func, o.u, includeFunc));
+}
+// validCount() helps current() validate argument counts
+function validCount(o, c, lastPlug, name, i) {
+    let word;
+    if (c < o.c && (o.configCV || c < lastPlug))
+        word = "few";
+    else if (c > o.maxArgs)
+        word = "many";
+
+    if (word)
+        throw new Error(`The ${name}[${i}] array has too ${word} elements.`);
+    else
+        return c;
+}
+// cjsTo() converts CSS color strings to o.cjs's color space, using Color.to().
+//         If you set o.currentValue, you can use Color.js serialized space ids.
+function cjsTo(o, cv) { // only called if o.cjs is defined and validated
+    let cjs;
+    const to    = o.cjs.constructor.to;
+    const space = o.cjs.space;
+    cv.forEach((v, i) => {
+        try { cjs = to(v, space); }
+        catch (err) { // should never happen for DOM values, only o.currentValue
+            throw new Error(`elms[${i}]'s ${o.prop.name} value is an invalid `
+                          + `color string: ${v}\n${err}`);
+        }
+        cv[i] = [...cjs.coords, cjs.alpha];
+    });
+    return cv;
+}
+// typeError() helps current() throw an error for invalid type
+function typeError(v, name, isColor) {
+    const list = ['"number"','"string"'];
+    if (isColor)
+        list.push("an instance of class Color");
+    Ez._mustBeErr(
+        `Invalid type "${typeof v}" for ${name}. It`,
+        `${list.slice(0, list.length - 1).join(", ")}, or ${list.at(-1)}`
+    );
 }
 //==============================================================================
 // maskCV() populates factor/addend with current values as specified by the
@@ -327,68 +610,70 @@ function optional(o) {
 //          create byElmByArg arrays in spite of {byArgByElm:true}. o.cv is
 //          byElmByArg, so that's how maskCV() operates. Not a problem, but
 //          it complicates endToDist() and creates the need for ECalc._c22s().
-function maskCV(o, l, mask, lm) {
+function maskCV(o) {
     if (!o.configCV) return;
-    //------------------------------------------
-    let allValues, byDim, cfg, cv, idx, isSame,
-        len, m, maskCV, prm, sameArgs, sameElms;
+    //------------------------------------------------------------------------
+    let allValues, byDim, cfg, cv, idx, isSame, len, m, maskCV, prm, sameArgs,
+        sameElms;
+
+    const
+    l    = o.l,
+    lm   = o.lm,
+    mask = o.mask,
+    err  = "E.currentValue requires elements to have a value in "
+          + o.prop.name + " for every masked argument specified.";
 
     // Convert all of o.cv to numbers up front. It makes isSame comparisons
     // more efficient and the code simpler. Yes, it might convert values
     // that are never used as numbers, but converting on demand can convert
-    // some values more than once, so neither method is perfect. Optimizing
-    // beyond that is not worth it, and these arrays are small.
-    if (!Is.def(o.cv))
-        getCV(o);
-
-    const cvNum  = o.cv.map(cv => cv.map(v => Ez.toNumby(v, o.func, o.u)));
+    // some values more than once, and these arrays are generally tiny.
     const minLen = mask.at(-1) + 1;
-    const err    = "E.currentValue requires elements to have a value in "
-                    + o.prop.name + " for every masked argument specified.";
-
-    // Process by cfg.dim, 0 is the most diverse
+    const nums   = o.cjs ? o.cv
+                         : o.cv.map(arr =>
+                                    arr.map(v => Ez.toNumby(v, o.func, o.u)));
+    // Process nums by cfg.dim, 0 is the most diverse
     byDim = o.configCV.filter(cfg => !cfg.dim);
     if (byDim.length) {
-        let cvFlat, dim;
+        let flat, dim;
         allValues = allMustHaveValues(o);
         if (o.oneArg) {
-            cvFlat = cvNum.flat();
-            cv     = cvFlat[0];
-            isSame = cvFlat.every(v => v == cv);
+            flat   = nums.flat();
+            cv     = flat[0];
+            isSame = flat.every(v => v == cv);
             dim    = isSame ? 0 : 1;
         }
         else {
-            sameArgs = isSameByArg(cvNum, l, mask, lm);
-            sameElms = isSameByElm(cvNum, l, mask, lm);
+            sameArgs = isSameByArg(nums, l, mask, lm);
+            sameElms = isSameByElm(nums, l, mask, lm);
             dim = sameArgs && sameElms ? 0
                 : sameArgs || sameElms ? 1
-                                        : 2;
+                                       : 2;
         }
         switch (dim) {
         case 0:
-            prm = cvNum[0][0];
+            prm = nums[0][0];
             break;
         case 1:
             if (o.oneArg)         // 1D array byElm
-                prm = cvFlat;
+                prm = flat;
             else if (sameArgs) {  // 1D array byArg
                 prm = new Array(lm);
-                cv  = cvNum[0];
+                cv  = nums[0];
                 minArgs(cv, minLen, err, 0);
                 mask.forEach((w, j) => prm[j] = cv[w]);
             }
             else {                // 1D array byElm
                 prm = new Array(l);
                 m   = mask[0];
-                cvNum.forEach((v, i) => {
+                nums.forEach((v, i) => {
                     mustBeNumber(v[m], err, i, m);
                     prm[i] = v[m];
                 });
             }
             break;
         case 2:
-            prm = Array.from({length:l}, () => new Array(lm));
-            cvNum.forEach((v, i) => {
+            prm = Ez.newArray2D(l, lm);
+            nums.forEach((v, i) => {
                 minArgs(v, minLen, err, i);
                 mask.forEach((w, j) =>  prm[i][j] = v[w]);
             });
@@ -414,26 +699,25 @@ function maskCV(o, l, mask, lm) {
                 maskCV.push(idx);
             }
             if (!isSame) {
-                cv = [];    // cvNum for the masked elements only
+                cv = [];    // nums for the masked elements only
                 for (m of maskCV)
-                    cv.push(cvNum[m]);
+                    cv.push(nums[m]);
                 isSame = isSameByElm(cv, cv.length, mask, lm);
             }
             if (isSame) {
                 prm = cfg.param;
                 idx = mask[0];
                 m   = maskCV[0]
-                minArgs(cvNum[m], idx + 1, err, m);
+                minArgs(nums[m], idx + 1, err, m);
                 for (m of maskCV)
-                    prm[m] = cvNum[m][idx];
+                    prm[m] = nums[m][idx];
             }
             else {          // creates a 2D byElmByArg array
-                prm = new Array.from({length:cfg.param.length},
-                                        () => new Array(lm));
+                prm = Ez.newArray2D(cfg.param.length, lm);
                 cfg.param.forEach((p, i) => {
                     if (p === E.cV) {
-                        minArgs(cvNum[i], minLen, err, i);
-                        mask.forEach((w, j) => prm[i][j] = cvNum[i][w]);
+                        minArgs(nums[i], minLen, err, i);
+                        mask.forEach((w, j) => prm[i][j] = nums[i][w]);
                     }
                     else
                         prm[i].fill(p);
@@ -454,18 +738,18 @@ function maskCV(o, l, mask, lm) {
             while ((idx = cfg.param.indexOf(E.cV, idx)) > -1)
                 maskCV.push(idx);
             if (!isSame)
-                isSame = isSameByArg(cvNum, l, maskCV,
+                isSame = isSameByArg(nums, l, maskCV,
                                                 maskCV.length);
             len = maskCV.at(-1) + 1;
             if (isSame) {
                 prm = cfg.param;
-                minArgs(cvNum[0], len, err, 0);
+                minArgs(nums[0], len, err, 0);
                 for (m of maskCV)
-                    prm[m] = cvNum[0][m];
+                    prm[m] = nums[0][m];
             }
             else {            // creates a 2D byElmByArg array
                 prm = new Array.from({length:l}, () => [...cfg.param]);
-                cvNum.forEach((v, i) => {
+                nums.forEach((v, i) => {
                     minArgs(v, len, err, i);
                     for (m of maskCV)
                         prm[i][m] = v[m];
@@ -483,7 +767,7 @@ function maskCV(o, l, mask, lm) {
         cfg.param.forEach((p, i) => {
             if (p === E.cV) {
                 prm = new Array(l);
-                cvNum.forEach((v, j) => {
+                nums.forEach((v, j) => {
                     mustBeNumber(v[i], err, j, i);
                     prm[j] = v[i];
                 });
@@ -493,8 +777,8 @@ function maskCV(o, l, mask, lm) {
                 idx = 0;
                 while ((idx = p.indexOf(E.cV, idx)) > -1) {
                     mustHaveValue(o.cv[idx], err, idx);
-                    mustBeNumber (cvNum[idx][i], err, idx, i);
-                    p[idx] = cvNum[idx][i];
+                    mustBeNumber (nums[idx][i], err, idx, i);
+                    p[idx] = nums[idx][i];
                 }
             }
         });
@@ -505,18 +789,18 @@ function maskCV(o, l, mask, lm) {
         cfg.param.forEach((p, i) => {
             if (p === E.cV) {
                 mustHaveValue(o.cv[i], err, i);
-                minArgs(cvNum[i], minLen, err, i);
+                minArgs(nums[i], minLen, err, i);
                 prm = new Array(lm);
-                mask.forEach((w, j) => prm[j] = cvNum[i][w]);
+                mask.forEach((w, j) => prm[j] = nums[i][w]);
                 cfg.param[i] = prm;
             }
             else if (Is.A(p)) {
                 mustHaveValue(o.cv[i], err, i);
                 len = p.lastIndexOf(E.cV);
-                minArgs(cvNum[i], len, err, i);
+                minArgs(nums[i], len, err, i);
                 idx = 0;
                 while ((idx = p.indexOf(E.cV, idx)) > -1)
-                    p[idx] = cvNum[i][idx];
+                    p[idx] = nums[i][idx];
             }
         });
     }
@@ -578,7 +862,7 @@ function mustBeNumber(val, err, i1, i2) {
 //==============================================================================
 // endToDist() converts factor from end to distance, if addend is undefined it
 //             defaults to zero and no conversion is necessary.
-//             User factor can be end or distance, run-time factor is distance.
+//             User property is end or distance, run-time factor is distance.
 function endToDist(o) {
     if (!o.isTo || !Is.def(o.a)) return;
     //----------------------------------
@@ -609,7 +893,7 @@ function endToDist(o) {
                     f.byArg = a.byArg;
                 }
                 else {                // 1 to 2 dims
-                    prm = Array.from({length:la}, () => new Array(fp.length));
+                    prm = Ez.newArray2D(la, fp.length);
                     ap.forEach((p, i) =>
                         fp.forEach((q, j) =>
                             prm[i][j] = q - defaultToZero(p[j], err, j)
@@ -619,7 +903,7 @@ function endToDist(o) {
                 }
             }
             else {                    // 0 to 2 dims
-                prm = Array.from({length:la}, () => []);
+                prm = Ez.newArray2D(la);
                 ap.forEach((p, i) => {
                     if (Is.A(p))
                         p.forEach((q, j) => prm[i][j] = fp - q);
@@ -630,7 +914,7 @@ function endToDist(o) {
             }
         }
         else {                        // 1 to 2 dims, swap dimensions
-            prm = Array.from({length:fp.length}, () => []);
+            prm = Ez.newArray2D(fp.length);
             fp.forEach((p, i) => {
                 if (Is.A(ap[i]))
                     ap[i].forEach((q, j) => prm[i][j] = p - q);
@@ -748,12 +1032,12 @@ function endToDist(o) {
         }
     }
 }
-// defaultToZero is the validation function for for endToDist(). These
-// values can come from the DOM or the user, and the user values can be
-// almost anything, so checking for NaN is necessary. Addend defaults to 0,
-// so defaultToZero() returns a value, unlike all the other validators.
-// forEach loops skip empty slots, which precludes the need to verify that
-// a value is defined; these are cases where numeric validation is skipped.
+// defaultToZero() is the validation function for for endToDist(). These
+//      values can come from the DOM or the user, and the user values can be
+//      almost anything, so checking for NaN is necessary. Addend defaults to 0,
+//      so defaultToZero() returns a value, unlike all the other validators.
+//      forEach loops skip empty slots, which precludes the need to verify that
+//      a value is defined; these are cases where numeric validation is skipped.
 function defaultToZero(val, err, i1, i2) {
     if (!Is.def(val))
         return 0;
@@ -768,150 +1052,184 @@ function defaultToZero(val, err, i1, i2) {
 }
 //==============================================================================
 // plugCV() creates o.value[elm[arg]] and plugs it with unmasked current
-// values and separators. Plug contents derive from these two arrays:
-//   o.cv   = 2D: current numeric values as strings
-//   o.seps = 1D: separators w/units, function text
-//            2D for E.net: all the stuff inbetween the numbers
-// In the process of plugging, we "squeeze" the plug text together so
-// that the length of o.value's inner dimension is as short as possible.
-// Pre-filling o.value with "" allows for += in innermost while loop.
-// Padding the end of o.seps with "" affects only 25% of the cases and
-// simplifies the inner for loop.
-function plugCV(o) {
-    if (!o.seps && !PBase._seps(o)) {
-        o.value = Array.from({length:o.l}, () => new Array(1));
+//          values and separators. Plug contents derive from these two arrays:
+//            o.cv   = 2D: current numeric values as strings
+//            o.seps = 1D: separators w/units, function text
+//                     2D for E.net: all the stuff inbetween the numbers
+//          In the process of plugging, we "squeeze" the plug text together so
+//          the length of o.value's inner dimension is as short as possible.
+function plugCV(o, is1Elm) {
+    let i;
+    if (o.cjs) {        // colorjs is all numbers, no units or separators
+        const l = o.c   // add CFunc.A as a plug if it varies across elements
+                + (!o.isSet && !is1Elm && o.c == o.r
+                   && o.cv.some(arr => arr[CFunc.A] != o.cv[0][CFunc.A]));
+
+        o.value = Ez.newArray2D(o.l, l);
+        if (!o.isSet) {     // plug o.value
+            let   start = 0;
+            const plugs = [];
+            for (i = 0; i < l; i++)
+                (o.mask[start] == i) ? start++
+                                     : plugs.push(i);
+            o.value.forEach((arr, j) => {
+                for (i of plugs)
+                    arr[i] = o.cv[j][i];
+           });
+        }
         return;
-    } //-------------------------------------------------------
-    // nb and ne indicate that o.value[n] starts or ends with
-    // a calculated number, not a plugged number as string.
-    const isSet = (o.set == E.set);
-    const nb    = isSet ? o.numBeg : o.numBeg && (o.mask[0] == 0);
-    const ne    = isSet ? o.numEnd : o.numEnd && (o.mask.at(-1) == o.c - 1);
-    const izero = Number(nb);        // start for (i, p) loop at 0 or 1
-    const pzero = Number(o.numBeg);  // ditto
-    const lp    = o.lm * 2 - (nb && ne) + !(nb || ne);
+    } //-----------------------------
+    if (!o.seps && !PBase._seps(o)) {
+        o.value = Ez.newArray2D(o.l, 1);
+        return;
+    } //-------------------------------------------------------------------
+    // nb and ne indicate that o.value[n] starts or ends with a calculated
+    // number, not a plugged number as string.
+    const nb = o.isSet ? o.numBeg : o.numBeg && (o.mask[0] == 0);
+    const ne = o.isSet ? o.numEnd : o.numEnd && (o.mask.at(-1) == o.c - 1);
+    const lv = o.lm * 2 - (nb && ne) + !(nb || ne);
 
     // i, m, mi, and p are array indexes (mask values are array indexes)
     //   i  = elm  index: arr[i] = o.value[j][i]
+    //   p  = plug index: sep[p] & val[p] (o.seps[j][p] & o.cv[j][p])
     //   m  = mask value: sets boundaries, doesn't get array values
     //   mi = mask index: o.mask[mi]
-    //   p  = plug index: sep[p] & val[p] (o.seps[j][p] & o.cv[j][p])
-    let i, p;
-    if (isSet) {
-        o.value = Array.from({length:o.l}, () => new Array(lp));
-        o.value.forEach((arr) => {
-            for (i = izero, p = 0; i < lp; i += 2, p++)
+    let p;
+    const izero = Number(nb);        // start for (i) at 0 or 1
+    const pzero = Number(o.numBeg);  // ditto for (p) if (!o.isSet)
+    if (o.isSet) {
+        o.value = Ez.newArray2D(o.l, lv);
+        for (const arr of o.value)
+            for (i = izero, p = 0; i < lv; i += 2, p++)
                 arr[i] = o.seps[p];
-        });
     }
     else {
         let m, mi, seps, vals;
         const prop = o.prop.name;
-        if (!o.isNet) {
-            if (!Is.def(o.cv))
-                getCV(o);
-            if (o.numEnd && !ne)
-                o.seps.forEach(arr => arr.push(""));
-        }
-        o.value = Array.from({length:o.l}, () => new Array(lp).fill(""));
+
+        if (!o.isNet && o.numEnd && !ne)         // pad the end of o.seps to
+            o.seps.forEach(arr => arr.push("")); // simplify the inner for loop
+
+        // pre-filling o.value with "" allows for += in the innermost while loop
+        o.value = Array.from({length:o.l}, () => new Array(lv).fill(""));
         o.value.forEach((arr, j) => {
             seps = o.isNet ? o.seps[j] : o.seps;
             vals = o.cv[j];
             if (!vals)
-                throw new Error(`Element ${j} has no value for ${prop}`);
+                throw new Error(`elms[${j}] has no value for ${prop}`);
             //------------------
             if (o.numBeg && !nb)
                 arr[0] = vals[0];
-            for (i = izero, p = pzero, mi = i; i < lp; i += 2, p++, mi++) {
+            for (i = izero, p = pzero, mi = i; i < lv; i += 2, p++, mi++) {
                 m = mi < o.lm ? o.mask[mi] : o.c;
-                while (p < m) {
-                    if (!vals[p])
-                        throw new Error(`element ${j}: ${prop} requires ${o.c} arguments`);
-                    //--------------------------
+                while (p < m && vals[p])
                     arr[i] += seps[p] + vals[p++];
-                }
                 arr[i] += seps[p];
             }
         });
     }
+    if (o.easies && o.loopByElm) //!!
+        o.maskCV = o.mask;       //!!?? unused, but MEaser loopByElm is untested
     i = Number(!nb);
-    if (o.easies && o.loopByElm)
-        o.maskCV = o.mask;
     o.mask = o.mask.map((_, j) => j * 2 + i);
-}
-// resetDims rebuilds o.dims after potential alterations to
-// dimensionality by maskCV() and endToDist()
-function resetDims(o, dims) {
-    o.config.forEach((cfg, i) => dims[i] = cfg.dim);
-}
-// bySame() - ECalc.#twoD is byArgByElm except in the one case where config
-// has no 2D arrays and all 1D arrays are byArg. o.bySame gets set for all
-// 1D are byElm too, see calc() and new ECalc.
-function bySame(o) {
-    if (Math.max(...o.dims) == 1) {
-        const d1 = o.config.filter(cfg => cfg.dim == 1);
-        if (d1.every(cfg => cfg.byElm))
-            o.bySame = true;
-        else if (d1.every(cfg => cfg.byArg)) {
-            o.bySame = true;
-            delete o.bAbE;    // true or undefined
-            o.l2 = o.l;
-            o.l1 = o.lm;
-        }
-    }
 }
 //==============================================================================
 // calc functions convert configs into objects used by class ECalc to run
-// the necessary calculations during animation:
-// init_calc() returns a baseline calc object with calc and cNN props cN_ and
-//             c_N args are input and output dimension count, respectively.
-//             It is the naming convention for the ECalc static functions too.
-//             Some calcs change their output's dimensionality. For example:
-//               ECalc._c01() converts a number to a 1D array of numbers
+// the necessary calculations during animation.
+// cNN is the naming convention for the ECalc static calculation functions.
+// The first N is the input dimensionality, the second N is output.
+// vars named cN_ and c_N are input and output dimension count, respectively.
+// Some calcs change their output's dimensionality. For example:
+//   ECalc._c01() converts a single number to a 1D array of numbers
+//==============================================================================
+// init_calc() returns a baseline calc object with calc and cNN properties
 function init_calc(calc, cN_, c_N) {
     return {calc:calc, cNN:`_c${cN_}${c_N}`};
 }
-function calc(o) {
-    o.calcs = [];               // the target array of calc objects
+// calcEaser() returns new Easer
+function calcEaser(o) {
+    const calcs = [];           // the target array of calc objects
     if (o.config.length) {
-        let calc, cfg, dim, prm;
+        let calc, cfg, dim;
         dim = 0;
         o.dims.length = 0;      // re-populated at the bottom of the loop
         for (cfg of o.config) {
             calc = init_calc(cfg.calc, dim, cfg.dim);
-            prm  = cfg.param;
-            calc.param = prm;
-            dim = upDim(o, cfg, prm, calc, dim,
-                                swapDims(o, cfg, calc));
-            o.calcs.push(calc);
-            o.dims. push(dim);
+            calc.param = cfg.param;
+            calcs.push(calc);
+            dim = upDim(o, cfg, cfg.param, calc, dim, swapDims(o, cfg, calc));
+            o.dims.push(dim);
         }
     }
     o.dmax = Math.max(0, ...o.dims);
     o.dmin = Math.min(0, ...o.dims);
-    if (o.dmax == 0)
-        o.calcs.push(Object.assign({}, noop));
+    calcNoDims(o, calcs);
+    o.calcs = calcs;
+    return new Easer(o);
 }
-function calcByElm(o) {
-    const byElm = Array.from({length:o.l}, () => []);
-    const isME  = Boolean(o.easies);
-    const ez2M  = o.easy2Mask;
+// calcMEaser() returns new MEaser
+function calcMEaser(o) {
+    let calc;
+    const calcs = Ez.newArray2D(o.lz);
+    if (o.config.length) {
+        let cfg, dim, i, mask, notDimOrByElm, prm, src, swap1D;
+        o.dims.length = 0;
+        dim = 0;
+        for (cfg of o.config) {                 // loop by config:
+            src    = init_calc(cfg.calc, dim, cfg.dim);
+            swap1D = swapDims(o, cfg, src);
+
+            notDimOrByElm = !cfg.dim || cfg.byElm;  // 0D or 1D byElm
+            if (notDimOrByElm)                      //!!no mask??no way...
+                prm = cfg.param;
+            for (i = 0; i < o.lz; i++) {            // loop by Easy:
+                if (!notDimOrByElm) {
+                    mask = o.easy2Mask.get(o.easies[i]);
+                    if (cfg.dim == 1 || cfg.bAbE)       // 1D byArg or 2D bAbE
+                        prm = meParam(cfg.param, mask); // !hasElms runs this
+                    else
+                        cfg.param.forEach((p, j) =>     // 2D byElmByArg
+                            prm[j] = Is.A(p) ? meParam(p, mask) : p
+                        );
+                }
+                calc = Object.assign({}, src);      // clone src
+                calc.param = prm;
+                calcs[i].push(calc);
+                dim = upDim(o, cfg, prm, calc, dim, swap1D, true);
+            }
+            o.dims.push(dim);
+        }
+        o.dmax = Math.max(...o.dims);
+        o.dmin = Math.min(...o.dims);
+    }
+    else { // no configs, easer uses raw _calc() return value
+        o.dmax = 0;
+        o.dmin = 0;
+    }
+    calcNoDims(o, calcs, true);
+    o.calcs = calcs;
+    return new MEaser(o);
+}
+// calcByElm() returns new EaserByElm or MEaserByElm
+function calcByElm(o, isME) {        // if (isME) setCalc() overwrites byElm[i]
+    const byElm = Ez.newArray2D(o.l);   // wasted initialization = simplest code
 
     o.oneD = new Array(o.lm);
-    if (o.config.length) {//c_N is the output dim count
-        let c, calc, cfg, cN_, c_N, i, mask, notOrByArg, prm, src;
-        cN_ = 0;    // cN_ is the input dim count
-        for (cfg of o.config) {         //>loop by f, a, max, min:
-            c_N = isME ? Math.max(cfg.dim, 1) : cfg.dim;
-            src = init_calc(cfg.calc, cN_, c_N);
+    if (o.config.length) {           // parse configs into calcs:
+        let cfg, i, isUp, notOrByArg, prm, src,
+        c_N,                            // c_N = output dim count, part of cNN
+        cN_ = 0;                        // cN_ = input  ditto
+
+        for (cfg of o.config) {         // configs: loop by f, a, max, min
+            [c_N, src, isUp] = prepCalc(cfg, isME, cN_);
 
             notOrByArg = !cfg.dim || cfg.byArg;
             if (notOrByArg)                // 0D or 1D byArg
                 prm = cfg.param;
-            for (i = 0; i < o.l; i++) {    //>loop byElm:
+            for (i = 0; i < o.l; i++) {    // loop byElm
                 if (!notOrByArg) {
                     if (!cfg.bAbE)            // 1D byElm or 2D byElmByArg
-                        prm = cfg.dim < 2     // -prm might be undefined-
+                        prm = cfg.dim < 2     // prm might be undefined
                             ? cfg.param
                             : cfg.param[i];
                     else {                    // 2D byArgbyElm
@@ -927,99 +1245,101 @@ function calcByElm(o) {
                         });
                     }
                 }
-                // cfg.param always defined, but if !Is.def(prm): cfg.param
+                // cfg.param is always defined, but if (!Is.def(prm)): cfg.param
                 // and byElm[] are sparse, and the calc object not created.
-                if (Is.def(prm)) {
-                    calc = Object.assign({}, src);
-                    if (c_N > cN_) {          // we're up-dimensioning
-                        calc.noop = noop1D(prm, o.lm);
-                        cN_ = c_N;            // .noop fills the gaps in prm
-                    }
-                    if (isME) {               // convert byElm to 3D:
-                        if (!byElm[i].length) //   byElm byEasy byConfig
-                            byElm[i] = Array.from({length:o.lz}, () => []);
-
-                        o.easies.forEach((ez, j) => {
-                            mask = ez2M.get(ez);
-                            c = Object.assign({}, calc);
-                            c.param = meParam(prm, mask);
-                            c.noop  = calc.noop?.length
-                                    ? meNoop1D(c.param, mask)
-                                    : calc.noop; // empty array or undefined
-                            byElm[i][j].push(c);
-                        });
-                    }
-                    else {
-                        calc.param = prm;
-                        byElm[i].push(calc);  // 2D byElm byConfig
-                    }
-                }
-            }
-        }
+                // For MEasers, byElm array is 3D: byElm, byEasy, byConfig.
+                if (Is.def(prm))
+                    setCalc(o, prm, Object.assign({}, src), byElm, isUp, isME, i);
+            } // end loop byElm
+            if (isUp)
+                cN_ = c_N;
+        } // end loop byConfig
     }
-    else if (isME) {
+    else if (isME) {                 // no configs, yes easies
         src = {cNN:"_c01", param:[]};
-        for (i = 0; i < o.l; i++) {       // byElm
+        for (i = 0; i < o.l; i++) {     // loop byElm
             byElm[i] = new Array(o.lz);
-            o.easies.forEach((ez, j) =>   // byEasy
-                byElm[i][j] = [Object.assign({noop:ez2M.get(ez)}, src)]
-            );                            // .noop only, .param is empty
+            o.easies.forEach((ez, j) => // byEasy
+                byElm[i][j] = [Ez.shallowClone(src, {noop:o.easy2Mask.get(ez)})]
+            );                          // .noop only, .param is empty
         }
     }
 
-    if (!isME && Math.max(0, ...o.dims) == 0)
-        for (let i = 0; i < o.l; i++)
-            byElm[i].push(Object.assign({}, noop));
+    if (!isME)                       // maybe configs, no easies
+        calcNoDims(o, byElm, true);
 
     o.calcs = byElm;
+    return isME ? new MEaserByElm(o) : new EaserByElm(o);
 }
-function calcMEaser(o) {
-    let calc;
-    const calcs = Array.from({length:o.lz}, () => []);
+// calcNoElms() returns new (M)Easer for pseudo-target, no elms|prop, yes peri()
+function calcNoElms(o, isME) {
+    const calcs = isME ? Ez.newArray2D(o.lz) : [];
+    o.oneD = new Array(o.c);
     if (o.config.length) {
-        let cfg, dim, i, mask, notOrByElm, prm, src, swap1D;
-        o.dims.length = 0;
-        dim = 0;
-        for (cfg of o.config) {
-            src    = init_calc(cfg.calc, dim, cfg.dim);
-            swap1D = swapDims(o, cfg, src);
-
-            notOrByElm = !cfg.dim || cfg.byElm;       // 0D or 1D byElm
-            if (notOrByElm)                           //!!no mask??no way...
-                prm = cfg.param;
-            for (i = 0; i < o.lz; i++) {              // loop byEasy:
-                if (!notOrByElm) {
-                    mask = o.easy2Mask.get(o.easies[i]);
-                    if (cfg.dim == 1 || cfg.bAbE)     // 1D byArg or 2D bAbE
-                        prm = meParam(cfg.param, mask);
-                    else                              // 2D byElmByArg
-                        cfg.param.forEach((p, j) =>
-                            prm[j] = Is.A(p) ? meParam(p, mask)
-                                                : p
-                        );
-                }
-                calc = Object.assign({}, src);
-                dim  = upDim(o, cfg, prm, calc, dim, swap1D, true);
-                calc.param = prm;
-                calcs[i].push(calc);
-            }
-            o.dims.push(dim);
+        let cfg, cN_, c_N, isUp, prm, src;
+        cN_ = 0;
+        for (cfg of o.config) { // loop by f, a, max, min:
+            [c_N, src, isUp, prm] = prepCalc(cfg, isME, cN_);
+            setCalc(o, prm, src, calcs, isUp, isME);
+            if (isUp)
+                cN_ = c_N;
         }
-        o.dmax = Math.max(...o.dims);
-        o.dmin = Math.min(...o.dims);
     }
-    else { // no configs, easer uses raw _calc() return value
-        o.dmax = 0;
-        o.dmin = 0;
-    }
-
-    if (o.dmax == 0)
-        for (calc of calcs)
-            calc.push(Object.assign({}, noop));
-
+    calcNoDims(o, calcs);
     o.calcs = calcs;
+    return isME ? new MEaser(o) : new Easer(o);
 }
-// noop functions populate the calc.noop[] array.
+//==============================================================================
+// Calc function helpers:
+// calcNoDims() pushes a noop() onto each calc array for 0 => 1D conversion
+function calcNoDims(o, arr, is2D) {
+    if (!(o.dmax ?? Math.max(0, ...o.dims))) { // only if dmax == 0
+        if (is2D)
+            for (const a of arr)
+                a.push(Ez.shallowClone(noop));
+        else
+            arr.push(Ez.shallowClone(noop));
+    }
+}
+function prepCalc(cfg, isME, cN_) {
+    const
+        c_N  = isME ? Math.max(cfg.dim, 1) : cfg.dim,
+        src  = init_calc(cfg.calc, cN_, c_N),
+        isUp = c_N > cN_,   // this iteration ups the dimensionality
+        prm  = cfg.param    // only used by calcNoElms()
+    ;
+    return [c_N, src, isUp, prm];
+}
+// setCalc() sets up a calc object or calcs byEasy, and pushes it/them onto arr,
+//           helps calcByElm(), calcNoElms().
+function setCalc(o, prm, calc, arr, isUp, isME, i) {
+    let c, mask;
+    if (isUp)                   // calc ups the dimensionality, .noop required
+        calc.noop = noop1D(prm, o.lm);
+
+    if (isME) {                 // MEaser
+        if (Is.def(i)) {
+            if (!arr[i].length) // empty or full of o.lz arrays, not undefined
+                arr[i] = Ez.newArray2D(o.lz);
+            arr = arr[i];       // i doesn't change inside loop:
+        }
+        o.easies.forEach((ez, j) => {
+            mask = o.easy2Mask.get(ez);
+            c = Object.assign({}, calc);
+            c.param = meParam(prm, mask);
+            c.noop  = calc.noop?.length ? meNoop1D(c.param, mask)
+                                        : calc.noop;
+            arr[j].push(c);
+        });
+    }
+    else {                      // Easer
+        if (Is.def(i))
+            arr = arr[i];
+        calc.param = prm;
+        arr.push(calc);
+    }
+}
+// noop functions populate the calc.noop[] array:
 function noop1D(prm, l) {
     const noop = [];//prm is sparse, noop is dense.
     if (Is.A(prm) && (prm.length < l || prm.includes(undefined))) {
@@ -1038,7 +1358,7 @@ function noop2D(prm, noop, i, l1, dim) {
     else                     // dim = 0, undefined is not empty
         noop[i] = undefined; // see ECalc.prototype._c02() and _c02s()
 }
-// me functions for MEaser, with Param as well as Noop
+// meNoop functions for MEaser, plus meParam()
 function meNoop1D(prm, mask) {
     const noop  = [];
     for (const m of mask)
@@ -1066,19 +1386,19 @@ function meParam(prm, mask) {
     return p;
 }
 // swapDims() sets the "s" suffix on calc.CNN, indicating that the method
-// swaps dimensions. It also handles 1D byArg params when twoD is bAbE, and
-// returns a boolean indicating if that is the case.
+//            swaps dimensions. It also handles 1D byArg params when twoD is
+//            bAbE, and returns a boolean indicating if that is the case.
 function swapDims(o, cfg, calc) {
     const swap1D = (cfg.byArg && !o.bySame);
     if (swap1D || (cfg.dim == 2 && !cfg.bAbE))
         calc.cNN += "s"
     return swap1D;
 }
-// upDim() handles the up-dimensioning a calc, which is when the previous
-// highest cfg.dim value is exceeded by a new high and ECalc._cNN() switches
-// from storing results in thisVal to oneD or twoD, or from oneD to twoD.
+// upDim() handles up-dimensioning a calc, which is when the previous highest
+//         cfg.dim value is exceeded by a new high and ECalc._cNN() switches
+//         from storing results in thisVal to oneD or twoD or from oneD to twoD.
 function upDim(o, cfg, prm, calc, dim, swap1D, isMEaser) {
-    if (!swap1D && cfg.dim <= dim) return dim;
+    if (cfg.dim <= dim && !swap1D) return dim;
     //----------------------------------------
     let func, noop;
     if (cfg.dim == 1) {
@@ -1105,10 +1425,10 @@ function upDim(o, cfg, prm, calc, dim, swap1D, isMEaser) {
     return dim;
 }
 // validateParams() validates that all cfg.param values are numeric and
-// forcibly converts them to numbers. It balks at infinite values, as even
-// for max and min they are pointless. For factor, it balks at zero values.
-// Should be called after maskCV(), when all the params are finally set.
-// It would prevent the need to call isNaN() in defaultToZero().
+//  forcibly converts them to numbers. It balks at infinite values, as even
+//  for max and min they are pointless. For factor, it balks at zero values.
+//  Should be called after maskCV(), when all the params are finally set.
+//  It would prevent the need to call isNaN() in defaultToZero().
 //!!To be evaluated and maybe completed!!
 function validateParams(o) {
     let cfg, val;

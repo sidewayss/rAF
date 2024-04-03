@@ -1,12 +1,12 @@
 export {easingFromLocal, easingFromForm, drawEasing};
 
-import {E, Is, P, Easy} from "../../raf.js";
+import {E, Is, P, Ez, Easy} from "../../raf.js";
 
 import {msecs}         from "../load.js";
-import {points}        from "../update.js";
+import {frames}        from "../update.js";
 import {setLocalBool}  from "../local-storage.js";
-import {MILLI, TWO, elms, g, formatInputNumber, toCamel, orUndefined,
-        elseUndefined} from "../common.js";
+import {MILLI, TWO, elms, g, formatInputNumber, orUndefined, elseUndefined}
+                       from "../common.js";
 
 import {chart}                               from "./chart.js";
 import {MSG, disableClear}                   from "./msg.js";
@@ -31,7 +31,7 @@ function easingFromLocal(obj, legs) {
 
     let elm, id, isN, n, val;
     for (id of [TYPE, POW])
-        setLink(elms[toCamel(LINK, id)], // #linkType and #linkPow
+        setLink(elms[Ez.toCamel(LINK, id)], // #linkType and #linkPow
                 elms[id].value == elms[id + TWO].value);
 
     [legs?.[0].end,                      // mid,
@@ -88,12 +88,13 @@ function easingFromForm(obj) {
 function drawEasing(evt) {
     let str;
     if (elms.drawSteps.checked) {
-        str = points.map((p, i) =>
-                `${pointToString(p.x, p.y)} `
-              + `${pointToString(points[i < g.frames ? i + 1 : i].x, p.y)}`);
+        str = frames.map((frm, i) =>
+            `${pointToString(frm.x, frm.y)} `
+          + `${pointToString(frames[i < g.frameCount ? i + 1 : i].x, frm.y)}`
+        );
     }
     else
-        str = points.map(p => `${pointToString(p.x, p.y)}`);
+        str = frames.map(frm => `${pointToString(frm.x, frm.y)}`);
 
   //chart.line.setAttribute(Pn.points, str.join(E.sp));
     P.points.set(chart.line, str.join(E.sp));

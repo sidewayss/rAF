@@ -1,12 +1,13 @@
 // Not exported by raf.js
 export class ECalc {
     #calcs; #oneD; #twoD; #value;
+
     constructor(o, calcs = o.calcs) {
         for (const c of calcs)
             c.cNN = ECalc[c.cNN]; // convert string to static function
         this.#calcs = calcs;
         this.#value = undefined;
-        if (o.calcByElm)
+        if (o.calcByElm || !o.l)
             this.#oneD = o.oneD;
         else {
             this.#twoD = o.twoD;
@@ -26,27 +27,28 @@ export class ECalc {
         }
         Object.seal(this);
     }
-    ///////////////////////////////////////////
     static f(a, b) { return a * b; } // factor
     static a(a, b) { return a + b; } // addend
-    ///////////////////////////////////////////
+
     calculate(ev) {
         this.#value = ev;
         for (const c of this.#calcs)
             this.#value = c.cNN(c, c.calc, this.#value, this.#oneD, this.#twoD);
     }
-    // The cNN functions. calculate() cycles through these cNN functions, up to
-    // four of them, for factor, addend, max, and/or min. The first N is the
-    // number of array dimensions for the cached value: #value, #oneD, #twoD.
-    // The second N is the number of dimensions for c.param. The "s" suffix
-    // indicates "swap" dimensions. _c11() & _c22() don't use .noop because the
-    // .noop array slots are already populated and .param doesn't touch them.
-    // These functions use forEach because it excludes empty array elements and
-    // c.param is sparse. forEach is also convenient and compact where there are
-    // >1 callback arguments. If the performance is deemed problematic, then you
-    // can convert to for loops, but the c.param loops will have to explicitly
-    // exclude undefined elements. c.noop, twoD, and oneD are dense.
-    // 2D callback arguments: a is for argument index, e is for element index
+//==============================================================================
+// The cNN functions: calculate() cycles through these functions, up to four of
+// them, for factor, addend, max, and/or min. The first N, cN_, is the number of
+// array dimensions for the cached value: #value, #oneD, #twoD. The second N,
+// c_N, is the the number of dimensions for c.param. The "s" suffix means "swap"
+// dimensions. _c11() & _c22() don't use .noop because the .noop array slots are
+// already populated and .param doesn't touch them.
+// These functions use forEach() because it excludes empty array elements and
+// c.param is sparse. forEach() is also convenient and compact where there are
+// >1 callback arguments. If the performance is deemed problematic, then you can
+// convert to for() loops, but the c.param loops will have to explicitly exclude
+// undefined elements. c.noop, twoD, and oneD are dense.
+// twoD callback arguments: a is for argument index, e is for element index
+//==============================================================================
     static _c00(c, calc, thisVal) {  // the only one that returns a value
         return calc(c.param, thisVal);
     }
@@ -176,37 +178,4 @@ export class ECalc {
     }
     // _noop() works for 1D & 2D setups because twoD is already filled with oneD
     static _noop(_, __, thisVal, oneD) { oneD.fill(thisVal); }
-
-//++static newCalc(calc, cN_, c_N, swapEm, param, noop) {
-//++    let cNN;
-//++    switch (cN_) {
-//++    case -1:
-//++        cNN = this._noop;
-//++    case 0:
-//++        if (!c_N)
-//++            cNN = this._c00;
-//++        else if (c_N == 1)
-//++            cNN = swapEm ? this._c01s : this._c01;
-//++        else
-//++            cNN = swapEm ? this._c02s : this._c02;
-//++        break;
-//++    case 1:
-//++        if (!c_N)
-//++            cNN = this._c10;
-//++        else if (c_N == 1)
-//++            swapEm ? this._c11s : this._c11;
-//++        else
-//++            cNN = swapEm ? this._c12s : this._c12;
-//++        break;
-//++    case 2:
-//++        if (!c_N)
-//++            cNN = this._c20;
-//++        else if (c_N == 1)
-//++            swapEm ? this._c21s : this._c21;
-//++        else
-//++            cNN = swapEm ? this._c22s : this._c22;
-//++    }
-//++    this.#calcs.push({calc:calc, cNN:cNN, param:param, noop:noop});
-//++    return this.#calcs.at(-1);
-//++}
 }

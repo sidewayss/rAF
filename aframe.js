@@ -1,3 +1,4 @@
+//!!rename #targets to #active and #backup to #targets to mimic class Easies!!
 import {E, Ez, Is, Easy, Easies, ACues} from "./raf.js";
 
 // AFrame: the animation frame manager
@@ -59,12 +60,11 @@ export class AFrame {
         }
     }
 //  newEasies() and newCues() create a target instance and add it to #targets
-    newEasies() { return this.#newTarget(Easies, arguments); }
-    newCues()   { return this.#newTarget(ACues,  arguments); }
+    newEasies(...args) { return this.#newTarget(Easies, ...args); }
+    newCues  (...args) { return this.#newTarget(ACues,  ...args); }
     #newTarget(cls, args) {
         const t = new cls(...args);
-        this.#targets.add(t);
-        this.#backup .add(t);
+        this.addTarget(t);
         return t;
     }
     addTarget(val) {
@@ -90,10 +90,7 @@ export class AFrame {
     clearTargets() {
         this.#targets.clear();
         this.#backup .clear();
-        if (this.isRunning)
-            this.#cancel(E.empty);
-        else
-            this.#status = E.empty;
+        this.#status = E.empty;
     }
     static #validTarget(t) {
         if (!t?.isEasies && !t?.isACues) //!!should this just warn??toArray() would need change...
@@ -114,10 +111,10 @@ export class AFrame {
     get onArrival()    { return this.#onArrival; }
     set onArrival(sts) { this.#onArrival = Easy._validArrival(sts, "AFrame"); }
 
-// this.oneShot
+// this.oneShot is an alias/shortcut for onArrival(E.empty)
     get oneShot()  { return this.#onArrival == E.empty; }
     set oneShot(b) { // if (!b && this.#onArrival != E.empty)
-        if (b)       //     it's already "off", leave #onArrival alone;
+        if (b)       // then it's already "off", leave #onArrival alone
             this.#onArrival = E.empty;
         else if (this.#onArrival == E.empty)
             this.#onArrival = undefined;
@@ -198,7 +195,7 @@ export class AFrame {
         if (this.#peri?.(this, timeStamp) || this.#targets.size)
             this.#frame = requestAnimationFrame(t => this.#callback(t));
         else
-            this.#cancel(this.#onArrival, true, true);
+            this.#stop(this.#onArrival);
     }
 //  #animateNow() is the animation callback that uses performance.now()
     #animateNow() { this.#animate(performance.now()); }
@@ -214,46 +211,43 @@ export class AFrame {
         this.#syncZero?.(timeStamp);  // not an exact sync unless #useNow
         this.#callback(timeStamp);    // timeStamp is always less than now
     }
-//  pause() arrive() init() stop() all cancel, then set different states
-//  clearTargets() is the way to set E.empty and call #cancel() if running
-    pause (forceIt) { return this.#cancel(E.pausing,  forceIt); }
-    arrive(forceIt) { return this.#cancel(E.arrived,  forceIt); }
-    init  (forceIt) { return this.#cancel(E.initial,  forceIt); }
-    stop  (forceIt) { return this.#cancel(E.original, forceIt); }
+//==============================================================================
+//  arrive() init() stop() pause() cancel(): #stop() with different statuses
+    arrive() { return this.#stop(E.arrived,  true); }
+    init  () { return this.#stop(E.initial,  true); } // stop??
+    stop  () { return this.#stop(E.original, true); } // return?? revert?? restore??
+    pause () { return this.#stop(E.pausing,  true); } // return is turntable lingo
+    cancel() { return this.#stop(E.empty,    true); }
 
-//  #cancel helps pause(), stop(), arrive(), init(), clearTargets(), #animate()
-    #cancel(sts, forceIt, hasArrived) {
+//  #stop() stops the animation and leaves it in the requested state
+    #stop(sts, forceIt) {// forceIt is passed through to target._reset()
+        const hasArrived = !forceIt; // an alternate interpretation of forceIt
         const wasRunning = hasArrived ?? this.isRunning;
-
         if (wasRunning && !hasArrived)
             cancelAnimationFrame(this.#frame);
-        else if (!forceIt && sts == this.#status)
-            return this.#status;
-        //---------------------
         if (sts != E.pausing) {
             let t;
-            const wasPausing = this.isPausing;
-            const isArriving = hasArrived ?? !sts;
-
-            if (wasRunning || wasPausing) {
-                if (isArriving && !hasArrived)
+            const isArriving = hasArrived ?? !sts;  // E.arrived = 0 = !sts
+            if (isArriving && (wasRunning || this.isPausing)) {
+                if (!hasArrived)
                     for (t of this.#targets)  // remaining targets, not #backup
                         t._runPost();
-                if (isArriving && this.#post) {
+                if (this.#post) {
                     const post = this.#post;  // this.#post can be set in post()
                     if (!this.#keepPost)      // and it defaults to single-use.
                         this.#post = undefined;
                     post(this);
                 }
             }
-            if (Is.def(sts)) {
-                for (t of this.#backup)
-                    t._reset(sts);
-            }
-            if (sts != E.empty)
+            for (t of this.#targets)
+                t._reset(sts, forceIt);
+            if (sts == E.empty)
+                this.clearTargets();          // sets #status = E.empty
+            else {
                 this.#targets = new Set(this.#backup);
+                this.#status  = sts ?? E.arrived;
+            }
         }
-        this.#status = sts ?? E.arrived;
         if (wasRunning)                       // .then() won't execute otherwise
             this.#promise.resolve(this.#status);
         return this.#status;

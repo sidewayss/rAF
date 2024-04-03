@@ -1,7 +1,6 @@
-import {Easy} from "./easy.js";
 import {spreadToEmpties, legText, legNumber} from "./easy-construct.js"
 
-import {Ez, Is} from "../raf.js";
+import {Ez, Is, Easy} from "../raf.js";
 
 export class Incremental extends Easy {
     #count;

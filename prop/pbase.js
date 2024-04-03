@@ -1,12 +1,14 @@
 // Not exported by raf.js
-import {PFactory} from "./pfactory.js";
+import {PFactory}  from "./pfactory.js";
+import {fromColor} from "./color-convert.js";
 
 import {E, Ez, F, Is, P} from "../raf.js";
 
-export class PBase { // the base class for Prop, Bute, PrAtt, Bute2
+export class PBase { // the base class for Prop, Bute, PrAtt, HtmlBute
     static #separator = E.sp;   // only font-family separates w/comma, and
     #func; #units;              // it's non-numeric, so no value arrays.
 
+    // utype = isUn | _noU | _noUPct | _len | _lenPct | _lenPctN | _ang | _pct
     constructor(name, units, utype, func, multiFunc) {
         Ez.readOnly(this, "name", name);
         this.#units = units;
@@ -15,8 +17,6 @@ export class PBase { // the base class for Prop, Bute, PrAtt, Bute2
             Ez.is(this, "MultiFunc");
 
         this.remove = this.cut;       // for pseudo-compatibility
-
-        // utype = isUn | _noU | _noUPct | _len | _lenPct | _lenPctN | _ang
         Ez.readOnly(this, utype, true);
         Ez.is(this, "PBase");
     }
@@ -48,7 +48,7 @@ export class PBase { // the base class for Prop, Bute, PrAtt, Bute2
                     `${this.name}.func`,
                     `an instance of Func ${this.needsFunc ? "" : " or undefined"}`
                 );
-            else if (this.isColor && !val?.isColor)
+            else if (this.isColor && !val?.isCFunc)
                 Ez._invalidErr("func", val?.name ?? val, PFactory.funcC,
                                `${this.name}.func`);
         }
@@ -154,21 +154,38 @@ export class PBase { // the base class for Prop, Bute, PrAtt, Bute2
 //  static _maskAll() returns a full, sequential mask, masking all arguments
     static _maskAll(l) { return Array.from({length:l}, (_, i) => i); }
 //==============================================================================
-//  The get functions:
+// The get functions:
 //  get() is the most generic. elms can be an Element or any kind of collection
 //  of Elements. It returns String or [String] by element.
-    get(elms, getComputed) {
-        return Ez._isElmy(elms) ? this.getOne (Ez.toElement (elms), getComputed)
-                                : this.getMany(Ez.toElements(elms), getComputed);
+    get(elms) {
+        return Ez._isElmy(elms) ? this.getOne (Ez.toElement(elms))
+                                : this.getMany(Ez.toElements(elms));
     }
 //  getMany() gets an array of values for multiple elements
-    getMany(elms, getComputed) { // elms must be pre-validated as [Element]
+    getMany(elms) { // elms must be pre-validated as [Element]
         let i;
         const l = elms.length;
         const a = new Array(l);
         for (i = 0; i < l; i++)
-            a[i] = this.getOne(elms[i], getComputed);
+            a[i] = this.getOne(elms[i]);
         return a;
+    }
+//  getOne() overridden by Bute and HtmlBute
+    getOne(elm) {                       // elm must be pre-validated as Element
+        const name  = this.name;
+        let   value = elm.style[name];  // style overrides attribute in HTML
+        if (!value) {
+            if (this.isPrAtt)
+                value = elm.getAttribute(name);
+            if (!value)
+                value = getComputedStyle(elm)[name];
+        }
+        else if ((this.isColor && value.startsWith(Fn.rgba))
+              || (this === F.colorMix && value.includes(Fn.rgb))) {
+            const style = elm.getAttribute("style").split(/[:;]\s*/);
+            value = style[style.indexOf(this.name) + 1];
+        }
+        return value?.trim() ?? "";     // getAttribute() returns null, not ""
     }
 //  getn() wraps get() to return Number or [Number] instead of String.
     getn(elms, f, u) {
@@ -179,7 +196,7 @@ export class PBase { // the base class for Prop, Bute, PrAtt, Bute2
 //          because toNumby() returns the original value instead of NaN). Uses
 //          parseFloat(), not Number(), because it's better at parsing strings.
     _2Num(v, f, u = this._unitz(f)) {
-        const arr = this.parse(v, f);
+        const arr = this.parse(v, f, u);
         return arr.length < 2
              ? Ez.toNumby(arr[0], f, u)
              : arr.map(n => Ez.toNumby(n, f, u));
@@ -189,8 +206,8 @@ export class PBase { // the base class for Prop, Bute, PrAtt, Bute2
 
 //  getUn() is for "unstructured" props & funcs, though it can be used with any
 //  prop or func, ideally one that has numeric parameters.
-    getUn(elms, getComputed) {
-        let v, vals = this.get(elms, getComputed);
+    getUn(elms) {
+        let v, vals = this.get(elms);
         const isAVals = Is.A(vals);
         if (!isAVals)
             vals = [vals];
@@ -207,16 +224,15 @@ export class PBase { // the base class for Prop, Bute, PrAtt, Bute2
     }
 //  getUnObj() is getUn() reconfigured for EFactory.create()
 //!!they should be more alike, array by element of objects,
-//!!.cv is not a great name outside of EFactory
-    getUnToObj(o) { //!!o.cv can already have been retrieved and parsed
+    getUnToObj(o, cv = this.getMany(o.elms)) {  // cv is "current value"
         o.cv     = new Array(o.l);  // 2D [elm[arg]] numeric values as strings
         o.seps   = new Array(o.l);  // 2D [elm[arg]] non-numeric separators
         o.lens   = new Array(o.l);  // 1D by elm: [o.cv[elm].length]
         o.numBeg = new Array(o.l);  // 1D begins with number (vs separator)
         o.numEnd = new Array(o.l);  // 1D ends   with number (vs separator)
-        this.getMany(o.elms).forEach((v, i) => { // 1D array of strings by elm
+        cv.forEach((v, i) => {      // 1D array of strings by elm
             if (v) {
-                v = v.replace(/\s\s+/g, E.sp);   // consolidate whitespace
+                v = v.replace(/\s\s+/g, E.sp);  // consolidate whitespace
                 o.cv[i] = v.match(E.nums);
                 if (!o.cv[i])
                     throw new Error(`P.${this.name}.getUnToObj(o): `
@@ -243,17 +259,21 @@ export class PBase { // the base class for Prop, Bute, PrAtt, Bute2
             return vals;
         }
     }
-//  parse() parses one element's value into an array, not for multi-function
-    parse(v, f = this.func) {
-        if (f?.isColor)
-            return f.fromColor(v, false);
-        else if (v.at(-1) == E.rp)
-            return v.split(E.sepfunc).slice(1, -1);
-        else
+//  parse() parses one element's value into an array
+    parse(v, f = this.func, u, includeFunc) { // default arg values violation
+        if (this.isUn || f?.isUn)
+            throw new Error("Prop.prototype.parse() is not designed for "
+                + `"unstructured" ${this.isUn ? "properties" : "functions"} `
+                + `such as ${this.isUn ? this.name : f.name + "()"}.`);
+        else if (this.isColor)      // function, #hex, or color name
+            return fromColor(v, false, f, u, includeFunc);
+        else if (v.at(-1) == E.rp)  // non-color function
+            return v.split(E.sepfunc).slice(Number(!includeFunc), -1);
+        else                        // property or attribute value(s)
             return v.split(E.comsp);
     }
 //==============================================================================
-//  The set() functions:
+// The set() functions: TODO!!repair, remodel, and restore let() and net()!!
 //  set() validates elms and determines if it's 1 or >1 elements
 //!!It should probably validate units, v gets validated in Ez._appendUnits()
 //!!I never validate func here, only in animation classes
@@ -262,15 +282,15 @@ export class PBase { // the base class for Prop, Bute, PrAtt, Bute2
              ? this.setOne (Ez.toElement (elms), v, f, u)
              : this.setMany(Ez.toElements(elms), v, f, u);
     }
-//  setOne() elm must be Element, v must be Number, String, or Array
+//  setOne() - elm must be Element, v must be Number, String, or Array
     setOne(elm, v, f = this.func, u = this._unitz(f)) {
         v = Is.A(v) ? this.join(v, f) //!!inconsistent validation of u and v!!
                     : Ez._appendUnits(v, u);
 
         this.setIt(elm, f?.apply(v) ?? v);
     }
-//  setMany() elms must be [Element]
-    setMany(elms, v, f, u) {
+//  setMany() - elms must be [Element]
+    setMany(elms, v, f, u) { //!!validate elms.length == v.length??
         if (!Is.A(v))        // handle it here or inside the loop
             v = new Array(elms.length).fill(v);
         elms.forEach((elm, i) => this.setOne(elm, v[i], f, u));

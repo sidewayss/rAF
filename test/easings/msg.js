@@ -6,11 +6,11 @@ const MSG = ["mid","split","gap"];
 import {Ez, P, U} from "../../raf.js";
 
 import {msecs, secs} from "../load.js";
-import {MILLI, CLICK, INPUT, CHANGE, elms, g, addEventToElms, addEventsByElm,
+import {MILLI, CLICK, INPUT, CHANGE, elms, addEventToElms, addEventsByElm,
         addEventByClass, formatInputNumber, changeNumber, toggleClass,
-        initialCap, toCamel, toFunc, isTag} from "../common.js";
+        toFunc, isTag} from "../common.js";
 
-import {redraw}          from "./_update.js";
+import {refresh}         from "./_update.js";
 import {chart}           from "./chart.js";
 import {isSteps}         from "./steps.js";
 import {OTHER, isBezier} from "./index.js";
@@ -30,14 +30,14 @@ function loadMSG() {
     Ez.readOnly(elms.mid, CLEAR, elm);
 
     const div    = elms.divSplit;
-    const divGap = toCamel("div", MSG[2]);
+    const divGap = Ez.toCamel("div", MSG[2]);
     div.id = "";
     elms[divGap] = div.cloneNode(true);
     elms.divGap.style.marginTop = "1" + U.px;
 
     for (id of MSG.slice(1)) {  // split, gap
         obj = {};
-        for (elm of elms[toCamel("div", id)].children) {
+        for (elm of elms[Ez.toCamel("div", id)].children) {
             if (isTag(elm, INPUT)) {
                 elm.id   = id;
                 elms[id] = elm;
@@ -48,7 +48,7 @@ function loadMSG() {
             else if (isTag(elm, "label")) {
                 elm.htmlFor = id;
                 if (!elm.textContent)                    // 5 = "split".length
-                    elm.innerHTML = initialCap(id).padStart(5) + ":";
+                    elm.innerHTML = Ez.initialCap(id).padStart(5) + ":";
             }
             else    // <button>s precede <input> in html, so they're saved here
                 obj[elm.className] = elm;
@@ -64,8 +64,8 @@ function loadMSG() {
 
     const msgInputs = MSG.map(v => elms[v]);
     sgInputs = msgInputs.slice(1);
-    addEventByClass(CLICK,  CLEAR, null, handlers);
-    addEventByClass(CLICK,  LOCK,  null, handlers);
+    addEventByClass(CLICK,  CLEAR, undefined, handlers);
+    addEventByClass(CLICK,  LOCK,  undefined, handlers);
     addEventsByElm (INPUT,  msgInputs.slice(0, -1), handlers); // mid, split
     addEventToElms (CHANGE, msgInputs, changeMSG);
 }
@@ -87,9 +87,9 @@ const handlers = {
         const elm = evt.target[OTHER]; // #mid, #split, or #gap
         const n   = elm.default();
         formatInputNumber(elm, n);     // toFunc() = inputMid() or inputSplit()
-        toFunc(INPUT, initialCap(elm.id), handlers)?.();
+        toFunc(INPUT, Ez.initialCap(elm.id), handlers)?.();
         disableClear(elm, n, false);
-        redraw(elm, 0, true);
+        refresh(elm, 0, true);
     },
 //  clickLock()  click event handler for #lockSplit, #lockGap
     clickLock(evt) {
@@ -99,13 +99,13 @@ const handlers = {
         tar.textContent = locks[Number(b)];
     }
 };
-// changeMSG()  change event handler for #mid, #split, #gap
+// changeMSG() is the change event handler for #mid, #split, #gap
 function changeMSG(evt) {   // outside of handlers for convenience
     const tar = evt.target;
     const n   = changeNumber(tar);
     if (n !== null) {
         disableClear(tar, n, true);
-        redraw(tar, 0, true);
+        refresh(tar, 0, true);
     }
 }
 //==============================================================================

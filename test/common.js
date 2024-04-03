@@ -1,18 +1,18 @@
 import {Is, Ez} from "../raf.js";
 
 // export everything except errorMessage
-export const MILLI  = 1000; // for milliseconds, and #chart is 1000 x 1000
-export const COUNT  = 3;    // multi.js: easys.length, loopByElm: elms.length
-export const LENGTH = {length:COUNT};
-
 export const ZERO = "0", ONE = "1", TWO = "2";
 
-export const PLAYS  = "plays";
-export const CHANGE = "change"; // event names
-export const CLICK  = "click";
-export const INPUT  = "input";
-export const SELECT = "select";
-export const EASY_  = "Easy-";  // localStorage
+export const MILLI = 1000; // for milliseconds, and #chart is 1000 x 1000
+export const COUNT = 3;    // multi.js: easys.length, loopByElm: elms.length
+
+export const PLAYS   = "plays";
+export const CHANGE  = "change"; // event names
+export const CLICK   = "click";
+export const INPUT   = "input";
+export const SELECT  = "select";
+export const EASY_   = "Easy-";  // localStorage
+export const MEASER_ = "MEaser-";
 
 export const LITE   = ["lo","hi"];
 
@@ -24,45 +24,39 @@ export const g    = {    // g for global, these properties are read-write:
     notTripWait:null     // in multi.js they are arrays of bools
 };
 //====== wrappers for addEventListener() =======================================
-export function addEventByClass(evt, name, func, obj) {
+export function addEventByClass(type, name, func, obj) {
     if (!Is.def(func))
-        func = toFunc(evt, camelCase(name), obj);
+        func = toFunc(type, Ez.kebabToCamel(name), obj);
     for (var elm of document.getElementsByClassName(name))
-        elm.addEventListener(evt, func, false);
+        elm.addEventListener(type, func, false);
 }
-export function addEventToElms(evt, elms, func) {
+export function addEventToElms(type, elms, func) {
     for (var elm of elms)
-        elm.addEventListener(evt, func, false);
+        elm.addEventListener(type, func, false);
 }
-export function addEventsByElm(evt, elms, obj, noDigits) {
+export function addEventsByElm(type, elms, obj, noDigits, noPrefix) {
     let elm;
     if (noDigits)
         for (elm of elms) // elm never undefined, same function for all digits
-            elm .addEventListener(evt, toFunc(evt, elm.id.replace(/\d/, ""), obj), false);
+            elm .addEventListener(type, toFunc(type, elm.id.replace(/\d/, ""), obj), false);
+    else if (noPrefix)
+        for (elm of elms)
+            elm .addEventListener(type, toFunc("",   elm.id, obj), false);
     else
         for (elm of elms) // elm maybe undefined, e.g. elms.time in multi
-            elm?.addEventListener(evt, toFunc(evt, elm.id, obj), false);
+            elm?.addEventListener(type, toFunc(type, elm.id, obj), false);
 }
-//====== string manipulation, conversion to/from ==============================
-export function initialCap(str) {
-    return str[0].toUpperCase() + str.slice(1)
-}
-export function toCamel(...strings) {
-    return strings.reduce((acc, cur) => acc + initialCap(cur));
-}
-export function camelCase(str) {
-    return str.replace(/-(.)/g, chars => chars[1].toUpperCase());
-}
+//====== string conversion to/from =============================================
 export function toFunc(prefix, name, obj = window) { // returns a function
-    return obj[toCamel(prefix, name)];
+    return obj[prefix ? Ez.toCamel(prefix, name) : name];
 }
 export function boolToString(b) { // for localStorage and <button>.value
     return b ? "true" : "";
 }
 //====== number formatting, validation =========================================
 // formatNumber() formats numbers for non-<input type="number"> elements,
-//                called by formFromObj(), loadFinally(), updateSidebar(),
-//                          both setSidebar()s, multi redraw().
+//                called by formFromObj(), loadFinally(), updateCounters(),
+//                          both setCounters()s, multi refresh().
 export function formatNumber(n, digits, decimals, elm) {
     const str = n.toFixed(decimals).padStart(digits);
     if (elm)
@@ -131,4 +125,8 @@ export function elseUndefined(b, val) {
 // isTag() deals with the allegedly unreliable case of HTMLElement.tagName
 export function isTag(elm, tag) { // only called by easings.loadIt()
     return elm.tagName.toLowerCase() == tag;
+}
+export function is(obj = {}) {
+    obj[document.documentElement.id] = true;
+    return Object.freeze(obj);
 }

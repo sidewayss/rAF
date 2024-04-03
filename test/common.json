@@ -69,10 +69,10 @@
     },
     "MEaser-": {
       "": {
-        "names": ["","circIn","circOut"],
+        "easy":  ["","circIn","circOut"],
         "plays": ["","",""],
-        "eKey": ["unit","unit","unit"],
-        "trip": ["","",""]
+        "eKey":  ["unit","unit","unit"],
+        "trip":  ["","",""]
       }
     }
   }

@@ -1,7 +1,8 @@
-export {FPS, ezX, raf, msecs,  secs, setTime};
+export {FPS, ezX, raf, msecs, secs, preDoc, setTime};
 let FPS = 60,    // assumes 60hz, but adjusts to reality at run-time
     ezX, raf,    // Easy, AFrame
-    msecs, secs; // alternate versions of time, both integers
+    msecs, secs, // alternate versions of time, both integers
+    preDoc;      // prefix for this document, see local-storage.js
 
 import {E, Is, Ez, P, PFactory, Easy, AFrame} from "../raf.js";
 
@@ -16,7 +17,7 @@ import(_load.js): loadIt, getEasies, initEasies, updateAll, resizeWindow
 */
 let awaitJSON, awaitNamed, ns, ns_named;
 
-const awaitFonts = [                 // start loading fonts asap
+const awaitFonts = [            // start loading fonts asap
     new FontFace("Roboto Mono",
                  "url(/raf/test/fonts/RobotoMono.ttf)",
                  {weight:"400 500"}),
@@ -27,21 +28,21 @@ awaitFonts.forEach(f => document.fonts.add(f));
 //==============================================================================
 document.addEventListener("DOMContentLoaded", loadCommon, false);
 async function loadCommon() {
-    let elm, i;
+    let elm, i;                      // collect HTMLElements by tag, then by id
     PFactory.init();                 // raf.js infrastructure init
-                                     // collect HTMLElements by tag, then by id
+
     const tags = [INPUT, SELECT, "button","dialog","div","label","span",
                   "state-button","check-box"];
 
     const byTag = tags.map(tag => [...document.body.getElementsByTagName(tag)]);
 
-    for (elm of [...byTag[0].splice(-1, 1), ...byTag[2].splice(-2, 2)])
-        dlg[elm.id] = elm;           // break out <dialog> sub-elements by id
+    if (byTag[3].length)             // break out <dialog> sub-elements by id
+        for (elm of [...byTag[0].splice(-1, 1), ...byTag[2].splice(-2, 2)])
+            dlg[elm.id] = elm;
 
     for (elm of byTag.flat())        // populate elms by id
         if (elm.id)                  // most <div>, <label>, <span>s have no id
             elms[elm.id] = elm;
-
                                      // elms.x doesn't disable the normal way
     byTag[0].splice(byTag[0].indexOf(elms.x), 1);
     Ez.readOnly(g, "buttons",  byTag[2]);          // <button>
@@ -51,94 +52,105 @@ async function loadCommon() {
                                 ...byTag.at(-1)]); // <check-box>
 
     elm = elms.plays ?? elms.plays0; // plays0 is multi
-    for (i = 1; i <= COUNT; i++)
-        elm.add(new Option(i));
+    if (elm)
+        for (i = 1; i <= COUNT; i++)
+            elm.add(new Option(i));
 
+    const msg = "Error fetching common.json: presets & tooltips are unavailable";
     const id  = document.documentElement.id;
-    const pre = `${id}-`;           // prefix by document
-    Ez.readOnly(g, "keyName", `${pre}name`);
-    Ez.readOnly(g, "restore", `${pre}restore`);
-    const restore    = localStorage.getItem(g.restore);
-    const hasVisited = Boolean(restore);
+    const dir = `./${id}/`;         // directory path relative to this module
+    preDoc    = `${id}-`;           // prefix by document, see local-storage.js
 
-    const dir = `./${id}/`;          // directory path relative to this module
+    Ez.readOnly(g, "keyName", `${preDoc}name`);
+    const name = localStorage.getItem(g.keyName);
+    const hasVisited = (name !== null);
+
     ns = await import(`${dir}_load.js`).catch(errorAlert);
-    ns.loadIt(byTag, hasVisited);
-
-    const isMulti = (id[0] == "m");
-    const awaitUpdate = loadUpdate(isMulti, dir);
+    const is = ns.loadIt(byTag, hasVisited);
+    const awaitUp = loadUpdate(is.multi, dir);
 
     awaitNamed = Ez.promise();       // resolves in loadJSON()
     awaitJSON  = Ez.promise();       // ditto
-    const msg  = "Presets and tooltips are unavailable due to an error "
-               + "fetching common.json";
     fetch("../common.json")
-      .then (rsp => loadJSON(rsp, isMulti, dir, pre, ns, hasVisited, msg))
+      .then (rsp => loadJSON(rsp, is.multi, dir, ns, hasVisited, msg))
       .catch(err => errorAlert(err, msg));
 
-    Promise.all([document.fonts.ready, awaitUpdate, awaitNamed, awaitJSON])
-      .then (()  => loadFinally(hasVisited, restore, id))
-      .catch(errorAlert);
+    Promise.all([document.fonts.ready, awaitUp, awaitNamed, awaitJSON])
+      .then (()  => loadFinally(hasVisited, name, id))
+      .catch(err =>
+        errorAlert(err)
+      );
 
     window.addEventListener("resize", ns.resizeWindow, false);
 }
 //==============================================================================
 // loadJSON() executes on fetch(common.json).then(), could be inlined & indented
-function loadJSON(response, isMulti, dir, pre, ns, hasVisited, msg) {
+function loadJSON(response, isMulti, dir, ns, hasVisited, msg) {
     if (response.ok)
         response.json().then(json => {
             let elm, id, title;
             g.presets = json.presets;  // must precede loadNamed()/loadFinally()
-            loadNamed(isMulti, dir, pre, ns).then(namespace => {
+            loadNamed(isMulti, dir, ns).then(namespace => {
                 ns_named = namespace;
                 awaitNamed.resolve();
             }).catch(
                 awaitNamed.reject      // let Promise.all() handle it
             );
             getNamed();                // populate elms.named from localStorage
-            ns.getEasies(hasVisited);  // populate lists for E.steps || multi
+            ns.getEasies(hasVisited);  // populate other lists of named objects
             for ([id, title] of Object.entries(json.titles)) {
                 elm = elms[id];        // apply titles to elements
                 if (Is.Element(elm)) {
                     elm.title = title;
                     if (elm.labels?.[0])
-                        elm.labels[0].title = elm.title;
+                        elm.labels[0].title = title;
                 }
             }
             awaitJSON.resolve();
-        }).catch(err => alert(`${msg}:\n${err.stack ?? err}`));
+        }).catch(err => alert(`${msg}\n${err.stack ?? err}`));
     else
-        alert(`${msg}:\nHTTP error ${response.status} ${response.statusText}`);
+        alert(`${msg}\nHTTP error ${response.status} ${response.statusText}`);
 }
 //==============================================================================
 // loadFinally() executes on Promise.all().then(), could be inlined & indented
-function loadFinally(hasVisited, restore, id) {
+function loadFinally(hasVisited, name, id) {
     let obj;
-    if (hasVisited) {        // user has previously visited this page
-        const name = localStorage.getItem(g.keyName);
+    if (elms.save)
+        Ez.readOnly(g, "restore", `${preDoc}restore`);
+
+    if (hasVisited) {       // user has previously visited this page
+        let restore;
         const item = getLocalNamed(name);
-        elms.x.value = 0;    // re-opening the page might use previous value
+        if (!elms.save)     // only color page for now
+            obj = JSON.parse(item);
+        else {
+            restore = localStorage.getItem(g.restore);
+            disableSave(item == restore);
+            disablePreset(name, item);
+            disableDelete(name);
+            obj = JSON.parse(restore);
+            ns_named.formFromObj(obj);
+        }
+        elms.x.value = 0;   // re-opening the page might use previous value
         elms.named.value = name;
-        disableSave(item == restore);
-        disablePreset(name, item);
-        disableDelete(name);
-        obj = ns_named.formFromObj(JSON.parse(restore));
     }
-    else {                   // user has never visited this page
-        setTime();           // must set msecs prior to ezX = new Easy()
+    else {                  // user has never visited this page
+        setTime();          // must set msecs prior to ezX = new Easy()
         obj = ns_named.objFromForm(hasVisited);
         setNamed(DEFAULT_NAME, JSON.stringify(obj));
     }
     ns.resizeWindow();
 
+    // ezX animates elms.x in all pages, and the x-axis of the chart in the
+    // easings page. end:MILLI is for easings only, other pages could use 1.
     ezX = new Easy({time:msecs, end:MILLI}); //*05
     raf = new AFrame;
     if (!ns.initEasies(obj)) // sets g.easies, raf.targets = g.easies
         return;
-    //--------------------
+    //-----------------
     ns.updateAll(true);
     Object.seal(g);
-    Object.freeze(elms);
+    Object.seal(elms);       // can't freeze: color page elms.named is variable
 
     const af = new AFrame;
     af.fpsBaseline()         // discover the device's screen refresh rate
@@ -158,20 +170,20 @@ function loadFinally(hasVisited, restore, id) {
           .catch(err => {    // don't alert the user, just display the page
             document.body.style.opacity = ONE;
             errorLog(err, "Fade-in animation failed");
-          })
-          .finally(()  => {  // service worker manages caching
-            navigator.serviceWorker.register("../sw.js")
-              .then (reg => { // runs in the background after page displayed
-                const sw = reg.installing ?? reg.waiting ?? reg.active;
-                if (sw)      // message adds document-specific files to the cache
-                    if (reg.active)
-                        sw.postMessage({id});
-                    else     // wait until activated
-                        sw.addEventListener("statechange", evt => {
-                            if (evt.target.state == "activated")
-                                sw.postMessage({id});
-                        });
-            }).catch(errorLog);
+      //++})
+      //++.finally(()  => {  // service worker manages caching
+      //++  navigator.serviceWorker.register("../sw.js")
+      //++    .then (reg => { // runs in the background after page displayed
+      //++      const sw = reg.installing ?? reg.waiting ?? reg.active;
+      //++      if (sw)      // message adds document-specific files to the cache
+      //++          if (reg.active)
+      //++              sw.postMessage({id});
+      //++          else     // wait until activated
+      //++              sw.addEventListener("statechange", evt => {
+      //++                  if (evt.target.state == "activated")
+      //++                      sw.postMessage({id});
+      //++              });
+      //++  }).catch(errorLog);
           });
     });
 }
