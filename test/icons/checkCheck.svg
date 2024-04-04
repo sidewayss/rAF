@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15" pointer-events="none">
-    <rect x="0.5" y="0.5" width="13" height="13" fill="none" rx="1" ry="1"
-          stroke="#445" stroke-width="1"/>
-    <path fill="none" d="M3.5,8.5 L6,11 10,4.5" stroke-linecap ="square"
-          stroke="#42A" stroke-width="2"    stroke-linejoin="miter"/>
-</svg>
