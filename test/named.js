@@ -2,11 +2,10 @@ export {DEFAULT_NAME, ns, preClass, presets,
         loadNamed, setPrefix, disableSave, disablePreset, disableDelete};
 const DEFAULT_NAME = ""; // default value for <select> and named Easy, MEaser
 
-import {changeStop}                            from "./play.js";
-import {loadCopy}                              from "./copy.js";
-import {getLocalNamed, setNamed, storeCurrent} from "./local-storage.js";
+import {loadCopy}                             from "./copy.js";
+import {getNamedBoth, setNamed, storeCurrent} from "./local-storage.js";
 import {CHANGE, CLICK, EASY_, MEASER_, dlg, elms, g, addEventsByElm}
-                                               from "./common.js";
+                                              from "./common.js";
 /*
 import(_named.js): formFromObj, updateNamed - objFromForm unused
 import(_load.js) : updateAll via loadNamed(..., _load) { ns_load = _load; }
@@ -22,10 +21,9 @@ async function loadNamed(isMulti, dir, _load) {
     if (elms.multis)
         elms.multis.addEventListener(CHANGE, openNamed, false);
     else if (elms.save) {
-        elms.revert.addEventListener(CLICK, openNamed, false);
-        addEventsByElm(
-            CLICK, [elms.save,elms.preset,elms.delete, dlg.ok, dlg.cancel], handlers
-        );
+        elms.revert.addEventListener(CLICK,  openNamed, false);
+        const btns = [elms.save, elms.preset, elms.delete, dlg.ok, dlg.cancel];
+        addEventsByElm(CLICK, btns, handlers);
     }
     return import(`${dir}_named.js`).then(namespace => {
         ns = namespace;
@@ -87,17 +85,15 @@ const handlers = {  // event handlers, not exported
 //==============================================================================
 // openNamed() is the change event handler for elms.named and click event
 //             handler for elms.revert, also called by clickDelete() below.
-function openNamed() {                // not exported
-    const name = elms.named.value;
-    const item = getLocalNamed(name); // localStorage overrides presets
-    const obj  = item ? JSON.parse(item) : presets[name];
+function openNamed() {  // not exported
+    const name  = elms.named.value,
+    [item, obj] = getNamedBoth(name);
 
-    ns.formFromObj?.(obj);            // color page has no formFromObj()
+    ns.formFromObj(obj);
     if (!ns.updateNamed(obj))
         return;
     //------------------
-    changeStop();       // reset/update whatever's left over:
-    ns_load.updateAll();
+    ns_load.updateAll();    // calls local refresh()
     disableSave(true);
     disablePreset(name, item);
     disableDelete(name);
@@ -108,8 +104,8 @@ function disableSave(b) {
     if (elms.save) {
         elms.save  .disabled = b;
         elms.revert.disabled = b;
-        elms.save  .enabled  = !b; // unauthorized extension
-        elms.revert.enabled  = !b; // see disablePlay()
+        elms.save  .dataset.enabled = !b; // see disablePlay()
+        elms.revert.dataset.enabled = !b;
     }
 }
 // disablePreset() called by openNamed(), clickOk(), loadFinally()
@@ -118,13 +114,14 @@ function disablePreset(name, item) {
         elms.preset.disabled = !name || !item
                             || !presets[name]
                             || JSON.stringify(presets[name]) == item;
-        elms.preset.enabled  = !elms.preset.disabled;
+
+        elms.preset.dataset.enabled = !elms.preset.disabled;
     }
 }
 // disableDelete() called by openNamed(), clickOk(), loadFinally()
 function disableDelete(name) { // can't delete default or presets
     if (elms.delete) {
         elms.delete.disabled = !name || !presets[name];
-        elms.delete.enabled  = !elms.delete.disabled;
+        elms.delete.dataset.enabled = !elms.delete.disabled;
     }
 }

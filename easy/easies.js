@@ -172,8 +172,23 @@ export class Easies {
     }
 //  _reset(): helps AFrame.prototype.#cancel() reset this to the requested state
     _reset(sts, forceIt) {
-        for (const ez of this.#easies)
-            ez._reset(sts, forceIt);
+        for (const ez of this.#easies)  // easys must go first because measers
+            ez._reset(sts, forceIt);    // use their values.
+
+        let t;
+        if (sts == E.original)
+            for (t of this.#targets)
+                t._restore();
+        else {
+            let vals;
+            for (t of this.#targets) {
+                vals = [];
+                t.easies.forEach((ez, i) => {
+                    vals[i] = t.eVal(ez.e, i);
+                });
+                t._apply(vals);
+            }
+        }
         if ((forceIt && sts == E.empty) || this.#oneShot)
             this.clearTargets();
     }
@@ -238,7 +253,7 @@ export class Easies {
         }
         // Process #targets, the MEasers
         for ([t, plays] of this.#byTarget) {
-            val  = [];                    // val is sparse like t.#calcs
+            val = [];                     // val is sparse like t.#calcs
             if (!t.loopByElm) {
                 plays.forEach((p, i) => {
                     easy = t.easies[i];

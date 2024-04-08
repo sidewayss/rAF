@@ -57,7 +57,7 @@ function changeLoopByElm(evt) {
     for (var cr of [chart, range])              // exclude one dot per cr
         P.visible(cr.dots.slice(1), loopByElm);
     if (evt) {          // this check on evt requires exporting changeLoopByElm
-        changeStop();   // resets stuff
+        changeStop();   // resets stuff if isPausing or hasArrived
         objEz.loopByElm = loopByElm;
         storeCurrent();
     }
@@ -71,7 +71,7 @@ function changeCheck(evt) {
         trip();
     case elms.autoTrip:
     case elms.flipTrip:
-        changeStop();
+        changeStop();   // in case we're pausing or we've arrrived
         setNoWaits();
         storeCurrent();
         ezX[tar.id] = tar.checked;

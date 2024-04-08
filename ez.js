@@ -184,8 +184,12 @@ export const Ez = {
     toSum(sum, v) {
         return sum + v;
     },
-//  noneToZero() converts NaN to zero for a Color.js color coordinates array
-    noneToZero(coords) {//NaN is the numeric representation of "none"
+//  noneToZero() converts NaN to zero for a Color.js color coordinates array.
+//               NaN is the numeric representation of CSS "none". The CSS rules
+//               animating "none" are defined, but not fully implemented  in the
+//               browsers, and there are different interpretations of the rules.
+//               Regardless, for purposes of animation, NaN = 0.
+    noneToZero(coords) {
         return coords.map(n => Number.isNaN(n) ? 0 : n);
     },
 // =============================================================================

@@ -1,11 +1,11 @@
 export {copyCode, copyData};
 
-import {frames}   from "../update.js";
-import {COUNT, g} from "../common.js";
+import {getFrames} from "../update.js";
+import {COUNT}     from "../common.js";
 import {jsonToText, easyToText, copyByKey, copyPointByKey, copyTime}
-                  from "../copy.js";
+                   from "../copy.js";
 
-import {meFromObj} from "./index.js";
+import {multiFromObj} from "./index.js";
 //==============================================================================
 function copyCode(obj) {
     const set  = new Set;
@@ -23,7 +23,7 @@ function copyCode(obj) {
     obj.easy.forEach((name, i) => txt += easyToText(name, vars[i]));
     txt += `const easies = new Easies([${vars.join()}]);\n`
             + "const measer = easies.newTarget("
-            + jsonToText(JSON.stringify(meFromObj(vars)))
+            + jsonToText(JSON.stringify(multiFromObj(vars)))
             + ");\nconst raf = new AFrame(easies);\n";
     return txt;
 }
@@ -32,7 +32,7 @@ function copyData(txt, keys) {
     let i, f;
     for (i = 0; i < COUNT; i++)
         txt += copyByKey(keys, i);
-    for (f of frames.slice(0, g.frameCount + 1)) {
+    for (f of getFrames()) {
         txt += copyTime(f);
         for (i = 0; i < COUNT; i++)
             txt += copyPointByKey(keys, f.x[i]);

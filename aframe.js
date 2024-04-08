@@ -128,7 +128,7 @@ export class AFrame {
 // this.post is optional, runs just before the animation callback loop exits
     get post()    { return this.#post; }
     set post(val) { this.#post = Ez._validFunc(val, ".post"); }
-// this.keepPost indicates whether to keep or delete this.#post after running it
+// this.keepPost indicates whether to keep or delete this.#post after playing it
     get keepPost()    { return this.#keepPost; }
     set keepPost(val) { this.#keepPost = Boolean(val); }
 // this.fps
@@ -137,20 +137,19 @@ export class AFrame {
     get gpu()    { return this.#gpu; }
 
 //  status-related properties and methods are read-only:
-    get status()    { return this.#status; }
-    get atOrigin()  { return this.#status == E.original; }
-    get atStart()   { return this.#status == E.initial;  }
-    get atEnd()     { return this.#status == E.arrived;  }
-    get isPausing() { return this.#status == E.pausing;  }
-    get isRunning() { return this.#status == E.running;  }
-    get isEmpty()   { return this.#status == E.empty;    }
-    get isInit()    { return this.#status == E.initial;  }
-    get isInitialized() { return this.#status == E.initial;  }
-    get hasArrived()    { return this.#status == E.arrived;  }
+    get status()     { return this.#status; }
+    get atOrigin()   { return this.#status == E.original; }
+    get atStart()    { return this.#status == E.initial;  }
+    get atInitial()  { return this.#status == E.initial;  }
+    get atEnd()      { return this.#status == E.arrived;  }
+    get hasArrived() { return this.#status == E.arrived;  }
+    get isPausing()  { return this.#status == E.pausing;  }
+    get isPlaying()  { return this.#status == E.playing;  }
+    get isEmpty()    { return this.#status == E.empty;    }
 //==============================================================================
 //  play() initiates the #animate() callback loop
     play() {
-        if (!this.isRunning) {          // if it's already running, ignore it
+        if (!this.isPlaying) {          // if it's already playing, ignore it
             this.#promise = Ez.promise();
             if (!this.#targets.size)    // nothing to animate
                 this.#promise.resolve(E.empty);
@@ -171,7 +170,7 @@ export class AFrame {
                         t.pre?.(t);
                     }
                 }
-                this.#status = E.running;
+                this.#status = E.playing;
                 if (this.#frameZero && !isResuming)
                     this.#frame = requestAnimationFrame(t => this.#animateZero(t));
                 else {
@@ -195,7 +194,7 @@ export class AFrame {
         if (this.#peri?.(this, timeStamp) || this.#targets.size)
             this.#frame = requestAnimationFrame(t => this.#callback(t));
         else
-            this.#stop(this.#onArrival);
+            this.#stop(this.#onArrival, true);
     }
 //  #animateNow() is the animation callback that uses performance.now()
     #animateNow() { this.#animate(performance.now()); }
@@ -213,22 +212,24 @@ export class AFrame {
     }
 //==============================================================================
 //  arrive() init() stop() pause() cancel(): #stop() with different statuses
-    arrive() { return this.#stop(E.arrived,  true); }
-    init  () { return this.#stop(E.initial,  true); } // stop??
-    stop  () { return this.#stop(E.original, true); } // return?? revert?? restore??
-    pause () { return this.#stop(E.pausing,  true); } // return is turntable lingo
-    cancel() { return this.#stop(E.empty,    true); }
+    arrive() { return this.#stop(E.arrived);  }
+    init  () { return this.#stop(E.initial);  } // stop??
+    stop  () { return this.#stop(E.original); } // return?? revert?? restore??
+    pause () { return this.#stop(E.pausing);  } // return is turntable lingo
+    cancel() { return this.#stop(E.empty);    }
 
 //  #stop() stops the animation and leaves it in the requested state
-    #stop(sts, forceIt) {// forceIt is passed through to target._reset()
-        const hasArrived = !forceIt; // an alternate interpretation of forceIt
-        const wasRunning = hasArrived ?? this.isRunning;
-        if (wasRunning && !hasArrived)
+    #stop(sts, hasArrived) {
+        const wasPlaying = this.isPlaying;
+        if (wasPlaying && !hasArrived)
             cancelAnimationFrame(this.#frame);
-        if (sts != E.pausing) {
+
+        if (sts == E.pausing)
+            this.#status = sts;
+        else {
             let t;
             const isArriving = hasArrived ?? !sts;  // E.arrived = 0 = !sts
-            if (isArriving && (wasRunning || this.isPausing)) {
+            if (isArriving && (wasPlaying || this.isPausing)) {
                 if (!hasArrived)
                     for (t of this.#targets)  // remaining targets, not #backup
                         t._runPost();
@@ -239,6 +240,7 @@ export class AFrame {
                     post(this);
                 }
             }
+            const forceIt = !hasArrived;      // an alternate interpretation
             for (t of this.#targets)
                 t._reset(sts, forceIt);
             if (sts == E.empty)
@@ -248,7 +250,8 @@ export class AFrame {
                 this.#status  = sts ?? E.arrived;
             }
         }
-        if (wasRunning)                       // .then() won't execute otherwise
+
+        if (wasPlaying)                       // .then() won't execute otherwise
             this.#promise.resolve(this.#status);
         return this.#status;
     }
@@ -257,7 +260,7 @@ export class AFrame {
     fpsBaseline(size, max, diff) {
         const args = ["sampleSize","maxFrames","maxDiff"];
         const name = `fpsBaseline(${args.join(", ")})`;
-        if (this.isRunning)
+        if (this.isPlaying)
             Ez._cantErr("You", `run ${name} during animation playback`);
         //----------------------------------------------------------------------
         size = Math.max(1,        Ez.toNumber(size, `${name}: ${args[0]}`,  3));
@@ -266,7 +269,7 @@ export class AFrame {
 
         this.#fps = {size, max, diff, times:[], intervals:[], diffs:[],
                      status:this.#status};
-        this.#status  = E.running;
+        this.#status  = E.playing;
         this.#frame   = requestAnimationFrame(t => this.#fpsAnimate(t));
         this.#promise = Ez.promise();
         return this.#promise;
@@ -322,7 +325,7 @@ export class AFrame {
     gpuTest(min, skip, peri) { // they're used via arguments global array
         const args = ["min","skip","peri"];
         const name = `gpuTest(${args.join(", ")})`;
-        if (this.isRunning)
+        if (this.isPlaying)
             Ez._cantErr("You", `run ${name} during animation playback`);
         //------------------
         if (!this.isEmpty) {
@@ -336,12 +339,12 @@ export class AFrame {
         this.#gpu = { min, skip, peri, times:[] };
         this.peri = AFrame.#gpuPeri;
         this.post = AFrame.#gpuPost;
-        this.#status  = E.running;
+        this.#status  = E.playing;
         this.#promise = Ez.promise();
         this.#skipFrames();
         return this.#promise;
     }
-//  #skipFrames() skips this.#skip frames prior to running the test animation.
+//  #skipFrames() skips this.#skip frames prior to playing the test animation.
 //                At least the first frame interval must be ignored when
 //                calculating frames per second.
     #skipFrames() {

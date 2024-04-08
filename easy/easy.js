@@ -17,7 +17,7 @@ export class Easy {
 
 //  Public string arrays for enums and <select><option> or other list display
     static status = ["arrived","tripped","waiting","inbound","outbound",
-                     "initial","original","pausing","running","empty"];
+                     "initial","original","pausing","playing","empty"];
     static type   = ["linear","sine","circ","expo","back","elastic","bounce",
                      "pow","bezier","steps","increment"];
     static io     = ["in","out","inIn","outIn","inOut","outOut"];
@@ -141,7 +141,7 @@ export class Easy {
                     unit: defUnit,
                     comp: Ez.flip(defUnit) };
 
-        this.#init_e(E.original);        // inits to #e, e.status = E.original
+        this.#init_e(E.original);        // assign(e/e2, #e), status: E.original
         Object.freeze(this.#e);
         Object.seal(this.e);
         Object.seal(this.e2);
@@ -521,28 +521,50 @@ export class Easy {
         }
         this.#setup(E.arrived, apply);
     }
-//  initRoundTrip() sets up for starting the inbound trip
-    initRoundTrip() {
-        if (!this.#roundTrip)
-            this.roundTrip = true;
-        this.#setup(E.tripped, this.#initOrTrip, true);
-    }
-//  init()
-    init(applyIt = true) {
-        this.#setup(E.initial, applyIt ? this.#initOrTrip : null);
-    }
 //  restore()
     restore() {
         this.#setup(E.original, () => {
             for (const t of this.#targets)
                 t._restore();
         });
+        this.#init_e(E.original);   // sets e.status a 2nd time, see #setup()
+    }
+//  init()
+    init(applyIt = true) {
+        this.#setup(E.initial, applyIt ? this.#initOrTrip : null);
+    }
+//  initRoundTrip() sets up for starting the inbound trip
+    initRoundTrip() {
+        if (!this.#roundTrip)
+            this.roundTrip = true;
+        this.#setup(E.tripped, this.#initOrTrip, true);
+    }
+//  #initOrTrip() is the apply argument to #setup() for init() and
+//                initRoundTrip(), sets e.value and applies e.
+    #initOrTrip(e) {
+        let peri
+        if (this.isIncremental)
+            e.value = this._value;
+        else //!!for init() this could call #init_e(E.initial)...??
+            this.#set_e(e, this._leg.prev.end, this._leg.prev.unit);
+
+        for (const t of this.#targets) {
+            if (t.elmCount) {       // no elms = nothing to apply
+                peri   = t.peri;    // don't run target.peri()
+                t.peri = undefined;
+                if (t.loopByElm)
+                    do {t._apply(e)} while (t._nextElm());
+                else
+                    t._apply(e);
+                t.peri = peri;
+            }
+        }
     }
 //  #setup() does the work for arrive(), initRoundTrip(), init(), and restore()
     #setup(sts, apply, isRT) {
         const e = this.e
-        if (sts && sts == e.status) return; // let E.arrived fall through
-        //-------------------------------
+        if (sts && sts == e.status) return;
+        //--------------------------------- // E.arrived falls through
         if (sts || e.status != E.tripped)
             this._leg = isRT ? this.#lastLeg : this.#firstLeg;
         if (!isRT) {
@@ -556,28 +578,8 @@ export class Easy {
                 apply = null;
         }
         this._inbound = isRT;
+        this.e.status = sts;  // must follow ifs above and precede apply() below
         apply?.bind(this)(e);
-        this.#init_e(sts);
-    }
-//  #initOrTrip() helps init() and initRoundTrip()
-    #initOrTrip(e) {
-        let peri
-        if (this.isIncremental)
-            e.value = this._value;
-        else
-            this.#set_e(e, this._leg.prev.end, this._leg.prev.unit);
-
-        for (const t of this.#targets) {
-            if (t.elmCount) {       // no elms = nothing to apply
-                peri   = t.peri;    // don't want to run target.peri()
-                t.peri = undefined;
-                if (t.loopByElm)
-                    do {t._apply(e)} while (t._nextElm());
-                else
-                    t._apply(e);
-                t.peri = peri;
-            }
-        }
     }
 //==============================================================================
 // Animation methods:
@@ -669,8 +671,8 @@ export class Easy {
 // Miscellaneous:
     #init_e(status) {
         Object.assign(this.e,  this.#e);
-        this.e.status = status;
         Object.assign(this.e2, this.#e);
+        this.e.status = status;         // e2 doesn't have status
     }
     #set_e(e, value, unit) {
         e.value = value;

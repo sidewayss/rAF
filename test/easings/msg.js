@@ -8,7 +8,7 @@ import {Ez, P, U} from "../../raf.js";
 import {msecs, secs} from "../load.js";
 import {MILLI, CLICK, INPUT, CHANGE, elms, addEventToElms, addEventsByElm,
         addEventByClass, formatInputNumber, changeNumber, toggleClass,
-        toFunc, isTag} from "../common.js";
+        toFunc, isTag, boolToString} from "../common.js";
 
 import {refresh}         from "./_update.js";
 import {chart}           from "./chart.js";
@@ -115,10 +115,10 @@ function updateMidSplit() {
     handlers.inputSplit();
 }
 // disableClear() helps changeMSG() and clickClear(), also called by
-//               easingFromLocal(), returns a factor/divisor.
-function disableClear(elm, n, isDef) {
-    elm.clear.disabled = !isDef || n == elm.default();
-    elm.clear.enabled  = !elm.clear.disabled;
+//               easingFromObj(), returns a factor/divisor.
+function disableClear(elm, n, isDefN) {
+    elm.clear.disabled = !isDefN || n == elm.default();
+    elm.clear.dataset.enabled = boolToString(!elm.clear.disabled);
 }
 // updateSplitGap() is called by updateAll() and changeTime()
 function updateSplitGap() {

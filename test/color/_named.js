@@ -1,12 +1,17 @@
-export {objFromForm, updateNamed};
+export {formFromObj, objFromForm, updateNamed};
+export let objEz;   // only for clickCode()
 
 import {getNamedJSON} from "../local-storage.js";
 import {elms}         from "../common.js";
 
 import {initEasies}   from "./_load.js";
-//==============================================================================
+//===============================================
+function formFromObj(obj) {
+    objEz = obj;
+}
 function objFromForm() {
-    return getNamedJSON(elms.named.value);
+    objEz = getNamedJSON(elms.named.value);
+    return objEz;
 }
 function updateNamed(obj) {
     return initEasies(obj);

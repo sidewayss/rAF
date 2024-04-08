@@ -1,6 +1,6 @@
 // export everything via import(), explicitly imported: refresh, all functions
-export {refresh, getFrame, initPseudo, updateX, setCounters, setClipPair,
-        setClipPath, formatDuration, formatPlayback, formatFrames};
+export {refresh, getFrame, initPseudo, newTargets, updateX, setCounters,
+        setClipPair, setClipPath, formatDuration, formatPlayback, formatFrames};
 export const
     MASK_X = [6,8, 14,16, 22,24],  // polygon's animated x-value indexes
     clip   = new Array(32),        // there are 32 polygon numbers
@@ -14,7 +14,7 @@ import {storeCurrent}                     from "../local-storage.js";
 import {COUNT, elms, g, formatNumber}     from "../common.js";
 
 import {clipEnd, clipStart} from "./_load.js";
-import {meFromObj}          from "./index.js";
+import {multiFromObj}       from "./index.js";
 //==============================================================================
 // refresh() called by updateAll(), changeEKey(), changeEasy(), changeStop(),
 //           play.js gets it via dynamic import by update.js.
@@ -31,6 +31,12 @@ function refresh() {
     pseudoAnimate();
     storeCurrent();
 }
+// updateX() is called exclusively by inputX()
+function updateX(frm) {
+    for (var i = 0, j = 0, l = MASK_X.length; i < l; j++)
+        i = setClipPair(frm.x[j].value, i);
+    setClipPath();
+}
 //==============================================================================
 // initPseudo() sets frames[0], creates targets w/o elements, assumes that
 //              clip-path is set at elapsed = 0, called by pseudoAnimate().
@@ -41,9 +47,9 @@ function initPseudo() {
 // newTargets() calls Easies.proto.newTarget(), with and w/o .prop and .elms,
 //              always calls g.easies.newTarget() 'cuz g.easies.oneShot = true,
 //              called by changePlay(), initPseudo(true).
-function newTargets(isPseudo = false) { // meFromObj() relies on false vs undef
+function newTargets(isPseudo = false) { // multiFromObj() relies on false vs undef
     g.easies[isPseudo ? "delete" : "add"](ezX);
-    g.easies.newTarget(meFromObj(easys, true, isPseudo));
+    g.easies.newTarget(multiFromObj(easys, isPseudo));
 }
 //==============================================================================
 // getFrame() <= update() and pseudoAnimate(), which can't use easies._next()
@@ -66,12 +72,6 @@ function getFrame(t, oneD, isMask) {
     }
     return frm;
 }
-// updateX() is called exclusively by inputX()
-function updateX(frm) {
-    for (var i = 0, j = 0, l = MASK_X.length; i < l; j++)
-        i = setClipPair(frm.x[j].value, i);
-    setClipPath();
-}
 //==============================================================================
 // setCounters() is called exclusively by updateCounters()
 function setCounters(frm, defD) {
@@ -90,7 +90,7 @@ function formatDuration(val, d) {
 // formatPlayback() helps changeStop(), formatPlay()
 function formatPlayback(isPlaying, b = true) {
     if (b) {
-        elms.clip.style.opacity = elms.clip.opacity[Number(isPlaying)]; // see multi.loadIt()
+        elms.clip.style.opacity = g.clipOpacity[Number(isPlaying)]; // see multi.loadIt()
         P.visible(elms.ucvDivs.map(div => div.firstElementChild), !isPlaying); //!!if this can be elms.value[i], then ucvDivs is a local var for _load!!
     }
 }

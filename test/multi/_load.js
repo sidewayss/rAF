@@ -8,8 +8,10 @@ import {raf, setTime}            from "../load.js";
 import {updateTime, setDuration} from "../update.js";
 import {DEFAULT_NAME}            from "../named.js";
 import {changeStop}              from "../play.js";
-import {getNamed, getNamedEasy, getLocal, setLocal} from "../local-storage.js";
-import {COUNT, CHANGE, EASY_, elms, g, is, errorAlert} from "../common.js";
+import {getNamed, getNamedEasy, getLocal, setLocal}
+                                 from "../local-storage.js";
+import {COUNT, CHANGE, EASY_, elms, g, is, errorAlert}
+                                 from"../common.js";
 
 import {loadEvents} from "./events.js";
 import {MASK_X, clip, easys, refresh, setClipPair, setClipPath}
@@ -31,9 +33,8 @@ function loadIt() {
         if (val)
             elm.value = val;
     }
-    elms.copy = elms.data.previousElementSibling; // Copy: label
-    elms.clip.opacity = [1, getComputedStyle(elms.clip).opacity]; // unauthorized
-    elms.ucvDivs = [];
+    elms.copy     = elms.data.previousElementSibling; // Copy: label
+    g.clipOpacity = [getComputedStyle(elms.clip).opacity, 1];
     changeColor();
 
     for (const m of [0, 30, 1, 3])  // x-axis = even, y-axis = odd
@@ -67,7 +68,7 @@ function getEasies(hasVisited) {
         }
     }
     getNamed(elms.easy0, EASY_);        // easy0 is inside #template
-    elms.ucvDivs.push(src.lastElementChild);
+    elms.ucvDivs = [src.lastElementChild];
     for (i = 1; i < COUNT; i++) {       // clone 'em
         clone = par.insertBefore(src.cloneNode(true), sib);
         elms.ucvDivs.push(clone.lastElementChild);

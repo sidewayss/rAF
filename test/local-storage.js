@@ -1,6 +1,6 @@
 // export everything
-export {getNamed, getNamedEasy, getNamedJSON, getLocalNamed, getLocal,
-        setLocal, setNamed, storeCurrent, setLocalBool};
+export {getNamed, getNamedEasy, getNamedJSON, getNamedString, getNamedBoth,
+        getLocalNamed, getLocal, setLocal, setNamed, storeCurrent, setLocalBool};
 
 import {E, Easy} from "../raf.js";
 
@@ -51,7 +51,23 @@ function getNamedEasy(name) {
 function getNamedJSON(name, pre = preClass) {
     return JSON.parse(getLocalNamed(name, pre)) ?? g.presets[pre][name];
 }
-// getLocalNamed() called by storeCurrent(), loadFinally(), openNamed()
+// getNamedString() returns a stringified JSON object, called by storeCurrent(),
+//                  loadFinally(), openNamed()
+function getNamedString(name, pre = preClass) {
+    return getLocalNamed(name, pre) ?? JSON.stringify(g.presets[pre][name]);
+}
+function getNamedBoth(name) {
+    let obj, str;
+    str = getLocalNamed(name);  // localStorage overrides presets
+    if (str)
+        obj = JSON.parse(str);
+    else {
+        obj = presets[name];
+        str = JSON.stringify(obj);
+    }
+    return [str, obj];
+}
+// getLocalNamed() gets the string for a named item from localStorage
 function getLocalNamed(name, pre = preClass) {
     return localStorage.getItem(pre + name);
 }
@@ -87,7 +103,7 @@ function storeCurrent(key, obj = ns.objEz) {
         disableSave(true);
     }
     else
-        disableSave(str == (getLocalNamed(elms.named.value)
+        disableSave(str == (getNamedString(elms.named.value)
                          ?? JSON.stringify(presets[elms.named.value])));
     return str;
 }

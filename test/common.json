@@ -43,7 +43,17 @@
     "lockSplit":  "Lock split: maintain or scale value when Duration changes",
     "lockGap":    "Lock gap: maintain or scale value when Duration changes",
     "color0":     "Color of top-left corner of gradient",
-    "color1":     "Color of bottom-right corner of gradient"
+    "color1":     "Color of bottom-right corner of gradient",
+    "compare":    "Toggle between 1 and 2 colors",
+    "leftSpaces": "Select a color space",
+    "rightSpaces":"Select a color space",
+    "lblDisplay": "CSS display color space",
+    "lblStart":   "Start value",
+    "lblValue":   "Current value",
+    "lblEnd":     "End value",
+    "roundT":     "Toggle round-trip",
+    "collapse":   "Show/hide control panel",
+    "fullBody":   "Toggle canvas size to|from <div>|<body>"
   },
   "presets": {
     "Easy-": {

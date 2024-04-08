@@ -29,72 +29,75 @@ function loadPlay(_update) {
     elms.stop.addEventListener(CHANGE, changeStop, false);
 }
 function changePlay() {
-    if (elms.play.value == PAUSE)       // pause it
+    if (elms.play.value == PAUSE)       // PAUSE: pause it
         raf.pause();
-    else {                              // play it or resume it
-        formatPlay(true);
-        disablePlay(true);
-        if (elms.play.value == PLAY) {
-            g.frameIndex = 0;           // play it
+    else {                              // PLAY or RESUME: play it or resume it
+        if (elms.play.value == PLAY) {  // play it
+            g.frameIndex = 0;
             ns.newTargets();
             ns.formatPlayback?.(true);
+            elms.stop.disabled = false;
         }
+        formatPlay(true);
+        disablePlay(true);
+        elms.play.value = PAUSE;
+        elms.stop.value = STOP;
         raf.play()
           .then(sts => {                // ...some time later:
-            resetPlay();
-            if (sts == E.pausing)       // user pressed pause
-                elms.play.value = RESUME;
-            else {                      // user clicked #stop or animation ends
+            if (!resetPlay(sts == E.pausing)) {
                 if (ezX.e.status > E.tripped)
-                    return;             // user clicked #stop, calls raf.stop()
-                //----------------------
+                    return;             // user clicked #stop, called raf.stop()
+                //----------------------// else animation ends:
                 setFrames(g.frameIndex);
                 setDuration(raf.elapsed / MILLI);
                 ns.flipZero?.();        // !multi //!!what about multi??
                 elms.x   .value = g.frameIndex;
                 elms.stop.value = RESET;
-                if (!ezX.e.status)      // !non-autoTrip outbound finished
+                if (!ezX.e.status)      // only enabled for status == E.tripped
                     elms.play.disabled = true;
-            }
+            } // else sts == E.pausing, resuming from pause
         }).catch(errorAlert);
-
-        elms.stop.disabled = false;
-        elms.stop.value = STOP;
-        elms.play.value = PAUSE;
     }
 }
-function changeStop(evt) {  // <= pseudoAnimate(), openNamed(), changeCheck(),
-    if (raf.isInit) return; //    changeLoopByElm(), multi updateAll()
-    //----------------------------
-    if (elms.play.value == PLAY) {  // PLAY: if (reset) evt might be defined
-        setDuration();              //       else       evt is undefined
-        if (evt && elms.stop.value == RESET) {
+// changeStop() handles the click event for #stop and is called w/o evt arg by
+//              pseudoAnimate(), openNamed(), changeCheck(), changeLoopByElm(),
+//              multi updateAll().
+function changeStop(evt) {
+    if (elms.stop.disabled) return; // nothing to do that hasn't been done
+    //-----------------------------
+    elms.x.value = 0;
+    elms.stop.value = STOP;
+    elms.stop.disabled = true;      // must precede ns.refresh()
+    elms.play.disabled = false;
+    if (elms.play.value == PLAY) {  // play = disabled, stop = RESET
+        setDuration();
+        if (evt) {
             updateTime();
-            raf.init();
-            ns.refresh();
+            raf.stop();             // resolves promise => raf.play.then() above
+            ns.refresh();           // calls pseudoAnimate()=>changeStop()
         }
     }
-    else {                          // PAUSE || RESUME: pause defines evt
-        if (raf.isPausing)          //                  resume might define it
+    else {                          // play = PAUSE|RESUME, stop = STOP
+        if (raf.isPausing)          // play = RESUME
             resetPlay()             // pause resolved the promise already
-        raf.init();                 // if (!loading) runs raf.play().then()
+        raf.stop();                 // cancels animation, resolves promise
     }
-    elms.x.value = 0;               // reset everything to zero
-    elms.stop.value = STOP;
-    elms.stop.disabled = true;
-    elms.play.disabled = false;
+    updateCounters();
     ns.formatPlayback?.(false, Boolean(evt));
-    if (!raf.atOrigin)              //!!loading page yes, but loading named too??
-        updateCounters();
+}
+function reset() {
+
 }
 //==============================================================================
 // resetPlay() helps changePlay(), changeStop()
-function resetPlay() {
+function resetPlay(isPausing) {
+    elms.play.value = isPausing ? RESUME : PLAY;
     formatPlay(false);
     disablePlay(false);
-    elms.play.value = PLAY;
     if (elms.mid)           // easings only
         toggleClass(elms.mid, LITE[0], false);
+
+    return isPausing;
 }
 // formatPlay() helps changePlay(), changeStop() via resetPlay()
 function formatPlay(isPlaying) { // isPlaying is true or false, never undefined
@@ -103,14 +106,13 @@ function formatPlay(isPlaying) { // isPlaying is true or false, never undefined
         toggleClass(elm, lite, isPlaying);
 }
 // disablePlay() helps changePlay(), changeStop() via resetPlay()
-//               .enabled is an unauthorized extension of HTMLButtonElement
 function disablePlay(b) {
-    for (var elm of [...g.disables, ...g.buttons.filter(btn => btn.enabled)])
+    for (var elm of [...g.disables, ...g.buttons.filter(btn => btn.dataset.enabled)])
         setAttrBool(elm, "disabled", b);
     elms.x.style.pointerEvents = b ? "none" : "";
     elms.x.tabIndex = b ? -1 : 0;
 }
-// setAttrBool() helps disabled, checked, and other boolean attributes
+// setAttrBool() helps with disabled, checked, and other boolean attributes
 function setAttrBool(elm, attr, b) { // only used by disablePlay()
     b ? elm.setAttribute(attr, "")
       : elm.removeAttribute(attr);

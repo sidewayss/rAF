@@ -6,10 +6,10 @@ let FPS = 60,    // assumes 60hz, but adjusts to reality at run-time
 
 import {E, Is, Ez, P, PFactory, Easy, AFrame} from "../raf.js";
 
-import {getNamed, getLocalNamed, setNamed}  from "./local-storage.js";
 import {loadUpdate}                         from "./update.js";
 import {DEFAULT_NAME, loadNamed, disableSave,
         disablePreset, disableDelete}       from "./named.js";
+import {getNamed, getNamedBoth, setNamed}   from "./local-storage.js";
 import {INPUT, SELECT, MILLI, COUNT, ONE, dlg, elms, g,
         formatNumber, errorAlert, errorLog} from "./common.js";
 /*
@@ -88,7 +88,6 @@ async function loadCommon() {
 function loadJSON(response, isMulti, dir, ns, hasVisited, msg) {
     if (response.ok)
         response.json().then(json => {
-            let elm, id, title;
             g.presets = json.presets;  // must precede loadNamed()/loadFinally()
             loadNamed(isMulti, dir, ns).then(namespace => {
                 ns_named = namespace;
@@ -97,15 +96,17 @@ function loadJSON(response, isMulti, dir, ns, hasVisited, msg) {
                 awaitNamed.reject      // let Promise.all() handle it
             );
             getNamed();                // populate elms.named from localStorage
-            ns.getEasies(hasVisited);  // populate other lists of named objects
+
+            let elm, id, title;        // apply titles to elements and labels
             for ([id, title] of Object.entries(json.titles)) {
-                elm = elms[id];        // apply titles to elements
-                if (Is.Element(elm)) {
+                elm = elms[id];
+                if (elm) {
                     elm.title = title;
                     if (elm.labels?.[0])
                         elm.labels[0].title = title;
                 }
             }
+            ns.getEasies(hasVisited);  // populate other lists of named objects
             awaitJSON.resolve();
         }).catch(err => alert(`${msg}\n${err.stack ?? err}`));
     else
@@ -119,18 +120,19 @@ function loadFinally(hasVisited, name, id) {
         Ez.readOnly(g, "restore", `${preDoc}restore`);
 
     if (hasVisited) {       // user has previously visited this page
-        let restore;
-        const item = getLocalNamed(name);
-        if (!elms.save)     // only color page for now
-            obj = JSON.parse(item);
-        else {
-            restore = localStorage.getItem(g.restore);
-            disableSave(item == restore);
+        let item;
+        [item, obj] = getNamedBoth(name);
+        if (elms.save){     // exclude color page
+            const restore = localStorage.getItem(g.restore),
+                  isSame  = (item == restore);
+            disableSave(isSame);
             disablePreset(name, item);
             disableDelete(name);
-            obj = JSON.parse(restore);
-            ns_named.formFromObj(obj);
+            if (!isSame)
+                obj = JSON.parse(restore);
         }
+
+        ns_named.formFromObj(obj);
         elms.x.value = 0;   // re-opening the page might use previous value
         elms.named.value = name;
     }

@@ -1,20 +1,20 @@
-// export everything but update()
-export {meFromObj};
-import {P} from "../../raf.js";
+export {multiFromObj};
 
-import {frames, updateFrame} from "../update.js";
+import {P, Is} from "../../raf.js";
+
+import {frames, updateFrame}                        from "../update.js";
 import {COUNT, elms, g, orUndefined, elseUndefined} from "../common.js";
 
 import {clipEnd, clipStart} from "./_load.js";
 import {MASK_X,  getFrame}  from "./_update.js";
 import {objEz}              from "./_named.js";
 //==============================================================================
-// meFromObj() reduces 3 pairs of Easys to 3 Easys for easies.newTarget(),
+// multiFromObj() reduces 3 pairs of Easys to 3 Easys for easies.newTarget(),
 //             MEBase.#easies is an Array: [Easy]. Illustrates an obscure
 //             inefficiency: every masked value is calculated even if it's the
 //             same as another one. Called by newTargets() and clickCode(),
 //             which passes in an array of string Easy names as arr.
-function meFromObj(arr, isPseudo) {
+function multiFromObj(arr, isPseudo) {
     const me = {start:clipStart, end:clipEnd, mask:MASK_X, eKey:objEz.eKey,
                easies:Array.from({length:COUNT * 2}, // [0, 0, 1, 1, 2, 2]
                                  (_, i) => arr[Math.floor(i / 2)])};

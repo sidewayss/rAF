@@ -14,7 +14,10 @@ select, label, pre {
   padding:0.5rem 0;
   margin-right:0.25rem;
 }
-
+#compare {
+  font-size:  1.75rem;
+  margin-left:-1px;    /* I couldn't find another way to align it */
+}
 #stop { margin:0 0.5rem }
 
 .slash {

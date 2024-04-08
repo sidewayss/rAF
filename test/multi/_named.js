@@ -12,7 +12,7 @@ import {OVERRIDES, setEasy} from "./events.js";
 // For multi, these 2 functions convert between localStorage JSON and the form,
 // but the JSON does not convert directly to Easy, Easies, or MEaser, it uses
 // the names of three previously stored objects, not the objects themselves.
-// Thus index.js has meFromObj() to create the MEaser object.
+// Thus index.js has multiFromObj() to create the MEaser object.
 //==============================================================================
 // formFromObj() updates the form based on obj, <= loadFinally(), openNamed()
 function formFromObj(obj) {

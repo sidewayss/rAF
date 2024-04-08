@@ -1,21 +1,21 @@
-export {easingFromLocal, easingFromForm, drawEasing};
+export {easingFromObj, easingFromForm, drawEasing};
 
 import {E, Is, P, Ez, Easy} from "../../raf.js";
 
-import {msecs}         from "../load.js";
-import {frames}        from "../update.js";
-import {setLocalBool}  from "../local-storage.js";
+import {msecs}              from "../load.js";
+import {frames, frameCount} from "../update.js";
+import {setLocalBool}       from "../local-storage.js";
 import {MILLI, TWO, elms, g, formatInputNumber, orUndefined, elseUndefined}
-                       from "../common.js";
+                            from "../common.js";
 
 import {chart}                               from "./chart.js";
 import {MSG, disableClear}                   from "./msg.js";
 import {TIME, TYPE, IO, POW, setLink, isPow} from "./tio-pow.js";
 import {LINK, pointToString, twoLegs, isBezier, bezierArray} from "./index.js";
 //==============================================================================
-// easingFromLocal() creates an object from localStorage and updates controls,
+// easingFromObj() creates an object from localStorage and updates controls,
 //                   called exclusively by formFromObj()
-function easingFromLocal(obj, legs) {
+function easingFromObj(obj, legs) {
     elms.type2.value = legs?.[1]?.type ?? g.type;
     if (isPow())
         formatInputNumber(elms.pow, obj.pow ?? legs[0].pow);
@@ -29,22 +29,22 @@ function easingFromLocal(obj, legs) {
     else
         elms.pow2.value = elms.pow.value;
 
-    let elm, id, isN, n, val;
+    let elm, id, isDefN, n, val;
     for (id of [TYPE, POW])
         setLink(elms[Ez.toCamel(LINK, id)], // #linkType and #linkPow
                 elms[id].value == elms[id + TWO].value);
 
     [legs?.[0].end,                      // mid,
      legs?.[0].time,                     // split,
-     legs?.[1].wait].forEach((v, i) => { // gap initial default values.
+     legs?.[1].wait].forEach((v, i) => { // gap initial default values:
         id  = MSG[i];
         elm = elms[id];
-        n   = obj[id] ?? v;              // first layer of default values
-        isN = Is.def(n)
-        val = isN ? n / getDF(id)
-                  : elm.default();       // second layer
+        n   = obj[id] ?? v;
+        isDefN = Is.def(n)
+        val    = isDefN ? n / getDF(id)  // default value
+                        : elm.default(); // fallback
         formatInputNumber(elm, val);
-        disableClear(elm, n, isN);
+        disableClear(elm, n, isDefN);
     });
 }
 // easingFromForm() creates an object from controls for localStorage or
@@ -90,7 +90,7 @@ function drawEasing(evt) {
     if (elms.drawSteps.checked) {
         str = frames.map((frm, i) =>
             `${pointToString(frm.x, frm.y)} `
-          + `${pointToString(frames[i < g.frameCount ? i + 1 : i].x, frm.y)}`
+          + `${pointToString(frames[Math.min(i + 1, frameCount)].x, frm.y)}`
         );
     }
     else

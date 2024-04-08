@@ -56,7 +56,7 @@ function trip(isTrip = elms.roundTrip.checked) {
 function twoLegs(val = g.io) {
     return val > E.out; // > E.out = two legs
 }
-// isBezier() <= easingFromLocal(), easingFromForm(), updateTypeIO(),
+// isBezier() <= easingFromObj(), easingFromForm(), updateTypeIO(),
 //               refresh(), objFromForm(), setSplitGap().
 function isBezier(val = g.type) {
     return val == E.bezier;

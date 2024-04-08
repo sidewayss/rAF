@@ -1,4 +1,4 @@
-export {TIMING, EASY, loadSteps, loadVT, stepsFromLocal, stepsFromForm,
+export {TIMING, EASY, loadSteps, loadVT, stepsFromObj, stepsFromForm,
         updateVT, vtFromElm, drawSteps, isSteps};
 
 import {E, Is, Ez, P, Easy} from "../../raf.js";
@@ -104,8 +104,8 @@ function changeSteps(evt) { // #steps, #jump, #values, #timing,
     refresh(tar, 0, false, true, isOutOfBounds());
 }
 //==============================================================================
-// stepsFromLocal() called exclusively by formFromObj()
-function stepsFromLocal(obj) {
+// stepsFromObj() called exclusively by formFromObj()
+function stepsFromObj(obj) {
     let val, sel;
     elms[STEPS].value = obj[STEPS];
 
@@ -151,7 +151,7 @@ function stepsFromForm(obj) {
     return Object.assign(obj, {steps, jump, easy, timing});
 }
 //==============================================================================
-// updateVT() called by stepsFromLocal(), refresh(), updateAll()
+// updateVT() called by stepsFromObj(), refresh(), updateAll()
 function updateVT() {
     const notT  = !isUserVT(elms[TIMING]);
     const notVT = notT && !isUserVT(elms[VALUES]);

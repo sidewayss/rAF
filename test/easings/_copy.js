@@ -2,10 +2,9 @@ export {copyCode, copyData};
 
 import {E, Easy} from "../../raf.js";
 
-import {frames} from "../update.js";
-import {g}      from "../common.js";
+import {getFrames} from "../update.js";
 import {jsonToText, easyToText, copyByKey, copyPointByKey, copyTime}
-                from "../copy.js";
+                   from "../copy.js";
 
 import {TYPE, IO}              from "./tio-pow.js";
 import {TIMING, EASY, isSteps} from "./steps.js";
@@ -32,7 +31,7 @@ function copyCode(obj) {
 function copyData(txt, keys) {
     txt += "\ty";
     txt += copyByKey(keys);
-    for (const f of frames.slice(0, g.frameCount + 1)) {
+    for (const f of getFrames) {
         txt += copyTime (f, true);
         txt += copyPointByKey(keys, f);
     }

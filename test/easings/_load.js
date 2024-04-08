@@ -6,7 +6,7 @@ import {E, U, P, Pn, Ez, Ease, Easy, Easies} from "../../raf.js";
 import {ezX, raf}   from "../load.js";
 import {updateTime, updateCounters} from "../update.js";
 import {getLocal}   from "../local-storage.js";
-import {INPUT, CHANGE, elms, g, is, isTag, errorAlert}
+import {COUNT, INPUT, CHANGE, elms, g, is, isTag, errorAlert}
                     from "../common.js";
 
 import {refresh}                                  from "./_update.js";
@@ -48,8 +48,9 @@ function loadIt(byTag, hasVisited) {
     for (i = 0; i <= 5; i++)
         elm.add(new Option((i / 10).toFixed(1) + U.seconds, i * 100));
 
-    let id  = "tripWait";               // tripWait is a clone of loopWait
-    let div = elms.autoTrip.nextElementSibling;
+    const
+    id  = "tripWait",                   // tripWait is a clone of loopWait
+    div = elms.autoTrip.nextElementSibling;
 
     clone = elm.labels[0].cloneNode(true);
     clone.htmlFor = id;
@@ -65,13 +66,32 @@ function loadIt(byTag, hasVisited) {
     Ez.readOnly(g, "trips", checks.filter(e => e.id.endsWith("Trip")));
     g.trips.push(clone);                // <select> = tripWait = clone
 
-    id  = Easy.type[E.bezier];
-    div = elms[id];                     // clone/create bezier inputs
-    elm = div.firstElementChild;        // elm is <div> wrapper for <input>
-    const lpar = elm.removeChild(elm.firstElementChild);
-    const rpar = elm.removeChild(elm.lastElementChild);
-    const size = 4;
-    elms.beziers = [elm];
+    loadEvents(checks);
+    loadTIOPow();       // type, io, pow, clones #type to create #type2
+    loadSteps();        // type == E.steps
+    loadMSG();          // mid, split, gap
+
+    if (hasVisited) // return visitor to this page
+        for (elm of [elms.reset, elms.zero, elms.drawSteps])
+            elm.checked = getLocal(elm);
+    else {          // user is new to this page
+        elms.io.selectedIndex = 0; //!!necessary??
+        for (elm of [elms.linkType, elms.linkPow])
+            setLink(elm, true);
+    }
+    return is();
+}
+//==============================================================================
+function getEasies() {
+    let i,      // all are const except elm, but this reads better
+    size = 4,
+    id   = Easy.type[E.bezier],
+    div  = elms[id],// clone/create bezier inputs:
+    elm  = div.firstElementChild,       // elm is <div> wrapper for <input>
+    lpar = elm.removeChild(elm.firstElementChild),
+    rpar = elm.removeChild(elm.lastElementChild);
+
+    elms.beziers = [elm];               // clone/create bezier inputs:
     for (i = 1; i < size; i++)
         elms.beziers.push(div.appendChild(elm.cloneNode(true)));
 
@@ -94,25 +114,8 @@ function loadIt(byTag, hasVisited) {
     elm.insertBefore(lpar, elm.firstElementChild);  // leading parenthesis
     elms.beziers[3].appendChild(rpar);              // trailing parenthesis
 
-    loadEvents(checks);
-    loadTIOPow();       // type, io, pow, clones #type to create #type2
-    loadSteps();        // type == E.steps
-    loadMSG();          // mid, split, gap
-    loadChart();        // events for class="chart", must follow cloning
-
-    if (hasVisited) // return visitor to this page
-        for (elm of [elms.reset, elms.zero, elms.drawSteps])
-            elm.checked = getLocal(elm);
-    else {          // user is new to this page
-        elms.io.selectedIndex = 0; //!!necessary??
-        for (elm of [elms.linkType, elms.linkPow])
-            setLink(elm, true);
-    }
-    return is();
-}
-//==============================================================================
-function getEasies() {
-    loadVT();  // it's all related to E.steps, so the code is in steps.js
+    loadChart();    // events for class="chart", must follow cloning
+    loadVT();       // steps.js
 }
 // initEasies() called once per session by loadFinally()
 function initEasies(obj) {

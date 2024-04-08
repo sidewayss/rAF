@@ -70,7 +70,7 @@ function inputTypePow(evt) {
             refresh(copy);              //*03
     }
 }
-// setLink() helps inputTypePow(), loadIt(), easingFromLocal()
+// setLink() helps inputTypePow(), loadIt(), easingFromObj()
 function setLink(btn, b = !btn.value) {
     btn.value       = boolToString(b);
     btn.textContent = g.links[Number(b)]; // symbol font characters
@@ -111,7 +111,7 @@ function updateTypeIO(isIO) {
     return has2;        // convenient for a couple of callers
 }
 //==============================================================================
-// isPow() <= easingFromLocal(), easingFromForm(), updateTypeIO(), refresh()
+// isPow() <= easingFromObj(), easingFromForm(), updateTypeIO(), refresh()
 function isPow(val = g.type) {
     return val == E.pow;
 }

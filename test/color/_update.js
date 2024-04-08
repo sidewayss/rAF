@@ -1,36 +1,20 @@
 // export everything via import(), explicitly imported: redraw, all functions
-export {refresh, getFrame, initPseudo, updateX, setCounters, oneCounter,
-        formatDuration, formatFrames};
+export {refresh, getFrame, initPseudo, newTargets, updateX, setCounters,
+        oneCounter, formatDuration, formatFrames};
 
-import {E, U} from "../../raf.js";
+import {E, U, F, P, Ez} from "../../raf.js";
 
-import {frames, pseudoAnimate}  from "../update.js";
-import {storeCurrent}           from "../local-storage.js";
-import {elms, g}                from "../common.js";
+import {frames, updateFrame, pseudoAnimate} from "../update.js";
+import {ezX}            from "../load.js";
+import {COUNT, elms, g} from "../common.js";
 
+import {ezColor} from "./_load.js";
+import {objEz}   from "./_named.js";
 import {isMulti} from "./events.js";
 //==============================================================================
-// redraw() called by updateAll(), changeEKey(), changeStop(), play.js needs the
-//          function dynamically imported by update.js, easings vs multi.
+// redraw() called by updateAll(), changeStop(), input.color(), change.space()
 function refresh() {
     pseudoAnimate();
-    storeCurrent();
-}
-//==============================================================================
-// getFrame() <= update() and pseudoAnimate(), can be MEaser or Easy
-function getFrame(t, data, flag) {
-    if (!flag)
-        data.t = t;
-    else { // pseudoAnimate()
-
-    }
-    return data;
-}
-// initPseudo() sets frames[0], called exclusively by pseudoAnimate()
-function initPseudo() {
-    frames[0] = {t:0, left:g.start.left};
-    if (elms.compare.value)
-        frames[0].right = g.start.right;
 }
 // updateX() is called exclusively by inputX()
 function updateX(frm) {
@@ -43,6 +27,102 @@ function updateX(frm) {
         lr.canvas.style.backgroundColor = lr.color.display();
     }
 }
+//==============================================================================
+// initPseudo() sets frames[0], called exclusively by pseudoAnimate()
+function initPseudo() {
+    frames[0] = {t:0, left:g.start.left};
+    if (elms.compare.value)
+        frames[0].right = g.start.right;
+    newTargets(true);
+}
+// newTargets() clears ez.targets adds 1 or 2 new targets (left and/or right)
+function newTargets(isPseudo) {
+    const
+    isComp = elms.compare.value,
+    sides  = isComp  ? [g.left, g.right] : [g.left],
+    ez     = isMulti ? g.easies : ezColor;
+
+    ez.clearTargets();
+    for (const side of sides)
+        ez.newTarget(newTar(side, isPseudo, isComp));
+
+    g.easies[isPseudo ? "delete" : "add"](ezX);
+}
+// newTar() helps newTargets()
+function newTar(lr, isPseudo, isComp) {
+    const
+    side = lr.id,
+    o = {
+        start: Ez.noneToZero(g.start[side]),
+        end:   Ez.noneToZero(g.end[side]),
+        autoTrip: elms.roundT.value
+    };
+    o.currentValue = [o.start];     // currentValue must be 2D byElmByArg
+
+    if (isPseudo)
+        o.peri = updaters.pseudo;
+    else {
+        o.elm  = lr.canvas;
+        o.prop = P.bgColor;
+        o.peri = updaters[isComp ? side : "one"];
+    }
+    if (isMulti) {
+        o.easies = easys;
+        o.eKey = objEz.eKey;
+    }
+    else
+        o.eKey = E.unit;
+
+    if (lr.spaces.selectedOptions[0].dataset.isCjs)
+        o.cjs = lr.color;
+    else
+        o.func = F[lr.spaces.value];
+
+    const mask = [];
+    for (let i = 0; i < COUNT; i++) // create mask if any start[i] == end[i]
+        if (o.start[i] != o.end[i])
+            mask.push(i);
+
+    if (mask.length < COUNT)
+        o.mask = mask;
+
+    return o;
+}
+// updaters() are the .peri() callbacks, there are three of them because there
+//            are two targets, left and right, each with its own callback plus
+//            updateOne(), for when elms.compare is off.
+const
+LEFT  = "left",
+RIGHT = "right",
+data  = {[LEFT]:null, [RIGHT]:null},
+
+updaters = {
+    one(oneD) {             // only left side showing
+        data[LEFT] = oneD;
+        updateFrame(data, [LEFT]);
+    },
+    left(oneD) {            // runs first
+        data[LEFT] = oneD;
+    },
+    right(oneD) {           // runs second
+        data[RIGHT] = oneD;
+        updateFrame(data, [LEFT, RIGHT]);
+    },
+    pseudo(oneD) {          // either or both sides concatenated in oneD
+        frames[++g.frameIndex] = getFrame(0, oneD);
+    }
+};
+//==============================================================================
+// getFrame() <= update() and pseudoAnimate(), can be MEaser or Easy
+function getFrame(t, data, flag) {
+    if (!flag)
+        data.t = t;
+    else { // pseudoAnimate()
+
+    }
+    return data;
+}
+//==============================================================================
 // setCounters() is called exclusively by updateCounters()
 function setCounters(frm) {
     oneCounter(frm.left, g.left.value, g.left.range);

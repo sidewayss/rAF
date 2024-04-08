@@ -11,8 +11,8 @@ import {MILLI, INPUT, elms, g, formatNumber, orUndefined, elseUndefined}
                       from "../common.js";
 
 import {setNoWaits}                               from "./events.js";
-import {easingFromLocal, easingFromForm}          from "./not-steps.js";
-import {stepsFromLocal,  stepsFromForm, isSteps}  from "./steps.js";
+import {easingFromObj, easingFromForm}          from "./not-steps.js";
+import {stepsFromObj,  stepsFromForm, isSteps}  from "./steps.js";
 import {updateEzXY,      trip,          isBezier} from "./index.js";
 //==============================================================================
 // formFromObj() populates the form, sets globals, <= loadFinally(), openNamed()
@@ -52,7 +52,7 @@ function formFromObj(obj) {
     elms.loopByElm.checked = obj.loopByElm;
     elms.time.dispatchEvent(new Event(INPUT)); // calls inputTime()
     setNoWaits();
-    (isSteps(obj.type) ? stepsFromLocal : easingFromLocal)(obj, legs);
+    (isSteps(obj.type) ? stepsFromObj : easingFromObj)(obj, legs);
     objEz = obj;
 }
 // objFromForm() creates an object from form element values,

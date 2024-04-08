@@ -125,15 +125,19 @@ class EBase {
 // this.elmCount is for loopByElm, and for identifying targets w/o elements
     get elmCount()  { return this.#cElms; } // loopByElm + everything else too
 
-// this.evaluate is the optional animation-time evaluator function
-    get evaluate()    { return this.#evaluate; }
-    set evaluate(val) { this.#evaluate = Ez._validFunc(val,  "evaluate"); }
+//  eval functions return the correct e.property's value at run-time
+    #Eval (e)    { return e[this.#eKey];    }
+    #MEval(e, i) { return e[this.#eKey[i]]; }
 
-//  eVal() returns the correct e.property's value based on i (or not) and #eKey
-    eVal(e, i)   {
-        return this.#evaluate?.(e, i) ?? (this.isMEaser ? e[this.#eKey[i]]
-                                                        : e[this.#eKey]);
+// this.evaluate allows the user to do their own evaluation
+    get evaluate()    { return this.#evaluate; }
+    set evaluate(val) {
+        this.#evaluate = Ez._validFunc(val,  "evaluate");
+     // this.eVal is the public property used at run-time
+        this.eVal = this.#evaluate
+                ?? (this.isMEaser ? this.#MEval : this.#Eval);
     }
+
 // this.eKeys, this.autoTrip, this.plays are byEasy arrays for MEBase
     get eKey()    {
         return this.isMEaser

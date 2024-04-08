@@ -1,8 +1,9 @@
 // export everything but ns, D
 export {loadUpdate, inputX, updateFrame, updateCounters, updateTime,
-        setDuration, setFrames, eGet, pseudoAnimate};
-const D = 3;  // D for decimals: .toFixed(D) = milliseconds, etc., not exported
-export let targetInputX;    // only imported by easings/_update.js
+        setDuration, setFrames, getFrames, eGet, pseudoAnimate};
+const D = 3;  // D for decimals: .toFixed(D) = milliseconds, etc. - not exported
+export let targetInputX,    // only imported by easings/_update.js
+           frameCount;      // ditto         by easings/non-steps.js
 export const frames = [],   // time, x, y, and eKey values by frame
 pad = {                     // string.pad() values for formatting numbers
     frame:5,
@@ -53,13 +54,13 @@ function inputX(evt) {
 //              !addIt is easings page, doesn't add targetInputX to ezX.targets
 //              because next run is pseudoAnimate() and a different target.
 function updateTime(addIt = !Is.def(ns.flipZero)) {
-    const f = elms.x.valueAsNumber / g.frameCount;
-    setFrames(Math.ceil(secs * FPS));   // sets g.frameCount = secs * FPS
-    elms.x.value = Math.round(f * g.frameCount);
+    const f = frameCount ? elms.x.valueAsNumber / frameCount : 0;
+    setFrames(Math.ceil(secs * FPS));   // sets frameCount = secs * FPS
+    elms.x.value = Math.round(f * frameCount);
 
-    const obj = {elm:elms.x, prop:P.value, factor:g.frameCount / MILLI};
+    const obj = {elm:elms.x, prop:P.value, factor:frameCount / MILLI};
     if (addIt)                          // changing factor requires new target
-        ezX.cutTarget(targetInputX);
+        ezX.cutTarget(targetInputX);    // see newTargets()
     targetInputX = ezX.newTarget(obj, addIt);
 }
 // updateFrame() consolidates easy.peri() code, records frames, sets textContent
@@ -87,12 +88,18 @@ function setDuration(val = secs) {
 // setFrames() is called by updateTime() and changePlay()
 function setFrames(val) {
     elms.x.max    = val;
-    g.frameCount  = val;
+    frameCount    = val;
     frames.length = val + 1;
     let txt = val.toString();
     if (ns.formatFrames)            // multi and color only
         txt = ns.formatFrames(txt);
     elms.frames.textContent = txt;
+}
+// getFrames() gets the full set of current frames. The frames array grows but
+//             doesn't shrink, frameCount makes it work, not to be confused with
+//             _update.js/getFrame().
+function getFrames() {
+    return frames.slice(0, frameCount + 1);
 }
 //==============================================================================
 // eGet() chooses ez.e or ez.e2, called by multi.getFrame() and
@@ -113,9 +120,10 @@ function pseudoAnimate() {
 
     ns.initPseudo();    // page-specific initialization, calls newTargets()
     ezs._zero();        // zeros-out everything under ezs
-    changeStop();       // resets stuff if necessary
-    g.frameIndex = 0;   // the pseudo-animation:
-    for (i = MILLI, l = g.frameCount * MILLI; i <= l; i += MILLI) {
+    changeStop();       // resets stuff if pausing or arrived
+
+    g.frameIndex = 0;   // incremented in .peri()
+    for (i = MILLI, l = frameCount * MILLI; i <= l; i += MILLI) {
         t = i / FPS;    // more efficient to increment by MILLI/FPS, but I
         ezs._next(t);   // prefer not to += floating point if I can avoid it.
         frames[g.frameIndex].t = t; // EBase.proto.peri() doesn't have time

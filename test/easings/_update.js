@@ -139,7 +139,7 @@ function update(_, e,) {
 }
 // pseudoUpdate() is the pseudo-animation ezY.target.peri() callback
 function pseudoUpdate(_, e) { // EBase.prototype.peri() doesn't know time
-    frames[++g.frameIndex] = getFrame(0, dataX, e);
+    frames[++g.frameIndex] = getFrame(0, dataX, e); // 0 is dummy time
 }
 //==============================================================================
 // getFrame() creates a frame object, <= update.js: update(), pseudoAnimate()

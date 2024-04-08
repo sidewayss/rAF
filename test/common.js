@@ -65,7 +65,7 @@ export function formatNumber(n, digits, decimals, elm) {
         return str;
 }
 // formatInputNumber() sets decimal places for <input type="number"> by id,
-//                     called by easingFromLocal(), vtArray(), inputTypePow(),
+//                     called by easingFromObj(), vtArray(), inputTypePow(),
 //                               clickClear(), updateSplitGap(), setSplitGap().
 export function formatInputNumber(elm, n) {
     let decimals;
