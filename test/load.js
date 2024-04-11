@@ -1,10 +1,11 @@
-export {FPS, ezX, raf, msecs, secs, preDoc, setTime};
-let FPS = 60,    // assumes 60hz, but adjusts to reality at run-time
-    ezX, raf,    // Easy, AFrame
-    msecs, secs, // alternate versions of time, both integers
-    preDoc;      // prefix for this document, see local-storage.js
+export {setTime};
+export let
+FPS = 60,    // assumes 60hz, but adjusts to reality at run-time
+ezX, raf,    // Easy, AFrame
+msecs, secs, // alternate versions of time, both integers
+preDoc;      // prefix for this document, see local-storage.js
 
-import {E, Is, Ez, P, PFactory, Easy, AFrame} from "../raf.js";
+import {E, Ez, P, PFactory, Easy, AFrame} from "../raf.js";
 
 import {loadUpdate}                         from "./update.js";
 import {DEFAULT_NAME, loadNamed, disableSave,

@@ -210,40 +210,29 @@ function color(o, hasElms) {
                 throw err;
              }
         }
-        o.space = o.cjs.spaceId.replace("-", "_"); // kebab-case to snake_case
+        o.space = o.cjs.spaceId.replaceAll("-", "_"); // kebab-case to snake_case
     } //o.space is used only once, in current(), but it's simpler to set it here
 }
 //==============================================================================
 // afurc() processes addend, factor, units, required, count
 function afurc(o, hasElms) {
-    // addend and factor can be undefined (unused) or null (E.currentValue)
-    // if defined, o.start is addend and o.end is factor
+    // addend and factor can be undefined (unused), or null (E.currentValue), or
+    // a number, or an array of numbers.
+    // if defined, o.start is addend and o.end is factor, but end gets converted
+    // to distance in endToDist(), because at run-time: factor = distance.
+    let key, val;
     const okNull = [undefined, false, false, false, false, false];
-    o.start = Ez.toNumber(o.start, "start", ...okNull);
-    o.end   = Ez.toNumber(o.end,   "end",   ...okNull);
 
     // o.a = addend: if it's zero, set it to undefined, adding 0 is pointless
-    o.a = o.start ?? Ez.toNumber(o.addend, "addend", ...okNull);
-    if (o.a === 0)
-        o.a = undefined;
+    [key, val] = af(o, ["start","addend"], okNull);
+    o.a = (val === 0) ? undefined : val;
 
-    // o.f = factor: can only be 0 if it's o.end, else it would be multiply by 0
-    o.isTo = Is.def(o.end); // o.f = end instead of distance
-    if (o.isTo) {
-        if (o.end === o.a)  // more validation in endToDist()
-            Ez._cantBeErr("start and end values", "the same");
-        //----------
-        o.f = o.end;
-    }
-    else {                  // more alt names for factor
-        const name = Is.def(o.factor)   ? "factor"
-                   : Is.def(o.distance) ? "distance"
-                   : Is.def(o.dist)     ? "dist"
-                                        : "";
-        okNull[2] = true    // factor can't be zero
-        o.f = name ? Ez.toNumber(o[name], name, ...okNull)
-                    : undefined;
-    }
+    // o.f = factor: can't be zero, modify okNull to throw on zero
+    okNull[2]  = true;
+    [key, val] = af(o, ["end","factor","distance","dist"], okNull);
+    o.f = val;
+
+    o.isTo = (key == "end");        //!!validate that start != end?? funky for different dims: a vs f...
 
     // o.u is user-optional w/default, o.r and o.c are not user-defined
     // o.isNet has no units or required, mask() sets o.c = last mask index
@@ -257,6 +246,29 @@ function afurc(o, hasElms) {
                     : o.prop.count(o.func);
         o.maxArgs = o.c;            // useful in case it varies
     }
+}
+// af() helps afurc() with addend and factor
+function af(o, keys, args) {
+    let key, val;
+    for (key of keys) {
+        if (Is.def(o[key])) // null is valid
+            break;
+    }
+    val = o[key];
+    if (Is.A(val)) {
+        val.forEach((v, i, a) => {
+            if (Is.A(v))
+                v.forEach((n, j, arr) =>
+                    arr[j] = Ez.toNumber(n, key, ...args)
+                );
+            else
+                a[i] = Ez.toNumber(v, key, ...args);
+        });
+    }
+    else
+        val = Ez.toNumber(val, key, ...args);
+
+    return [key, val];
 }
 //==============================================================================
 // config() processes factor, addend, max, and min into o.config and o.dims.
@@ -291,18 +303,18 @@ function config(o, hasElms) {
                             cfg.byElm = true;
                         else if (l > o.c && l <= o.l) //!!ditto
                             cfg.byElm = true;
-                        paramLength(l, key, cfg.byElm);
+                        paramLength(o, l, key, cfg.byElm);
                         if (!cfg.byElm)    // .byArg is duplicative, but useful
                             cfg.byArg = true;
                     }
                     break;
                 case 2:
                     cfg.bAbE = o.bAbE; // maskCV() & endToDist() can alter this
-                    paramLength(l, key, !cfg.bAbE);
+                    paramLength(o, l, key, !cfg.bAbE);
                     l     = prm.length;
                     hasCV = false;     // populate cfg with current values?
                     for (j = 0; j < l; j++) {
-                        paramLength(prm[j].length, key, cfg.bAbE);
+                        paramLength(o, prm[j].length, key, cfg.bAbE);
                         if (!hasCV)
                             hasCV = !Is.def(prm[j]) || prm[j].includes(E.cV);
                     }
@@ -323,7 +335,7 @@ function config(o, hasElms) {
     }); // end keys.forEach()
 }
 // paramLength() helps config() validate cfg.param.length
-function paramLength(l, key, byElm) {
+function paramLength(o, l, key, byElm) {
     const pairs = [[o.l, "elements"], [o.c, "arguments"]];
     const pair  = pairs[Number(!byElm)];
     if (l > pair[0])
@@ -1041,7 +1053,7 @@ function endToDist(o) {
 function defaultToZero(val, err, i1, i2) {
     if (!Is.def(val))
         return 0;
-    if (Number.IsNaN(val)) {
+    if (Number.isNaN(val)) {
         let prefix = `No start[${i1}]`;
         if (Is.def(i2))
             prefix += `[${i2}]`;

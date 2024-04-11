@@ -22,19 +22,19 @@
       </div>
       <div class="row collapse">
         <label for="startInput">Start:</label>
-        <input  id="startInput" type="text" value="darkslategray"/>
-        <div    id="startCanvas" class="canvas" style="border-bottom:none"></div>
+        <input  id="startInput" type="text" spellcheck="false" value="darkred"/>
+        <div    id="startCanvas" class="canvas"></div>
       </div>
       <div class="row collapse mb3-8" style="margin-top:-1px">
         <label for="endInput">End:&nbsp;&nbsp;</label>
-        <input  id="endInput" type="text" value="color(--lchuv 86.8 42.9 230)"/>
-        <div    id="endCanvas" class="canvas" style="border-top:none"></div>
+        <input  id="endInput" type="text" spellcheck="false" value="color(--lchuv 86.8 42.9 230)"/>
+        <div    id="endCanvas" class="canvas"></div>
       </div>
       <div id="triptych" class="collapse">
-        <button id= "compare" class="symBtn click" value="true">switch_left</button>
-        <select id= "leftSpaces" class="spaces"  style="margin-left:var(--3-16ths)"></select>
-        <select id="rightSpaces" class="spaces"  style="margin-left:var(--5-16ths)"></select>
-        <div id="divCopy" style="display:none">
+        <button id= "compare" class="symBtn click" value="true">switch_right</button>
+        <select id= "leftSpaces" class="spaces" style="margin-left:var(--3-16ths)"></select>
+        <select id="rightSpaces" class="spaces" style="margin-left:var(--5-16ths)"></select>
+        <div id="divCopy" class="row ml1-2" style="display:none">
           <button id="data" class="symBtn">data_table</button>
           <button id="code" class="symBtn">data_object</button>
           <span id="copied">Copied!</span>
@@ -43,17 +43,17 @@
         <span id= "leftDisplay" class="display left" >display-p3</span>
         <span id="rightDisplay" class="display right">display-p3</span>
 
-        <span id=  "lblStart" class="symSpan">line_start_circle</span>
-        <span id= "leftStart" class="number left" >1.000 0.000 100.0</span>
-        <span id="rightStart" class="number right">1.000 0.000 100.0</span>
+        <span id=  "lblStart" class="symSpan"           >line_start_circle</span>
+        <span id= "leftStart" class="number left"       >1.000 0.000 100.0</span>
+        <span id="rightStart" class="number right"      >1.000 0.000 100.0</span>
 
-        <span id=  "lblValue" class="symSpan" class="black">horizontal_rule</span>
-        <span id= "leftValue" class="black number left" >1.000 0.000 100.0</span>
-        <span id="rightValue" class="black number right">1.000 0.000 100.0</span>
+        <span id=  "lblValue" class="symSpan black"     >horizontal_rule</span>
+        <span id= "leftValue" class="number left  black">1.000 0.000 100.0</span>
+        <span id="rightValue" class="number right black">1.000 0.000 100.0</span>
 
-        <span id=  "lblValue" class="symSpan">line_end_circle</span>
-        <span id= "leftEnd" class="number left" >1.000 0.000 100.0</span>
-        <span id="rightEnd" class="number right">1.000 0.000 100.0</span>
+        <span id=  "lblEnd"   class="symSpan"           >line_end_circle</span>
+        <span id= "leftEnd"   class="number left"       >1.000 0.000 100.0</span>
+        <span id="rightEnd"   class="number right"      >1.000 0.000 100.0</span>
       </div>
       <div class="row">
         <input  id="x" type="range" min="0" max="1" step="1" value="0"/>
@@ -67,7 +67,7 @@
         <div class="row counter">
           <span id="elapsed"> 0.000</span
           ><span class="slash">/</span
-          ><span id="duration">12.000s</span
+          ><span id="duration"> 2.000s</span
           ><span id="frame" class="ml3-8">   0</span
           ><span class="slash">/</span
           ><span id="frames">1020f</span

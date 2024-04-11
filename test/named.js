@@ -4,8 +4,8 @@ const DEFAULT_NAME = ""; // default value for <select> and named Easy, MEaser
 
 import {loadCopy}                             from "./copy.js";
 import {getNamedBoth, setNamed, storeCurrent} from "./local-storage.js";
-import {CHANGE, CLICK, EASY_, MEASER_, dlg, elms, g, addEventsByElm}
-                                              from "./common.js";
+import {CHANGE, CLICK, EASY_, MEASER_, dlg, elms, g, addEventsByElm,
+        boolToString}                         from "./common.js";
 /*
 import(_named.js): formFromObj, updateNamed - objFromForm unused
 import(_load.js) : updateAll via loadNamed(..., _load) { ns_load = _load; }
@@ -104,8 +104,9 @@ function disableSave(b) {
     if (elms.save) {
         elms.save  .disabled = b;
         elms.revert.disabled = b;
-        elms.save  .dataset.enabled = !b; // see disablePlay()
-        elms.revert.dataset.enabled = !b;
+        const str = boolToString(!b);
+        elms.save  .dataset.enabled = str; // see disablePlay()
+        elms.revert.dataset.enabled = str;
     }
 }
 // disablePreset() called by openNamed(), clickOk(), loadFinally()
@@ -115,13 +116,13 @@ function disablePreset(name, item) {
                             || !presets[name]
                             || JSON.stringify(presets[name]) == item;
 
-        elms.preset.dataset.enabled = !elms.preset.disabled;
+        elms.preset.dataset.enabled = boolToString(!elms.preset.disabled);
     }
 }
 // disableDelete() called by openNamed(), clickOk(), loadFinally()
 function disableDelete(name) { // can't delete default or presets
     if (elms.delete) {
         elms.delete.disabled = !name || !presets[name];
-        elms.delete.dataset.enabled = !elms.delete.disabled;
+        elms.delete.dataset.enabled = boolToString(!elms.delete.disabled);
     }
 }

@@ -4,6 +4,7 @@ export {EBase, Easer, EaserByElm};
 import {ECalc} from "./ecalc.js";
 
 import {E, Ez, Is, Easy} from "../raf.js";
+import {CFunc}           from "../prop/func.js"
 
 class EBase {
     #assign; #autoTrip; #cElms; #cjs; #eKey; #elms; #evaluate; #iElm;

@@ -12,7 +12,7 @@ import {EASY_, elms, g, boolToString, errorAlert}         from "./common.js";
 //            during the load process by loadJSON(), getEasies().
 //            The list of named objects contains both presets and user items
 //            from localStorage. Those names can overlap, in which case the
-//            user item overrides the preset.
+//            user item overrides the preset. pre is for prefix, not preset.
 function getNamed(sel = elms.named, pre = preClass, getAll = true) {
     let entries = Object.entries(g.presets[pre]);
     if (!getAll)                              // !getAll = exclude E.steps

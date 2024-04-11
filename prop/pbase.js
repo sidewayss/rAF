@@ -2,7 +2,9 @@
 import {PFactory}  from "./pfactory.js";
 import {fromColor} from "./color-convert.js";
 
-import {E, Ez, F, Is, P} from "../raf.js";
+import {E, Ez, F, Fn, Is, P} from "../raf.js";
+
+const listOfFuncs = [Fn.calc,"var","attr","max","min","clamp"];
 
 export class PBase { // the base class for Prop, Bute, PrAtt, HtmlBute
     static #separator = E.sp;   // only font-family separates w/comma, and
@@ -171,17 +173,22 @@ export class PBase { // the base class for Prop, Bute, PrAtt, HtmlBute
         return a;
     }
 //  getOne() overridden by Bute and HtmlBute
-    getOne(elm) {                       // elm must be pre-validated as Element
+    getOne(elm) { // elm must be pre-validated as Element or CSSStyleRule
+        const isCSS = Is.CSSRule(elm);
         const name  = this.name;
-        let   value = elm.style[name];  // style overrides attribute in HTML
-        if (!value) {
+        let   value = elm.style[name];  // style overrides attribute in HTML/SVG
+        if (!value && !isCSS) {
             if (this.isPrAtt)
                 value = elm.getAttribute(name);
             if (!value)
                 value = getComputedStyle(elm)[name];
+        }                               //!!listOfFuncs funcs animate as isUn??else how to animate them and do this??
+        else if (!isCSS && listOfFuncs.some(v => value.includes(v + E.lp))) { //!!any better way??
+            value = getComputedStyle(elm)[name];
         }
         else if ((this.isColor && value.startsWith(Fn.rgba))
-              || (this === F.colorMix && value.includes(Fn.rgb))) {
+              || (this === F.colorMix && value.includes(Fn.rgb)))
+        {   // even elm.style converts hsl/hwb() to rgb()
             const style = elm.getAttribute("style").split(/[:;]\s*/);
             value = style[style.indexOf(this.name) + 1];
         }

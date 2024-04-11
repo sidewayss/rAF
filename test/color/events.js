@@ -1,10 +1,12 @@
-export {isMulti, loadEvents, getCase};
-let isMulti;
+export {loadEvents, getCase};
+export let isMulti;
 
 import Color from "https://colorjs.io/dist/color.js";
 
-import {E, P} from "../../raf.js";
+import {E, Fn, P} from "../../raf.js";
 
+import {setTime}                        from "../load.js";
+import {setDuration}                    from "../update.js";
 import {setPrefix}                      from "../named.js";
 import {setLocal, setLocalBool}         from "../local-storage.js";
 import {CHANGE, CLICK, INPUT, MEASER_, elms, g, is, toggleClass, boolToString,
@@ -22,11 +24,12 @@ const symBtn = { // textContent: boolean as number is index into each array
 //==============================================================================
 // loadEvents() is called exclusively by loadIt(), helps keep stuff private
 function loadEvents() {
-    change.type(); // sets isMulti
-    addEventToElms(INPUT,  [elms.startInput, elms.endInput], input.color);
-    addEventToElms(CHANGE, elms.spaces, change.space);
-    addEventsByElm(CHANGE, [elms.time, elms.type], change, false, true);
-    addEventsByElm(CLICK,  document.getElementsByClassName(CLICK), click, false, true);
+    addEventsByElm(CLICK,  g.clicks, click, false, true);
+    addEventToElms(INPUT,  [elms.startInput, elms.endInput],    input.color);
+    addEventToElms(CHANGE, [elms.leftSpaces, elms.rightSpaces], change.space);
+    elms.time.addEventListener(INPUT,  input.time,  false);
+    elms.time.addEventListener(CHANGE, change.type, false);
+    change.type();              // sets isMulti
     return is({multi:isMulti});
 }
 //==============================================================================
@@ -45,9 +48,9 @@ const input = {
         //------------------------
         input.invalid(tar, false);
         se.canvas.style.backgroundColor = se.color.display();
-        for (const lr of [g.left, g.right])
+        for (const lr of g.leftRight)
             updateOne(se, lr);
-        setLocal(tar, tar.value);
+        setLocal(tar);
         if (!evt.isLoading)
             refresh();
     },
@@ -56,6 +59,16 @@ const input = {
         toggleClass(elm, "invalid", b);
         elms.x   .disabled = b;
         elms.play.disabled = b;
+    },
+ // time() seems to me that it should be throttled, or some of it should be in
+ //        a change event handler, but this is easier and hasn't choked yet...
+    time(evt) {
+        const tar = evt.target;
+        if (!evt.isLoading) {
+            setLocal(tar);
+            setTime();      // must precede setDuration()
+        }
+        tar.nextElementSibling.textContent = setDuration();
     }
 };
 //==============================================================================
@@ -65,7 +78,7 @@ const input = {
 // se[lr.id] = g.start|end.left|right = color coordinates, Array
 // lr[se.id] = g.left|right.start|end = elms.left|rightStart|End, <span>
 function updateOne(se, lr) {
-    se[lr.id] = se.color[lr.color.spaceId.replace("-", "_")];
+    se[lr.id] = se.color[lr.color.spaceId.replaceAll("-", "_")];
     oneCounter(se[lr.id], lr[se.id], lr.range);
 }
 //==============================================================================
@@ -75,31 +88,21 @@ const change = {
     space(evt) {
         const tar = evt.target;
         const lr  = g[getCamel(tar)];      // g.left|right
-        const id  = tar.selectedOptions[0].dataset.spaceId;
+        const opt = tar.selectedOptions[0];
+        const id  = opt.dataset.spaceId;
 
         lr.color = new Color(id, 0);
         lr.range = refRange[id];
-
         if (!evt.isLoading) {
-            for (const se of [g.start, g.end])
+            for (const se of g.startEnd)
                 updateOne(se, lr);
             refresh();
         }
-        let b = tar.selectedOptions[0].dataset.isCjs;
-        if (b)
-            lr.display.textContent = lr.color.display().split(E.func)[0];
-        else {
-            lr.display.textContent = tar.value;
-            b = (tar === g.left ? g.right : g.left).spaces.selectedOptions[0]
-                                                          .dataset.isCjs;
-        }
-        P.displayed(lr.display, b);
-        setLocal(tar, tar.value);
-    },
- // time() is incomplete...//!!
-    time(evt) {
-        const tar = evt.target;
-        setLocal(tar, tar.value);
+        const display = lr.color.display().split(E.func);
+        lr.display.textContent = (display[0] == Fn.color)
+                               ? display[1].split(E.sp)[0]
+                               : display[0];
+        setLocal(tar);
     },
  // type() swaps elms.named, indirectly calls openNamed().
     type(evt) {
@@ -127,20 +130,20 @@ const click = {
         P.visible  ([r.display, r.start, r.value, r.end], b);
         P.displayed([r.spaces, r.canvas], b);
         P.displayed(elms.divCopy, !b);
+        elms.leftCanvas.style.width = b ? "50%" : "100%";
     },
     roundTrip(evt) {
         const b = click.boolBtn(evt.target);
         //!!
     },
  // collapse() shows|hides inputs & counters
-    collapse() {
+    collapse(evt) {
         const b = click.boolBtn(evt.target);
-        const h = [collapsibleHeight, 0];
-
         P.displayed(elms.collapsible, !b);
-        resizeWindow(undefined, h[Number(b)]);
+        if (!evt.isLoading)
+            resizeWindow(undefined, b ? 0 : collapsibleHeight);
     },
-    fullBody() {
+    fullBody(evt) {
         const b = click.boolBtn(evt.target);
         //!!
     },
@@ -149,10 +152,11 @@ const click = {
         const b   = !tar.value;
         tar.value = boolToString(b);
         tar.textContent = symBtn[tar.id][Number(b)];
-        setLocalBool(tar, b);
+        setLocalBool(tar, !b);  // restore by dispatching events
         return b;
     }
 };
+//==============================================================================
 function getCamel(elm) {
     return elm.id.slice(0, elm.id.search(/[A-Z]/));
 }

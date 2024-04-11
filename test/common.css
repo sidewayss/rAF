@@ -329,6 +329,7 @@ input.mt1px { margin-top: 1px; }
 
 /* Specialty */
 #copied {
+  pointer-events:none;
   position:absolute;
   opacity:0;
   cursor:default;

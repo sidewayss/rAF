@@ -94,6 +94,7 @@ export function changeNumber(tar)  {
         if (n > tar.max || n < tar.min)
             n = Math.max(Math.min(n, tar.max), tar.min);
         formatInputNumber(tar, n);
+        return n;
     }
 }
 //====== error messaging =======================================================
@@ -129,4 +130,9 @@ export function isTag(elm, tag) { // only called by easings.loadIt()
 export function is(obj = {}) {
     obj[document.documentElement.id] = true;
     return Object.freeze(obj);
+}
+export function dummyEvent(type, isLoading) {
+    const evt = new Event(type);
+    evt.isLoading = isLoading;
+    return evt;
 }

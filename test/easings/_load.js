@@ -6,7 +6,7 @@ import {E, U, P, Pn, Ez, Ease, Easy, Easies} from "../../raf.js";
 import {ezX, raf}   from "../load.js";
 import {updateTime, updateCounters} from "../update.js";
 import {getLocal}   from "../local-storage.js";
-import {COUNT, INPUT, CHANGE, elms, g, is, isTag, errorAlert}
+import {COUNT, INPUT, CHANGE, elms, g, is, isTag, dummyEvent, errorAlert}
                     from "../common.js";
 
 import {refresh}                                  from "./_update.js";
@@ -134,8 +134,7 @@ function updateAll(isLoading) { // called by loadFinally(), openNamed()
         let evt = new Event(CHANGE);
         elms.reset.dispatchEvent(evt); // calls changeReset()
         elms.zero .dispatchEvent(evt); // calls changeZero()
-        evt = new Event(INPUT);
-        evt.isLoading = true;
+        evt = dummyEvent(INPUT, true);
         elms.time.dispatchEvent(evt);  // calls inputTime()
         trip();
         updateVT();                    // E.steps

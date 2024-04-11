@@ -102,24 +102,37 @@ pre.secs {
 }
 
 /* <button> */
-#clearMid {
-  line-height:1.5rem;
+.clear, .lock, .link {
+  font-family:"Material Symbols Rounded";
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  line-height: 1.5rem;
+}
+.clear, .lock {
+  font-size:   1.5rem;
+}
+.lock, .link{
+  border-radius:var(--7-16ths);
 }
 .clear {
-  align-self: flex-end;
-  font-family:"Material Symbols Rounded";
   font-weight:bold;
-  font-size:  1.5rem;
-  line-height:1.25rem;
-  padding:0;
+  margin-right:var(--16th);
   color:#700;
-  background-color:transparent;
-  border:none;
 }
+.lock {
+  align-self:flex-start;
+  color:var(--dark-gray);
+}
+.link {
+  font-size:calc(1rem + var(--5-8ths));
+  color:var(--medium-blue);
+}
+
 .clear:disabled, .lock:disabled {
   font-weight:normal;
   color:#AAA;
-  background-color:transparent;
+  background-color: transparent;
 }
 .clear:hover:not(:disabled) {
   color:#B00;
@@ -128,25 +141,6 @@ pre.secs {
 .clear:active:hover{
   color:#D00;
   background:radial-gradient(circle at center, #0044 0, #0000 75%);
-}
-.lock, .link{
-  font-family:"Material Symbols Rounded";
-  padding:0;
-  border:none;
-  border-radius:var(--7-16ths);
-  background:transparent;
-}
-.lock {
-  align-self:  flex-start;
-  font-size:   1.5rem;
-  line-height: 1.5rem;
-  margin-right:0.25rem;
-  color:var(--dark-gray);
-}
-.link {
-  font-size:calc(1rem + var(--5-8ths));
-  line-height: 1.5rem;
-  color:var(--medium-blue);
 }
 .lock:hover:not(:disabled),
 .link:hover:not(:disabled) {

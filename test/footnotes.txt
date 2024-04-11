@@ -1,4 +1,4 @@
-01 inputX(); // why is this necessary and why here?
+01 // solved: there to update dots[i].cx and cy
 02 Math.floor(availableH * RATIO) // old version of code
 03 changeChart(copy); // why copy?
 04 ++g.frame // points.length could also increase pre-playback for roundTrip/loop

@@ -60,9 +60,9 @@ const P  = {           // Prop, Bute, PrAtt, HtmlBute instances by name
     isVisible(elm) { // one element at a time
         return elm.style.visibility == "visible";
     },
- // displayed does the same for display:"none" and ""
-    displayed(elms, b = true, value="") {
-        const val = b ? value : "none";
+ // displayed does something similar for display
+    displayed(elms, b, value) {
+        const val = b ? (value ?? "") : "none";
         elms = Ez.toElements(elms);
         for (const elm of elms)
             this.display.setOne(elm, val);

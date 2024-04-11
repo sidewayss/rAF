@@ -46,14 +46,23 @@ button, input[type=text],
 select, span {
   color:var(--charcoal);
 }
+.colorjs {
+  color:rgb(85, 142, 121);
+}
 input[type=text] { /* #startColor, #endColor */
   flex-grow: 1;
   align-self:stretch;
   border:var(--border-gray);
+  outline:none;
 }
-.invalid {
-  background-color: rgb(139 0 0 0.1);
+input[type=text]:focus {
+  z-index:1;
+  border-color:black;
+}
+input.invalid {
+  background-color:rgb(139 0 0 / 0.1);
   border-color: darkred;
+  outline-color:darkred;
 }
 #triptych {
   display:grid;
@@ -76,10 +85,10 @@ input[type=text] { /* #startColor, #endColor */
 }
 .display {
   font-weight:400;
-  font-style:italic;
   padding-top:1px;
 }
 .number {
+  height:     1.5rem; /* grid row height, how to get it using attr()?? */
   padding-top:1px;
 }
 .left {
@@ -88,10 +97,21 @@ input[type=text] { /* #startColor, #endColor */
 .right {
   margin-left:var(--5-8ths);
 }
+.number.right {
+  margin-left: var(--3-16ths);
+  padding-left:var(--3-8ths);
+  border-left: var(--border-gray);
+}
 .canvas {
   border:1px solid black;
 }
+.fullWidth {
+  border-left:  none;
+  border-right: none;
+  border-bottom:none;
+}
 #canvas {
+  align-items:stretch;
   margin-top:0.5em;
 }
 #startCanvas, #endCanvas {

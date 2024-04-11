@@ -4,9 +4,9 @@ export {refresh, getFrame, initPseudo, newTargets, updateX, setCounters,
 
 import {E, U, F, P, Ez} from "../../raf.js";
 
-import {frames, updateFrame, pseudoAnimate} from "../update.js";
-import {ezX}            from "../load.js";
-import {COUNT, elms, g} from "../common.js";
+import {ezX} from "../load.js";
+import {frames, inputX, updateFrame, pseudoAnimate} from "../update.js";
+import {COUNT, elms, g, elseUndefined}              from "../common.js";
 
 import {ezColor} from "./_load.js";
 import {objEz}   from "./_named.js";
@@ -15,6 +15,7 @@ import {isMulti} from "./events.js";
 // redraw() called by updateAll(), changeStop(), input.color(), change.space()
 function refresh() {
     pseudoAnimate();
+    inputX();
 }
 // updateX() is called exclusively by inputX()
 function updateX(frm) {
@@ -39,44 +40,59 @@ function initPseudo() {
 function newTargets(isPseudo) {
     const
     isComp = elms.compare.value,
-    sides  = isComp  ? [g.left, g.right] : [g.left],
-    ez     = isMulti ? g.easies : ezColor;
+    sides  = isComp  ? g.leftRight : [g.left],
+    ez     = isMulti ? g.easies    : ezColor;
 
     ez.clearTargets();
-    for (const side of sides)
-        ez.newTarget(newTar(side, isPseudo, isComp));
+    if (isPseudo && isComp)
+        ez.newTarget(newTar(null, isPseudo, isComp));
+    else
+        for (const side of sides)
+            ez.newTarget(newTar(side, isPseudo, isComp));
 
     g.easies[isPseudo ? "delete" : "add"](ezX);
 }
 // newTar() helps newTargets()
 function newTar(lr, isPseudo, isComp) {
-    const
-    side = lr.id,
-    o = {
-        start: Ez.noneToZero(g.start[side]),
-        end:   Ez.noneToZero(g.end[side]),
-        autoTrip: elms.roundT.value
-    };
-    o.currentValue = [o.start];     // currentValue must be 2D byElmByArg
+    let o, side;
+    if (lr) {
+        side = lr.id,
+        o = {
+            start:    Ez.noneToZero(g.start[side]),
+            end:      Ez.noneToZero(g.end[side]),
+            autoTrip: elseUndefined(!isPseudo, elms.roundT.value)
+        };
+        o.currentValue = [o.start]; // currentValue must be 2D byElmByArg
+    }
+    else {
+        let arr, se;                // isPseudo && isComp
+        o = {};
+        for (se of g.startEnd) {
+            arr = [];
+            for (side of g.leftRight.map(obj => obj.id))
+                arr.push(...Ez.noneToZero(se[side]));
+            o[se.id] = arr;
+        }
+    }
 
     if (isPseudo)
         o.peri = updaters.pseudo;
     else {
+        o.peri = updaters[isComp ? side : "one"];
         o.elm  = lr.canvas;
         o.prop = P.bgColor;
-        o.peri = updaters[isComp ? side : "one"];
+        if (lr.spaces.selectedOptions[0].className) // class="colorjs" or ""
+            o.cjs = lr.color;
+        else
+            o.func = F[lr.spaces.value];
     }
+
     if (isMulti) {
         o.easies = easys;
         o.eKey = objEz.eKey;
     }
     else
         o.eKey = E.unit;
-
-    if (lr.spaces.selectedOptions[0].dataset.isCjs)
-        o.cjs = lr.color;
-    else
-        o.func = F[lr.spaces.value];
 
     const mask = [];
     for (let i = 0; i < COUNT; i++) // create mask if any start[i] == end[i]
@@ -114,13 +130,18 @@ updaters = {
 };
 //==============================================================================
 // getFrame() <= update() and pseudoAnimate(), can be MEaser or Easy
-function getFrame(t, data, flag) {
-    if (!flag)
-        data.t = t;
-    else { // pseudoAnimate()
-
+function getFrame(t, data, keys) {
+    const frm = {};
+    if (keys) {
+        frm.t = t;
+        for (const key of keys)
+            frm[key] = data[key];
     }
-    return data;
+    else {          // pseudoAnimate()
+        frm[LEFT]  = data.slice(0, COUNT);
+        frm[RIGHT] = data.slice(COUNT);
+    }
+    return frm;
 }
 //==============================================================================
 // setCounters() is called exclusively by updateCounters()

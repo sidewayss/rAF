@@ -136,7 +136,7 @@ export class AFrame {
 // this.gpu
     get gpu()    { return this.#gpu; }
 
-//  status-related properties and methods are read-only:
+//  status-related properties and methods:
     get status()     { return this.#status; }
     get atOrigin()   { return this.#status == E.original; }
     get atStart()    { return this.#status == E.initial;  }
@@ -146,6 +146,14 @@ export class AFrame {
     get isPausing()  { return this.#status == E.pausing;  }
     get isPlaying()  { return this.#status == E.playing;  }
     get isEmpty()    { return this.#status == E.empty;    }
+
+//  arrive() init() stop() pause() cancel(): #stop() with different statuses
+    arrive () { return this.#stop(E.arrived);  }
+    init   () { return this.#stop(E.initial);  }
+    stop   () { return this.#stop(E.initial);  }
+    restore() { return this.#stop(E.original); }
+    pause  () { return this.#stop(E.pausing);  }
+    cancel () { return this.#stop(E.empty);    }
 //==============================================================================
 //  play() initiates the #animate() callback loop
     play() {
@@ -211,13 +219,6 @@ export class AFrame {
         this.#callback(timeStamp);    // timeStamp is always less than now
     }
 //==============================================================================
-//  arrive() init() stop() pause() cancel(): #stop() with different statuses
-    arrive() { return this.#stop(E.arrived);  }
-    init  () { return this.#stop(E.initial);  } // stop??
-    stop  () { return this.#stop(E.original); } // return?? revert?? restore??
-    pause () { return this.#stop(E.pausing);  } // return is turntable lingo
-    cancel() { return this.#stop(E.empty);    }
-
 //  #stop() stops the animation and leaves it in the requested state
     #stop(sts, hasArrived) {
         const wasPlaying = this.isPlaying;

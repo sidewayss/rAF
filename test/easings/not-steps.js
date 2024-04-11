@@ -1,6 +1,7 @@
 export {easingFromObj, easingFromForm, drawEasing};
 
 import {E, Is, P, Ez, Easy} from "../../raf.js";
+import {splitIO}            from "../../easy/easy-construct.js";
 
 import {msecs}              from "../load.js";
 import {frames, frameCount} from "../update.js";
@@ -65,7 +66,7 @@ function easingFromForm(obj) {
         pow = elms.pow.valueAsNumber;
 
     if (useLegs) {
-        const ios   = Easy.splitIO(g.io, true).map(v => orUndefined(v));
+        const ios   = splitIO(g.io, true).map(v => orUndefined(v));
         const time2 = msecs - split - gap;
         const type2 = orUndefined(Number(elms.type2.value));
         const pow2  = elseUndefined(isPow(type2), elms.pow2.valueAsNumber);

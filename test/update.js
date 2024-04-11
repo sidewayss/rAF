@@ -53,7 +53,7 @@ function inputX(evt) {
 // updateTime() is called by changeTime(), changeStop(), and updateAll().
 //              !addIt is easings page, doesn't add targetInputX to ezX.targets
 //              because next run is pseudoAnimate() and a different target.
-function updateTime(addIt = !Is.def(ns.flipZero)) {
+function updateTime(addIt = !ns.flipZero) {
     const f = frameCount ? elms.x.valueAsNumber / frameCount : 0;
     setFrames(Math.ceil(secs * FPS));   // sets frameCount = secs * FPS
     elms.x.value = Math.round(f * frameCount);
@@ -129,5 +129,5 @@ function pseudoAnimate() {
         frames[g.frameIndex].t = t; // EBase.proto.peri() doesn't have time
     }
     ns.postPseudo?.();  // easings page: E.steps has a pseudo-quirk
-    raf.init();         //!!force initialize after the pseudo-animation run
+    raf.init();         // init() is an alias for stop() //!!necessary here??
 }

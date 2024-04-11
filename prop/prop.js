@@ -3,7 +3,7 @@ export {Prop, Bute, PrAtt, HtmlBute}
 
 import {PBase} from "./pbase.js";
 
-import {E, Ez, F, P} from "../raf.js"
+import {Ez, F, P} from "../raf.js"
 //==============================================================================
 class Prop extends PBase {
     constructor() {

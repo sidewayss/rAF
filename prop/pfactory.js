@@ -51,7 +51,7 @@ cssLP = ["transformOrigin","maxHeight","maxWidth","minHeight","minWidth",
          "paddingTop", "paddingBottom","paddingLeft","paddingRight",
           "marginTop",  "marginBottom", "marginLeft", "marginRight",
           "borderTop",  "borderBottom", "borderLeft", "borderRight",
-          "borderWidth","borderHeight"],
+          "borderWidth","borderTopWidth","borderBottomWidth","borderLeftWidth","borderRightWidth"],
 bg    = ["backgroundAttachment","backgroundClip", "backgroundOrigin",
          "backgroundBlendMode", "backgroundRepeat"], //!!none of these animate, maybe repeat...
 bgUn  = ["background","backgroundImage","backgroundSize",
@@ -133,18 +133,20 @@ const PFactory = {
             fp = new ColorFunc("", "_noUPct", id);
             colorFuncs.push(fp);        // a ColorFunc for each color() space
             this.funcC.push(id);
-            F[id] = fp;
+            Ez.readOnly(F, id, fp);
             if (id.includes("-")) {     // aliases out the wazoo:
-                F[Ez.kebabToCamel(id)]  = fp; // standard camelCase
-                F[id.replace("-", "_")] = fp; // snake_case for Color.js
+                Ez.readOnly(F, Ez.kebabToCamel(id), fp);  // standard camelCase
+                Ez.readOnly(F, id.replaceAll("-", "_"), fp); // snake_case: Color.js
             }
-            if (ColorFunc.aliases[i])         // aliases for Color.js + CSS xyz
+            if (ColorFunc.aliases[i])   // aliases for Color.js + CSS xyz
                 F[ColorFunc.aliases[i]] = fp;
+
+            E[Ez.kebabToCamel(id)] = id;//!!with F[spaceId] are these needed??
         });
 
         Fn.rgba = Fn.rgb + "a";         // elm.style, getComputedStyle() use it
         F .rgba = F.rgb;
-        F .srgb = F.rgb;                // practically no one uses color(srgb)
+        F .srgb = F.rgb;                // no one uses color(srgb), but...
 
         // Properties for this, F, P:
         // readOnly() for P because F and this get frozen, but P is extensible.
@@ -262,8 +264,6 @@ const PFactory = {
         }
         for (key of Easy.eKey)
             E[key] = key;
-        for (key of ColorFunc.spaces)   // Color.js uses snake_case, I use camel
-            E[Ez.kebabToCamel(key)] = key; //!!with F[spaceId] are these needed??
 
         // Popular arguments for Ez.toNumber() and Easy.legNumber():
         // Can't define these inside const Ez because ...Ez.xYZ not ready yet//!!??

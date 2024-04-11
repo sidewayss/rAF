@@ -48,11 +48,11 @@ function refresh(tar, n, has2 = twoLegs(),
                 return;
             }//--------
         }
-        inputX();                //*01 - calls updateX() indirectly
         storeCurrent("", obj);   // if (n) obj is undefined
     }
     pseudoAnimate();             // update frames
     drawLine();                  // draw the line
+    inputX();                    // move the dot(s), uses updated frames
     ezY.clearTargets();          // clear pseudo-targets, ezX uses .oneShot
 
     let oob = isOutOfBounds();
