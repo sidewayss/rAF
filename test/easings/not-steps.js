@@ -3,11 +3,10 @@ export {easingFromObj, easingFromForm, drawEasing};
 import {E, Is, P, Ez, Easy} from "../../raf.js";
 import {splitIO}            from "../../easy/easy-construct.js";
 
-import {msecs}              from "../load.js";
-import {frames, frameCount} from "../update.js";
-import {setLocalBool}       from "../local-storage.js";
+import {msecs, frames, frameCount} from "../update.js";
+import {setLocalBool}              from "../local-storage.js";
 import {MILLI, TWO, elms, g, formatInputNumber, orUndefined, elseUndefined}
-                            from "../common.js";
+                                   from "../common.js";
 
 import {chart}                               from "./chart.js";
 import {MSG, disableClear}                   from "./msg.js";
@@ -88,7 +87,7 @@ function easingFromForm(obj) {
 // drawEasing() helps drawLine()
 function drawEasing(evt) {
     let str;
-    if (elms.drawSteps.checked) {
+    if (elms.drawAsSteps.checked) {
         str = frames.map((frm, i) =>
             `${pointToString(frm.x, frm.y)} `
           + `${pointToString(frames[Math.min(i + 1, frameCount)].x, frm.y)}`

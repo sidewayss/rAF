@@ -1,6 +1,6 @@
 // export everything but update
-export {ezY, LINK, OTHER, updateEzXY, newEzY,
-        pointToString, trip, twoLegs, isBezier, bezierArray};
+export {ezY, LINK, OTHER, initEzXY, newEzY,
+        pointToString, updateTrip, twoLegs, isBezier, bezierArray};
 
 import {E, P, Easy} from "../../raf.js";
 
@@ -15,15 +15,15 @@ const LINK  = "link";
 const OTHER = "other";
 //==============================================================================
 // Animation object functions:
-// updateEzXY() called by loadFinally=>initEasies(), openNamed=>updateNamed()
-function updateEzXY(obj) {
+// initEzXY() called by loadFinally=>updateAll(), openNamed=>updateNamed()
+function initEzXY(obj) {
     const b = Boolean(newEzY(obj));
     if (b)
         for (const prop of [TIME, PLAYS, "loopWait", ...g.trips.map(elm => elm.id)])
             ezX[prop] = obj[prop];
     return b;
 }
-// newEzY() called by updateEzXY() and refresh()
+// newEzY() called by initEzXY() and refresh()
 function newEzY(obj = objEz) {
     g.easies.delete(ezY);
     try {
@@ -42,13 +42,14 @@ function pointToString(x, y) {
     return `${x.toFixed(2)},${y.toFixed(2)}`;
 }
 //==============================================================================
-// trip() sets round-trip properties, called by openNamed(), updateAll(),
-//        changeCheck(target:#roundTrip)
-function trip(isTrip = elms.roundTrip.checked) {
+// updateTrip() updates roundTrip display, called by openNamed(), initEasies(),
+//              change.roundTrip()
+function updateTrip(isTrip = elms.roundTrip.checked) {
     const isAuto = isTrip && elms.autoTrip.checked;
     elms.roundTrip.label = "Round trip" + (isTrip ? ":" : "");
+
     P.visible([elms.flipTrip, elms.autoTrip], isTrip);
-    P.visible(elms.tripWait.parentNode, isAuto);
+    P.visible(elms.tripWait.parentNode,       isAuto);
 }
 //==============================================================================
 // Boolean functions:

@@ -4,8 +4,7 @@ export let objEz;
 
 import {E, Is} from "../../raf.js"
 
-import {msecs}        from "../load.js";
-import {pad}          from "../update.js";
+import {msecs, pad}   from "../update.js";
 import {DEFAULT_NAME} from "../named.js";
 import {MILLI, INPUT, elms, g, formatNumber, orUndefined, elseUndefined}
                       from "../common.js";
@@ -13,7 +12,7 @@ import {MILLI, INPUT, elms, g, formatNumber, orUndefined, elseUndefined}
 import {setNoWaits}                               from "./events.js";
 import {easingFromObj, easingFromForm}          from "./not-steps.js";
 import {stepsFromObj,  stepsFromForm, isSteps}  from "./steps.js";
-import {updateEzXY,      trip,          isBezier} from "./index.js";
+import {initEzXY,      updateTrip,    isBezier} from "./index.js";
 //==============================================================================
 // formFromObj() populates the form, sets globals, <= loadFinally(), openNamed()
 function formFromObj(obj) {
@@ -50,7 +49,7 @@ function formFromObj(obj) {
             elm.value = val ?? 0; // tripWait default = 0
     }
     elms.loopByElm.checked = obj.loopByElm;
-    elms.time.dispatchEvent(new Event(INPUT)); // calls inputTime()
+    elms.time.dispatchEvent(new Event(INPUT));
     setNoWaits();
     (isSteps(obj.type) ? stepsFromObj : easingFromObj)(obj, legs);
     objEz = obj;
@@ -90,11 +89,9 @@ function objFromForm(hasVisited = true) {
 }
 //==============================================================================
 function updateNamed(obj) {
-    elms.time.dispatchEvent(new Event(INPUT)); // calls inputTime()
-    if (!updateEzXY(obj))
-        return false;
-    //---------------
-    trip();           // updateAll() only calls it if (isLoading)
+    if (!initEzXY(obj)) return false;
+    //----------------
+    updateTrip();   // updateAll() only calls it if (isLoading)
     return true;
 }
 //==============================================================================

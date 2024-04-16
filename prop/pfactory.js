@@ -44,7 +44,7 @@ css   = ["flexFlow","alignItems","alignSelf","justifyContent", //!!any of these 
 css2  = ["left","right","top","bottom",  // r = <circle> radius, no abbreviations
          "cursor","display","flex","mask","overflow","position"], //!!not all of these animate
 cssUn = ["border","borderImage","clip-path","offset-path","shape-outside"],
-cssC  = ["color","backgroundColor","borderColor","borderLeftColor",
+cssC  = ["color","accentColor","backgroundColor","borderColor","borderLeftColor",
          "borderRightColor","borderTopColor","borderBottomColor"],
 cssLP = ["transformOrigin","maxHeight","maxWidth","minHeight","minWidth",
          "padding",    "margin",         // border is in cssUn, above

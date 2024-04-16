@@ -1,11 +1,10 @@
 // #mid, #split, #gap are all <input type="number">
-// export everything but LOCK, LOCKED, handlers, changeMSG
-export {MSG, loadMSG, updateMidSplit, disableClear, updateSplitGap, setSplitGap};
-const MSG = ["mid","split","gap"];
+export {loadMSG, updateMidSplit, disableClear, updateSplitGap, setSplitGap};
+export const MSG = ["mid","split","gap"];
 
 import {Ez, P, U} from "../../raf.js";
 
-import {msecs, secs} from "../load.js";
+import {msecs, secs} from "../update.js";
 import {MILLI, CLICK, INPUT, CHANGE, elms, addEventToElms, addEventsByElm,
         addEventByClass, formatInputNumber, changeNumber, toggleClass,
         toFunc, isTag, boolToString} from "../common.js";
@@ -20,7 +19,7 @@ const LOCK   = "lock";
 const LOCKED = "locked"
 const locks  = ["lock_open", LOCK]; // boolean acts as index
 //==============================================================================
-// loadMSG() is called by easings.loadIt(), once per session
+// loadMSG() is called by easings.loadIt() once per session
 function loadMSG() {
     let elm, id, key, obj, val;
     const CLEAR = "clear";
@@ -64,43 +63,48 @@ function loadMSG() {
 
     const msgInputs = MSG.map(v => elms[v]);
     sgInputs = msgInputs.slice(1);
-    addEventByClass(CLICK,  CLEAR, undefined, handlers);
-    addEventByClass(CLICK,  LOCK,  undefined, handlers);
-    addEventsByElm (INPUT,  msgInputs.slice(0, -1), handlers); // mid, split
+    addEventByClass(CLICK,  CLEAR, click);
+    addEventByClass(CLICK,  LOCK,  click);
+    addEventsByElm (INPUT,  msgInputs.slice(0, -1), input); // mid, split
     addEventToElms (CHANGE, msgInputs, changeMSG);
 }
-const handlers = {
-//  inputMid()   input event handler for #mid, <= updateMidSplit()
-    inputMid() {
+//==============================================================================
+const input = {
+//  mid()       #mid, also called by updateMidSplit()
+    mid() {
         const val = elms.mid.valueAsNumber;
         P.y1.setIt(chart.dashY, val);
         P.y2.setIt(chart.dashY, val);
     },
-//  inputSplit() input event handler for #split, <= updateMidSplit()
-    inputSplit() {
+//  split()     #split, also called by updateMidSplit()
+    split() {
         const val = elms.split.valueAsNumber / secs * MILLI;
         P.x1.setIt(chart.dashX, val);
         P.x2.setIt(chart.dashX, val);
-    },
-//  clickClear() click event handler for #clearMid, #clearSplit, #clearGap
-    clickClear(evt) {
+    }
+};
+//==============================================================================
+const click = {
+ // clear()     #clearMid, #clearSplit, #clearGap
+    clear(evt) {
         const elm = evt.target[OTHER]; // #mid, #split, or #gap
         const n   = elm.default();
-        formatInputNumber(elm, n);     // toFunc() = inputMid() or inputSplit()
-        toFunc(INPUT, Ez.initialCap(elm.id), handlers)?.();
+        formatInputNumber(elm, n);
+        toFunc(input, elm.id)?.(); // input.mid() or input.split()
         disableClear(elm, n, false);
         refresh(elm, 0, true);
     },
-//  clickLock()  click event handler for #lockSplit, #lockGap
-    clickLock(evt) {
+//  lock()      #lockSplit, #lockGap
+    lock(evt) {
         const tar = evt.target;
         const b   = isUnlocked(tar);
         toggleClass(tar, LOCKED, b);
         tar.textContent = locks[Number(b)];
     }
 };
+//==============================================================================
 // changeMSG() is the change event handler for #mid, #split, #gap
-function changeMSG(evt) {   // outside of handlers for convenience
+function changeMSG(evt) {
     const tar = evt.target;
     const n   = changeNumber(tar);
     if (n !== null) {
@@ -111,16 +115,10 @@ function changeMSG(evt) {   // outside of handlers for convenience
 //==============================================================================
 // updateMidSplit() makes exporting this pair easier, called by updateAll()
 function updateMidSplit() {
-    handlers.inputMid();
-    handlers.inputSplit();
+    input.mid();
+    input.split();
 }
-// disableClear() helps changeMSG() and clickClear(), also called by
-//               easingFromObj(), returns a factor/divisor.
-function disableClear(elm, n, isDefN) {
-    elm.clear.disabled = !isDefN || n == elm.default();
-    elm.clear.dataset.enabled = boolToString(!elm.clear.disabled);
-}
-// updateSplitGap() is called by updateAll() and changeTime()
+// updateSplitGap() is called by updateAll() and change.time()
 function updateSplitGap() {
     elms.split.max = Math.max(secs - 0.1, 0);
     elms.gap  .max = Math.max(secs - elms.split.valueAsNumber - 0.1, 0);
@@ -142,6 +140,13 @@ function setSplitGap(time = msecs) {
                 }
                 else if (elm === elms.split) // split = 50% of time
                     formatInputNumber(elms.split, secs / 2);
+}
+//==============================================================================
+// disableClear() helps changeMSG() and clickClear(), also called by
+//               easingFromObj(), returns a factor/divisor.
+function disableClear(elm, n, isDefN) {
+    elm.clear.disabled = !isDefN || n == elm.default();
+    elm.clear.dataset.enabled = boolToString(!elm.clear.disabled);
 }
 // isUnlocked() helps clickLock() and setSplitGap();
 function isUnlocked(elm) {  // not exported

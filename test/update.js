@@ -1,30 +1,37 @@
 // export everything but ns, D
-export {loadUpdate, inputX, updateFrame, updateCounters, updateTime,
-        setDuration, setFrames, getFrames, eGet, pseudoAnimate};
+export {loadUpdate, inputX, timeFrames, updateTime, updateFrame, pseudoFrame,
+        updateCounters, updateDuration, setFrames, getFrames, eGet, newEasies,
+        pseudoAnimate};
+
+export let
+msecs, secs,  // alternate versions of time, both integers
+targetInputX, // only imported by easings/_update.js
+frameCount;   // ditto         by easings/non-steps.js
+
 const D = 3;  // D for decimals: .toFixed(D) = milliseconds, etc. - not exported
-export let targetInputX,    // only imported by easings/_update.js
-           frameCount;      // ditto         by easings/non-steps.js
-export const frames = [],   // time, x, y, and eKey values by frame
-pad = {                     // string.pad() values for formatting numbers
+export const
+frames = [],  // time, x, y, and eKey values by frame
+pad    = {    // string.pad() values for formatting numbers
     frame:5,
     milli:MILLI.toString().length,
     secs: D + 3,
-    value:D + 5,    // overriden in loadUpdate() if (isMulti)
+    value:D + 5,  // overriden in loadUpdate() if (isMulti)
     unit: D + 2,
     comp: D + 2
 };
 
-import {E, Is, P} from "../raf.js";
+import {E, Is, P, Easies} from "../raf.js";
 
-import {FPS, ezX, raf, secs}  from "./load.js";
+import {FPS, ezX, raf}        from "./load.js";
 import {loadPlay, changeStop} from "./play.js";
-import {MILLI, COUNT, INPUT, elms, g, formatNumber} from "./common.js";
+import {MILLI, COUNT, INPUT, elms, g, formatNumber, errorAlert}
+                              from "./common.js";
 /*
 import(_update.js): getFrame, initPseudo, updateX;
-                    refresh, flipZero, formatPlayback,
-                    and formatFrames pass through to play.js.
+                    refresh, flipZero, formatPlayback pass through to play.js.
 */
-let ns; // _update.js namespace
+let ns,         // _update.js namespace
+    prevCount;  // previous frameCount for scaling #x.value
 //==============================================================================
 // loadUpdate() is called by loadCommon()
 async function loadUpdate(isMulti, dir) {
@@ -49,19 +56,34 @@ function inputX(evt) {
     updateCounters(i, frm);
     ns.updateX(frm, !Is.def(evt)); // 2nd arg easings only
 }
+// timeFrames() helps input.time() for easings and color
+function timeFrames(evt) {
+    msecs = ns.getMsecs();  // milliseconds are primary
+    secs  = msecs / MILLI;  // seconds are for display purposes only
+    setFrames();
+    if (evt)
+        evt.target.nextElementSibling.textContent = updateDuration();
+    else
+        updateDuration();
+}
 //==============================================================================
-// updateTime() is called by changeTime(), changeStop(), and updateAll().
+// updateTime() is called by change.time(), changeStop(), and updateAll().
 //              !addIt is easings page, doesn't add targetInputX to ezX.targets
 //              because next run is pseudoAnimate() and a different target.
-function updateTime(addIt = !ns.flipZero) {
-    const f = frameCount ? elms.x.valueAsNumber / frameCount : 0;
-    setFrames(Math.ceil(secs * FPS));   // sets frameCount = secs * FPS
+function updateTime() {
+    const f      = prevCount ? elms.x.valueAsNumber / prevCount : 0;
+    prevCount    = frameCount;          // for next time
     elms.x.value = Math.round(f * frameCount);
 
-    const obj = {elm:elms.x, prop:P.value, factor:frameCount / MILLI};
+    ezX.time    = msecs;
+    const addIt = !ns.flipZero;
     if (addIt)                          // changing factor requires new target
         ezX.cutTarget(targetInputX);    // see newTargets()
-    targetInputX = ezX.newTarget(obj, addIt);
+
+    targetInputX = ezX.newTarget(
+        {elm:elms.x, prop:P.value, factor:frameCount / MILLI},
+        addIt
+    );
 }
 // updateFrame() consolidates easy.peri() code, records frames, sets textContent
 //         NOTE: Chrome pre-v120 currentTime can be > first frame's timeStamp.
@@ -73,26 +95,29 @@ function updateFrame(...args) {
         updateCounters(g.frameIndex, frm);
     }
 }
+// pseudoFrame() is the pseudoAnimation version of updateFrame()
+function pseudoFrame(...args) {
+    frames[++g.frameIndex] = ns.getFrame(0, ...args); // 0 is dummy time
+}
 // updateCounters() is called by inputX(), updateFrame(), and changeStop()
 function updateCounters(i = 0, frm = frames[i]) {
     formatNumber(i,             pad.frame, 0, elms.frame);
     formatNumber(frm.t / MILLI, pad.secs,  D, elms.elapsed);
     ns.setCounters(frm, D, pad);
 }
-//==============================================================================
-// setDuration() is called by changePlay(), changeStop(), multi updateAll(),
-//               and easing inputTime()
-function setDuration(val = secs) {
+// updateDuration() is called by timeFrames(), changePlay(), changeStop()
+function updateDuration(val = secs) {
     return (elms.duration.textContent = ns.formatDuration(val, D));
 }
-// setFrames() is called by updateTime() and changePlay()
-function setFrames(val) {
+//==============================================================================
+// setFrames() is called by timeFrames(), changePlay()
+function setFrames(val = Math.ceil(secs * FPS)) {
     elms.x.max    = val;
     frameCount    = val;
-    frames.length = val + 1;
-    let txt = val.toString();
-    if (ns.formatFrames)            // multi and color only
-        txt = ns.formatFrames(txt);
+    frames.length = val + 1;        //!!no more grow but don't shrink policy??
+    let txt = frameCount.toString();
+    if (ns.formatFrames)            // multi and color
+        txt += "f";
     elms.frames.textContent = txt;
 }
 // getFrames() gets the full set of current frames. The frames array grows but
@@ -110,6 +135,17 @@ function eGet(ez) {
                           || (g.notTripWait && e.status == E.inbound))
            ? ez.e2
            : e;
+}
+// newEasies() helps all the initEasies(), encapsulates try/catch into boolean
+function newEasies(...args)  {
+    try {
+        g.easies    = new Easies(...args);
+        raf.targets = g.easies;
+    } catch (err) {
+        errorAlert(err, "new Easies() failed");
+        return false;
+    }
+    return true;
 }
 //==============================================================================
 // pseudoAnimate() populates the frames array via the .peri() callbacks, does

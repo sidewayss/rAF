@@ -160,9 +160,16 @@ export const Ez = {
         return v;
     },
 //  toElement() converts v to Element or throws an error
-    toElement(v, doc) {
-        if (Is.Element(v) || Is.CSSRule(v))
+    toElement(v, noRules, doc = document) {
+        let str;
+        if (Is.Element(v))
             return v;
+        if (Is.CSSRule(v)) {
+            if (noRules)
+                str = ", CSSStyleRule,";
+            else
+                return v;
+        }
         if (Is.String(v)) {
             const elm = doc.getElementById(v);
             if (elm === null)
@@ -170,14 +177,14 @@ export const Ez = {
             return elm;
         }
         else
-            this._mustBeErr(`${v} is ${typeof v}:`,
-                            "an Element, CSSStyleRule, or String");
+            str = "";
+        this._mustBeErr(`${v} is ${typeof v}:`, `an Element${str} or String`);
     },
 //  toElements() returns an array of elements: [Element]. Validation not in,
-    toElements(v, doc) {          // but after toArray() because of doc arg.
+    toElements(v, noRules, doc) { // but after toArray() because of doc arg.
         v = this.toArray(v, "toElements(): 1st argument", undefined,
                          ...this.okEmptyUndef);
-        v.forEach((elm, i) => v[i] = this.toElement(elm, doc));
+        v.forEach((elm, i) => v[i] = this.toElement(elm, noRules, doc));
         return v;
     },
 //  toSum() is a callback for Array.prototype.reduce(), reduces to a sum.

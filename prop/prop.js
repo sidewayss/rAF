@@ -69,7 +69,7 @@ class Bute extends PBase {
 //  attribute. This class sets the attribute only.
     cut(elms) {
         const name = this.name;
-        for (const elm of Ez.toElements(elms))
+        for (const elm of Ez.toElements(elms, true))
             elm.removeAttribute(name);
     }
 //  getOne() gets a single element's value. Returns "" instead of null

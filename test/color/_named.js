@@ -1,5 +1,5 @@
 export {formFromObj, objFromForm, updateNamed};
-export let objEz;   // only for clickCode()
+export let objEz;
 
 import {getNamedJSON} from "../local-storage.js";
 import {elms}         from "../common.js";

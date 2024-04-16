@@ -19,42 +19,45 @@ const EZ_ = "ez-";
 function loadEvents() {
     let func, i, id;
     for (id of ["easy", ...OVERRIDES]) {    // event listeners not cloned
-        func = toFunc(CHANGE, id, handlers);
+        func = toFunc(change, id);
         for (i = 0; i < COUNT; i++)
             elms[id][i].addEventListener(CHANGE, func, false);
     }
 }
-const handlers = {     // change event handlers for easy, plays, eKey, and trip
-    changePlays(evt) { // not to be confused with changePlay()
-        const tar     = evt.target; // <select>.value = "1"|"2"|"3"|DEFAULT_NAME
-        const [i, id] = i_id(tar);
-        handlers.setPlays(i, id, orUndefined(tar.value), tar);
-        multiNoWaits(i);
-        storeCurrent(objFromForm());
+//==============================================================================
+const change = {
+    plays(evt) {                    // <select>.value = "1"|"2"|"3"|DEFAULT_NAME
+        const [tar, i, id] = change.pt(evt);
+        set.plays(i, id, orUndefined(tar.value), tar);
     },
-    changeEKey(evt) {
+    eKey(evt) {
         const tar = evt.currentTarget; //!!or evt.target??
-        handlers.setEKey(...i_id(tar), tar.value); // <button>.value is a string
+        set.eKey(...i_id(tar), tar.value); // <button>.value is a string
         objFromForm();
-        refresh();      // calls storeCurrent()
+        refresh();
     },
-    changeTrip(evt) {   // autoTrip
-        const tar = evt.currentTarget; //!!or evt.target??
-        const [i, _] = i_id(tar);
-        multiNoWaits(i);
-        storeCurrent(objFromForm());
+    trip(evt) {
+        change.pt(evt);
     },
-    changeEasy(evt) {
+    easy(evt) {
         const tar = evt.target;
         setEasy(Number(tar.id.at(-1)), tar.value);
         if (initEasies(objFromForm()))
             refresh();
     },
+ // pt() helps plays(), trip()
+    pt(evt) {
+        const tar = evt.currentTarget; //!!or evt.target??
+        const [i, id] = i_id(tar);
+        multiNoWaits(i);
+        storeCurrent(objFromForm());
+        return [tar, i, id];
+    }
+};
+//==============================================================================
  // "set" helpers for the event handlers, setEasy() is the only one exported.
- // Your editor will tell you that setPlays(), setEKey(), and setTrip() are only
- // referenced once, but they are also called near the beginning of setEasy()
- // via toFunc("set" + ...)().
-    setPlays(i, id, val = "", sel) {
+ const set = {
+    plays(i, id, val = "", sel) {
         if (!sel) {                      // called by setEasy()
             sel = elms[id][i];
             sel.value = val;
@@ -63,7 +66,7 @@ const handlers = {     // change event handlers for easy, plays, eKey, and trip
         swapTo  (sel, b);
         swapFrom(toElm(EZ_, id, i), b)
     },
-    setEKey(i, id, val = E.unit, sel) {
+    eKey(i, id, val = E.unit, sel) {
         if (!sel)                        // called by setEasy()
             elms[id][i].value = val;
 
@@ -78,13 +81,13 @@ const handlers = {     // change event handlers for easy, plays, eKey, and trip
             swapTo(v.parentNode, j);     // <p>
         })
     },
-    setTrip(i, b) {                      // no longer has anything to do...
-    }                                    // called exclusively by setEasy()...
-};
-// setEasy() is called by changeEasy(), fromFromObj()
+    trip() { //!!no longer has anything to do...
+    }        //!!called exclusively by setEasy()...
+}
+// setEasy() is called by change.easy(), fromFromObj()
 function setEasy(i, name, obj) { // formFromObj() defines obj
-    for (const id of OVERRIDES)  // call setPlays(), setEKey(), setTrip()
-        toFunc("set", id, handlers)(i, id, obj?.[id][i]);
+    for (const id of OVERRIDES)  // call set.plays(), set.eKey(), set.trip()
+        toFunc(set, id)(i, id, obj?.[id][i]);
 
     const ez = getNamedEasy(name);
     toElm(EZ_, PLAYS, i).textContent = ez.plays;

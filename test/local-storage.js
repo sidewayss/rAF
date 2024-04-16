@@ -91,10 +91,8 @@ function setLocalBool(elm, b = elm.checked) {
     setLocal(elm, boolToString(b));
 }
 //==============================================================================
-// storeCurrent() is called by both refresh()s, changePlays(), changeWait(),
-//                changeLoopByElm(), changeCheck(), changeTrip(), clickOk(),
-//                only clickOK() passes in a key, "" is DEFAULT_NAME and is
-//                the one read-only preset.
+// storeCurrent() only clickOK() passes in a key, "" is DEFAULT_NAME and is the
+//                one read-only preset.
 function storeCurrent(key, obj = ns.objEz) {
     const str = JSON.stringify(obj);
     localStorage.setItem(g.restore, str);

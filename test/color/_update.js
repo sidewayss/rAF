@@ -1,12 +1,14 @@
 // export everything via import(), explicitly imported: redraw, all functions
-export {refresh, getFrame, initPseudo, newTargets, updateX, setCounters,
-        oneCounter, formatDuration, formatFrames};
+export {refresh, initPseudo, newTargets, getMsecs, getFrame, updateX,
+        setCounters, formatDuration, oneCounter};
+export const formatFrames = true;
 
 import {E, U, F, P, Ez} from "../../raf.js";
 
-import {ezX} from "../load.js";
-import {frames, inputX, updateFrame, pseudoAnimate} from "../update.js";
-import {COUNT, elms, g, elseUndefined}              from "../common.js";
+import {ezX}                           from "../load.js";
+import {frames, inputX, updateFrame, pseudoFrame,
+        pseudoAnimate}                 from "../update.js";
+import {COUNT, elms, g, elseUndefined} from "../common.js";
 
 import {ezColor} from "./_load.js";
 import {objEz}   from "./_named.js";
@@ -17,18 +19,6 @@ function refresh() {
     pseudoAnimate();
     inputX();
 }
-// updateX() is called exclusively by inputX()
-function updateX(frm) {
-    const arr = [g.left];
-    if (elms.compare.value)
-        arr.push(g.right)
-
-    for (const lr of arr) {
-        lr.color.coords = frm[lr.id];
-        lr.canvas.style.backgroundColor = lr.color.display();
-    }
-}
-//==============================================================================
 // initPseudo() sets frames[0], called exclusively by pseudoAnimate()
 function initPseudo() {
     frames[0] = {t:0, left:g.start.left};
@@ -36,6 +26,7 @@ function initPseudo() {
         frames[0].right = g.start.right;
     newTargets(true);
 }
+//==============================================================================
 // newTargets() clears ez.targets adds 1 or 2 new targets (left and/or right)
 function newTargets(isPseudo) {
     const
@@ -54,25 +45,33 @@ function newTargets(isPseudo) {
 }
 // newTar() helps newTargets()
 function newTar(lr, isPseudo, isComp) {
-    let o, side;
+    let side;
+    const o = {};
+
+    if (isMulti) {                    // slice out ezX:
+        o.easies = isPseudo ? g.easies : g.easies.slice(1);
+        o.eKey   = objEz.eKey;
+    }
+    else
+        o.eKey = E.unit;
+
     if (lr) {
         side = lr.id,
-        o = {
-            start:    Ez.noneToZero(g.start[side]),
-            end:      Ez.noneToZero(g.end[side]),
-            autoTrip: elseUndefined(!isPseudo, elms.roundT.value)
-        };
-        o.currentValue = [o.start]; // currentValue must be 2D byElmByArg
+        o.start = Ez.noneToZero(g.start[side]);
+        o.end   = Ez.noneToZero(g.end  [side]);
+        o.autoTrip = elseUndefined(!isPseudo, elms.roundT.value);
+        o.currentValue = [o.start];   // currentValue must be 2D byElmByArg
     }
-    else {
-        let arr, se;                // isPseudo && isComp
-        o = {};
+    else {                            // !lr == isPseudo && isComp
+        let arr, se;                  // two targets in one, double the fun
         for (se of g.startEnd) {
             arr = [];
             for (side of g.leftRight.map(obj => obj.id))
                 arr.push(...Ez.noneToZero(se[side]));
             o[se.id] = arr;
         }
+        if (isMulti)
+            o.easies.push(...o.easies);
     }
 
     if (isPseudo)
@@ -80,22 +79,15 @@ function newTar(lr, isPseudo, isComp) {
     else {
         o.peri = updaters[isComp ? side : "one"];
         o.elm  = lr.canvas;
-        o.prop = P.bgColor;
-        if (lr.spaces.selectedOptions[0].className) // class="colorjs" or ""
+        o.prop = P.bgColor;           // .className = "colorjs" or ""
+        if (lr.spaces.selectedOptions[0].className)
             o.cjs = lr.color;
         else
             o.func = F[lr.spaces.value];
     }
 
-    if (isMulti) {
-        o.easies = easys;
-        o.eKey = objEz.eKey;
-    }
-    else
-        o.eKey = E.unit;
-
-    const mask = [];
-    for (let i = 0; i < COUNT; i++) // create mask if any start[i] == end[i]
+    const mask = [];                  // create mask if any start[i] == end[i]
+    for (let i = 0; i < COUNT; i++)
         if (o.start[i] != o.end[i])
             mask.push(i);
 
@@ -104,9 +96,9 @@ function newTar(lr, isPseudo, isComp) {
 
     return o;
 }
-// updaters() are the .peri() callbacks, there are three of them because there
-//            are two targets, left and right, each with its own callback plus
-//            updateOne(), for when elms.compare is off.
+// updaters() are the .peri() callbacks, there are four of them because there
+//            are two targets (left and right), plus updateOne() for when
+//            elms.compare is off, plus pseudo().
 const
 LEFT  = "left",
 RIGHT = "right",
@@ -125,10 +117,14 @@ updaters = {
         updateFrame(data, [LEFT, RIGHT]);
     },
     pseudo(oneD) {          // either or both sides concatenated in oneD
-        frames[++g.frameIndex] = getFrame(0, oneD);
+        pseudoFrame(oneD);
     }
 };
 //==============================================================================
+// getMsecs() is the same as easings getMsecs()
+function getMsecs() {
+    return elms.time.valueAsNumber;
+}
 // getFrame() <= update() and pseudoAnimate(), can be MEaser or Easy
 function getFrame(t, data, keys) {
     const frm = {};
@@ -144,6 +140,18 @@ function getFrame(t, data, keys) {
     return frm;
 }
 //==============================================================================
+// updateX() is called exclusively by inputX()
+function updateX(frm) {
+    const arr = [g.left];
+    if (elms.compare.value)
+        arr.push(g.right)
+
+    for (const lr of arr) {
+        lr.color.coords = frm[lr.id];
+        lr.canvas.style.backgroundColor = lr.color.display();
+    }
+}
+//==============================================================================
 // setCounters() is called exclusively by updateCounters()
 function setCounters(frm) {
     oneCounter(frm.left, g.left.value, g.left.range);
@@ -155,14 +163,10 @@ function oneCounter(coords, span, range) {
     span.textContent = coords.map((n, i) => range[i](n).padStart(5, E.sp))
                              .join(E.sp);
 }
-// formatDuration() is called exclusively by setDuration()
+// formatDuration() is called exclusively by updateDuration()
 function formatDuration(val, d) { // duplicate of multi
     return val.toFixed(d) + U.seconds;
 }
 // no need for formatPlayback()
 // function formatPlayback(isPlaying, b = true) {
 // }
-//====== multi and color only ==================================================
-function formatFrames(txt) { // duplicate of multi
-    return txt + "f";
-}

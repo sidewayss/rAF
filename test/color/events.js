@@ -1,38 +1,38 @@
-export {loadEvents, getCase};
+export {loadEvents, timeFactor, getCase};
 export let isMulti;
 
 import Color from "https://colorjs.io/dist/color.js";
 
 import {E, Fn, P} from "../../raf.js";
 
-import {setTime}                        from "../load.js";
-import {setDuration}                    from "../update.js";
+import {ezX}                            from "../load.js";
+import {msecs, timeFrames, updateTime}  from "../update.js";
 import {setPrefix}                      from "../named.js";
 import {setLocal, setLocalBool}         from "../local-storage.js";
 import {CHANGE, CLICK, INPUT, MEASER_, elms, g, is, toggleClass, boolToString,
         addEventToElms, addEventsByElm} from "../common.js";
 
-import {collapsibleHeight, refRange, resizeWindow} from "./_load.js";
-import {refresh, oneCounter}                       from "./_update.js";
+import {refRange, resizeWindow} from "./_load.js";
+import {refresh, oneCounter}    from "./_update.js";
 
-const symBtn = { // textContent: boolean as number is index into each array
-    compare:  ["switch_left", "switch_right"    ],
-    roundTrip:["repeat",      "repeat_on"       ],
-    collapse: ["expand_less", "expand_more"     ],
-    fullbody: ["fullscreen",  "close_fullscreen"]
+const btnText = { // textContent: boolean as number is index into each array
+    compare: ["switch_left", "switch_right"],
+    roundT:  ["repeat",      "repeat_on"   ],
+    collapse:["expand_less", "expand_more" ]
 };
 //==============================================================================
 // loadEvents() is called exclusively by loadIt(), helps keep stuff private
 function loadEvents() {
-    addEventsByElm(CLICK,  g.clicks, click, false, true);
+    addEventsByElm(CLICK,  g.clicks, click);
     addEventToElms(INPUT,  [elms.startInput, elms.endInput],    input.color);
     addEventToElms(CHANGE, [elms.leftSpaces, elms.rightSpaces], change.space);
     elms.time.addEventListener(INPUT,  input.time,  false);
-    elms.time.addEventListener(CHANGE, change.type, false);
+    elms.type.addEventListener(CHANGE, change.type, false);
     change.type();              // sets isMulti
     return is({multi:isMulti});
 }
 //==============================================================================
+//    input event handlers:
 const input = {
  // color() handles input events for #startInput, #endInput, validates that text
  //         is a CSS color, updates start | end for both left & right.
@@ -60,30 +60,30 @@ const input = {
         elms.x   .disabled = b;
         elms.play.disabled = b;
     },
- // time() seems to me that it should be throttled, or some of it should be in
- //        a change event handler, but this is easier and hasn't choked yet...
+ // time() splits the work with change.time(), handles only the immediate tasks
     time(evt) {
-        const tar = evt.target;
-        if (!evt.isLoading) {
-            setLocal(tar);
-            setTime();      // must precede setDuration()
-        }
-        tar.nextElementSibling.textContent = setDuration();
+        timeFrames(evt);
     }
 };
 //==============================================================================
-// updateOne() helps input.color() and change.space(), updates one of the
-//             4 pairs of coordinates & text: start|end x left|right.
-// arguments:  se = g.start|end, lr = g.left|right
-// se[lr.id] = g.start|end.left|right = color coordinates, Array
-// lr[se.id] = g.left|right.start|end = elms.left|rightStart|End, <span>
-function updateOne(se, lr) {
-    se[lr.id] = se.color[lr.color.spaceId.replaceAll("-", "_")];
-    oneCounter(se[lr.id], lr[se.id], lr.range);
-}
-//==============================================================================
 //    change event handlers:
 const change = {
+ // time() handles the less-than-immediate tasks
+    time(evt) {
+        const ezs = g.easies.easies;    // shallow copy as Array
+        if (isMulti) {
+            const f = timeFactor(ezs, isMulti);
+            for (ez of ezs)
+                if (ez !== ezX)         // for when #stop.value == RESET,
+                    setEasyTime(ez, f); // because this precedes refresh().
+        }
+        else
+            ezColor.time = msecs;
+
+        updateTime();
+        refresh();
+        setLocal(evt.target);
+    },
  // space() updates start & end for one side left | right
     space(evt) {
         const tar = evt.target;
@@ -125,37 +125,51 @@ const change = {
 const click = {
  // compare() shows|hides the right side
     compare(evt) {
-        const b = click.boolBtn(evt.target);
+        const b = click.boolBtn(evt);
         const r = g.right;
         P.visible  ([r.display, r.start, r.value, r.end], b);
         P.displayed([r.spaces, r.canvas], b);
         P.displayed(elms.divCopy, !b);
         elms.leftCanvas.style.width = b ? "50%" : "100%";
+        if (b && !evt.isLoading)
+            refresh();
     },
-    roundTrip(evt) {
-        const b = click.boolBtn(evt.target);
-        //!!
+ // roundT() elm.id distinguishes it from elms.roundTrip on other test pages
+    roundT(evt) {
+        click.boolBtn(evt);
     },
  // collapse() shows|hides inputs & counters
     collapse(evt) {
         const b = click.boolBtn(evt.target);
         P.displayed(elms.collapsible, !b);
         if (!evt.isLoading)
-            resizeWindow(undefined, b ? 0 : collapsibleHeight);
-    },
-    fullBody(evt) {
-        const b = click.boolBtn(evt.target);
-        //!!
+            resizeWindow(null, b);
     },
  // boolBtn() helps these boolean buttons (symBtns as pseudo-checkboxes)
-    boolBtn(tar) {
+    boolBtn(evt) {
+        const tar = evt.target;
         const b   = !tar.value;
         tar.value = boolToString(b);
-        tar.textContent = symBtn[tar.id][Number(b)];
-        setLocalBool(tar, !b);  // restore by dispatching events
+        tar.textContent = btnText[tar.id][Number(b)];
+        if (!evt.isLoading)
+            setLocalBool(tar, !b);
         return b;
     }
 };
+//==============================================================================
+// updateOne() helps input.color() and change.space(), updates one of the
+//             4 pairs of coordinates & text: start|end x left|right.
+// arguments:  se = g.start|end, lr = g.left|right
+// se[lr.id] = g.start|end.left|right = color coordinates, Array
+// lr[se.id] = g.left|right.start|end = elms.left|rightStart|End, <span>
+function updateOne(se, lr) {
+    se[lr.id] = se.color[lr.color.spaceId.replaceAll("-", "_")];
+    oneCounter(se[lr.id], lr[se.id], lr.range);
+}
+// timeFactor() helps change.time() and initEasies(), only if (isMulti)
+function timeFactor(easys) {
+    return msecs / Math.max(...easys.map(ez => ez.firstTime));
+}
 //==============================================================================
 function getCamel(elm) {
     return elm.id.slice(0, elm.id.search(/[A-Z]/));

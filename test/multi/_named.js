@@ -2,7 +2,7 @@
 export {formFromObj, objFromForm, updateNamed};
 export let objEz;
 
-import {setTime}      from "../load.js";
+import {timeFrames}   from "../update.js";
 import {COUNT, elms}  from "../common.js";
 
 import {initEasies}         from "./_load.js";
@@ -18,7 +18,7 @@ import {OVERRIDES, setEasy} from "./events.js";
 function formFromObj(obj) {
     for (var i = 0; i < COUNT; i++)
         setEasy(i, (elms.easy[i].value = obj.easy[i]), obj);
-    setTime();
+    timeFrames();  // no #time, no input event
     objEz = obj;
 }
 // objFromForm() called exclusively by loadFinally()

@@ -1,11 +1,9 @@
 /* duplicated in multi/index.css */
-body {
-  margin:0.5rem 0 0 0;
-}
 select, label, pre {
   font-weight:400;
 }
 #controls {
+  padding: 0.5rem 0;  /* different from multi/index.css */
   background-color:var(--bg-white);
 }
 #x {
@@ -36,11 +34,14 @@ select, label, pre {
   margin:0;
   padding-top:var(--16th);
   color:var(--dark-blue);
-  border-bottom:var(--border-gray);
 }
 /* not duplicates */
 html * {
   accent-color:#111;
+}
+body {
+  margin:0;
+  height:100vh;
 }
 button, input[type=text],
 select, span {
@@ -102,29 +103,30 @@ input.invalid {
   padding-left:var(--3-8ths);
   border-left: var(--border-gray);
 }
-.canvas {
-  border:1px solid black;
-}
-.fullWidth {
-  border-left:  none;
-  border-right: none;
-  border-bottom:none;
-}
 #canvas {
+  z-index:-1;
+  position:absolute;
+  width: 100vw;
+  height:100vh;
   align-items:stretch;
-  margin-top:0.5em;
 }
 #startCanvas, #endCanvas {
-  width:calc(1rem + var(--9-16ths)); /* same as <select> height */
   align-self:stretch;
+  width:calc(1rem + var(--9-16ths)); /* same as <select> height */
+  border:1px solid black;
 }
-#leftCanvas, #rightCanvas {
+#leftCanvas, #rightCanvas { /* children of #canvas */
   width:50%;
 }
 #time {
   width: 7ch;
   flex-grow: 1;
   margin-left:0.5rem;
+}
+#type {
+  border: none;
+  outline:none;
+  color:var(--charcoal);
 }
 .spaces {
   padding-top:0;
@@ -137,18 +139,27 @@ input.invalid {
 .symBtn:disabled {
   background-color:transparent;
 }
+button:hover:not(:disabled),
+button:active:hover {
+  color:black; /* overwrites common.css for both selectors */
+  background-color:#DDD;
+}
 /* <state-button> overrides - #play, #stop */
 state-button {
+  opacity:1;
   fill  :black;
   stroke:black;
+  stroke-width:2px;
 }
 state-button:hover {
-  fill  :var(--accent-blue);
-  stroke:var(--accent-blue);
+  fill  :black;
+  stroke:black; /* necessary to override common.css */
+  stroke-width:4px;
 }
 state-button:active {
-  fill  :var(--dark-blue);
-  stroke:var(--dark-blue);
+  fill:  none;
+  stroke:black; /* necessary to override common.css */
+  stroke-width:3px;
 }
 @media (width < 375px) { /* squeeze it into 360px */
   span  { font-size:var(--15-16ths) }

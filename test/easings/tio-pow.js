@@ -19,8 +19,7 @@ const POW  = "pow";
 // loadTIOPow() is called by easings.loadIt(), once per session
 function loadTIOPow() {
     let args, id, opt, sel;
-
-    Ez.readOnly(g, "links", ["link_off",  LINK]); // boolean acts as 0|1 index
+    Ez.readOnly(g, "links", ["link_off", LINK]); // boolean acts as 0|1 index
 
     for (sel of [elms.type, elms.io])      // populate the <select>s: #type, #io
         for (opt of Easy[sel.id].slice(0, E.increment))
@@ -43,8 +42,8 @@ function loadTIOPow() {
         Ez.readOnly(args[0], OTHER, args[1]);
         Ez.readOnly(args[1], OTHER, args[0]);
     }
-    addEventByClass(INPUT, `${TYPE}-${POW}`, inputTypePow);
-    addEventByClass(CLICK, LINK,             inputTypePow);
+    addEventByClass(INPUT, `${TYPE}-${POW}`, null, inputTypePow);
+    addEventByClass(CLICK, LINK,             null, inputTypePow);
 }
 // inputTypePow() is input event handler for class="type-pow"
 function inputTypePow(evt) {
@@ -78,7 +77,7 @@ function setLink(btn, b = !btn.value) {
 }
 //==============================================================================
 // updateTypeIO() updates the form based on current values
-//                called by changeIo(), changeType(), updateAll()
+//                called by change.io(), change.type(), updateAll()
 function updateTypeIO(isIO) {
     const isP     = isPow();
     const isBez   = isBezier();
@@ -97,7 +96,7 @@ function updateTypeIO(isIO) {
     P.visible([elms.divSplit, elms.divGap], has2);
     P.displayed(elms.placeholder, !has2);
     if (has2)
-        setSplitGap();  // only necessary when showing #mid/#split/#gap...
+        setSplitGap();  //!!only necessary when showing #mid/#split/#gap...
     if (!isIO) {        // false || undefined
         P.displayed(elms.io,       !isBez && !isStp);
         P.displayed(elms.bezier,    isBez);

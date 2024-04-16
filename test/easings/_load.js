@@ -1,21 +1,20 @@
 // export everything
-export {loadIt, getEasies, initEasies, updateAll, getMsecs, resizeWindow};
+export {loadIt, getEasies, initEasies, updateAll, resizeWindow};
 
-import {E, U, P, Pn, Ez, Ease, Easy, Easies} from "../../raf.js";
+import {E, U, P, Pn, Ez, Ease, Easy} from "../../raf.js";
 
-import {ezX, raf}   from "../load.js";
-import {updateTime, updateCounters} from "../update.js";
-import {getLocal}   from "../local-storage.js";
-import {COUNT, INPUT, CHANGE, elms, g, is, isTag, dummyEvent, errorAlert}
-                    from "../common.js";
+import {ezX}      from "../load.js";
+import {getLocal} from "../local-storage.js";
+import {newEasies, updateTime, updateCounters}         from "../update.js";
+import {COUNT, CHANGE, elms, g, is, isTag, dummyEvent} from "../common.js";
 
 import {refresh}                                  from "./_update.js";
-import {updateEzXY, trip}                         from "./index.js";
+import {initEzXY, updateTrip}                     from "./index.js";
 import {chart, range, loadChart}                  from "./chart.js";
 import {loadTIOPow, setLink, updateTypeIO}        from "./tio-pow.js";
 import {loadMSG, updateMidSplit, updateSplitGap}  from "./msg.js";
 import {loadSteps, loadVT, updateVT}              from "./steps.js";
-import {loadEvents, changeLoopByElm, changePlays} from "./events.js";
+import {loadEvents}                               from "./events.js";
 //==============================================================================
 // loadIt() is called by loadCommon()
 function loadIt(byTag, hasVisited) {
@@ -72,7 +71,7 @@ function loadIt(byTag, hasVisited) {
     loadMSG();          // mid, split, gap
 
     if (hasVisited) // return visitor to this page
-        for (elm of [elms.reset, elms.zero, elms.drawSteps])
+        for (elm of [elms.reset, elms.zero, elms.drawAsSteps])
             elm.checked = getLocal(elm);
     else {          // user is new to this page
         elms.io.selectedIndex = 0; //!!necessary??
@@ -82,6 +81,7 @@ function loadIt(byTag, hasVisited) {
     return is();
 }
 //==============================================================================
+// getEasies() is called exclusively by loadJSON()
 function getEasies() {
     let i,      // all are const except elm, but this reads better
     size = 4,
@@ -119,41 +119,35 @@ function getEasies() {
 }
 // initEasies() called once per session by loadFinally()
 function initEasies(obj) {
-    try {
-        g.easies = new Easies(ezX);
-        raf.targets = g.easies;
-    } catch (err) {
-        errorAlert(err);
-        return false;
+    const b = newEasies(ezX);
+    if (b) {
+        const evt = dummyEvent(CHANGE, "isInitEasies");
+        for (const elm of [elms.reset, elms.zero])
+            elm.dispatchEvent(evt);
+
+        updateTrip();
+        updateVT();
+        return initEzXY(obj);
     }
-    return updateEzXY(obj);
+    else
+        return b;
 }
 //==============================================================================
-function updateAll(isLoading) { // called by loadFinally(), openNamed()
-    if (isLoading) {
-        let evt = new Event(CHANGE);
-        elms.reset.dispatchEvent(evt); // calls changeReset()
-        elms.zero .dispatchEvent(evt); // calls changeZero()
-        evt = dummyEvent(INPUT, true);
-        elms.time.dispatchEvent(evt);  // calls inputTime()
-        trip();
-        updateVT();                    // E.steps
-    }
-    updateTime(false);  // creates targetInputX, does not assign it to ezX
+function updateAll() {  // called by loadFinally(), openNamed()
+    const evt = dummyEvent(CHANGE, "isUpdateAll");
+    for (const elm of [elms.loopByElm, elms.plays])
+        elm.dispatchEvent(evt);
+
+    updateTime();       // creates targetInputX, does not assign it to ezX
     updateSplitGap();
-    updateTypeIO();
-    changeLoopByElm();
-    changePlays();      // calls setNoWaits()
-    refresh();          // must follow updateTime()
     updateMidSplit();
-    if (isLoading)
-        updateCounters();
-}
-function getMsecs() {
-    return elms.time.valueAsNumber;
+    updateTypeIO();
+    refresh();
+    updateCounters();   // must follow refresh()
 }
 //==============================================================================
-// resizeWindow() handles resize events for window
+// resizeWindow() handles resize events for window, here instead of events.js
+//                so that load.js can use it in addEventListener for all pages.
 function resizeWindow() {                 // margin changes w/zoom
     const margin = parseFloat(getComputedStyle(document.body).margin);
     const divX   = elms.x.parentNode;

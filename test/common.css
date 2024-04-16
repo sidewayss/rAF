@@ -252,7 +252,6 @@ state-button[disabled] {
 }
 state-button.hi {
   opacity:1;
-  fill   :none;
 }
 
 /* <div> */

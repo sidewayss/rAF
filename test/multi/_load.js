@@ -1,17 +1,13 @@
 // export everything but changeColor, all functions
-export {loadIt, getEasies, initEasies, updateAll, getMsecs, resizeWindow};
+export {loadIt, getEasies, initEasies, updateAll, resizeWindow};
 export let clipDist, clipEnd, clipStart;
 
-import {U, Is, Easies} from "../../raf.js";
+import {U, Is} from "../../raf.js";
 
-import {raf, setTime}            from "../load.js";
-import {updateTime, setDuration} from "../update.js";
-import {DEFAULT_NAME}            from "../named.js";
-import {changeStop}              from "../play.js";
-import {getNamed, getNamedEasy, getLocal, setLocal}
-                                 from "../local-storage.js";
-import {COUNT, CHANGE, EASY_, elms, g, is, errorAlert}
-                                 from"../common.js";
+import {DEFAULT_NAME} from "../named.js";
+import {newEasies, updateTime, updateCounters}      from "../update.js";
+import {getNamed, getNamedEasy, getLocal, setLocal} from "../local-storage.js";
+import {COUNT, CHANGE, EASY_, elms, g, is}          from"../common.js";
 
 import {loadEvents} from "./events.js";
 import {MASK_X, clip, easys, refresh, setClipPair, setClipPath}
@@ -95,34 +91,21 @@ function getEasies(hasVisited) {
 //==============================================================================
 // initEasies() is called by loadFinally(), updateNamed(), changeEasy()
 function initEasies() {
-    try { g.easies = new Easies([...easys]); }
-    catch (err) {
-        errorAlert(err);
-        return false;
-    }
-    g.easies.oneShot = true;    // test Easies.proto.oneShot, see newTargets()
-    raf.targets = g.easies;
-    return true;
+    const b = newEasies(easys);
+    if (b)
+        g.easies.oneShot = true;  // test Easies.proto.oneShot, see newTargets()
+    return b;
 }
 //==============================================================================
 // updateAll() called by loadFinally(), openNamed()
-function updateAll(isLoading) {
-    if (!isLoading)
-        setTime();    // load.js:setTime() calls this module's getMsecs()
-    updateTime(true); // creates targetInputX, assigns it to ezX
-    setDuration();
+function updateAll() {
+    updateTime();     // creates targetInputX, assigns it to ezX
     refresh();
-    if (isLoading)
-        changeStop(); // must follow refresh or no frames values set
+    updateCounters();
 }
-// getMsecs() returns the current duration in milliseconds
-function getMsecs() {
-    return Math.max(...easys.map(ez =>
-                        ez.firstTime + (ez.loopTime * (ez.plays - 1))
-                   ));
-}//==============================================================================
+//==============================================================================
 // resizeWindow() resizes the polygon: y-values and all stationary x-values
-function resizeWindow(evt) {
+function resizeWindow() {
     let elm, i, m, mask, val;
 
     elm = elms.bgWhite;

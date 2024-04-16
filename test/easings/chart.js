@@ -4,10 +4,9 @@ const range = {};  // SVG vertical pseudo-range element
 
 import {E, Is, Ez} from "../../raf.js";
 
-import {ezX, msecs, secs} from "../load.js";
-import {updateTime}       from "../update.js";
+import {msecs, secs, updateTime} from "../update.js";
 import {COUNT, CHANGE, elms, g, addEventsByElm, changeNumber}
-                          from "../common.js";
+                                 from "../common.js";
 
 import {refresh}                        from "./_update.js";
 import {updateSplitGap}                 from "./msg.js";
@@ -16,16 +15,15 @@ import {isSteps, vtFromElm}             from "./steps.js";
 import {twoLegs, isBezier, bezierArray} from "./index.js";
 //==============================================================================
 function loadChart() {
-    const byClass = document.getElementsByClassName("chart");
-    addEventsByElm(CHANGE, byClass, handlers, true);
+    const elements = document.getElementsByClassName("chart");
+    addEventsByElm(CHANGE, elements, change, true);
 }
 //==============================================================================
-// event handlers: each function name = Ez.toCamel(CHANGE, elm.id)
-//                 they all call refresh()
-const handlers = {
-    changeTime(evt) {
+//    change event handlers: they all call refresh()
+const change = {
+    time(evt) {
         let oldEzY;
-        updateTime(false);
+        updateTime();
         if (isSteps()) {        // crude, but viable, setting all three the same
             for (let i = 0; i < COUNT; i++)
                 elms["t" + i].max = secs;
@@ -36,21 +34,20 @@ const handlers = {
             oldEzY = isUnlocked(elms.split)
                  && (isUnlocked(elms.gap) || elms.gap.clear.disabled);
         }
-        ezX.time = msecs;
         refresh(evt.target, oldEzY ? msecs : 0);
     },
-    changeDirection(evt) {
+    direction(evt) {
         const txt = elms.end.textContent;
         elms.end  .textContent = elms.start.textContent;
         elms.start.textContent = txt;
         refresh(evt.target);
     },
-    changeIo(evt) {
+    io(evt) {
         g.io = Number(evt.target.value);
         updateTypeIO(true);
         refresh(evt.target, 0, updateTypeIO(true), false);
     },
-    changeType(evt) {   // #type, #type2
+    type(evt) {   // #type, #type2
         let n, has2, isBS, oobOld, wasBS;
         const tar    = evt.target;
         const isType = (tar === elms.type);
@@ -78,18 +75,18 @@ const handlers = {
 
         refresh(tar, 0, has2, isBS, oobOld);
     },
-    changePow(evt) {    // #pow, #pow2
+    pow(evt) {    // #pow, #pow2
         if (changeNumber(evt.target) !== null)
             refresh(evt.target, 0, undefined, false);
     },
-    changeBezier(evt) { // #bezier0-3
+    bezier(evt) { // #bezier0-3
         refresh(evt.target, 0, false, true, isOutOfBounds());
     }
 };
 //===========================================================================
 // isOutOfBounds() returns a boolean indicating if any points are outside of
 //                   the 0-1000 range,
-function isOutOfBounds(val = g.type) { // <= changeType(), changeBezier()
+function isOutOfBounds(val = g.type) { // <= change.type(), change.bezier()
     let arr;
     switch (val) {
     case E.bezier:

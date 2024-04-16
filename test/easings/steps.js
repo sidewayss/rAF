@@ -5,7 +5,7 @@ import {E, Is, Ez, P, Easy} from "../../raf.js";
 
 import {frames}                 from "../update.js";
 import {getNamed, getNamedEasy} from "../local-storage.js";
-import {SELECT, MILLI, COUNT, CHANGE, elms, g, addEventToElms,
+import {SELECT, MILLI, COUNT, CHANGE, elms, g, addEventByClass,
         formatInputNumber}      from "../common.js";
 
 import {refresh}              from "./_update.js";
@@ -95,7 +95,7 @@ function loadVT() { // called exclusively by getEasies() during page load
         elms[Ez.toCamel(USER, id)] = arr;
         divUser = divUser.nextElementSibling;
     }
-    addEventToElms(CHANGE, document.getElementsByClassName(STEPS), changeSteps);
+    addEventByClass(CHANGE, STEPS, null, changeSteps);
 }
 function changeSteps(evt) { // #steps, #jump, #values, #timing,
     const tar = evt.target; // #values/timing.other[0], elms.userValues/Timing
@@ -151,7 +151,7 @@ function stepsFromForm(obj) {
     return Object.assign(obj, {steps, jump, easy, timing});
 }
 //==============================================================================
-// updateVT() called by stepsFromObj(), refresh(), updateAll()
+// updateVT() called by stepsFromObj(), refresh(), initEasies()
 function updateVT() {
     const notT  = !isUserVT(elms[TIMING]);
     const notVT = notT && !isUserVT(elms[VALUES]);

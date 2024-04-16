@@ -1,13 +1,11 @@
-export {setTime};
 export let
 FPS = 60,    // assumes 60hz, but adjusts to reality at run-time
 ezX, raf,    // Easy, AFrame
-msecs, secs, // alternate versions of time, both integers
 preDoc;      // prefix for this document, see local-storage.js
 
 import {E, Ez, P, PFactory, Easy, AFrame} from "../raf.js";
 
-import {loadUpdate}                         from "./update.js";
+import {msecs, loadUpdate, timeFrames}      from "./update.js";
 import {DEFAULT_NAME, loadNamed, disableSave,
         disablePreset, disableDelete}       from "./named.js";
 import {getNamed, getNamedBoth, setNamed}   from "./local-storage.js";
@@ -16,7 +14,7 @@ import {INPUT, SELECT, MILLI, COUNT, ONE, dlg, elms, g,
 /*
 import(_load.js): loadIt, getEasies, initEasies, updateAll, resizeWindow
 */
-let awaitJSON, awaitNamed, ns, ns_named;
+let awaitNamed, awaitUpdate, ns, ns_named;
 
 const awaitFonts = [            // start loading fonts asap
     new FontFace("Roboto Mono",
@@ -68,21 +66,19 @@ async function loadCommon() {
 
     ns = await import(`${dir}_load.js`).catch(errorAlert);
     const is = ns.loadIt(byTag, hasVisited);
-    const awaitUp = loadUpdate(is.multi, dir);
 
-    awaitNamed = Ez.promise();       // resolves in loadJSON()
-    awaitJSON  = Ez.promise();       // ditto
+    awaitNamed  = Ez.promise();      // resolves in loadJSON()
+    awaitUpdate = Ez.promise();      // ditto
     fetch("../common.json")
       .then (rsp => loadJSON(rsp, is.multi, dir, ns, hasVisited, msg))
       .catch(err => errorAlert(err, msg));
 
-    Promise.all([document.fonts.ready, awaitUp, awaitNamed, awaitJSON])
-      .then (()  => loadFinally(hasVisited, name, id))
-      .catch(err =>
-        errorAlert(err)
-      );
+    const RESIZE = "resize";
+    Promise.all([document.fonts.ready, awaitNamed, awaitUpdate])
+      .then (()  => loadFinally(hasVisited, name, RESIZE, id))
+      .catch(err => errorAlert(err));
 
-    window.addEventListener("resize", ns.resizeWindow, false);
+    window.addEventListener(RESIZE, ns.resizeWindow, false);
 }
 //==============================================================================
 // loadJSON() executes on fetch(common.json).then(), could be inlined & indented
@@ -90,14 +86,22 @@ function loadJSON(response, isMulti, dir, ns, hasVisited, msg) {
     if (response.ok)
         response.json().then(json => {
             g.presets = json.presets;  // must precede loadNamed()/loadFinally()
-            loadNamed(isMulti, dir, ns).then(namespace => {
+            loadNamed(isMulti, dir, ns)
+              .then(namespace => {
                 ns_named = namespace;
                 awaitNamed.resolve();
             }).catch(
                 awaitNamed.reject      // let Promise.all() handle it
             );
-            getNamed();                // populate elms.named from localStorage
+            loadUpdate(isMulti, dir)
+              .then (() => {
+                ns.getEasies(hasVisited);
+                awaitUpdate.resolve();
+            }).catch(
+                awaitUpdate.reject
+            );
 
+            getNamed();                // populate elms.named from localStorage
             let elm, id, title;        // apply titles to elements and labels
             for ([id, title] of Object.entries(json.titles)) {
                 elm = elms[id];
@@ -107,23 +111,21 @@ function loadJSON(response, isMulti, dir, ns, hasVisited, msg) {
                         elm.labels[0].title = title;
                 }
             }
-            ns.getEasies(hasVisited);  // populate other lists of named objects
-            awaitJSON.resolve();
         }).catch(err => alert(`${msg}\n${err.stack ?? err}`));
     else
         alert(`${msg}\nHTTP error ${response.status} ${response.statusText}`);
 }
 //==============================================================================
 // loadFinally() executes on Promise.all().then(), could be inlined & indented
-function loadFinally(hasVisited, name, id) {
+function loadFinally(hasVisited, name, resize, id) {
     let obj;
     if (elms.save)
         Ez.readOnly(g, "restore", `${preDoc}restore`);
 
-    if (hasVisited) {       // user has previously visited this page
+    if (hasVisited) {        // user has previously visited this page
         let item;
         [item, obj] = getNamedBoth(name);
-        if (elms.save){     // exclude color page
+        if (elms.save){      // exclude color page
             const restore = localStorage.getItem(g.restore),
                   isSame  = (item == restore);
             disableSave(isSame);
@@ -132,26 +134,27 @@ function loadFinally(hasVisited, name, id) {
             if (!isSame)
                 obj = JSON.parse(restore);
         }
-
         ns_named.formFromObj(obj);
-        elms.x.value = 0;   // re-opening the page might use previous value
+        elms.x.value = 0;    // re-opening the page might use previous value
         elms.named.value = name;
     }
-    else {                  // user has never visited this page
-        setTime();          // must set msecs prior to ezX = new Easy()
+    else {                   // user has never visited this page
+        elms.time.dispatchEvent(dummyEvent(INPUT, "isLoading")) ?? timeFrames();
         obj = ns_named.objFromForm(hasVisited);
         setNamed(DEFAULT_NAME, JSON.stringify(obj));
     }
-    ns.resizeWindow();
+    window.dispatchEvent(new Event(resize));
 
     // ezX animates elms.x in all pages, and the x-axis of the chart in the
-    // easings page. end:MILLI is for easings only, other pages could use 1.
+    // easings page. end:MILLI is for easings only; it allows easings chart.x to
+    // have no factor at all, while testing Easy end values and burdening elms.x
+    // with a divisor in its factor calculation - see updateTime().
     ezX = new Easy({time:msecs, end:MILLI}); //*05
     raf = new AFrame;
-    if (!ns.initEasies(obj)) // sets g.easies, raf.targets = g.easies
+    if (!ns.initEasies(obj, hasVisited))
         return;
-    //-----------------
-    ns.updateAll(true);
+    //----------------
+    ns.updateAll(obj);
     Object.seal(g);
     Object.seal(elms);       // can't freeze: color page elms.named is variable
 
@@ -214,10 +217,4 @@ function logBaseline(fps, rounded) {
 }
 function roundTo6(n) { // helps logBaseline()
     return Number(n.toFixed(6));
-}
-//==============================================================================
-// setTime() sets the msecs and secs variables, gets document-specific msecs
-function setTime() {
-    msecs = ns.getMsecs();  // milliseconds are primary
-    secs  = msecs / MILLI;  // seconds are for display purposes only
 }

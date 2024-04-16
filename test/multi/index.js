@@ -2,11 +2,11 @@ export {multiFromObj};
 
 import {P, Is} from "../../raf.js";
 
-import {frames, updateFrame}                        from "../update.js";
-import {COUNT, elms, g, orUndefined, elseUndefined} from "../common.js";
+import {updateFrame, pseudoFrame}                from "../update.js";
+import {COUNT, elms, orUndefined, elseUndefined} from "../common.js";
 
 import {clipEnd, clipStart} from "./_load.js";
-import {MASK_X,  getFrame}  from "./_update.js";
+import {MASK_X}             from "./_update.js";
 import {objEz}              from "./_named.js";
 //==============================================================================
 // multiFromObj() reduces 3 pairs of Easys to 3 Easys for easies.newTarget(),
@@ -34,11 +34,11 @@ function multiFromObj(arr, isPseudo) {
 }
 //==============================================================================
 // update() is the animation .peri() callback
-function update(oneD) { // not exported
+function update(oneD) {
     updateFrame(oneD);
 }
 // pseudoUpdate() is the pseudo-animation .peri() callback. EBase.proto.peri()
 //                doesn't know time, pseudo-animation doesn't update counters.
 function pseudoUpdate(oneD) {
-    frames[++g.frameIndex] = getFrame(0, oneD); // 0 is dummy time
+    pseudoFrame(oneD);
 }

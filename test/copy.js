@@ -5,18 +5,18 @@ import {E, P, Easy, Easies, AFrame} from "../raf.js";
 import {CLICK, EASY_, elms, addEventsByElm, errorAlert, errorLog}
                 from "./common.js";
 
-let ezCopy, isMulti, ns, ns_named, rafCopy;
+let ezCopy, ns, ns_named, rafCopy;
 //==============================================================================
-function loadCopy(b, dir, _named) { // imported by named.js
-    isMulti = b;
-    ns_named = _named;        // clickCode, clickData
-    addEventsByElm(CLICK, [elms.code, elms.data], handlers);
-    ezCopy = new Easy({ // "Copied!" notification fades in/out
+function loadCopy(dir, _named) {
+    ns_named = _named;
+    addEventsByElm(CLICK, [elms.code, elms.data], click);
+    ezCopy = new Easy({         // "Copied!" notification fades in/out
                 time:1000,      type:E.sine,   io:E.out,
                 roundTrip:true, autoTrip:true, tripWait:250
             });
+
     ezCopy.newTarget({elm:elms.copied, prop:P.o});
-    if (isMulti)        // for multi/index.html only, not color multi
+    if (elms.copy)              // for multi only, label underneath "Copied!"
         ezCopy.newTarget({elm:elms.copy, prop:P.o, eKey:E.comp});
 
     rafCopy = new AFrame(new Easies([ezCopy]));
@@ -28,15 +28,12 @@ function loadCopy(b, dir, _named) { // imported by named.js
 
 }
 //==============================================================================
-//  clickCode() copies JavaScript code that creates the current animation
-//  clickData() copies frames data for tabular validation elsewhere
- const handlers = {      // not exported
-    clickCode() {
-        copyText(ns.copyCode(ns_named.objEz));
-    },
-    clickData() {
-        copyText(ns.copyData("time (ms)", Easy.eKey));
-    }
+//  click.code() copies JavaScript code that creates the current animation
+//  click.data() copies frames data for tabular validation elsewhere
+ const click = {
+    code() { copyText(ns.copyCode(ns_named.objEz)); },
+
+    data() { copyText(ns.copyData("time (ms)", Easy.eKey)); }
 };
 //==============================================================================
 // ns.copyCode(), ns.copyData() helpers:

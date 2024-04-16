@@ -62,12 +62,27 @@ const P  = {           // Prop, Bute, PrAtt, HtmlBute instances by name
     },
  // displayed does something similar for display
     displayed(elms, b, value) {
-        const val = b ? (value ?? "") : "none";
-        elms = Ez.toElements(elms);
-        for (const elm of elms)
-            this.display.setOne(elm, val);
+        boolNone(Pn.display, elms, b, value);
     },
     isDisplayed(elm) { // one element at a time
         return elm.style.display != "none";
+    },
+ // events does something similar for pointer-events
+    events(elms, b, value) {
+        boolNone(Pn.pE, elms, b, value);
+    },
+    hasEvents(elm) {
+        return elm.style.pointerEvents != "none";
+    },
+ // enable() is an anti-pseudo-disable() with a clearly different name
+    enable(elms, b, value, i = b ? 0 : -1) {
+        P.events(elms, b, value);
+        for (const elm of Ez.toElements(elms))
+            elm.tabIndex = i;
     }
 };
+function boolNone(name, elms, b, value) {
+    const val = b ? (value ?? "") : "none";
+    for (const elm of Ez.toElements(elms))
+        P[name].setOne(elm, val);
+}

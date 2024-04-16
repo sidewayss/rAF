@@ -1,10 +1,11 @@
 // export everything via import(), explicitly imported: refresh, all functions
-export {refresh, getFrame, initPseudo, newTargets, updateX, setCounters,
-        setClipPair, setClipPath, formatDuration, formatPlayback, formatFrames};
+export {refresh, initPseudo, newTargets, getMsecs, getFrame, updateX,
+        setCounters, formatDuration, formatPlayback, setClipPair, setClipPath};
 export const
     MASK_X = [6,8, 14,16, 22,24],  // polygon's animated x-value indexes
     clip   = new Array(32),        // there are 32 polygon numbers
-    easys  = new Array(COUNT)      // easys = [Easy x 3], g.easies = Easies
+    easys  = new Array(COUNT),     // easys = [Easy x 3], g.easies = Easies
+    formatFrames = true
 ;
 import {E, U, F, P, Easy} from "../../raf.js";
 
@@ -31,12 +32,6 @@ function refresh() {
     pseudoAnimate();
     storeCurrent();
 }
-// updateX() is called exclusively by inputX()
-function updateX(frm) {
-    for (var i = 0, j = 0, l = MASK_X.length; i < l; j++)
-        i = setClipPair(frm.x[j].value, i);
-    setClipPath();
-}
 //==============================================================================
 // initPseudo() sets frames[0], creates targets w/o elements, assumes that
 //              clip-path is set at elapsed = 0, called by pseudoAnimate().
@@ -52,6 +47,12 @@ function newTargets(isPseudo = false) { // multiFromObj() relies on false vs und
     g.easies.newTarget(multiFromObj(easys, isPseudo));
 }
 //==============================================================================
+// getMsecs() returns the current duration in milliseconds
+function getMsecs() {
+    return Math.max(...easys.map(ez =>
+                        ez.firstTime + (ez.loopTime * (ez.plays - 1))
+                   ));
+}
 // getFrame() <= update() and pseudoAnimate(), which can't use easies._next()
 //            because it applies values, but _easeMe() doesn't have the
 //            factor/addend/max/min calcs, so that's extra work here.
@@ -73,6 +74,12 @@ function getFrame(t, oneD, isMask) {
     return frm;
 }
 //==============================================================================
+// updateX() is called exclusively by inputX()
+function updateX(frm) {
+    for (var i = 0, j = 0, l = MASK_X.length; i < l; j++)
+        i = setClipPair(frm.x[j].value, i);
+    setClipPath();
+}
 // setCounters() is called exclusively by updateCounters()
 function setCounters(frm, defD) {
     let d, i, k, key;
@@ -83,7 +90,7 @@ function setCounters(frm, defD) {
             elms[key][i].textContent = formatNumber(frm.x[i][key], k, d);
     }
 }
-// formatDuration() is called exclusively by setDuration()
+// formatDuration() is called exclusively by updateDuration()
 function formatDuration(val, d) {
     return val.toFixed(d) + U.seconds;
 }
@@ -104,9 +111,4 @@ function setClipPair(val, i, mask = MASK_X) {
 // setClipPath() summarizes one line of code.
 function setClipPath() {
     elms.clip.style.clipPath = F.joinCSSpolygon(clip);
-}
-//====== multi and color only ==================================================
-// formatFrames() is called exclusively by setFrames()
-function formatFrames(txt) {
-    return txt + "f";
 }

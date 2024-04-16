@@ -23,12 +23,12 @@ async function loadNamed(isMulti, dir, _load) {
     else if (elms.save) {
         elms.revert.addEventListener(CLICK,  openNamed, false);
         const btns = [elms.save, elms.preset, elms.delete, dlg.ok, dlg.cancel];
-        addEventsByElm(CLICK, btns, handlers);
+        addEventsByElm(CLICK, btns, click);
     }
     return import(`${dir}_named.js`).then(namespace => {
         ns = namespace;
         if (elms.copied)
-            loadCopy(isMulti, dir, ns);
+            loadCopy(dir, ns);
         return ns;
     }); // .catch(errorAlert) in Promise.all() in loadCommon()
 }
@@ -38,23 +38,25 @@ function setPrefix(prefix) {
     presets  = g.presets[preClass];
 }
 //==============================================================================
-const handlers = {  // event handlers, not exported
-    clickSave() {    // #save
+const click = {
+    save() {
         dlg.name.value = elms.named.value;
         elms.dialog.showModal();
     },
-    clickPreset() { // #preset
+    preset() {
         localStorage.removeItem(preClass + elms.named.value);
         openNamed();
     },
-    clickDelete() { // #delete
+    delete() {
         const elm = elms.named;
         elm.removeChild(elm.selectedOptions[0]);
         elm.selectedIndex = 0;
         localStorage.removeItem(preClass + elm.value);
         openNamed();
     },
-    clickOk() {     // #ok, auto-naming camelCases it to Ok, not OK
+    //==========================================================================
+    // dialog buttons:
+    ok() {
         let i;
         // <option> trims .textContent, so I trim .value to avoid confusion
         const name = dlg.name.value.trim();
@@ -78,7 +80,7 @@ const handlers = {  // event handlers, not exported
         ns.ok?.(name);   // easings page has more lists the need updating
         elms.dialog.close();
     },
-    clickCancel() { // #cancel
+    cancel() {
         elms.dialog.close();
     }
 } // reply all, u turn left, turn left, subdirectory arrow left
@@ -89,11 +91,11 @@ function openNamed() {  // not exported
     const name  = elms.named.value,
     [item, obj] = getNamedBoth(name);
 
-    ns.formFromObj(obj);
-    if (!ns.updateNamed(obj))
+    ns.formFromObj(obj);        // update the form
+    if (!ns.updateNamed(obj))   // update the animation objects
         return;
     //------------------
-    ns_load.updateAll();    // calls local refresh()
+    ns_load.updateAll();        // calls local refresh()
     disableSave(true);
     disablePreset(name, item);
     disableDelete(name);

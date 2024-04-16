@@ -1,38 +1,39 @@
 // export everything but changeColor, all functions
-export {loadIt, getEasies, initEasies, updateAll, getMsecs, resizeWindow};
+export {loadIt, getEasies, initEasies, updateAll, resizeWindow};
 export const
     easys    = new Array(COUNT),
     refRange = {}
 ;
-export let ezColor, collapsibleHeight, controlsHeight;
+export let ezColor;
 
 import {spaces} from "https://colorjs.io/src/spaces/index.js";
 
-import {U, Fn, F, P, Ez, Easy, Easies} from "../../raf.js";
+import {U, Fn, F, P, Ez, Easy} from "../../raf.js";
 
-import {ezX, raf, msecs, setTime}         from "../load.js";
-import {pad, updateTime}                  from "../update.js";
+import {msecs, pad, newEasies, updateTime, updateCounters} from "../update.js";
 import {getLocal, getNamed, getNamedEasy} from "../local-storage.js";
-import {COUNT, CHANGE, CLICK, INPUT, EASY_, MEASER_, elms, g, dummyEvent,
-        errorAlert}                       from "../common.js";
+import {COUNT, CHANGE, CLICK, INPUT, EASY_, MEASER_, elms, g, dummyEvent}
+                                          from "../common.js";
 
-import {refresh}                      from "./_update.js";
-import {isMulti, loadEvents, getCase} from "./events.js";
-let bodyMargin, canvasBorder, canvasMargin, controlsWidth;
+import {refresh} from "./_update.js";
+import {isMulti, loadEvents, timeFactor, getCase} from "./events.js";
+
+let collapsed, controlsWidth, expanded, padding;
+const LOADING = "isLoading";
 //==============================================================================
 // loadIt() is called by loadCommon()
 function loadIt(byTag, hasVisited) {
     let css, elm, id, max, obj, opt, rng, space, txt;
     pad.frame = 4;         // prevents freezing of pad in loadUpdate() :(
 
-    elm = elms.leftSpaces; // populate leftSpaces <select>
+    elm = elms.leftSpaces; // populate leftSpaces <select>:
     const sorted = Object.values(spaces).sort((a, b) => a.id < b.id ? -1 : 1);
     for (space of sorted) {
         id  = space.id;
         txt = id;
         css = space.cssId;
         opt = new Option();
-        if (!(css in F))   // no Func instance for this space = Color.js
+        if (!(css in F))                // no Func for this space = Color.js
             opt.className = "colorjs";
         else {
             opt.style.color = "black";  // Color.js spaces: var(--charcoal)
@@ -44,7 +45,7 @@ function loadIt(byTag, hasVisited) {
         opt.text  = txt;
         opt.dataset.spaceId = id;
         elm.add(opt);
-                                      // refRange is for formatting counters
+                                        // refRange is for formatting counters
         refRange[id] = Object.values(space.coords).map(v => {
             rng = v.range ?? v.refRange ?? [0, 1];
             max = rng[1];
@@ -54,21 +55,26 @@ function loadIt(byTag, hasVisited) {
                 else if (max < 1000) return format.one;
                 else                 return format.zero;
             }
-            else if (max < 1)        return format.negativeThree;
-            else if (max < 10)       return format.two;
-            else                     return format.zero;
+            else {
+                if      (max < 1)    return format.negativeThree;
+                else if (max < 10)   return format.two;
+                else                 return format.zero;
+            }
         });
-    }                       // clone leftSpaces to create rightSpaces:
+    }                       // clone leftSpaces to create rightSpaces
     const sib    = elm.nextElementSibling;
     const clone  = elm.cloneNode(true);
-    clone.id     = sib.id   // "rightSpaces"
-    elms[sib.id] = clone;
+    clone.id     = sib.id   // dummy element contains id and keeps the grid
+    elms[sib.id] = clone;   // from reflowing via replaceWith().
     clone.style.marginLeft = sib.style.marginLeft;
-    sib.replaceWith(clone); // dummy element keeps the grid from reflowing here
+    sib.replaceWith(clone);
 
-    g.clicks = document.getElementsByClassName(CLICK);
-    if (hasVisited)//...<input>,  ...<button class="click">
-        for (elm of [...byTag[0], ...g.clicks])
+    const byClass    = (v) => Array.from(document.getElementsByClassName(v));
+    g.clicks         = byClass(CLICK);
+    elms.collapsible = byClass("collapse");
+
+    if (hasVisited)         // , ...<input> , ...<button class="click">
+        for (elm of [elm, clone, ...byTag[0], ...g.clicks])
             elm.value = getLocal(elm);
     else {
         elm.selectedIndex = 0;
@@ -88,27 +94,16 @@ function loadIt(byTag, hasVisited) {
     g.left .other = g.right;
     g.right.other = g.left;
 
-    g.leftRight = [g.left,  g.right];
-    g.startEnd  = [g.start, g.end];
-
-    elm = elms.canvas;
-    bodyMargin   = P.marginTop.getn(document.body);
-    canvasMargin = P.marginTop.getn(elm);
-    canvasBorder = P.borderWidth.getn(elm);
-    controlsWidth  = elms.compare.offsetWidth
-                   + elms.leftSpaces .offsetWidth + P.mL.getn(elms.leftSpaces)
-                   + elms.rightSpaces.offsetWidth + P.mL.getn(elms.rightSpaces);
-    controlsHeight = canvasMargin
-                   + elms.x.parentNode.offsetHeight
-                   + elms.playback    .offsetHeight;
+    g.leftRight   = [g.left,  g.right];
+    g.startEnd    = [g.start, g.end];
 
     return loadEvents();
 }
 const format = {
-    three(n) { return n.toFixed(3); },
-    two  (n) { return n.toFixed(2); },
-    one  (n) { return n.toFixed(1); },
     zero (n) { return n.toFixed(0); },
+    one  (n) { return n.toFixed(1); },
+    two  (n) { return n.toFixed(2); },
+    three(n) { return n.toFixed(3); },
     negativeThree(n) {
         return n.toFixed(3).replace(/0(?=.)/, "");
     },
@@ -119,99 +114,112 @@ const format = {
     }
 }
 //==============================================================================
-// getEasies() populates the other, currently display:none, <select> and creates
-//             some arrays as properties of elms.
+// getEasies() is called exclusively by loadJSON()
 function getEasies(hasVisited) {
-    const arr = Array.from(document.getElementsByClassName("collapse"))
-    elms.collapsible  = arr;                       // see click.collapse()
-    collapsibleHeight = arr.reduce(                // marginTop + marginBottom
-        (sum, elm) => sum + elm.offsetHeight + P.mT.getn(elm) + P.mB.getn(elm),
-        0
+    getNamed(                                 // populate the "other" <select>
+        isMulti ? elms.easys : elms.multis,
+        elms.type.options[Ez.flip(elms.type.selectedIndex)].value
     );
-    let elm = isMulti ? elms.easys : elms.multis;  // the other <select>
-    getNamed(elm, elms.type.options[Ez.flip(elms.type.selectedIndex)].value);
-    if (hasVisited) {               // restore the previous form state
-        setTime();                  // gotta call this prior to ezX = new Easy
-        const evt = dummyEvent(CLICK, true);
-        for (elm of g.clicks)       // loadIt() calls getLocal() for these
-            elm.dispatchEvent(evt);
 
-        for (elm of [elms.leftSpaces, elms.rightSpaces])
-            elm.value = getLocal(elm);
-    }
+    const div = elms.controls;
+    padding   = P.paddingTop.getn(div);       // 0.5rem, same for all four sides
+    expanded  = elms.collapsible.reduce(      // expanded height
+        (sum, elm) => sum + elm.offsetHeight + P.mT.getn(elm) + P.mB.getn(elm),
+        0                                     // marginTop        marginBottom
+    );
+    collapsed = padding                       // collapsed height
+              + padding
+              + elms.x.parentNode.offsetHeight
+              + elms.playback    .offsetHeight;
+
+    controlsWidth   = Math.round(P.width.getn(div));
+    div.style.width = controlsWidth + U.px;   // hard set for collapse()
+
+    if (hasVisited)                           // call input.time()
+        elms.time.dispatchEvent(new Event(INPUT));
 }
+//==============================================================================
 // initEasies() is called by loadFinally(), updateNamed
-function initEasies(obj) {
+function initEasies(obj, hasVisited) {
     let lrse,                           // run the event handlers that populate
-    evt = dummyEvent(CHANGE, true)      // g.left/right/start/end values.
+    evt = dummyEvent(CHANGE, LOADING)   // g.left/right/start/end values:
     for (lrse of g.leftRight)           // lr must precede se
         lrse.spaces.dispatchEvent(evt); // call change.space() for both
 
-    evt = dummyEvent(INPUT, true);
+    evt = dummyEvent(INPUT, LOADING);
     for (lrse of g.startEnd)            // dispatchEvent() avoids exports
         lrse.input.dispatchEvent(evt);  // call input.color() for both
 
-    elms.time.dispatchEvent(evt);       // run input.time()
-
-    try {
-        g.easies = new Easies(ezX);
-        if (!isMulti) {
-            ezColor = setEasy(new Easy(obj));
-            g.easies.add(ezColor);
-        }
-        else {
+    const b = newEasies();
+    if (b) {                            // ezX added/deleted in newTargets()
+        if (isMulti) {
             let i;
+            const easys = new Array(COUNT);
+
             for (i = 0; i < COUNT; i++) // get the three easys
                 easys[i] = getNamedEasy(obj.easy[i]);
 
-            const f = msecs / Math.max(...easys.map(ez => ez.firstTime));
+            const f = timeFactor(easys);
             for (i = 0; i < COUNT; i++) // scale the time of each easy
                 g.easies.add(setEasy(easys[i], f));
         }
-    } catch (err) {
-        errorAlert(err);
-        return false;
+        else {
+            ezColor = setEasy(new Easy(obj));
+            g.easies.add(ezColor);
+        }
+
+        if (hasVisited) {               // only when called by loadFinally()
+            const evt = dummyEvent(CLICK, LOADING);
+            for (const elm of g.clicks)
+                elm.dispatchEvent(evt); // loadIt()=>getLocal() previously
+        }
     }
-    raf.targets = g.easies;
-    return true;
+    return b;
 }
-function setEasy(ez, f) {                 // f for factor
-    ez.time  = f ? Math.round(ez.time * f) : msecs;
+// setEasyTime() helps setEasy() and change.time()
+function setEasyTime(ez, f) {        // f for factor
+    ez.time = f ? Math.round(ez.time * f) : msecs;
+}
+// setEasy() helps initEasies()
+function setEasy(ez, f) {            // f for factor
+    setEasyTime(ez, f);
     ez.plays = 1;
     ez.roundTrip = elms.roundT.value;
-    ez.autoTrip  = ez.roundTrip;          // excludes flipTrip
+    ez.autoTrip  = ez.roundTrip;     // excludes flipTrip
     return ez;
 }
 //==============================================================================
 // updateAll() called by loadFinally(), openNamed()
-function updateAll() {
+function updateAll() { // identical to multi updateAll()
     updateTime();
     refresh();
-}
-function getMsecs() { // same as easings getMsecs()
-    return elms.time.valueAsNumber;
+    updateCounters();
 }
 //==============================================================================
-// resizeWindow() resizes the polygon: y-values and all stationary x-values
-function resizeWindow(evt, topHeight = P.isDisplayed(elms.triptych)
-                                     ? collapsibleHeight
-                                     : 0)
-{
-    let border;
-    const style  = elms.canvas.style;
-    const isFull = window.innerWidth < 400
+// resizeWindow() additionally called by click.collapse()
+function resizeWindow(_, isCollapsed) {
+    let prop;
+    const
+        div    = elms.controls,
+        canvas = elms.canvas.style,
+        BORDER = "1px solid black"
+    ;
+    if (window.innerWidth > controlsWidth + padding + padding + 2) {
+        canvas.top = "";
+        div.style.border = BORDER;
+        for (prop of [P.pL, P.pR])  // padding-left, right
+            prop.set(div, padding);
 
-    toggleClass(elms.canvas, "fullWidth", isFull);
-    border = isFull ? canvasBorder
-                    : canvasBorder * 2;
-
-    style.height = window.innerHeight
-                 - bodyMargin
-                 - topHeight
-                 - controlsHeight
-                 - canvasMargin
-                 - border + U.px;
-    if (evt)
-        style.width = isFull ? window.innerWidth
-                             : controlsWidth - border;
+    }
+    else {
+        let top     = collapsed;
+        isCollapsed = isCollapsed ?? elms.collapse.value;
+        if (!isCollapsed)
+            top += expanded;
+        canvas.top = top + U.px;
+        canvas.height = window.innerHeight - top - 1 + U.px;
+        canvas.borderTop = BORDER;              // 1 for border width
+        for (prop of [P.pL, P.pR, P.border])
+            prop.set(div, "");
+    }
 }
