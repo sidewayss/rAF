@@ -47,7 +47,6 @@ function newTargets(isPseudo) {
 function newTar(lr, isPseudo, isComp) {
     let side;
     const o = {};
-
     if (isMulti) {                    // slice out ezX:
         o.easies = isPseudo ? g.easies : g.easies.slice(1);
         o.eKey   = objEz.eKey;
@@ -59,7 +58,6 @@ function newTar(lr, isPseudo, isComp) {
         side = lr.id,
         o.start = Ez.noneToZero(g.start[side]);
         o.end   = Ez.noneToZero(g.end  [side]);
-        o.autoTrip = elseUndefined(!isPseudo, elms.roundT.value);
         o.currentValue = [o.start];   // currentValue must be 2D byElmByArg
     }
     else {                            // !lr == isPseudo && isComp

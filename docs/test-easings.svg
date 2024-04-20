@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="811px" height="733px" viewBox="-0.5 -0.5 811 733" style="background-color: rgb(255, 255, 255);">
+<defs/>
+<rect fill="#ffffff" width="100%" height="100%" x="0" y="0"/>
+<g>
+<g style="filter: drop-shadow(rgba(0, 0, 0, 0.25) 2px 3px 2px);">
+<rect x="444" y="605" width="140" height="40" rx="6" ry="6" fill="#000077" stroke="rgb(0, 0, 0)" stroke-width="2" pointer-events="all"/>
+</g>
+<g>
+<g transform="translate(-0.5 -0.5)">
+<switch>
+<foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 138px; height: 1px; padding-top: 625px; margin-left: 445px;">
+<div data-drawio-colors="color: #FFFFFF; " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+<div style="display: inline-block; font-size: 13px; font-family: &quot;Lucida Console&quot;; color: rgb(255, 255, 255); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">index.newEzY()</div>
+</div>
+</div>
+</foreignObject>
+<text x="514" y="629" fill="#FFFFFF" font-family="Lucida Console" font-size="13px" text-anchor="middle">index.newEzY()</text>
+</switch>
+</g>
+</g>
+<g style="filter: drop-shadow(rgba(0, 0, 0, 0.25) 2px 3px 2px);">
+<path d="M 514 685 L 514 651.37" fill="none" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="stroke"/>
+<path d="M 514 646.12 L 517.5 653.12 L 514 651.37 L 510.5 653.12 Z" fill="rgb(0, 0, 0)" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="all"/>
+</g>
+<g style="filter: drop-shadow(rgba(0, 0, 0, 0.25) 2px 3px 2px);">
+<rect x="434" y="685" width="160" height="40" rx="6" ry="6" fill="#fafafa" stroke="rgb(0, 0, 0)" stroke-width="2" pointer-events="all"/>
+</g>
+<g>
+<g transform="translate(-0.5 -0.5)">
+<switch>
+<foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 158px; height: 1px; padding-top: 705px; margin-left: 435px;">
+<div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+<div style="display: inline-block; font-size: 13px; font-family: &quot;Lucida Console&quot;; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">index.updateEzXY()</div>
+</div>
+</div>
+</foreignObject>
+<text x="514" y="709" fill="rgb(0, 0, 0)" font-family="Lucida Console" font-size="13px" text-anchor="middle">index.updateEzXY()</text>
+</switch>
+</g>
+</g>
+<g style="filter: drop-shadow(rgba(0, 0, 0, 0.25) 2px 3px 2px);">
+<path d="M 374 185 L 414 185 L 414 625 L 437.63 625" fill="none" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="stroke"/>
+<path d="M 442.88 625 L 435.88 628.5 L 437.63 625 L 435.88 621.5 Z" fill="rgb(0, 0, 0)" stroke="rgb(0, 0, 0)" stroke-miterlimit="10" pointer-events="all"/>
+</g>
+<g style="filter: drop-shadow(rgba(0, 0, 0, 0.25) 2px 3px 2px);">
+<rect x="214" y="165" width="160" height="40" rx="6" ry="6" fill="#e7ffef" stroke="rgb(0, 0, 0)" stroke-width="2" pointer-events="all"/>
+</g>
+<g>
+<g transform="translate(-0.5 -0.5)">
+<switch>
+<foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 158px; height: 1px; padding-top: 185px; margin-left: 215px;">
+<div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+<div style="display: inline-block; font-size: 13px; font-family: &quot;Lucida Console&quot;; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">_update.refresh()*</div>
+</div>
+</div>
+</foreignObject>
+<text x="294" y="189" fill="rgb(0, 0, 0)" font-family="Lucida Console" font-size="13px" text-anchor="middle">_update.refresh()*</text>
+</switch>
+</g>
+</g>
+<g>
+<rect x="444" y="325" width="160" height="190" fill="none" stroke="none" pointer-events="all"/>
+</g>
+<g>
+<g transform="translate(-0.5 -0.5)">
+<switch>
+<foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-end; justify-content: unsafe flex-start; width: 158px; height: 1px; padding-top: 512px; margin-left: 446px;">
+<div data-drawio-colors="color: #666666; " style="box-sizing: border-box; font-size: 0px; text-align: left;">
+<div style="display: inline-block; font-size: 13px; font-family: Verdana; color: rgb(102, 102, 102); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+<span style="font-family: &quot;Lucida Console&quot;;">* refresh</span>
+<font face="Lucida Console">() </font>
+<i style="background-color: initial;">called by:</i>
+<div>
+<font face="Lucida Console" style="background-color: initial;">- change.time()<br />
+</font>
+</div>
+<div>
+<span style="font-family: &quot;Lucida Console&quot;; background-color: initial;">-</span>
+<span style="font-family: &quot;Lucida Console&quot;; background-color: initial;"> </span>
+<font face="Lucida Console" style="background-color: initial;">change.direction()</font>
+</div>
+<div>
+<span style="font-family: &quot;Lucida Console&quot;; background-color: initial;">-</span>
+<span style="font-family: &quot;Lucida Console&quot;; background-color: initial;"> </span>
+<font face="Lucida Console" style="background-color: initial;">change.io()</font>
+</div>
+<div>
+<span style="font-family: &quot;Lucida Console&quot;; background-color: initial;">-</span>
+<span style="font-family: &quot;Lucida Console&quot;; background-color: initial;"> </span>
+<font face="Lucida Console" style="background-color: initial;">change.type()</font>
+</div>
+<div>
+<span style="font-family: &quot;Lucida Console&quot;; background-color: initial;">-</span>
+<span style="font-family: &quot;Lucida Console&quot;; background-color: initial;"> </span>
+<font face="Lucida Console" style="background-color: initial;">change.pow()</font>
+</div>
+<div>
+<span style="font-family: &quot;Lucida Console&quot;; background-color: initial;">-</span>
+<span style="font-family: &quot;Lucida Console&quot;; background-color: initial;"> </span>
+<font face="Lucida Console" style="background-color: initial;">change.bezier()</font>
+</div>
+<div>
+<span style="background-color: initial; font-family: &quot;Lucida Console&quot;;">-</span>
+<span style="background-color: initial; font-family: &quot;Lucida Console&quot;;"> </span>
+<font face="Lucida Console" style="background-color: initial;">changeSteps()</font>
+<br />
+</div>
+<div>
+<span style="background-color: initial; font-family: &quot;Lucida Console&quot;;">-</span>
+<span style="background-color: initial; font-family: &quot;Lucida Console&quot;;"> </span>
+<font face="Lucida Console" style="background-color: initial;">changeMSG()</font>
+<br />
+</div>
+<div>
+<span style="background-color: initial; font-family: &quot;Lucida Console&quot;;">-</span>
+<span style="background-color: initial; font-family: &quot;Lucida Console&quot;;"> </span>
+<font face="Lucida Console" style="background-color: initial;">click.clear()</font>
+</div>
+<div>
+<span style="font-family: &quot;Lucida Console&quot;; background-color: initial;">-</span>
+<span style="font-family: &quot;Lucida Console&quot;; background-color: initial;"> </span>
+<font face="Lucida Console">inputTypePow()</font>
+</div>
+</div>
+</div>
+</div>
+</foreignObject>
+<text x="446" y="512" fill="#666666" font-family="Verdana" font-size="13px">* refresh() called by:...</text>
+</switch>
+</g>
+</g>
+<g>
+<rect x="81" y="401" width="210" height="65" fill="none" stroke="none" pointer-events="all"/>
+</g>
+<g>
+<g transform="translate(-0.5 -0.5)">
+<switch>
+<foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 208px; height: 1px; padding-top: 434px; margin-left: 83px;">
+<div data-drawio-colors="color: #666666; " style="box-sizing: border-box; font-size: 0px; text-align: left;">
+<div style="display: inline-block; font-size: 13px; font-family: Verdana; color: rgb(102, 102, 102); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+<span style="font-family: &quot;Lucida Console&quot;;">updateAll() </span>
+<i>calls </i>
+<font face="Lucida Console">refresh()<br />
+</font>
+<i>w/o args, doesn't call </i>
+<font face="Lucida Console">newEzY()<br />
+</font>
+<i>or </i>
+<font face="Lucida Console">objFromForm()</font>
+<font face="Lucida Console">
+<br />
+</font>
+</div>
+</div>
+</div>
+</foreignObject>
+<text x="83" y="437" fill="#666666" font-family="Verdana" font-size="13px">updateAll() calls refresh()...</text>
+</switch>
+</g>
+</g>
+<g style="filter: drop-shadow(rgba(0, 0, 0, 0.25) 2px 3px 2px);">
+<rect x="644" y="245" width="160" height="40" rx="6" ry="6" fill="#e7ffef" stroke="rgb(0, 0, 0)" stroke-width="2" pointer-events="all"/>
+</g>
+<g>
+<g transform="translate(-0.5 -0.5)">
+<switch>
+<foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 158px; height: 1px; padding-top: 265px; margin-left: 645px;">
+<div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+<div style="display: inline-block; font-size: 13px; font-family: &quot;Lucida Console&quot;; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">change.loopByElm()</div>
+</div>
+</div>
+</foreignObject>
+<text x="724" y="269" fill="rgb(0, 0, 0)" font-family="Lucida Console" font-size="13px" text-anchor="middle">change.loopByElm()</text>
+</switch>
+</g>
+</g>
+<g style="filter: drop-shadow(rgba(0, 0, 0, 0.25) 2px 3px 2px);">
+<rect x="644" y="5" width="120" height="40" rx="6" ry="6" fill="#e7ffef" stroke="rgb(0, 0, 0)" stroke-width="2" pointer-events="all"/>
+</g>
+<g>
+<g transform="translate(-0.5 -0.5)">
+<switch>
+<foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 25px; margin-left: 645px;">
+<div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+<div style="display: inline-block; font-size: 13px; font-family: &quot;Lucida Console&quot;; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">change.trip()</div>
+</div>
+</div>
+</foreignObject>
+<text x="704" y="29" fill="rgb(0, 0, 0)" font-family="Lucida Console" font-size="13px" text-anchor="middle">change.trip()</text>
+</switch>
+</g>
+</g>
+<g>
+<rect x="0" y="205" width="160" height="40" fill="none" stroke="none" pointer-events="all"/>
+</g>
+<g>
+<g transform="translate(-0.5 -0.5)">
+<switch>
+<foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 158px; height: 1px; padding-top: 225px; margin-left: 2px;">
+<div data-drawio-colors="color: #666666; " style="box-sizing: border-box; font-size: 0px; text-align: left;">
+<div style="display: inline-block; font-size: 13px; font-family: Verdana; color: rgb(102, 102, 102); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">
+<i>targets are merely:</i>
+<font face="Lucida Console">{prop,elms}</font> <i>or </i>
+<font face="Lucida Console">{peri}</font>
+</div>
+</div>
+</div>
+</foreignObject>
+<text x="2" y="229" fill="#666666" font-family="Verdana" font-size="13px">targets are merely:{prop...</text>
+</switch>
+</g>
+</g>
+<g style="filter: drop-shadow(rgba(0, 0, 0, 0.25) 2px 3px 2px);">
+<rect x="644" y="85" width="120" height="40" rx="6" ry="6" fill="#e7ffef" stroke="rgb(0, 0, 0)" stroke-width="2" pointer-events="all"/>
+</g>
+<g>
+<g transform="translate(-0.5 -0.5)">
+<switch>
+<foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 105px; margin-left: 645px;">
+<div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+<div style="display: inline-block; font-size: 13px; font-family: &quot;Lucida Console&quot;; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">change.plays()</div>
+</div>
+</div>
+</foreignObject>
+<text x="704" y="109" fill="rgb(0, 0, 0)" font-family="Lucida Console" font-size="13px" text-anchor="middle">change.plays()</text>
+</switch>
+</g>
+</g>
+<g style="filter: drop-shadow(rgba(0, 0, 0, 0.25) 2px 3px 2px);">
+<rect x="644" y="165" width="120" height="40" rx="6" ry="6" fill="#e7ffef" stroke="rgb(0, 0, 0)" stroke-width="2" pointer-events="all"/>
+</g>
+<g>
+<g transform="translate(-0.5 -0.5)">
+<switch>
+<foreignObject pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" style="overflow: visible; text-align: left;">
+<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 185px; margin-left: 645px;">
+<div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+<div style="display: inline-block; font-size: 13px; font-family: &quot;Lucida Console&quot;; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; white-space: normal; overflow-wrap: normal;">change.wait()</div>
+</div>
+</div>
+</foreignObject>
+<text x="704" y="189" fill="rgb(0, 0, 0)" font-family="Lucida Console" font-size="13px" text-anchor="middle">change.wait()</text>
+</switch>
+</g>
+</g>
+</g>
+</svg>

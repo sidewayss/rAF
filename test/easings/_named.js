@@ -9,7 +9,7 @@ import {DEFAULT_NAME} from "../named.js";
 import {MILLI, INPUT, elms, g, formatNumber, orUndefined, elseUndefined}
                       from "../common.js";
 
-import {setNoWaits}                               from "./events.js";
+import {setNoWaits}                             from "./events.js";
 import {easingFromObj, easingFromForm}          from "./not-steps.js";
 import {stepsFromObj,  stepsFromForm, isSteps}  from "./steps.js";
 import {initEzXY,      updateTrip,    isBezier} from "./index.js";

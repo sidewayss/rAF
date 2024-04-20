@@ -185,7 +185,6 @@ function setEasy(ez, f) {            // f for factor
     setEasyTime(ez, f);
     ez.plays = 1;
     ez.roundTrip = elms.roundT.value;
-    ez.autoTrip  = ez.roundTrip;     // excludes flipTrip
     return ez;
 }
 //==============================================================================

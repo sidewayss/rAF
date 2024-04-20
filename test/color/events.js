@@ -8,12 +8,13 @@ import {E, Fn, P} from "../../raf.js";
 import {ezX}                            from "../load.js";
 import {msecs, timeFrames, updateTime}  from "../update.js";
 import {setPrefix}                      from "../named.js";
+import {changeStop}                     from "../play.js";
 import {setLocal, setLocalBool}         from "../local-storage.js";
 import {CHANGE, CLICK, INPUT, MEASER_, elms, g, is, toggleClass, boolToString,
         addEventToElms, addEventsByElm} from "../common.js";
 
-import {refRange, resizeWindow} from "./_load.js";
-import {refresh, oneCounter}    from "./_update.js";
+import {ezColor, refRange, resizeWindow} from "./_load.js";
+import {refresh, oneCounter}             from "./_update.js";
 
 const btnText = { // textContent: boolean as number is index into each array
     compare: ["switch_left", "switch_right"],
@@ -24,10 +25,10 @@ const btnText = { // textContent: boolean as number is index into each array
 // loadEvents() is called exclusively by loadIt(), helps keep stuff private
 function loadEvents() {
     addEventsByElm(CLICK,  g.clicks, click);
+    addEventsByElm(INPUT,  [elms.time],            input);
+    addEventsByElm(CHANGE, [elms.time, elms.type], change);
     addEventToElms(INPUT,  [elms.startInput, elms.endInput],    input.color);
     addEventToElms(CHANGE, [elms.leftSpaces, elms.rightSpaces], change.space);
-    elms.time.addEventListener(INPUT,  input.time,  false);
-    elms.type.addEventListener(CHANGE, change.type, false);
     change.type();              // sets isMulti
     return is({multi:isMulti});
 }
@@ -136,11 +137,18 @@ const click = {
     },
  // roundT() elm.id distinguishes it from elms.roundTrip on other test pages
     roundT(evt) {
-        click.boolBtn(evt);
+        const b = click.boolBtn(evt);
+        changeStop();
+        ezX.roundTrip = b;
+        if (isMulti)
+            for (const ezC of g.easies)
+                ezC.roundTrip = b;
+        else
+            ezColor.roundTrip = b;
     },
  // collapse() shows|hides inputs & counters
     collapse(evt) {
-        const b = click.boolBtn(evt.target);
+        const b = click.boolBtn(evt);
         P.displayed(elms.collapsible, !b);
         if (!evt.isLoading)
             resizeWindow(null, b);
@@ -150,6 +158,7 @@ const click = {
         const tar = evt.target;
         const b   = !tar.value;
         tar.value = boolToString(b);
+
         tar.textContent = btnText[tar.id][Number(b)];
         if (!evt.isLoading)
             setLocalBool(tar, !b);

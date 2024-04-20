@@ -60,8 +60,8 @@ function changePlay() {
     }
 }
 // changeStop() handles the click event for #stop and is called w/o evt arg by
-//              pseudoAnimate(), easings change.trip.plays.wait.loopByElm()
-//              in order to handle cases where sts == E.arrived.
+//              pseudoAnimate(), easings change.trip.plays.wait.loopByElm(),
+//              and color click.roundT() to handle cases where sts == E.arrived.
 function changeStop(evt) {
     if (elms.stop.disabled) return; // nothing to do that hasn't been done
     //-----------------------------

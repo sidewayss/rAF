@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-0.5 -0.5 857 573">
+  <g>
+    <rect x="185" y="85" width="180" fill="#000099"/>
+    <text x="275" y="109" fill="#f7f7f7">index.multiFromObj()</text>
+
+    <rect x="5" y="165" width="180" height="40" fill="#e7ffef"/>
+    <text x="95" y="189" fill="#1A1A1A">events.change.easy()</text>
+
+    <rect x="185" y="5" width="180" height="40" fill="#000077"/>
+    <text x="275" y="29" fill="#FFFFFF">_update.newTargets()</text>
+
+    <rect x="405" y="525" width="180" height="40" fill="#fafafa"/>
+    <text x="495" y="549" fill="rgb(0, 0, 0)">_named.updateNamed()</text>
+
+    <rect x="15" y="85" width="120" height="40" fill="#e7ffef"/>
+    <text x="75" y="109" fill="rgb(0, 0, 0)">clickCode()</text>
+
+    <text x="79" y="249" fill="#666666" font-family="Lucida Console" font-size="13px">easys[] changes via:...</text>
+
+    <rect x="257" y="205" width="180" height="40" fill="#e7ffef"/>
+    <text x="347" y="229" fill="#1A1A1A">events.change.eKey()</text>
+
+    <rect x="637" y="165" width="180" height="40" fill="#e7ffef"/>
+    <text x="727" y="189" fill="#1A1A1A">events.change.plays()</text>
+
+    <rect x="637" y="245" width="180" height="40" fill="#e7ffef"/>
+    <text x="727" y="269" fill="#1A1A1A">events.change.trip()</text>
+
+    <rect x="415" y="5" width="160" height="40" fill="#fafafa"/>
+    <text x="495" y="29" fill="rgb(0, 0, 0)">_update.refresh()</text>
+
+    <text x="639" y="344" fill="#666666" font-family="Lucida Console" font-size="13px">#eKey[], #easy[], #plays[], #trip[...</text>
+
+    <path d="M 437 225 L 468 225 L 467.04 51.37"/>
+
+    <path d="M 185 185 L 437.1 185 L 437.08 51.37"/>
+  </g>
+</svg>
