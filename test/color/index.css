@@ -60,11 +60,6 @@ input[type=text]:focus {
   z-index:1;
   border-color:black;
 }
-input.invalid {
-  background-color:rgb(139 0 0 / 0.1);
-  border-color: darkred;
-  outline-color:darkred;
-}
 #triptych {
   display:grid;
   grid-template-columns:calc(1rem + var(--5-8ths)) 1fr 1fr;

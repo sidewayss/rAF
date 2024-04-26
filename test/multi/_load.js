@@ -1,4 +1,3 @@
-// export everything but changeColor, all functions
 export {loadIt, getEasies, initEasies, updateAll, resizeWindow};
 export let clipDist, clipEnd, clipStart;
 

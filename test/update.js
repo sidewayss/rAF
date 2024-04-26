@@ -1,4 +1,3 @@
-// export everything but ns, D
 export {loadUpdate, inputX, timeFrames, updateTime, updateFrame, pseudoFrame,
         updateCounters, updateDuration, setFrames, getFrames, eGet, newEasies,
         pseudoAnimate};
@@ -8,8 +7,8 @@ msecs, secs,  // alternate versions of time, both integers
 targetInputX, // only imported by easings/_update.js
 frameCount;   // ditto         by easings/non-steps.js
 
-const D = 3;  // D for decimals: .toFixed(D) = milliseconds, etc. - not exported
 export const
+D = 3,        // D for decimals: .toFixed(D) = milliseconds, etc.
 frames = [],  // time, x, y, and eKey values by frame
 pad    = {    // string.pad() values for formatting numbers
     frame:5,
@@ -164,6 +163,5 @@ function pseudoAnimate() {
         ezs._next(t);   // prefer not to += floating point if I can avoid it.
         frames[g.frameIndex].t = t; // EBase.proto.peri() doesn't have time
     }
-    ns.postPseudo?.();  // easings page: E.steps has a pseudo-quirk
     raf.init();         // init() is an alias for stop() //!!necessary here??
 }

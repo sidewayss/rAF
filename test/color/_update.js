@@ -1,4 +1,3 @@
-// export everything via import(), explicitly imported: redraw, all functions
 export {refresh, initPseudo, newTargets, getMsecs, getFrame, updateX,
         setCounters, formatDuration, oneCounter};
 export const formatFrames = true;

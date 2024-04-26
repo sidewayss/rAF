@@ -1,13 +1,14 @@
 // #mid, #split, #gap are all <input type="number">
-export {loadMSG, updateMidSplit, disableClear, updateSplitGap, setSplitGap};
+export {loadMSG, updateMidSplit, disableClear, updateSplitGap, setSplitGap,
+        isUnlocked};
 export const MSG = ["mid","split","gap"];
 
 import {Ez, P, U} from "../../raf.js";
 
 import {msecs, secs} from "../update.js";
 import {MILLI, CLICK, INPUT, CHANGE, elms, addEventToElms, addEventsByElm,
-        addEventByClass, formatInputNumber, changeNumber, toggleClass,
-        toFunc, isTag, boolToString} from "../common.js";
+        addEventByClass, formatInputNumber, listenInputNumber, isInvalid,
+        invalidInput, toggleClass, isTag, boolToString} from "../common.js";
 
 import {refresh}         from "./_update.js";
 import {chart}           from "./chart.js";
@@ -53,6 +54,7 @@ function loadMSG() {
                 obj[elm.className] = elm;
         }
     }
+    elms.gap.min = 0;
     formatInputNumber(elms.split, elms.time.valueAsNumber / 2);
     formatInputNumber(elms.gap, 0);
     div.parentNode.insertBefore(elms[divGap], div.nextElementSibling);
@@ -61,37 +63,42 @@ function loadMSG() {
     elms.split.default = () => secs  / 2;   // variable
     elms.gap  .default = () => 0;           // constant
 
-    const msgInputs = MSG.map(v => elms[v]);
-    sgInputs = msgInputs.slice(1);
+    const msg = MSG.map(v => elms[v]);
+    sgInputs  = msg.slice(1);
     addEventByClass(CLICK,  CLEAR, click);
     addEventByClass(CLICK,  LOCK,  click);
-    addEventsByElm (INPUT,  msgInputs.slice(0, -1), input); // mid, split
-    addEventToElms (CHANGE, msgInputs, changeMSG);
+    addEventToElms (CHANGE, msg, changeMSG);
+    listenInputNumber(msg);                          // must go first
+    addEventsByElm (INPUT, msg.slice(0, -1), input); // mid, split only
 }
 //==============================================================================
 const input = {
 //  mid()       #mid, also called by updateMidSplit()
     mid() {
-        const val = elms.mid.valueAsNumber;
-        P.y1.setIt(chart.dashY, val);
-        P.y2.setIt(chart.dashY, val);
+        if (!isInvalid(elms.mid)) {
+            const val = elms.mid.valueAsNumber;
+            P.y1.setIt(chart.dashY, val);
+            P.y2.setIt(chart.dashY, val);
+        }
     },
 //  split()     #split, also called by updateMidSplit()
     split() {
-        const val = elms.split.valueAsNumber / secs * MILLI;
-        P.x1.setIt(chart.dashX, val);
-        P.x2.setIt(chart.dashX, val);
+        if (!isInvalid(elms.split)) {
+            const val = elms.split.valueAsNumber / secs * MILLI;
+            P.x1.setIt(chart.dashX, val);
+            P.x2.setIt(chart.dashX, val);
+        }
     }
 };
 //==============================================================================
 const click = {
  // clear()     #clearMid, #clearSplit, #clearGap
     clear(evt) {
-        const elm = evt.target[OTHER]; // #mid, #split, or #gap
-        const n   = elm.default();
-        formatInputNumber(elm, n);
-        toFunc(input, elm.id)?.(); // input.mid() or input.split()
-        disableClear(elm, n, false);
+        const elm = evt.target[OTHER];  // #mid, #split, or #gap
+        formatInputNumber(elm, elm.default());
+        input[elm.id]?.();              // input.mid() or input.split()
+        disableClear(elm);
+        invalidInput(elm, false);
         refresh(elm, 0, true);
     },
 //  lock()      #lockSplit, #lockGap
@@ -106,9 +113,10 @@ const click = {
 // changeMSG() is the change event handler for #mid, #split, #gap
 function changeMSG(evt) {
     const tar = evt.target;
-    const n   = changeNumber(tar);
-    if (n !== null) {
-        disableClear(tar, n, true);
+    if (isInvalid(tar))
+        disableClear(tar, Infinity, true);  // enables clear button
+    else {
+        disableClear(tar, tar.valueAsNumber, true);
         refresh(tar, 0, true);
     }
 }

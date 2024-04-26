@@ -132,6 +132,11 @@ input[type=number] {
 input[type=text] {
   caret-color:black;
 }
+input.invalid {
+  background-color:rgb(139 0 0 / 0.1);
+  border-color: darkred;
+  outline-color:darkred;
+}
 
 button:disabled {
   pointer-events:none;

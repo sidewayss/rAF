@@ -28,8 +28,9 @@ const Is = {           // boolean functions wrapped in a const, very inlineable
   A2      (v) { return Array.isArray(v) && v.some(a => Array.isArray(a)); },
   Arrayish(v) {
       try {            // Array.from() converts iterables and "array-like"
-          return (Symbol.iterator in v || v.length >= 0) && !Is.String(v);
-      } catch {
+          return (Symbol.iterator in v || v.length >= 0)
+              && !Is.String(v) && !(v instanceof HTMLSelectElement);
+      } catch {        // Strings and <select>s are iterable, but not array-ish
           return false;
       }
   }

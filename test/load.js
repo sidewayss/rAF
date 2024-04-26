@@ -9,8 +9,8 @@ import {msecs, loadUpdate, timeFrames}      from "./update.js";
 import {DEFAULT_NAME, loadNamed, disableSave,
         disablePreset, disableDelete}       from "./named.js";
 import {getNamed, getNamedBoth, setNamed}   from "./local-storage.js";
-import {INPUT, SELECT, MILLI, COUNT, ONE, dlg, elms, g,
-        formatNumber, errorAlert, errorLog} from "./common.js";
+import {INPUT, SELECT, MILLI, COUNT, ONE, dlg, elms, g, formatNumber,
+        dummyEvent, errorAlert, errorLog}   from "./common.js";
 /*
 import(_load.js): loadIt, getEasies, initEasies, updateAll, resizeWindow
 */
@@ -49,6 +49,7 @@ async function loadCommon() {
     Ez.readOnly(g, "disables", [...byTag[0],       // <input>
                                 ...byTag[1],       // <select>
                                 ...byTag.at(-1)]); // <check-box>
+    Ez.readOnly(g, "invalids", new Set);           // <input>s w/invalid values
 
     elm = elms.plays ?? elms.plays0; // plays0 is multi
     if (elm)
@@ -145,6 +146,7 @@ function loadFinally(hasVisited, name, resize, id) {
     }
     window.dispatchEvent(new Event(resize));
 
+    // msecs and secs are now set, by formFromObj() or time.dispatchEvent().
     // ezX animates elms.x in all pages, and the x-axis of the chart in the
     // easings page. end:MILLI is for easings only; it allows easings chart.x to
     // have no factor at all, while testing Easy end values and burdening elms.x

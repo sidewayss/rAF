@@ -1,4 +1,3 @@
-// export: everything via import(), explicit: objFromForm, all functions
 export {formFromObj, objFromForm, updateNamed};
 export let objEz;
 

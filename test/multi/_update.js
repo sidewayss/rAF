@@ -1,4 +1,3 @@
-// export everything via import(), explicitly imported: refresh, all functions
 export {refresh, initPseudo, newTargets, getMsecs, getFrame, updateX,
         setCounters, formatDuration, formatPlayback, setClipPair, setClipPath};
 export const

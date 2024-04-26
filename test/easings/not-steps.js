@@ -19,24 +19,25 @@ function easingFromObj(obj, legs) {
     elms.type2.value = legs?.[1]?.type ?? g.type;
     if (isPow())
         formatInputNumber(elms.pow, obj.pow ?? legs[0].pow);
-    else if (isBezier()) {
-        const strBez = Easy.type[E.bezier];
+    else if (isBezier())
         for (let i = 0; i < 4; i++)
-            formatInputNumber(elms[strBez + i], obj.bezier[i]);
-    }
+            formatInputNumber(elms.beziers[i], obj.bezier[i]);
+
     if (legs?.[1].pow)
         formatInputNumber(elms.pow2, legs[1].pow);
     else
         elms.pow2.value = elms.pow.value;
 
     let elm, id, isDefN, n, val;
-    for (id of [TYPE, POW])
-        setLink(elms[Ez.toCamel(LINK, id)], // #linkType and #linkPow
-                elms[id].value == elms[id + TWO].value);
+    for (id of [TYPE, POW])              // #linkType and #linkPow
+        setLink(
+            elms[Ez.toCamel(LINK, id)],
+            elms[id].value == elms[id + TWO].value
+        );
 
-    [legs?.[0].end,                      // mid,
-     legs?.[0].time,                     // split,
-     legs?.[1].wait].forEach((v, i) => { // gap initial default values:
+    [legs?.[0].end,                      // #mid,
+     legs?.[0].time,                     // #split,
+     legs?.[1].wait].forEach((v, i) => { // #gap - initial default values:
         id  = MSG[i];
         elm = elms[id];
         n   = obj[id] ?? v;

@@ -1,4 +1,4 @@
-import {Is, Ez} from "../raf.js";
+import {Ez} from "../raf.js";
 
 // export everything except errorMessage
 export const ZERO = "0", ONE = "1", TWO = "2";
@@ -46,36 +46,41 @@ export function addEventsByElm(type, elms, obj, noDigits, noPrefix = true) {
             elm?.addEventListener(type, toFunc(obj, elm.id, type), false);
 }
 //====== string conversion to/from =============================================
-export function toFunc(container, name, prefix) { // returns a function
+export function toFunc(container, name, prefix) { //!! returns a function
     return container[prefix ? Ez.toCamel(prefix, name) : name];
 }
 export function boolToString(b) { // for localStorage and <button>.value
     return b ? "true" : "";
 }
-//====== number formatting, validation =========================================
-// formatNumber() formats numbers for non-<input type="number"> elements,
-//                called by formFromObj(), loadFinally(), updateCounters(),
-//                          both setCounters()s, multi refresh().
-export function formatNumber(n, digits, decimals, elm) {
-    const str = n.toFixed(decimals).padStart(digits);
-    if (elm)
-        elm.textContent = str;
-    else
-        return str;
+//====== number formatting, validation, limitation =============================
+// inputNumber() is the first event handler registered for the input event on
+//               <input type="number">, uses g.invalids to cancel downstream
+//               events because preventDefault() and stopPropagation() do zilch.
+function inputNumber(evt) {
+    const
+    tar = evt.target,
+    n   = tar.valueAsNumber,
+    b   = Number.isNaN(n);
+    invalidInput(tar, b); // preventDefault(),stopPropagation() are useless here
+    if (!b)
+        formatInputNumber(tar, Math.max(Math.min(n, tar.max), tar.min));
 }
-// formatInputNumber() sets decimal places for <input type="number"> by id,
-//                     called by easingFromObj(), vtArray(), inputTypePow(),
-//                               clickClear(), updateSplitGap(), setSplitGap().
-export function formatInputNumber(elm, n) {
-    let decimals;
-    switch (elm.id[0]) {
-    case "m":
-    case "v": decimals = 0; break; // mid, v0-3
-    case "p": decimals = 1; break; // pow and pow2
-    case "b": decimals = 2; break; // bezier0-3
-    default:  decimals = 3;        // split, gap, t0-3
-    }
-    elm.value = Number(n).toFixed(decimals);
+// listenInputNumber() is the only public access to inputNumber()
+export function listenInputNumber(elements) {
+    for (const elm of elements)
+        elm.addEventListener(INPUT, inputNumber);
+}
+// invalidInput() helps inputNumber(), input.color(), click.clear()
+export function invalidInput(elm, b) {
+    toggleClass(elm, "invalid", b);
+    g.invalids[b ? "add" : "delete"](elm);
+    b = Boolean(g.invalids.size);
+    elms.x   .disabled = b;
+    elms.play.disabled = b;
+}
+// isInvalid() returns true for inputs with class="invalid"
+export function isInvalid(elm) {
+    return g.invalids.has(elm);
 }
 // changeNumber() validates then formats <input type="number"> as part of
 //                handling the change event in change.pow(), changeMSG().
@@ -96,6 +101,30 @@ export function changeNumber(tar)  {
         return n;
     }
 }
+// formatInputNumber() sets decimal places for <input type="number"> by id,
+//                     called by easingFromObj(), vtArray(), inputTypePow(),
+//                               clickClear(), updateSplitGap(), setSplitGap().
+export function formatInputNumber(elm, n) {
+    let decimals;
+    switch (elm.id[0]) {
+    case "m":
+    case "v": decimals = 0; break; // mid, v0-2
+    case "p": decimals = 1; break; // pow and pow2
+    case "b": decimals = 2; break; // bezier0-3
+    default:  decimals = 3;        // split, gap, t0-2
+    }
+    elm.value = Number(n).toFixed(decimals);
+}
+// formatNumber() formats numbers for non-<input type="number"> elements,
+//                called by formFromObj(), loadFinally(), updateCounters(),
+//                          both setCounters()s, multi refresh().
+export function formatNumber(n, digits, decimals, elm) {
+    const str = n.toFixed(decimals).padStart(digits);
+    if (elm)
+        elm.textContent = str;
+    else
+        return str;
+}
 //====== error messaging =======================================================
 // errorAlert() normalizes alerts
 export function errorAlert(err, msg) {
@@ -110,6 +139,10 @@ function errorMessage(err, msg) { // Error.prototype.stack not 100% supported
     return `${msg ? msg + ":\n" : ""}${err.stack ?? err}`;
 }
 //====== miscellaneous =========================================================
+export function pairOfOthers(...pair) {
+    for (var i = 0; i < 2; i++)
+        pair[i].other = pair[Ez.flip(i)];
+}
 // toggleClass() adds or removes a class from classList, optionally toggling
 export function toggleClass(elm, className, b = !elm.classList.contains(className)) {
     elm.classList[b ? "add" : "remove"](className);

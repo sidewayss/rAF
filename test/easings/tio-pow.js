@@ -3,13 +3,13 @@ export {TIME, TYPE, IO, POW, loadTIOPow, setLink, updateTypeIO, isPow};
 import {E, Ez, P, Easy} from "../../raf.js";
 
 import {TWO, CLICK, INPUT, elms, g, addEventByClass, formatInputNumber,
-        toggleClass, boolToString} from "../common.js";
+        isInvalid, pairOfOthers, toggleClass, boolToString} from "../common.js";
 
 import {refresh}     from "./_update.js";
 import {chart}       from "./chart.js";
 import {setSplitGap} from "./msg.js";
 import {isSteps}     from "./steps.js";
-import {LINK, OTHER, twoLegs, isBezier} from "./index.js";
+import {LINK, twoLegs, isBezier} from "./index.js";
 
 const TIME = "time";
 const TYPE = "type";
@@ -18,7 +18,7 @@ const POW  = "pow";
 //==============================================================================
 // loadTIOPow() is called by easings.loadIt(), once per session
 function loadTIOPow() {
-    let args, id, opt, sel;
+    let id, opt, sel;
     Ez.readOnly(g, "links", ["link_off", LINK]); // boolean acts as 0|1 index
 
     for (sel of [elms.type, elms.io])      // populate the <select>s: #type, #io
@@ -37,39 +37,49 @@ function loadTIOPow() {
     elms.div2.appendChild(sel);
     g.disables.push(sel);
 
-    for (id of [TYPE, POW]) {               // .other avoids evaluating later
-        args = [elms[id], elms[id + TWO]];  // each one is the other's other
-        Ez.readOnly(args[0], OTHER, args[1]);
-        Ez.readOnly(args[1], OTHER, args[0]);
-    }
+    for (id of [TYPE, POW])                // each one is the other's other
+        pairOfOthers(elms[id], elms[id + TWO]);
+
     addEventByClass(INPUT, `${TYPE}-${POW}`, null, inputTypePow);
     addEventByClass(CLICK, LINK,             null, inputTypePow);
 }
-// inputTypePow() is input event handler for class="type-pow"
+//==============================================================================
+// inputTypePow() is the input event handler for class="type-pow" and
+//                   the click event handler for class="link".
 function inputTypePow(evt) {
-    const tar  = evt.target;
-    const isP  = tar.id.includes("ow");
-    const id   = isP ? POW : TYPE;
-    const suff = tar.id.endsWith(TWO) ? [TWO,""] : ["",TWO];
-    const link = elms[Ez.toCamel(LINK, id)];
-    const src  = elms[id + suff[0]];
-    const copy = elms[id + suff[1]];
-
-    const isLink = (tar === link);
+    let refreshIt;
+    const
+        tar = evt.target,
+        isP = tar.id.includes("ow")
+    ;
+    if (isP && isInvalid(tar))
+        return;
+    //---------
+    const
+        id   = isP ? POW : TYPE,
+        suff = tar.id.endsWith(TWO) ? [TWO,""] : ["",TWO],
+        link = elms[Ez.toCamel(LINK, id)],
+        val  = elms[id + suff[0]].value,
+        two  = elms[id + suff[1]],
+        isLink = (tar === link)
+    ;
     if (isLink)
         setLink(tar);
-    if (link.value) {                   // even if type2 is hidden
-        const old = copy.value;
-        if (isP)                        // pow, pow2, linkPow
-            formatInputNumber(copy, src.value);
-        else                            // type, type2, linkType
-            copy.value = src.value;
-
-        if (isLink && old != src.value)
-            refresh(copy);              //*03
+    if (link.value && two.value != val) { // if (isLink) two.value can == val
+        if (isP)                          // pow, pow2, linkPow
+            formatInputNumber(two, val);
+        else {                            // type, type2, linkType
+            two.value = val;
+            if (isLink) {
+                updateTypeIO();
+                refreshIt = true;
+            }
+        }
     }
+    if (isP || refreshIt)
+        refresh(tar);
 }
-// setLink() helps inputTypePow(), loadIt(), easingFromObj()
+// setLink() helps inputTypePow(), easingFromObj()
 function setLink(btn, b = !btn.value) {
     btn.value       = boolToString(b);
     btn.textContent = g.links[Number(b)]; // symbol font characters
@@ -98,7 +108,7 @@ function updateTypeIO(isIO) {
     if (has2)
         setSplitGap();  //!!only necessary when showing #mid/#split/#gap...
     if (!isIO) {        // false || undefined
-        P.displayed(elms.io,       !isBez && !isStp);
+        P.displayed(elms.io,      !(isBez || isStp));
         P.displayed(elms.bezier,    isBez);
         P.displayed(elms.divsSteps, isStp);
     }

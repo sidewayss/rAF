@@ -1,32 +1,54 @@
-export {chart, range, loadChart, isOutOfBounds};
-const chart = {};  // SVG chart elements and viewBox array
-const range = {};  // SVG vertical pseudo-range element
+export {loadChart, isOutOfBounds};
+export const
+chart = {},  // SVG chart elements and viewBox array
+range = {};  // SVG vertical pseudo-range element
 
 import {E, Is, Ez} from "../../raf.js";
 
-import {msecs, secs, updateTime} from "../update.js";
-import {COUNT, CHANGE, elms, g, addEventsByElm, changeNumber}
-                                 from "../common.js";
+import {msecs, updateTime} from "../update.js";
+import {CHANGE, INPUT, elms, g, addEventsByElm, listenInputNumber, isInvalid}
+                           from "../common.js";
 
-import {refresh}                        from "./_update.js";
-import {updateSplitGap}                 from "./msg.js";
-import {updateTypeIO}                   from "./tio-pow.js";
-import {isSteps, vtFromElm}             from "./steps.js";
+import {refresh}        from "./_update.js";
+import {updateTypeIO}   from "./tio-pow.js";
+import {updateSplitGap, isUnlocked}     from "./msg.js";
+import {isSteps, maxTime, vtFromElm}    from "./steps.js";
 import {twoLegs, isBezier, bezierArray} from "./index.js";
 //==============================================================================
 function loadChart() {
-    const elements = document.getElementsByClassName("chart");
+    let elements = document.getElementsByClassName("chart");
     addEventsByElm(CHANGE, elements, change, true);
+
+    elements = document.getElementsByClassName("chart-number");
+    listenInputNumber(elements);                      // must go first
+    addEventsByElm(INPUT, elms.beziers, input,  true);
 }
 //==============================================================================
-//    change event handlers: they all call refresh()
+// Event handlers all call refresh().
+// >> input event handlers:
+const input = {
+//    pow(evt) {    // #pow, #pow2
+//        refresh(evt.target, 0, undefined, false);
+//        inputOne(evt, [, false]);
+//    },
+    bezier(evt) { // #bezier0-3
+        if (!isInvalid(evt.target))
+            refresh(evt.target, 0, false, true, isOutOfBounds());
+//        inputOne(evt, [false, true, isOutOfBounds()]);
+    }
+};
+//function inputOne(evt, args) {
+//    if (changeNumber(evt.target) !== null)
+//        refresh(evt.target, 0, ...args);
+//}
+//--------------------------
+// >> change event handlers:
 const change = {
     time(evt) {
         let oldEzY;
         updateTime();
-        if (isSteps()) {        // crude, but viable, setting all three the same
-            for (let i = 0; i < COUNT; i++)
-                elms["t" + i].max = secs;
+        if (isSteps()) {
+            maxTime();          // userTiming[i].max = secs
             oldEzY = true;      // set ezY.time, don't call newEzY()
         }
         else {
@@ -44,7 +66,6 @@ const change = {
     },
     io(evt) {
         g.io = Number(evt.target.value);
-        updateTypeIO(true);
         refresh(evt.target, 0, updateTypeIO(true), false);
     },
     type(evt) {   // #type, #type2
@@ -55,32 +76,25 @@ const change = {
         oobOld = isOutOfBounds();
         n      = Number(tar.value);
         isBS   = isBezier() || isSteps();
-        if (isType) {
+        if (isType) {       // versus #type2
             g.type = n;
-            wasBS  = isBS;
+            wasBS  = isBS;  // stash previous state
             isBS   = isBezier() || isSteps();
         }
         else if (elms.linkType.value)
-            g.type = n;
+            g.type = n;     // user changed #type2 and type is linked
 
         has2 = twoLegs();
-        if (has2 && isBS)
-            g.io = E.in;  // changes variable, not <select>
-        else if (wasBS)
+        if (has2 && isBS)   // modify variable, not <select>
+            g.io = E.in;
+        else if (wasBS)     // restore variable to match <select>
             g.io = Number(elms.io.value);
 
         has2 = updateTypeIO(false);
-        if (has2)         // has2 depends on g.io
+        if (has2)           // has2 depends on g.io
             oobOld |= isOutOfBounds(Number(elms.type2.value));
 
         refresh(tar, 0, has2, isBS, oobOld);
-    },
-    pow(evt) {    // #pow, #pow2
-        if (changeNumber(evt.target) !== null)
-            refresh(evt.target, 0, undefined, false);
-    },
-    bezier(evt) { // #bezier0-3
-        refresh(evt.target, 0, false, true, isOutOfBounds());
     }
 };
 //===========================================================================
@@ -90,10 +104,10 @@ function isOutOfBounds(val = g.type) { // <= change.type(), change.bezier()
     let arr;
     switch (val) {
     case E.bezier:
-        arr = bezierArray();             // returns Array
+        arr = bezierArray();                // Array
         break;
     case E.steps:
-        arr = vtFromElm(elms.values);    // returns Array, String or undefined
+        arr = vtFromElm(elms.values, true); // Array, String or undefined
         break;
     case E.back: case E.elastic:
         return true;

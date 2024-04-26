@@ -8,12 +8,13 @@ import {override, spreadToEmpties, legNumber, getType, legType, getIO, splitIO}
 import {E, Ez, Is, Easies} from "../raf.js";
 
 export class Easy {
-    #autoTrip; #base; #dist; #e; #end; #flipTrip; #firstLeg; #lastLeg; #legsWait;
+    #autoTrip; #base; #dist; #e; #end; #flipTrip; #lastLeg; #legsWait;
     #loopWait; #onArrival; #onLoop; #oneShot; #peri; #plays; #post; #pre;
     #reversed; #roundTrip; #start; #targets; #time; #tripWait; #wait; #zero;
 
     _leg; _now; _inbound; // shared with Incremental.prototype._calc()
     _value;               // for Incremental only, but used in shared code here
+    _firstLeg;            // shared with easeSteps(), may be useful elsewhere...
 
 //  Public string arrays for enums and <select><option> or other list display
     static status = ["arrived","tripped","waiting","inbound","outbound",
@@ -28,7 +29,7 @@ export class Easy {
     constructor(obj, isInc = false) {
         Ez._validObj(obj, "Easy constructor's only argument");
         const c = "count", e = "end", s = "start", t = "time", w = "wait";
-        const o = structuredClone(obj); // so we can set properties safely
+        const o = Object.assign({}, obj); // can't use structuredClone()...
 
         this.pre  = o.pre;          // use setters for validation
         this.peri = o.peri;
@@ -38,16 +39,17 @@ export class Easy {
         this.oneShot   = o.oneShot;
         Ez.is(this);                // required before the end of constructor
 
-        if (Is.def(o.legs))         // format\validate user-defined legs
-            o.legs = Ez.toArray(o.legs, "legs", Ez._validObj);
-                                    // getType() requires o.legs to be defined
+        if (Is.def(o.legs))         // validate/pseudo-clone user-defined legs
+            o.legs = Ez.toArray(o.legs, "legs", Ez._validObj)
+                       .map(v => Object.assign({}, v));
+
         const type = isInc ? E.increment : getType(o);
-        const io   = getIO(o.io);
+        const io   = getIO(o.io);   // getType() requires o.legs to be defined
 
         o[t] = Ez.toNumber(o[t], t, ...Ez.undefGrThan0);
         if (!o.legs) {              // create default legs
             const ios = splitIO(io);
-            const leg = {type, io:ios[0]};
+            const leg = {type, io:ios[0], bezier:o.bezier};
             o.legs = [leg];
             if (ios.length == 2) {
                 const split = Ez.toNumber(o.split, "split", o[t] / 2, ...Ez.grThan0);
@@ -60,22 +62,22 @@ export class Easy {
         }
         const last = o.legs.length - 1;
 
-        // #firstLeg and #lastLeg are starting points for two linked lists of
-        // leg objects. The outbound list starts with #firstLeg. The inbound
+        // _firstLeg and #lastLeg are starting points for two linked lists of
+        // leg objects. The outbound list starts with _firstLeg. The inbound
         // list is made up of clones of the outbound list's legs, starting with
-        // a clone of #lastLeg ?? #firstLeg. #firstLeg is always defined.
+        // a clone of #lastLeg ?? _firstLeg. _firstLeg is always defined.
         // #lastLeg is only defined if/when #roundTrip == true. It would be
-        // convenient fallback to #lastLeg = #firstLeg, and always define
+        // convenient fallback to #lastLeg = _firstLeg, and always define
         // #lastLeg, but it would be prone to misunderstanding. Both properties
         // can be overwritten by stepsToLegs(), #lastLeg by #reverseMe() too.
-        this.#firstLeg = o.legs[0];
+        this._firstLeg = o.legs[0];
         if (last)
             this.#lastLeg = o.legs[last];
 
         // o[e] is subject to further change in stepsToLegs()
-        // #firstLeg shares .start and .wait with this, #lastLeg shares .end
-        override(s, this.#firstLeg, o, "the first");
-        override(e, this.#lastLeg ?? this.#firstLeg, o, "the last");
+        // _firstLeg shares .start and .wait with this, #lastLeg shares .end
+        override(s, this._firstLeg, o, "the first");
+        override(e, this.#lastLeg ?? this._firstLeg, o, "the last");
         o[s] = Ez.toNumber(o[s], s, 0);
         o[e] = Ez.toNumber(o[e], e, isInc ? undefined : 1);
         if (o[s] == o[e]) {
@@ -104,10 +106,10 @@ export class Easy {
         if (!o[c])
             this.#time = o[t];
 
-        // Dummy #firstLeg.prev simplifies _calc(), must precede #reverseMe()
+        // Dummy _firstLeg.prev simplifies _calc(), must precede #reverseMe()
         // #lastLeg's dummy .prev is set on the cloned leg in #reverseLeg()
         // if (#isInc) unit is ignored
-        this.#firstLeg.prev = {unit:defUnit, end:this.#start, wait:0};
+        this._firstLeg.prev = {unit:defUnit, end:this.#start, wait:0};
         this.targets = o.targets;               // the Easers that apply values
 
         //  #plays is only used as a default for targets that don't define it
@@ -123,7 +125,7 @@ export class Easy {
         else
             this.tripWait = o.tripWait;         // in case it's defined
 
-        this._leg = this.#firstLeg;             // start off on the right foot
+        this._leg = this._firstLeg;             // start off on the right foot
         if (isInc)                              // set initial animation values
             this._value = this.#start;
         else
@@ -201,12 +203,12 @@ export class Easy {
             throw new Error("You must define a non-zero value for "
                           + `obj.${tc} or for every leg.${tc}.`);
         //-----------------------------
-        if (!Is.def(this.#firstLeg[s])) // see _finishlegs()
-            this.#firstLeg[s] = o[s];
+        if (!Is.def(this._firstLeg[s])) // see _finishlegs()
+            this._firstLeg[s] = o[s];
 
-        if (!this.#lastLeg) {
-            if (!Is.def(this.#firstLeg[e]))
-                this.#firstLeg[e] = o[e];
+        if (!this.#lastLeg) {           // only one leg
+            if (!Is.def(this._firstLeg[e]))
+                this._firstLeg[e] = o[e];
         }
         else if (!Is.def(this.#lastLeg[e]))
             this.#lastLeg[e] = o[e];
@@ -218,14 +220,14 @@ export class Easy {
 //   outside the bounds of this.#start/this.#end. That means e.unit can be >1.
     _finishlegs(o, s, e, t, io, last, down) {
         this.#dist = Math.abs(o[e] - o[s]);
-        for (const leg of o.emptyLegs)     // must precede stepsToLegs()
+        for (const leg of o.emptyLegs)      // must precede stepsToLegs()
             spreadToEmpties(leg, t, o.spread);
 
-        // leg default distance is linearly proportional
+        // leg default distance is total / # of legs
         const defDist = this.#dist / o.legs.length * (down ? -1 : 1);
         o.legs.forEach((leg, i) => {
             // Ensure that every leg.start and leg.end are defined. #prepLegs()
-            // defaults #firstLeg.start and #lastLeg.end to o.start|end, which
+            // defaults _firstLeg.start and #lastLeg.end to o.start|end, which
             // default to 0|1 or 1|0. The semi-circular logic here does the rest.
             if (!Is.def(leg[s]))
                 leg[s] = leg.prev[e];
@@ -236,10 +238,10 @@ export class Easy {
             leg.dist = Math.abs(leg[e] - leg[s]);
             leg.down = leg[e] < leg[s];
             if (leg.type == E.steps) {
-                const obj = stepsToLegs(o, leg, this, i, last);
-                if (obj)            // the price of modularizing stepsToLegs(),
-                    obj.first ? this.#firstLeg = obj.leg  // and keeping these
-                              : this.#lastLeg  = obj.leg; // two private.
+                const obj = stepsToLegs(o, leg, this, i, last, this.#lastLeg);
+                if (obj)    // only returns obj for _firstLeg and #lastLeg
+                    obj.first ? this._firstLeg = obj.leg
+                              : this.#lastLeg  = obj.leg;
             }
             else {
                 leg.part = leg.dist / this.#dist; // leg's part of the whole
@@ -256,19 +258,19 @@ export class Easy {
 //==============================================================================
 // Round trip methods, called by contructor and setters:
 //  #reverseMe() creates a new linked list of legs that starts with a reversed
-//               clone of #lastLeg and ends with a reversed clone of #firstLeg.
+//               clone of #lastLeg and ends with a reversed clone of _firstLeg.
     #reverseMe(tripWait = 0, isInc = this.isIncremental) {
         let leg, next, orig, prev;  // prev is a clone or a dummy
 
         orig = this.#lastLeg;       // orig and next are outbound legs
         next = orig?.prev;
-        prev = {end:this.#end, unit:Number(!this.#firstLeg.prev.unit)};
+        prev = {end:this.#end, unit:Number(!this._firstLeg.prev.unit)};
 
         this.tripWait = tripWait;   // setter validates and handles undefined
-        this.#lastLeg = this.#reverseLeg(orig ?? this.#firstLeg,
+        this.#lastLeg = this.#reverseLeg(orig ?? this._firstLeg,
                                          prev, {wait:0}, isInc);
         prev = this.#lastLeg;       // the first clone in new inbound linked list
-        while (next && next.prev) { // (&& next.prev) avoids #firstLeg.prev
+        while (next && next.prev) { // (&& next.prev) avoids _firstLeg.prev
             leg = this.#reverseLeg(next, prev, orig, isInc);
             prev.next = leg;
             prev = leg;
@@ -415,7 +417,7 @@ export class Easy {
 // this.time: setter is simpler than I expected. It spreads the new value
 //            proportionally across all the leg.time and leg.wait values.
 //            #wait, #loopWait, #tripWait are not included or affected.
-//            Also note: set time() for E.steps doesn't separate #firstLeg.wait
+//            Also note: set time() for E.steps doesn't separate _firstLeg.wait
 //            or #lastLeg.wait from #wait and #tripWait respectively. Fixable...
     get time()    { return this.#time; }
     set time(val) {
@@ -431,7 +433,7 @@ export class Easy {
             return val;         // no change
         //----------------------
         const factor = val / cv;
-        Easy.#spreadLegTimeCount(this.#firstLeg, tc, factor);
+        Easy.#spreadLegTimeCount(this._firstLeg, tc, factor);
         if (this.#reversed)
             Easy.#spreadLegTimeCount(this.#lastLeg, tc, factor);
         return val;
@@ -476,7 +478,7 @@ export class Easy {
             this.e.status = E.inbound;
         }
         else {
-            this.#zero    = now + this.#firstLeg.wait + this.#wait;
+            this.#zero    = now + this._firstLeg.wait + this.#wait;
             this.e.status = E.outbound;
         }
         for (const t of this.#targets)
@@ -490,7 +492,8 @@ export class Easy {
 // Reset methods:
 //  _reset() helps AFrame.prototype.#cancel() via Easies, calls one of the
 //           public reset methods below or does nothing.
-    _reset(sts, forceIt) {
+//           see ../../docs/onArrival.svg for flow.
+_reset(sts, forceIt) {
         if (!forceIt)
             sts = this.#onArrival;
         switch (sts) {
@@ -504,6 +507,7 @@ export class Easy {
             this.restore();       break;
         default: // E.empty or undefined == noop
         }
+        // any status can call clearTargets() if #oneShot == true
         if (this.#oneShot || sts == E.empty)
             this.clearTargets();
     }
@@ -566,7 +570,7 @@ export class Easy {
         if (sts && sts == e.status) return;
         //--------------------------------- // E.arrived falls through
         if (sts || e.status != E.tripped)
-            this._leg = isRT ? this.#lastLeg : this.#firstLeg;
+            this._leg = isRT ? this.#lastLeg : this._firstLeg;
         if (!isRT) {
             if (this.isIncremental)
                 this._value = this.#start;
@@ -611,7 +615,7 @@ export class Easy {
                 if (hasNext || (!e.status && leg.type == E.steps))
                     return;               // waiting or steps = E.arrived
                 //----------------------- //!!loopbyelm + steps must continue!!
-                this._leg = this._inbound ? this.#lastLeg : this.#firstLeg;
+                this._leg = this._inbound ? this.#lastLeg : this._firstLeg;
                 e = this.e2;              // for looping, autoTrip steps no wait
                 if (leg.type == E.steps) {
                     if (!waitNow)
@@ -654,7 +658,7 @@ export class Easy {
                 wait = this.#lastLeg.wait  * (this.#autoTrip  ? 2 : 1)
                      + this.#tripWait;
             else
-                wait = this.#firstLeg.wait * (this.#roundTrip ? 2 : 1)
+                wait = this._firstLeg.wait * (this.#roundTrip ? 2 : 1)
                      + this.#loopWait;
         }
         this.#zero += time + wait;

@@ -1,19 +1,19 @@
-// export everything
 export {loadIt, getEasies, initEasies, updateAll, resizeWindow};
 
 import {E, U, P, Pn, Ez, Ease, Easy} from "../../raf.js";
 
 import {ezX}      from "../load.js";
 import {getLocal} from "../local-storage.js";
-import {newEasies, updateTime, updateCounters}         from "../update.js";
-import {COUNT, CHANGE, elms, g, is, isTag, dummyEvent} from "../common.js";
+import {newEasies, updateTime, updateCounters} from "../update.js";
+import {COUNT, CHANGE, INPUT, elms, g, is, isTag, dummyEvent}
+                  from "../common.js";
 
 import {refresh}                                  from "./_update.js";
 import {initEzXY, updateTrip}                     from "./index.js";
 import {chart, range, loadChart}                  from "./chart.js";
 import {loadTIOPow, setLink, updateTypeIO}        from "./tio-pow.js";
 import {loadMSG, updateMidSplit, updateSplitGap}  from "./msg.js";
-import {loadSteps, loadVT, updateVT}              from "./steps.js";
+import {loadSteps, loadVT, initSteps, maxTime}    from "./steps.js";
 import {loadEvents}                               from "./events.js";
 //==============================================================================
 // loadIt() is called by loadCommon()
@@ -66,40 +66,38 @@ function loadIt(byTag, hasVisited) {
     g.trips.push(clone);                // <select> = tripWait = clone
 
     loadEvents(checks);
-    loadTIOPow();       // type, io, pow, clones #type to create #type2
     loadSteps();        // type == E.steps
     loadMSG();          // mid, split, gap
 
     if (hasVisited) // return visitor to this page
         for (elm of [elms.reset, elms.zero, elms.drawAsSteps])
             elm.checked = getLocal(elm);
-    else {          // user is new to this page
-        elms.io.selectedIndex = 0; //!!necessary??
-        for (elm of [elms.linkType, elms.linkPow])
-            setLink(elm, true);
-    }
+//!!else            // user is new to this page
+//!!    elms.io.selectedIndex = 0; //!!necessary??
+
     return is();
 }
 //==============================================================================
 // getEasies() is called exclusively by loadJSON()
 function getEasies() {
-    let i,      // all are const except elm, but this reads better
+    let i,              // all but i and elm are consts, but this reads better
     size = 4,
     id   = Easy.type[E.bezier],
-    div  = elms[id],// clone/create bezier inputs:
-    elm  = div.firstElementChild,       // elm is <div> wrapper for <input>
+    div  = elms[id],
+    elm  = div.firstElementChild,       // sub-<div> wrapper
+    divs = [elm],
     lpar = elm.removeChild(elm.firstElementChild),
-    rpar = elm.removeChild(elm.lastElementChild);
+    rpar = elm.removeChild(elm.lastElementChild),
+    ease = Ease.ease[0][id];            // default CSS "ease" as bezier array
 
-    elms.beziers = [elm];               // clone/create bezier inputs:
-    for (i = 1; i < size; i++)
-        elms.beziers.push(div.appendChild(elm.cloneNode(true)));
+    for (i = 1; i < size; i++)          // clone sub-<div>
+        divs.push(div.appendChild(elm.cloneNode(true)));
 
-    const ease = Ease.ease[0][id];      // default CSS "ease" as bezier array
-    for (i = 0; i < size; i++) {        // elm is the <input>
-        elm = elms.beziers[i].lastElementChild;
+    elms.beziers = new Array(ease.length);  // the 4 <input>s
+    for (i = 0; i < size; i++) {
+        elm = divs[i].getElementsByTagName(INPUT)[0];
         elm.value = ease[i];
-        elm.id    = id + i;             // bezier0 - bezier3
+        elm.id    = id + i;             // "bezier0" to "bezier3"
         if (i % 2) {                    // y values can be out of bounds
             elm.min ="-0.9";
             elm.max = "1.9";
@@ -108,25 +106,27 @@ function getEasies() {
             elm.min = "0";
             elm.max = "1";
         }
+        elms.beziers[i] = elm;
     }
-    elm = elms.beziers[0];
-    elm.removeChild(elm.firstElementChild);         // leading comma
-    elm.insertBefore(lpar, elm.firstElementChild);  // leading parenthesis
-    elms.beziers[3].appendChild(rpar);              // trailing parenthesis
+    elm = divs[0];
+    elm.removeChild(elm.firstElementChild);        // leading comma
+    elm.insertBefore(lpar, elm.firstElementChild); // leading parenthesis
+    divs[3].appendChild(rpar);                     // trailing parenthesis
 
     loadChart();    // events for class="chart", must follow cloning
+    loadTIOPow();   // type, io, pow, follows loadChart() for input handler order
     loadVT();       // steps.js
 }
 // initEasies() called once per session by loadFinally()
-function initEasies(obj) {
+function initEasies(obj, hasVisited) {
     const b = newEasies(ezX);
     if (b) {
         const evt = dummyEvent(CHANGE, "isInitEasies");
         for (const elm of [elms.reset, elms.zero])
             elm.dispatchEvent(evt);
 
+        initSteps(obj, hasVisited);
         updateTrip();
-        updateVT();
         return initEzXY(obj);
     }
     else
@@ -144,6 +144,7 @@ function updateAll() {  // called by loadFinally(), openNamed()
     updateTypeIO();
     refresh();
     updateCounters();   // must follow refresh()
+    maxTime();          // for E.steps
 }
 //==============================================================================
 // resizeWindow() handles resize events for window, here instead of events.js
@@ -179,6 +180,6 @@ function resizeWindow() {                 // margin changes w/zoom
         Math.round(
             (chart.svg.clientWidth / 2)
           + elms.sidebar.offsetWidth
-          - parseFloat(getComputedStyle(elms.left).paddingRight)
+          - parseFloat(getComputedStyle(elms.left).marginRight)
         ) + U.px;
 }

@@ -170,7 +170,8 @@ export class Easies {
         for (const ez of this.#active)
             ez._resume(now);
     }
-//  _reset(): helps AFrame.prototype.#cancel() reset this to the requested state
+//  _reset() helps AFrame.prototype.#cancel() reset this to the requested state.
+//           see ../../docs/onArrival.svg for flow.
     _reset(sts, forceIt) {
         for (const ez of this.#easies)  // easys must go first because measers
             ez._reset(sts, forceIt);    // use their values.
@@ -189,6 +190,7 @@ export class Easies {
                 t._apply(vals);
             }
         }
+        // Easies.prototype has no on onArrival property, only oneShot
         if ((forceIt && sts == E.empty) || this.#oneShot)
             this.clearTargets();
     }

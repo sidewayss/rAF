@@ -1,13 +1,11 @@
-// export all functions dynamically, refresh is the only one statically imported
 export {refresh, initPseudo, newTargets, getMsecs, getFrame, updateX,
-        setCounters, formatDuration, formatPlayback, drawLine, postPseudo,
-        flipZero};
+        setCounters, formatDuration, formatPlayback, drawLine, flipZero};
 
 import {E, U, P, Pn, Easy} from "../../raf.js";
 
 import {create} from "../../easy/efactory.js";
-const targetPseudoX = create({peri:periX});
-const targetPseudoY = create({peri:pseudoUpdate});
+const targetPseudoX = create({peri:pseudoUpdate});
+const targetPseudoY = create({peri:()=>{}}); // noop: it requires a func...!!
 
 import {ezX}           from "../load.js";
 import {storeCurrent}  from "../local-storage.js";
@@ -16,20 +14,19 @@ import {frames, targetInputX, inputX, updateFrame, pseudoFrame,
 import {MILLI, COUNT, LITE, elms, g, formatNumber, toggleClass}
                        from "../common.js";
 
-import {objFromForm}                    from "./_named.js";
-import {drawSteps, isSteps}             from "./steps.js";
-import {drawEasing}                     from "./not-steps.js";
-import {chart, range, isOutOfBounds}    from "./chart.js";
-import {ezY, newEzY, twoLegs, isBezier} from "./index.js";
-
-let dataX;
+import {objFromForm}                     from "./_named.js";
+import {drawSteps, postRefresh, setInfo, isSteps} from "./steps.js";
+import {drawEasing}                      from "./not-steps.js";
+import {chart, range, isOutOfBounds}     from "./chart.js";
+import {ezY, newEzY, twoLegs, isBezier}  from "./index.js";
 //==============================================================================
 // refresh() <= updateAll(), changeStop(), inputTypePow(evt), event handlers in
 //              chart.js, msg.js, steps.js, tio-pow.js.
-function refresh(tar, n, has2 = twoLegs(),
-                         isBS = !has2 && (isBezier() || isSteps()),
-                         oobOld = false) {
-    if (tar) {  // !tar only when called by updateAll()
+function refresh(tar, n, has2   = twoLegs(),
+                         isBS   = isBezier() || isSteps(),
+                         oobOld = false)
+{
+    if (tar) {                   // !tar = called by updateAll()
         let obj;
         if (n)
             ezY.time = n;        // the one property that doesn't use newEzY()
@@ -55,6 +52,7 @@ function refresh(tar, n, has2 = twoLegs(),
     drawLine();                  // draw the line
     inputX();                    // move the dot(s), uses updated frames
     ezY.clearTargets();          // clear pseudo-targets, ezX uses .oneShot
+    postRefresh(ezY.firstTime);  // E.steps needs cleanup post-pseudo-animation
 
     let oob = isOutOfBounds();
     if (has2 && !isBS)
@@ -88,17 +86,12 @@ function refresh(tar, n, has2 = twoLegs(),
 function drawLine() {
     isSteps() ? drawSteps() : drawEasing();
 }
-// initPseudo() sets frames[0], creates targets w/o elements, <= pseudoAnimate()
+// initPseudo() sets frames[0], calls newTargets(true)
 function initPseudo() {
     const y   = Number(elms.start.textContent); // y = 0 or 1000
     const u   = y ? 1 : 0;                      // u for e.unit
     frames[0] = vucFrame(0, 0, y, y, u, 1 - u);
     newTargets(true);
-}
-// postPseudo() is easings only, E.steps needs cleanup post-pseudo-animation
-function postPseudo() {
-    if (isSteps() && elms.roundTrip.checked && elms.jump.value < E.end)
-       frames.at(-1).y = Number(elms.end.textContent);
 }
 //==============================================================================
 // newTargets() calls Easy.proto.newTarget() as needed, with and without .prop
@@ -108,39 +101,44 @@ function newTargets(isPseudo) {
     if (isPseudo) {
         ezX.targets = targetPseudoX; // replace the targets, tests set targets()
         ezY.targets = targetPseudoY; // refresh() clears them after use
+        g.easies.peri = undefined;
     }
     else if (!ezX.targets.size) {    // add targets on first play only
         ezX.addTarget(targetInputX); // test Easy.prototype.addTarget()
+        ezY.post = postY;            // test Easy.prototype.post()
+        g.easies.peri = update;      // test Easies.prototype.peri()
 
-        let arr, cr, ez, peri, prop; // cr for chart|range
+        let arr, cr, ez, prop;       // cr for chart|range
         const loopByElm = elms.loopByElm.checked;
         if (loopByElm) {             // test single-element targets
-            arr = [[ezX, P.cx, chart, periX ],
-                   [ezY, P.cy, chart, update],
-                   [ezY, P.cy, range,       ]];
-            for ([  ez,  prop, cr,    peri] of arr)
-                ez.newTarget({prop, peri, loopByElm, elms:cr.dots});
+            arr = [[ezX, P.cx, chart],
+                   [ezY, P.cy, chart],
+                   [ezY, P.cy, range]];
+            for ([  ez,  prop, cr] of arr)
+                ez.newTarget({prop, loopByElm, elms:cr.dots});
         }
         else {                       // test single and multi-element targets
-            arr = [[ezX, P.cx, [chart],        periX],
-                   [ezY, P.cy, [chart, range], update]];
-            for ([  ez,  prop, cr,             peri] of arr)
-                ez.newTarget({prop, peri, elms:cr.map(v => v.dots[0])});
+            arr = [[ezX, P.cx, [chart]],
+                   [ezY, P.cy, [chart, range]]];
+            for ([  ez,  prop, cr] of arr)
+                ez.newTarget({prop, elms:cr.map(v => v.dots[0])});
         }
     }
 }
 //==============================================================================
-// update() is the ezX.target.peri() callback
-function periX(_, e) {
-    dataX = e.value;
+// postY() is the ezY.post() callback
+function postY() {
+    setInfo(raf.elapsed / MILLI);
 }
-// update() is the ezY.target.peri() callback
-function update(_, e,) {
-    updateFrame(dataX, e);
+// update() is the g.easies.peri() callback
+function update() {
+    updateFrame(ezX.e.value, ezY.e);
 }
-// pseudoUpdate() is the pseudo-animation ezY.target.peri() callback
-function pseudoUpdate(_, e) { // EBase.prototype.peri() doesn't know time
-    pseudoFrame(dataX, e);
+// pseudoUpdate() is the pseudo-animation callback, ezX.target.peri() only. For
+//                E.steps w/jump:E.start|E.none, ezY ends before ezX, but ezY.e
+//                remains intact for drawing the rest of the line.
+function pseudoUpdate(_, e) {
+    pseudoFrame(e.value, ezY.e);
 }
 //==============================================================================
 function getMsecs() {

@@ -4,6 +4,8 @@ export {override, spreadToEmpties, legText, legNumber, getType, legType, getIO,
         splitIO, toBezier, toNumberArray};
 
 import {E, Ez, Is, Easy} from "../raf.js";
+
+import {EBezier} from "./ebezier.js";
 //==============================================================================
 // override() overrides o vs leg for start, end, wait, time|count
 //            prop is a string property name, not a Prop instance

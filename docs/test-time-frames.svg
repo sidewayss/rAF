@@ -1,0 +1,174 @@
+<?xml-stylesheet type="text/css" href="diagram.css" ?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 940 805" pointer-events="none">
+  <script href="diagram.js"/>
+  <defs>
+    <g id="radio-off">
+      <circle cx="456" r="7"/>
+    </g>
+    <g id="radio-on">
+      <circle cx="456" r="7"/>
+      <circle cx="456" r="3.5" class="on"/>
+    </g>
+    <path id="check" d="M-5,0 L-1,4 6,-7" class="check" style="stroke:#334; stroke-width:3px; stroke-linecap:round;"/>
+    <g id="legend-dark">
+      <rect x="675.5" class="legend"/>
+      <text x="685.5" style="fill:#FFF; translate:0 10px;">a</text>
+    </g>
+    <g id="legend-light">
+      <rect x="675.5" class="legend"/>
+      <text x="685.5" style="fill:#000; translate:0 10px;">a</text>
+    </g>
+    <marker id="arrowhead" orient="auto" markerUnits="userSpaceOnUse"
+            markerWidth="11" markerHeight="11" refX="3.5" refY="4.5">
+      <polygon points="0,0 9,4.5 0,9 2,4.5"/>
+    </marker>
+  </defs>
+  <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <rect id="bg"/>
+  <rect id="frame" x="-19" y="-19"/>
+
+  <rect x="440" y="100" width="210" style="height:30px; filter:none; stroke:none; fill:#FCFCFC;"/>
+  <rect x="440" y="130" width="210" style="height:30px; filter:none; stroke:none; fill:#F7F7F7;"/>
+  <rect x="440" y="160" width="210" style="height:90px; filter:none; stroke:none; fill:#FEFEFE;"/>
+  <rect x="440" y="100" width="210" style="height:150px; rx:3px; ry:3px; fill:none; filter:none;"/>
+  <polyline points="440,129   650,129" style="stroke-width:2px"/>
+  <polyline points="440,159.5 650,159.5"/>
+  <polyline points="440,189.5 650,189.5"/>
+  <polyline points="440,219.5 650,219.5"/>
+  <polyline points="530,130   530,250"/>
+  <polyline points="590,130   590,250"/>
+  <text x="545" y="115" class="header">callers of setTime()</text>
+  <text x="485" y="145" class="bold" style="font-family:Roboto">page</text>
+  <text x="559" y="145" class="bold">#time</text>
+  <text x="619" y="145" class="bold">#named</text>
+  <g id="controls">
+    <use  href="#radio-on"  y="175"           data-name="easings"/>
+    <text class="legend on" y="176.5" x="466" data-name="easings">Easings</text>
+    <use  href="#radio-off" y="205"           data-name="multi"/>
+    <text class="legend"    y="206.5" x="466" data-name="multi">Multi</text>
+    <use  href="#radio-off" y="235"           data-name="color"/>
+    <text class="legend"    y="236.5" x="466" data-name="color">Color</text>
+  </g>
+  <use  href="#check" y="175" x="560"/>
+  <use  href="#check" y="175" x="620"/>
+  <use  href="#check" y="205" x="620"/>
+  <use  href="#check" y="235" x="560"/>
+
+  <use  href="#legend-light" y="165" class="start"/>
+  <text class="legend"       y="175.5" x="700">Start points</text>
+
+  <use  href="#legend-light" y="195" class="mid"/>
+  <text class="legend"       y="205.5" x="700">Mid points</text>
+
+  <use  href="#legend-dark"  y="225" class="bg-end"/>
+  <text class="legend"       y="235.5" x="700">End points</text>
+  <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <rect x="85" y="100" width="140" class="bg-end1"/>
+  <text x="155" y="120" class="fg-end1">updateFrame()</text>
+  <path d="M155,140 V173"/>
+
+  <rect x="75" y="180" width="160" class="bg-end1"/>
+  <text x="155" y="200" class="fg-end1">updateCounters()</text>
+
+  <rect x="105" y="260" width="100" class="start"/>
+  <text x="155" y="280">inputX()</text>
+  <path d="M155,260 V226"/>
+
+  <rect x= "60" y="420" width="120" class="bg-end1"/>
+  <text x="120" y="440" class="fg-end1">updateTime()</text>
+
+  <rect x="40" y="500" width="160" class="mid"/>
+  <text x="120" y="520">_load.updateAll()</text>
+  <path d="M120,500 V466"/>
+  <path d="M 40,520 H5 V200 H68"/>
+
+  <rect x="710" y="340" width="150" class="bg-end1"/>
+  <text x="785" y="360" class="fg-end1">updateDuration()</text>
+
+  <rect x="725" y="420" width="120" class="bg-end"/>
+  <text x="785" y="440" class="fg-end">setFrames()</text>
+
+  <rect x="245" y="500" width="120" class="start"/>
+  <text x="305" y="520">loadFinally()</text>
+  <path d="M245,520 H206"/>
+
+  <rect x="505" y="420" width="180" class="start"/>
+  <text x="595" y="440">changePlay().then()</text>
+  <path d="M685,440 H718"/>
+  <path d="M595,420 V370 H703" stroke-dasharray="1 2"/>
+
+  <rect x="725" y="500" width="120" class="mid"/>
+  <text x="785" y="520">timeFrames()</text>
+  <path d="M785,500 V466"/>
+  <path d="M845,520 H895 V360 H866"/>
+
+  <rect x="245" y="420" width="120" class="start"/>
+  <text x="305" y="440">changeStop()</text>
+  <path d="M305,420 V200 H241"/>
+  <path d="M245,440 H186"/>
+  <path d="M365,440 H498"/>
+  <path d="M334,420 V349 H703" stroke-dasharray="1 2"/>
+
+  <text x="370" y="510" class="footcode" style="text-anchor:start">if (!hasVisited)</text>
+  <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <g id="easings">
+    <text x="370" y="590" class="footcode" style="text-anchor:start">else</text>
+
+    <rect x= "30" y="340" width="180" class="start"/>
+    <text x="120" y="360">events.change.time()</text>
+    <path d="M120,380 V413"/>
+
+    <path d="M365,520 H498" stroke-dasharray="2 2"/>
+    <rect x="505" y="500" width="180" class="start"/>
+    <text x="595" y="520">events.input.time()</text>
+    <path d="M685,520 H718"/>
+
+    <path d="M305,540 V600 H498" stroke-dasharray="2 2"/>
+    <rect x="505" y="580" width="180" class="mid"/>
+    <text x="595" y="600">_named.formFromObj()</text>
+    <path d="M595,580 V546"/>
+
+    <rect x="535" y="660" width="120" class="start"/>
+    <text x="595" y="680">openNamed()</text>
+    <path d="M595,660 V626"/>
+    <path d="M535,680 H120 V546"/>
+  </g>
+  <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <g id="multi" visibility="hidden">
+    <text x="370" y="590" class="footcode" style="text-anchor:start">else</text>
+
+    <path d="M365,520 H718" stroke-dasharray="2 2"/>
+
+    <path d="M305,540 V600 H498" stroke-dasharray="2 2"/>
+    <rect x="505" y="580" width="180" class="mid"/>
+    <text x="595" y="600">_named.formFromObj()</text>
+    <path d="M685,600 H785 V546"/>
+
+    <rect x="535" y="660" width="120" class="start"/>
+    <text x="595" y="680">openNamed()</text>
+    <path d="M595,660 V626"/>
+    <path d="M535,680 H120 V546"/>
+  </g>
+  <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+  <g id="color" visibility="hidden">
+    <text x="560" y="590" class="footcode" style="text-anchor:start">else</text>
+
+    <rect x= "30" y="340" width="180" class="start"/>
+    <text x="120" y="360">events.change.time()</text>
+    <path d="M120,380 V413"/>
+
+    <path d="M365,520 H498" stroke-dasharray="2 2"/>
+    <rect x="505" y="500" width="180" class="start"/>
+    <text x="595" y="520">events.input.time()</text>
+    <path d="M685,520 H718"/>
+
+    <rect x="255" y="580" width="100" class="start"/>
+    <text x="305" y="600">loadJSON()</text>
+    <path d="M355,600 H389"/>
+
+    <rect x="395" y="580" width="160" class="mid"/>
+    <text x="475" y="600">_load.getEasies()</text>
+    <path d="M555,600 H595 V546" stroke-dasharray="2 2"/>
+  </g>
+  <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+</svg>

@@ -1,3 +1,5 @@
+import {Ez} from "../raf.js";
+
 export class EBezier {
 //  #accuracy is a relative level of precision for the calculation. If you want
 //  more or less precision you can set this.time to a bigger or smaller number.

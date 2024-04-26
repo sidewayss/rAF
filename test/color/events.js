@@ -11,7 +11,7 @@ import {setPrefix}                      from "../named.js";
 import {changeStop}                     from "../play.js";
 import {setLocal, setLocalBool}         from "../local-storage.js";
 import {CHANGE, CLICK, INPUT, MEASER_, elms, g, is, toggleClass, boolToString,
-        addEventToElms, addEventsByElm} from "../common.js";
+        addEventToElms, addEventsByElm, invalidInput} from "../common.js";
 
 import {ezColor, refRange, resizeWindow} from "./_load.js";
 import {refresh, oneCounter}             from "./_update.js";
@@ -43,23 +43,17 @@ const input = {
 
         try { se.color = new Color(tar.value); }
         catch {
-            input.invalid(tar, true);
+            invalidInput(tar, true);
             return;     // only saves valid values to localStorage
         }
         //------------------------
-        input.invalid(tar, false);
+        invalidInput(tar, false);
         se.canvas.style.backgroundColor = se.color.display();
         for (const lr of g.leftRight)
             updateOne(se, lr);
         setLocal(tar);
         if (!evt.isLoading)
             refresh();
-    },
- // invalid() helps color()
-    invalid(elm, b) {
-        toggleClass(elm, "invalid", b);
-        elms.x   .disabled = b;
-        elms.play.disabled = b;
     },
  // time() splits the work with change.time(), handles only the immediate tasks
     time(evt) {

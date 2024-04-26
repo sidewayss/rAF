@@ -1,4 +1,3 @@
-// export: everything via dynamic import(), static import: objFromForm
 export {formFromObj, objFromForm, updateNamed, ok};
 export let objEz;
 
@@ -57,7 +56,7 @@ function formFromObj(obj) {
 // objFromForm() creates an object from form element values,
 //               called by loadFinally(), clickCode().
 function objFromForm(hasVisited = true) {
-    let autoTrip, flipTrip, loopWait, plays, tripWait;
+    let autoTrip, flipTrip, isStp, loopWait, plays, tripWait;
     const start = Number(elms.start.textContent);
     const end   = Number(elms.end  .textContent);
     const loopByElm = orUndefined(elms.loopByElm.checked);
@@ -78,13 +77,15 @@ function objFromForm(hasVisited = true) {
     if (!hasVisited) { // g.type, g.io referenced in easingFromForm()
         g.type = Number(elms.type.value);
         g.io   = isBezier() || isSteps() ? E.in : Number(elms.io.value);
+        isStp  = isSteps(g.type);
+        if (isStp)
+            updateVT();
     }
-    const func = isSteps() ? stepsFromForm : easingFromForm;
     const obj  = {time:msecs, type:orUndefined(g.type), io:orUndefined(g.io),
                   start, end, plays, loopWait, loopByElm,
                   roundTrip, autoTrip, flipTrip, tripWait};
 
-    objEz = func(obj, true);
+    objEz = ((isStp ?? isSteps()) ? stepsFromForm : easingFromForm)(obj);
     return objEz;
 }
 //==============================================================================

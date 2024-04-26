@@ -13,7 +13,7 @@
   <body>
     <!-- diptych is one row with each side's <div> containing two rows -->
     <div id="diptych">
-      <div id="left">
+      <div id="left" class="mr1-2">
         <div class="col">
           <!-- diptych left side row 1 ---------------------------->
           <div class="flex between mb3-8 pl3-8">
@@ -25,7 +25,7 @@
             </div>
             <div class="row">
               <label for="time">Time:</label>
-              <input  id="time" class="chart" type="range" step="1" min="50" max="4000" value="2000"/>
+              <input  id="time" class="chart" type="range" step="1" min="100" max="4000" value="2000"/>
               <label for="time" class="lbl-right">2.000s</label>
             </div>
           </div>
@@ -39,7 +39,7 @@
               <pre>times:</pre>
               <div class="row end">
                 <input class="secs steps" type="number"/>
-                <pre class="secs">s</pre>
+                <label>s</label>
               </div>
             </div>
           </div>
@@ -64,12 +64,12 @@
       <div id="right">
         <div class="col"> <!-- Col 1 -->
           <!-- Row 1 -->
-          <div class="row mb3-8 ml5-8">
+          <div class="row mb3-8 ml1-2">
             <label for="type">Ease:</label>
             <select id="type" class="chart type-pow"></select>
             <div class="div-steps row ml1-2 mr1-2">
               <select id="steps" class="steps" style="text-align:right"></select>
-              <select id="count" disabled style="text-align:right; display:none">
+              <select id="count" disabled style="text-align:right; pointer-events:none; display:none">
                 <option selected>3</option> <!-- disabled <select> = decorated text -->
                 <option>00</option> <!-- for two-digit width, never displayed -->
               </select>
@@ -81,30 +81,32 @@
           </div>
           <!-- Row 2 - only a sibset of <div>s displayed at one time -->
           <div id="div2" class="row end">
-            <button id="linkType" class="link linked">link</button>
+            <button id="linkType" class="link linked" value="true">link</button>
           </div>
-          <div id="bezier" class="row ml3-16">
+          <div id="bezier" class="row ml3-8">
             <div class="row align-end">
               <pre class="lbl-paren">&lpar;</pre>
               <pre>,</pre>
-              <input class="chart w4" type="number"step="0.01"/>
+              <input class="chart-number w4" type="number"step="0.01"/>
               <pre class="lbl-paren">&rpar;</pre>
             </div>
           </div>
           <!-- E.steps 2nd and 3rd row-->
-          <div id="divValues" class="div-steps row end ml5-8 mb3-8"></div>
-          <div id="divTiming" class="div-steps row end ml5-8"></div>
+          <div id="divValues" class="div-steps row ml1-2 mb3-8">
+            <button id="info" class="symBtn" tab-index="-1" style="display:none">info</button>
+          </div>
+          <div id="divTiming" class="div-steps row ml1-2"></div>
         </div>
         <div class="col"> <!-- Col 2 -->
           <div class="row ml1-2 mb3-8">
             <select id="io" class="chart"></select>
-            <input  id="pow"  class="chart type-pow w3 ml1-2"
+            <input  id="pow"  class="chart-number type-pow w3 ml1-2"
                   type="number" min="0.1" max="9.0" step="0.1" value="2.0"/>
           </div>
           <div id="divPow2" class="row end">
-            <button id="linkPow" class="link linked">link</button>
+            <button id="linkPow" class="link linked" value="true">link</button>
             <label  id="lblPow" for="pow2">Power:</label>
-            <input  id="pow2" class="chart type-pow w3"
+            <input  id="pow2" class="chart-number type-pow w3"
                   type="number" min="0.1" max="9.0" step="0.1" value="2.0"/>
           </div>
         </div>
@@ -145,7 +147,7 @@
               <button class="lock">lock_open</button>
               <button class="clear" disabled>close</button>
               <label></label>
-              <input type="number" min="0" step="0.001"/>
+              <input type="number" min="0.05" step="0.001"/>
               <label>s</label>
             </div>
             <div id="divCopy" class="row bt">

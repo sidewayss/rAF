@@ -147,13 +147,14 @@ export class AFrame {
     get isPlaying()  { return this.#status == E.playing;  }
     get isEmpty()    { return this.#status == E.empty;    }
 
-//  arrive() init() stop() pause() cancel(): #stop() with different statuses
+//  public status setters: #stop() with different statuses
     arrive () { return this.#stop(E.arrived);  }
     init   () { return this.#stop(E.initial);  }
     stop   () { return this.#stop(E.initial);  }
     restore() { return this.#stop(E.original); }
     pause  () { return this.#stop(E.pausing);  }
-    cancel () { return this.#stop(E.empty);    }
+    clear  () { return this.#stop(E.empty);    }
+    cancel () { return this.#stop(); }
 //==============================================================================
 //  play() initiates the #animate() callback loop
     play() {
@@ -243,7 +244,7 @@ export class AFrame {
             }
             const forceIt = !hasArrived;      // an alternate interpretation
             for (t of this.#targets)
-                t._reset(sts, forceIt);
+                t._reset(sts, forceIt);       // see ../docs/onArrival.svg
             if (sts == E.empty)
                 this.clearTargets();          // sets #status = E.empty
             else {

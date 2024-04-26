@@ -1,0 +1,104 @@
+@import url(https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500);
+@import url(https://fonts.googleapis.com/css2?family=Roboto:wght@400;500);
+:root {
+  --shadow:drop-shadow(rgb(0 0 0 / 0.25) 2px 3px 2px);
+}
+path:not(.check), rect:not(#bg, .box), use[data-name], ellipse, polyline {
+  stroke:#000;
+}
+path:not(.check), rect:not(#bg, .box, .legend, .title) {
+  filter:var(--shadow);
+}
+path {
+  fill:none;
+  translate:0.5px 0.5px;
+}
+path:not(.check) {
+  marker-end:url(#arrowhead);
+}
+rect:not(#bg, .box, .legend, .title) {
+  height:40px;
+  rx:5px;     /* Safari will handle this soon enough */
+  ry:5px;
+  stroke-width:2px;
+}
+use[data-name] {
+  fill:none;
+}
+text {
+  font-family:"Roboto Mono";
+  font-weight:400;
+  font-size:  13px;
+  text-anchor:middle;
+  dominant-baseline:middle;
+  cursor:default;
+}
+#bg {
+  fill:#000;
+}
+#frame {
+  fill:#E7E7E7
+}
+#controls {
+  pointer-events:all;
+}
+.header {
+  font-family:"Roboto";
+  font-size:14px;
+  font-weight:500;
+}
+.bold {
+  font-weight:500;
+}
+.super {
+  white-space:pre;
+}
+.legend {
+  filter:none;
+}
+rect.legend {
+  width: 20px;
+  height:20px;
+}
+text.legend {
+  text-anchor:start;
+}
+.box {
+  height:13px;
+  translate:0.5px 0.5px;
+}
+.check {
+  stroke-width:2px;
+  stroke-linecap :round;
+  stroke-linejoin:round;
+}
+circle.on,
+  text.on        { fill:#015; font-weight:500 }
+   use.on        { fill:#FFF; stroke:#015; }
+         .hover  { font-weight:500 }
+      .on.hover  { font-weight:400 }
+      use.hover  { fill:#FFF; filter:var(--shadow) }
+   use.on.hover  { fill:none; }
+     text.active { fill:  #015 }
+      use.active { stroke:#015; fill:none }
+  text.on.active { fill:  #000 }
+   use.on.active { stroke:#000; fill:#FFF }
+
+.palest-blue { fill:#F7FFFF }
+.pale-blue   { fill:#EFF7FF }
+.pale-purple { fill:#F7EFFF }
+.pale-pink   { fill:#FFEFF7 }
+.pale-orange { fill:#FFF7EF }
+.start       { fill:#E7FFEF }
+.mid         { fill:#FCFCFC }
+.bg-end      { fill:#007    }
+.fg-end      { fill:#FFF    }
+.bg-end1     { fill:#003A77 }
+.fg-end1     { fill:#EEE    }
+.bg-end2     { fill:#442288 }
+.fg-end2     { fill:#F7F7F7 }
+.bg-end2a    { fill:#005577 }
+.bg-end2b    { fill:#428    }
+.bg-end2c    { fill:#009    }
+.no-shadow   { filter:none  }
+.shadow      { filter:var(--shadow) }

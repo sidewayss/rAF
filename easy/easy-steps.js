@@ -20,8 +20,8 @@ function steps(o, leg) {
     if (stepsIsA) {                     // validate/convert leg[s]
         const n = Is.A(leg[s]) ? NaN : parseFloat(leg[s]);
         try {
-            if (Number.isNaN(n)) {
-                leg[s] = toNumberArray(leg[s], s);
+            if (Number.isNaN(n)) {      //    slice() preserves user array
+                leg[s] = toNumberArray(leg[s].slice(), s);
                 leg.stepsReady = true;  // it's an array of numbers
             }
             else {
@@ -68,7 +68,7 @@ function steps(o, leg) {
     else {                          // auto-generate linear waits based
         const j    = "jump";        // on steps/ends and jump.
         let   jump = leg[j] ?? o[j] ?? E.end; // enumerated integer
-        if (!Easy.jump[jump])   // E.end is the CSS steps() default
+        if (!Easy.jump[jump])       // E.end is the CSS steps() default
             Ez._invalidErr(j, jump, Easy._listE(j));
         //------------------
         jump = Number(jump);        // not necessary, but safe & correct
@@ -91,7 +91,7 @@ function steps(o, leg) {
     }
 }
 //  stepsToLegs() helps _finishlegs() turn 1 leg into >1 legs for _calc()
-function stepsToLegs(o, leg, ez, idx, last) {
+function stepsToLegs(o, leg, ez, idx, last, lastLeg) {
     let ends, retval, waits;
     if (leg.timingReady)        // leg.timing is an array of wait times
         waits = leg.timing;
@@ -108,7 +108,7 @@ function stepsToLegs(o, leg, ez, idx, last) {
         ends = leg.steps;
     else if (leg.easy)          // auto-generate eased steps
         ends = easeSteps(leg.easy, waits, leg.time, leg.start,
-                               leg.dist, leg.down, "easy");
+                         leg.dist, leg.down, "easy");
     else {                      // auto-generate linear step values
         const j = leg.dist / l;
         ends    = leg.down
@@ -141,7 +141,7 @@ function stepsToLegs(o, leg, ez, idx, last) {
     if (idx == last) {
         o.end   = legs[l].end;
         o.time -= leftover;
-        if (l || ez.lastLeg)
+        if (lastLeg)
             retval = {leg:legs[l]};
     }
     else {

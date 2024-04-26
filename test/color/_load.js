@@ -1,4 +1,3 @@
-// export everything but changeColor, all functions
 export {loadIt, getEasies, initEasies, updateAll, resizeWindow};
 export const
     easys    = new Array(COUNT),
@@ -12,8 +11,8 @@ import {U, Fn, F, P, Ez, Easy} from "../../raf.js";
 
 import {msecs, pad, newEasies, updateTime, updateCounters} from "../update.js";
 import {getLocal, getNamed, getNamedEasy} from "../local-storage.js";
-import {COUNT, CHANGE, CLICK, INPUT, EASY_, MEASER_, elms, g, dummyEvent}
-                                          from "../common.js";
+import {COUNT, CHANGE, CLICK, INPUT, EASY_, MEASER_, elms, g, pairOfOthers,
+        dummyEvent}                       from "../common.js";
 
 import {refresh} from "./_update.js";
 import {isMulti, loadEvents, timeFactor, getCase} from "./events.js";
@@ -91,11 +90,10 @@ function loadIt(byTag, hasVisited) {
             obj[getCase(elm).toLowerCase()] = elm;
         g[id] = obj;        // as properties of g for parsed-id access later
     }
-    g.left .other = g.right;
-    g.right.other = g.left;
 
-    g.leftRight   = [g.left,  g.right];
-    g.startEnd    = [g.start, g.end];
+    pairOfOthers(g.left, g.right);  //!! is g.left|right.other ever used??
+    g.leftRight = [g.left,  g.right];
+    g.startEnd  = [g.start, g.end];
 
     return loadEvents();
 }
