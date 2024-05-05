@@ -70,8 +70,8 @@ class Func {                    //\ Func: CSS or SVG function
           : this.isRotate3d   ? this.#units[3] = val
                               : this.#units    = val;
     }
-// this._u opens the backdoor to #units for CFunc. PBase has it, but write-only.
-    get _u()  { return this.#units; }
+// this._u opens the backdoor for CFunc, PBase
+    get _u() { return this.#units; }
 
 // this.prefix helps apply(), ColorFunc.prototype overrides it
     get prefix() {
@@ -83,7 +83,7 @@ class Func {                    //\ Func: CSS or SVG function
     }
 //  join()
     join(arr, u = this.#units) {
-        Ez._join(arr, u, this.#separator);
+        return Ez._join(arr, u, this.#separator);
     }
 //  _seps() sets o.seps to a dense array of concatenated units + separators,
 //   bookended as ["func(", ..., "u)"]. Leaves o.numBeg & o.numEnd booleans

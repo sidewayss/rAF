@@ -1,12 +1,17 @@
 export {TIMING, EASY, loadSteps, loadVT, stepsFromObj, stepsFromForm, initSteps,
         maxTime, vtFromElm, drawSteps, postRefresh, setInfo, isSteps};
+export const
+    FORMAT_END   = [pad.milli, 0, elms.end],
+    FORMAT_START = [pad.milli, 0, elms.start]
+;
 
 import {E, Is, Ez, P, Easy} from "../../raf.js";
 
-import {D, frames, secs}        from "../update.js";
+import {D, pad, frames, secs}   from "../update.js";
 import {getNamed, getNamedEasy} from "../local-storage.js";
-import {SELECT, MILLI, COUNT, CHANGE, elms, g, addEventByClass, isInvalid,
-        listenInputNumber, formatInputNumber} from "../common.js";
+import {SELECT, MILLI, COUNT, CHANGE, INPUT, elms, g, addEventByClass,
+        isInvalid, listenInputNumber, formatNumber, formatInputNumber}
+                                from "../common.js";
 
 import {refresh}              from "./_update.js";
 import {chart, isOutOfBounds} from "./chart.js";
@@ -49,11 +54,11 @@ function loadSteps() {
     }, true);
 }
 function loadVT() { // called exclusively by getEasies() during page load
-    let arr, clone, div, elm, i, id, lastKid, lbl, min, sel, selNamed, step,
+    let arr, clone, div, elm, i, id, isT, last, lbl, min, sel, selNamed, step,
     divUser = elms[Ez.toCamel(USER, STEPS)].firstElementChild;
 
-    for ([id, min, step] of [[VALUES, -100, "1"   ],
-                             [TIMING,  0,   ".001"]]) {
+    for ([id, min, step, isT] of [[VALUES, -100, "1", ],
+                                  [TIMING,  0,   ".001", true]]) {
         div = elms[Ez.toCamel(DIV, id)];      // divValues, divTiming
         lbl = document.createElement("label");
         lbl.htmlFor     = id;
@@ -61,20 +66,19 @@ function loadVT() { // called exclusively by getEasies() during page load
 
         sel = document.createElement(SELECT);
         sel.className = STEPS;
-        sel.add(new Option("linear"));
-        sel.add(new Option("easing"));
         sel.id   = id;
         elms[id] = sel;
-        sel.add(new Option(id));
+        for (id of ["linear", "easing", id])  // id retains its value after loop
+            sel.add(new Option(id));
 
         selNamed = selNamed?.cloneNode(true)  // only non-steps Easys: false
                 ?? getNamed(document.createElement(SELECT), undefined, false);
 
         selNamed.className = `${STEPS} named`;
-        lastKid = div.lastElementChild;       // divValues has elms.info
-        div.insertBefore(lbl,      lastKid);
-        div.insertBefore(sel,      lastKid);
-        div.insertBefore(selNamed, lastKid);
+        last = div.lastElementChild;          // divValues has elms.info
+        div.insertBefore(lbl,      last);
+        div.insertBefore(sel,      last);
+        div.insertBefore(selNamed, last);
         arr = [selNamed, divUser];
         Ez.readOnly(sel, OTHER, arr);
         for (elm of arr)                      // initial state is hidden
@@ -87,7 +91,7 @@ function loadVT() { // called exclusively by getEasies() during page load
             divUser.appendChild(clone);
             arr.push(clone);
         }
-        if (id == TIMING)   	              // switch from <div> to <input>
+        if (isT)    	                      // switch from <div> to <input>
             arr = arr.map(e => e.firstElementChild);
 
         for (i = 0; i < COUNT; i++) {         // arr = [<input type="number">]
@@ -95,6 +99,8 @@ function loadVT() { // called exclusively by getEasies() during page load
             elm.id   = id[0] + i;             // "v0-2" or "t0-2"
             elm.min  = min;
             elm.step = step;
+            if (isT)
+                elm.nextElementSibling.htmlFor = elm.id
         }
         listenInputNumber(arr);
         elms[Ez.toCamel(USER, id)] = arr;
@@ -102,9 +108,16 @@ function loadVT() { // called exclusively by getEasies() during page load
     }
     elms.userValues.forEach(inp => inp.max = MILLI + 100);
     addEventByClass(CHANGE, STEPS, null, changeSteps);
+    elms.userTiming.at(-1).addEventListener(INPUT, inputLastTime);
 }
-function initSteps(obj) {   // called exclusively by initEasies()
-    if (!Is.A(obj.values))  // populate elms.userValues with default values
+// inputLastTime() is the input event handler for elms.userTiming.at(-1)
+function inputLastTime(evt) {
+    if (!isInvalid(evt.target))
+        formatNumber(evt.target.valueAsNumber, ...FORMAT_END);
+}
+// initSteps() is called exclusively by initEasies()
+function initSteps(obj) {
+    if (!Is.A(obj.values)) // populate elms.userValues with default values
         defUserInputs([VALUES, MILLI / COUNT]);
 }
 // maxTime() sets the max attribute for the 3 userTiming inputs. It sets all
@@ -123,40 +136,49 @@ function defUserInputs([key, val]) {
 // changeSteps() handles the change event for #steps, #jump, #values, #timing,
 function changeSteps(evt) { // #values/timing.other[0], elms.userValues/Timing.
     const tar = evt.target;
-    if (tar === elms.jump || tar === elms.values || tar === elms.timing) {
-        const val = tar.value;
+    switch (tar) {
+    case elms.timing: // defaults for userTiming[] depend on variable secs
+        if (tar.value == TIMING && !elms.userTiming[0].value)
+            defUserInputs([TIMING, secs / COUNT]);
+    case elms.values:
+        const b = (tar.value == VALUES);
+        P.visible(elms.direction.parentNode, !b);
+        if (b)
+            formatNumber(Number(elms.userValues.at(-1).value), ...FORMAT_END);
+    case elms.jump:
         updateVT();
-        if (val == TIMING) {
-            if (!elms.userTiming[0].value)      // defaults for userTiming[]
-                defUserInputs([TIMING, secs / COUNT]);
-            //!!else
-        }
-    }
-    else if (isInvalid(tar))    // only applies to userValues/Timing
-        return;
-    //----------------------------------------
-    else if (tar === elms.userTiming.at(-1)) {
+        break;
+    case elms.userTiming.at(-1):
         setInfo(tar.valueAsNumber);
         displayInfo(true);
+        break;
+    default:
+        if (isInvalid(tar))
+            return;
     }
-
     refresh(tar, 0, false, true, isOutOfBounds());
 }
 //==============================================================================
 // stepsFromObj() called exclusively by formFromObj()
 function stepsFromObj(obj) {
-    let val, sel;
+    let isAV, val, sel;
     elms[STEPS].value = obj[STEPS];
 
-    for (const [s, vt, e] of [[STEPS, VALUES, EASY],[TIMING, TIMING, TIMING]]) {
-        val = obj[s];
+    [[STEPS,  VALUES, EASY],
+     [TIMING, TIMING, TIMING]].forEach(([s, vt, e], i) => {
         sel = elms[vt];
+        val = obj[s];
         if (Is.A(val)) {
             const inputs  = elms[Ez.toCamel(USER, sel.id)];
             const divisor = getDF(sel);
             for (var i = 0; i < COUNT; i++)
                 formatInputNumber(inputs[i], val[i] / divisor);
             sel.selectedIndex = IDX_USER;
+            if (!i) {   // VALUES
+                formatNumber(0, ...FORMAT_START);
+                formatNumber(val.at(-1), ...FORMAT_END);
+                isAV = true;
+            }
         }
         else if (obj[e]) {
             sel[OTHER][0].value = val;
@@ -164,21 +186,25 @@ function stepsFromObj(obj) {
         }
         else
             sel.selectedIndex = IDX_LINEAR;
-    }
+    });
     if (Is.def(obj.jump))
         elms.jump.value = obj.jump;
 
-    updateVT();
+    updateVT();         // relies on sel.selectedIndex
     g.type = E.steps;
     g.io   = E.in;
+    return isAV;        // helps formFromObj() handle start, end, direction
 }
 // stepsFromForm() called exclusively objFromForm()
 function stepsFromForm(obj) {
     let easy, jump, steps;
     const values = vtFromElm(elms[VALUES]);
     const timing = vtFromElm(elms[TIMING]);
-    if (Is.A(values))                   // steps is an array of values
+    if (Is.A(values)) {                 // steps is an array of values
         steps = values;
+        delete obj.start;               // the steps array supercedes these
+        delete obj.end;
+    }
     else {                              //steps is a number
         steps = Is.A(timing) ? COUNT : Number(elms.steps.value);
         if (values)
@@ -195,10 +221,11 @@ function updateVT() {
     const isUT  = isUserVT(elms[TIMING]);
     const isUVT = isUT || isUserVT(elms[VALUES]);
 
+    displayInfo(isUT);
     P.displayed(elms.steps, !isUVT);
     P.displayed(elms.count,  isUVT);
-    P.visible  (elms.jump.parentNode, !isUT);
-    displayInfo(isUT);
+    P.visible  (elms.jump.parentNode,
+                !isUT && elms[VALUES].selectedIndex != IDX_EASY);
 
     if (!isUVT && !elms.steps.selectedIndex && !elms.jump.selectedIndex)
         elms.steps.selectedIndex = 1; // {steps:1, jump:E.none} is not valid
@@ -226,10 +253,10 @@ function vtFromElm(sel, useName) {
     }
     else if (sel.selectedIndex == IDX_EASY) { // easyValues or easyTiming
         const name = sel[OTHER][0].value;
-        if (name)        // in case .selectedIndex == -1
-            vt = useName ? name : getNamedEasy(name);
-        else
-            ;            //!!
+//!!        if (name)        // in case .selectedIndex == -1
+        vt = useName ? name : getNamedEasy(name);
+//!!        else
+//!!            ;            //!!
     }
     return vt;            // else linear: vt is undefined
 }

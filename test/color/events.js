@@ -9,12 +9,14 @@ import {ezX}                            from "../load.js";
 import {msecs, timeFrames, updateTime}  from "../update.js";
 import {setPrefix}                      from "../named.js";
 import {changeStop}                     from "../play.js";
+import {copyText}                       from "../copy.js";
 import {setLocal, setLocalBool}         from "../local-storage.js";
-import {CHANGE, CLICK, INPUT, MEASER_, elms, g, is, toggleClass, boolToString,
-        addEventToElms, addEventsByElm, invalidInput} from "../common.js";
+import {CHANGE, CLICK, INPUT, MEASER_, elms, g, is, boolToString, invalidInput,
+        addEventToElms, addEventsByElm} from "../common.js";
 
 import {ezColor, refRange, resizeWindow} from "./_load.js";
 import {refresh, oneCounter}             from "./_update.js";
+import {moveCopied}                      from "./_copy.js";
 
 const btnText = { // textContent: boolean as number is index into each array
     compare: ["switch_left", "switch_right"],
@@ -24,9 +26,9 @@ const btnText = { // textContent: boolean as number is index into each array
 //==============================================================================
 // loadEvents() is called exclusively by loadIt(), helps keep stuff private
 function loadEvents() {
-    addEventsByElm(CLICK,  g.clicks, click);
-    addEventsByElm(INPUT,  [elms.time],            input);
-    addEventsByElm(CHANGE, [elms.time, elms.type], change);
+    addEventsByElm(CLICK,  [elms.share, ...g.boolBtns], click);
+    addEventsByElm(INPUT,  [elms.time],                 input);
+    addEventsByElm(CHANGE, [elms.time, elms.type],      change);
     addEventToElms(INPUT,  [elms.startInput, elms.endInput],    input.color);
     addEventToElms(CHANGE, [elms.leftSpaces, elms.rightSpaces], change.space);
     change.type();              // sets isMulti
@@ -81,13 +83,13 @@ const change = {
     },
  // space() updates start & end for one side left | right
     space(evt) {
-        const tar = evt.target;
-        const lr  = g[getCamel(tar)];      // g.left|right
-        const opt = tar.selectedOptions[0];
-        const id  = opt.dataset.spaceId;
+        const
+        tar = evt.target,
+        lr  = g[getCamel(tar)],       // g.left|right
+        opt = tar.selectedOptions[0];
 
-        lr.color = new Color(id, 0);
-        lr.range = refRange[id];
+        lr.color = new Color(opt.dataset.spaceId, 0);
+        lr.range = refRange[opt.value];
         if (!evt.isLoading) {
             for (const se of g.startEnd)
                 updateOne(se, lr);
@@ -116,7 +118,7 @@ const change = {
     }
 };
 //==============================================================================
-//    click event handlers:
+//    click event handlers, in top-left to bottom-right screen order:
 const click = {
  // compare() shows|hides the right side
     compare(evt) {
@@ -140,6 +142,15 @@ const click = {
         else
             ezColor.roundTrip = b;
     },
+ // share() is not a boolean button
+    share() {
+        let txt = `${location.href.split("?")[0]}?${g.keyName}=${elms.named.value}`;
+        for (const elm of g.searchElms)
+            txt += `&${elm.id}=${elm.value}`;
+
+        moveCopied(elms.share.getBoundingClientRect());
+        copyText(txt);
+    },
  // collapse() shows|hides inputs & counters
     collapse(evt) {
         const b = click.boolBtn(evt);
@@ -147,7 +158,7 @@ const click = {
         if (!evt.isLoading)
             resizeWindow(null, b);
     },
- // boolBtn() helps these boolean buttons (symBtns as pseudo-checkboxes)
+ // boolBtn() helps the boolean buttons (symBtns as pseudo-checkboxes)
     boolBtn(evt) {
         const tar = evt.target;
         const b   = !tar.value;
@@ -166,8 +177,12 @@ const click = {
 // se[lr.id] = g.start|end.left|right = color coordinates, Array
 // lr[se.id] = g.left|right.start|end = elms.left|rightStart|End, <span>
 function updateOne(se, lr) {
-    se[lr.id] = se.color[lr.color.spaceId.replaceAll("-", "_")];
-    oneCounter(se[lr.id], lr[se.id], lr.range);
+    let coords = se.color[lr.color.spaceId.replaceAll("-", "_")];
+    if (lr.spaces.value == Fn.rgb)
+        coords = coords.map(v => Math.max(Math.min(v, 1), 0) * 255);
+
+    oneCounter(coords, lr[se.id], lr.range);
+    se[lr.id] = coords;
 }
 // timeFactor() helps change.time() and initEasies(), only if (isMulti)
 function timeFactor(easys) {

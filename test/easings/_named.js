@@ -1,62 +1,72 @@
 export {formFromObj, objFromForm, updateNamed, ok};
 export let objEz;
 
-import {E, Is} from "../../raf.js"
+import {E, Is, P} from "../../raf.js"
 
-import {msecs, pad}   from "../update.js";
+import {msecs}        from "../update.js";
 import {DEFAULT_NAME} from "../named.js";
 import {MILLI, INPUT, elms, g, formatNumber, orUndefined, elseUndefined}
                       from "../common.js";
 
-import {setNoWaits}                             from "./events.js";
-import {easingFromObj, easingFromForm}          from "./not-steps.js";
-import {stepsFromObj,  stepsFromForm, isSteps}  from "./steps.js";
-import {initEzXY,      updateTrip,    isBezier} from "./index.js";
+import {setNoWaits}           from "./events.js";
+import {isBezierOrSteps}      from "./tio-pow.js";
+import {initEzXY, updateTrip} from "./index.js";
+import {easingFromObj, easingFromForm} from "./not-steps.js";
+import {FORMAT_END, FORMAT_START, stepsFromObj, stepsFromForm, isSteps}
+                                       from "./steps.js";
 //==============================================================================
 // formFromObj() populates the form, sets globals, <= loadFinally(), openNamed()
 function formFromObj(obj) {
-    let elm, val;
-    const legs  = obj.legs;
-    const start = obj.start ?? obj.legs?.[0].start ?? 0;
-    const end   = obj.end   ?? obj.legs?.[1].end   ?? MILLI;
+    let elm, end, start, val;
+    const
+    legs = obj.legs,
+    func = isSteps(obj.type) ? stepsFromObj : easingFromObj,
+    notA = !func(obj, legs); // if Is.A(obj.steps) stepsFromObj() returns true
 
-    formatNumber(start, pad.milli, 0, elms.start);
-    formatNumber(end,   pad.milli, 0, elms.end);
+    P.visible(elms.direction.parentNode, notA);
+    if (notA) {
+        start = obj.start ?? legs?.[0].start ?? 0;
+        end   = obj.end   ?? legs?.[1].end   ?? MILLI;
+        formatNumber(start, ...FORMAT_START);
+        formatNumber(end,   ...FORMAT_END);
 
-    g.type = obj.type ?? obj.legs?.[0].type ?? E.linear;
+        elms.direction.value = start < end ? DEFAULT_NAME : 1;
+    }
+
+    g.type = obj.type ?? legs?.[0].type ?? E.linear;
     if (Is.def(obj.io))
         g.io = obj.io;
     else if (legs)
         g.io = legs[0].io ? (legs[1].io ? E.outOut : E.outIn)
                           : (legs[1].io ? E.inOut  : E.inIn);
     else
-        g.io = E.linear;    // Easy.prototype's default value
+        g.io = E.in;         // Easy.prototype's default value
 
-    elms.io       .value = g.io;
-    elms.type     .value = g.type;
-    elms.time     .value = obj.time;
-    elms.plays    .value = obj.plays    ?? 1;
-    elms.loopWait .value = obj.loopWait ?? 0;
-    elms.direction.value = start < end ? DEFAULT_NAME : 1;
-    for (elm of g.trips) {  // roundTrip and related elements
+    elms.io  .value = g.io;
+    elms.type.value = g.type;
+    elms.time.value = obj.time;
+    elms.time.dispatchEvent(new Event(INPUT));
+
+    for (elm of g.trips) {   // roundTrip and related elements
         val = obj[elm.id];
-        if (elm.isCheckBox) // <check-box>
+        if (elm.isCheckBox)  // <check-box>
             elm.checked = Is.def(val) || elm === elms.roundTrip
                         ? val     // roundTrip default = false
                         : true;   // autoTrip, flipTrip default = true
-        else                // <select>
+        else                 // <select>
             elm.value = val ?? 0; // tripWait default = 0
     }
+    elms.plays   .value    = obj.plays    ?? 1;
+    elms.loopWait.value    = obj.loopWait ?? 0;
     elms.loopByElm.checked = obj.loopByElm;
-    elms.time.dispatchEvent(new Event(INPUT));
     setNoWaits();
-    (isSteps(obj.type) ? stepsFromObj : easingFromObj)(obj, legs);
     objEz = obj;
 }
+//==============================================================================
 // objFromForm() creates an object from form element values,
 //               called by loadFinally(), clickCode().
 function objFromForm(hasVisited = true) {
-    let autoTrip, flipTrip, isStp, loopWait, plays, tripWait;
+    let autoTrip, flipTrip, loopWait, plays, tripWait;
     const start = Number(elms.start.textContent);
     const end   = Number(elms.end  .textContent);
     const loopByElm = orUndefined(elms.loopByElm.checked);
@@ -74,10 +84,10 @@ function objFromForm(hasVisited = true) {
     else
         plays = undefined;
 
+    const [_, isStp, isBS] = isBezierOrSteps();
     if (!hasVisited) { // g.type, g.io referenced in easingFromForm()
         g.type = Number(elms.type.value);
-        g.io   = isBezier() || isSteps() ? E.in : Number(elms.io.value);
-        isStp  = isSteps(g.type);
+        g.io   = isBS ? E.in : Number(elms.io.value);
         if (isStp)
             updateVT();
     }
@@ -85,7 +95,7 @@ function objFromForm(hasVisited = true) {
                   start, end, plays, loopWait, loopByElm,
                   roundTrip, autoTrip, flipTrip, tripWait};
 
-    objEz = ((isStp ?? isSteps()) ? stepsFromForm : easingFromForm)(obj);
+    objEz = (isStp ? stepsFromForm : easingFromForm)(obj);
     return objEz;
 }
 //==============================================================================
@@ -99,7 +109,7 @@ function updateNamed(obj) {
 function ok(name) {            // called exclusively by clickOk(), easings only
     const isStp = isSteps();   // easeValues, easeTiming exclude E.steps
     const vals  = Array.from(elms.easeValues.options)
-                        .map (opt => opt.value);
+                       .map (opt => opt.value);
     i = vals.indexOf(name);
     if (i < 0) {               // new name
         if (!isStp) {          // maintain a-z sort order

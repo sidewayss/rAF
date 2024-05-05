@@ -1,3 +1,24 @@
+/* animated: easier to find if they're at the top */
+button, select, span, input[type=text] {
+  color:var(--pitch);
+}
+.black, span.black {
+  color:black;
+}
+.symSpan, .display, .number {
+  color:var(--darker-gray);
+}
+state-button {
+  opacity:1;
+  fill  :var(--pitch);
+  stroke:var(--pitch);
+  stroke-width:2px;
+}
+state-button[disabled] {
+  opacity:1;
+  fill   :#CCC;
+  stroke :#CCC;
+}
 /* duplicated in multi/index.css */
 select, label, pre {
   font-weight:400;
@@ -5,6 +26,7 @@ select, label, pre {
 #controls {
   padding: 0.5rem 0;  /* different from multi/index.css */
   background-color:var(--bg-white);
+  opacity:0;
 }
 #x {
   flex-grow: 1;
@@ -33,22 +55,16 @@ select, label, pre {
   align-items:baseline;
   margin:0;
   padding-top:var(--16th);
-  color:var(--dark-blue);
 }
 /* not duplicates */
 html * {
-  accent-color:#111;
+  accent-color:var(--pitch);
 }
 body {
   margin:0;
   height:100vh;
-}
-button, input[type=text],
-select, span {
-  color:var(--charcoal);
-}
-.colorjs {
-  color:rgb(85, 142, 121);
+  background-color:black;
+  opacity:1;
 }
 input[type=text] { /* #startColor, #endColor */
   flex-grow: 1;
@@ -56,8 +72,10 @@ input[type=text] { /* #startColor, #endColor */
   border:var(--border-gray);
   outline:none;
 }
+input[type=text]:hover {
+  border-color:var(--line-gray);
+}
 input[type=text]:focus {
-  z-index:1;
   border-color:black;
 }
 #triptych {
@@ -67,12 +85,6 @@ input[type=text]:focus {
   justify-items:start;  /* defaults to stretch */
   align-items:  start;  /* ditto */
 }
-.black, span.black {
-  color:black;
-}
-.symSpan, .display, .number {
-  color:var(--darker-gray);
-}
 .symSpan {
   font-family:"Material Symbols Rounded";
   font-size:calc(1rem + var(--7-16ths));
@@ -81,6 +93,7 @@ input[type=text]:focus {
 }
 .display {
   font-weight:400;
+  font-style:italic;
   padding-top:1px;
 }
 .number {
@@ -104,6 +117,7 @@ input[type=text]:focus {
   width: 100vw;
   height:100vh;
   align-items:stretch;
+  opacity:0;
 }
 #startCanvas, #endCanvas {
   align-self:stretch;
@@ -121,7 +135,10 @@ input[type=text]:focus {
 #type {
   border: none;
   outline:none;
-  color:var(--charcoal);
+  color:var(--pitch);
+}
+#share {
+  font-size:calc(1.5rem - var(--8th));
 }
 .spaces {
   padding-top:0;
@@ -140,12 +157,6 @@ button:active:hover {
   background-color:#DDD;
 }
 /* <state-button> overrides - #play, #stop */
-state-button {
-  opacity:1;
-  fill  :black;
-  stroke:black;
-  stroke-width:2px;
-}
 state-button:hover {
   fill  :black;
   stroke:black; /* necessary to override common.css */

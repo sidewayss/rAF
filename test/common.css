@@ -6,6 +6,7 @@
   --dark-blue:    #007;
   --medium-blue:  #019;
   --accent-blue:  #03B;
+  --pitch:        #111;
   --charcoal:     #272727;
   --darker-gray:  #373737;
   --dark-gray:    #444;
@@ -13,7 +14,7 @@
   --line-gray:    #ACACAC;
   --border-gray:  1px solid #0002;
   --border-hidden:1px solid transparent;
-  --butt-size: 1.75rem;
+  --btn-size: 1.75rem;
   --8th:  calc(1rem / 8);
   --3-8ths:  calc(3 * var(--8th));
   --5-8ths:  calc(5 * var(--8th));
@@ -153,6 +154,10 @@ select:hover {
   background-color:white;
   border-color:var(--line-gray);
 }
+select:focus, select:hover,
+input:focus,  input:hover {
+  z-index:1; /* helps with overlapping or adjacent borders and outline */
+}
 button:focus-visible,
 select:focus-visible,
 input[type=color]:focus-visible {
@@ -180,8 +185,8 @@ input[type=color]:active:hover {
   font-size:  1.5rem;
   line-height:1.5rem;
   padding:    0;
-  width: var(--butt-size);
-  height:var(--butt-size);
+  width: var(--btn-size);
+  height:var(--btn-size);
   border:var(--border-gray);
 }
 
@@ -252,8 +257,8 @@ state-button:active {
 }
 state-button[disabled] {
   opacity:0.15;
-  fill   :var(--charcoal);
-  stroke :var(--charcoal);
+  fill   :var(--pitch);
+  stroke :var(--pitch);
 }
 state-button.hi {
   opacity:1;

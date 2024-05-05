@@ -1,18 +1,19 @@
-export {loadIt, getEasies, initEasies, updateAll, resizeWindow};
+export {loadIt, getEasies, initEasies, updateAll, easeFinally, resizeWindow};
+export let ezColor;
 export const
     easys    = new Array(COUNT),
     refRange = {}
 ;
-export let ezColor;
 
 import {spaces} from "https://colorjs.io/src/spaces/index.js";
 
-import {U, Fn, F, P, Ez, Easy} from "../../raf.js";
+import {C, U, E, Fn, F, P, Ez, Easy} from "../../raf.js";
+import {CFunc} from "../../prop/func.js"; //!!need better way to access CFunc.A!!
 
 import {msecs, pad, newEasies, updateTime, updateCounters} from "../update.js";
 import {getLocal, getNamed, getNamedEasy} from "../local-storage.js";
 import {COUNT, CHANGE, CLICK, INPUT, EASY_, MEASER_, elms, g, pairOfOthers,
-        dummyEvent}                       from "../common.js";
+        dummyEvent} from "../common.js";
 
 import {refresh} from "./_update.js";
 import {isMulti, loadEvents, timeFactor, getCase} from "./events.js";
@@ -21,7 +22,7 @@ let collapsed, controlsWidth, expanded, padding;
 const LOADING = "isLoading";
 //==============================================================================
 // loadIt() is called by loadCommon()
-function loadIt(byTag, hasVisited) {
+function loadIt(byTag, hasVisited, params) {
     let css, elm, id, max, obj, opt, rng, space, txt;
     pad.frame = 4;         // prevents freezing of pad in loadUpdate() :(
 
@@ -38,14 +39,14 @@ function loadIt(byTag, hasVisited) {
             opt.style.color = "black";  // Color.js spaces: var(--charcoal)
             if (id == "srgb")           // F.srgb exists as an alias
                 css = Fn.rgb;           // even Color.js display() uses rgb(),
-            txt = css;                  // yet new Color ("rgb") fails.
+            txt = css;                  // yet new Color("rgb") fails.
         }
         opt.value = css;
         opt.text  = txt;
         opt.dataset.spaceId = id;
         elm.add(opt);
                                         // refRange is for formatting counters
-        refRange[id] = Object.values(space.coords).map(v => {
+        refRange[css] = Object.values(space.coords).map(v => {
             rng = v.range ?? v.refRange ?? [0, 1];
             max = rng[1];
             if (!rng[0]) {
@@ -60,38 +61,58 @@ function loadIt(byTag, hasVisited) {
                 else                 return format.zero;
             }
         });
-    }                       // clone leftSpaces to create rightSpaces
-    const sib    = elm.nextElementSibling;
-    const clone  = elm.cloneNode(true);
-    clone.id     = sib.id   // dummy element contains id and keeps the grid
+    }
+    refRange[Fn.rgb] = new Array(COUNT).fill(format.zero);
+
+    const                   // clone leftSpaces to create rightSpaces
+    sib   = elm.nextElementSibling,
+    clone = elm.cloneNode(true);
+    clone.id = sib.id       // dummy element contains id and keeps the grid
     elms[sib.id] = clone;   // from reflowing via replaceWith().
     clone.style.marginLeft = sib.style.marginLeft;
     sib.replaceWith(clone);
+                            // initialize elms.type
+    [EASY_, MEASER_].forEach((v, i) => elms.type.options[i].value = v);
 
+                            // (re)set control values, except elms.named
     const byClass    = (v) => Array.from(document.getElementsByClassName(v));
-    g.clicks         = byClass(CLICK);
     elms.collapsible = byClass("collapse");
+    g.boolBtns       = byClass("boolBtn");
 
-    if (hasVisited)         // , ...<input> , ...<button class="click">
-        for (elm of [elm, clone, ...byTag[0], ...g.clicks])
-            elm.value = getLocal(elm);
-    else {
-        elm.selectedIndex = 0;
-        clone.value = "jzczhz";
+    g.searchElms = [elms.type, elm, clone, ...byTag[0]];
+    const search = new Map(g.searchElms.map(se => [se.id, se]));
+    if (params) {
+        for ([id, txt] of params) {
+            if (search.has(id)) {
+                elms[id].value = txt;
+                search.delete(id);
+            }
+            else
+                console.info(`Invalid URLSearchParam: ${id}=${txt}`);
+        }
     }
-    elm = elms.type;        // initialize elms.type <select>
-    [EASY_, MEASER_].forEach((v, i) => elm.options[i].value = v);
-    elm.value = hasVisited ? getLocal(elm) : EASY_;
-
+    if (search.size) {
+        if (hasVisited)
+            for (elm of [...g.boolBtns, ...search.values()])
+                elm.value = getLocal(elm);
+        else {
+            if (search.has(elm.id))
+                elm.selectedIndex = 0;
+            if (search.has(clone.id))
+                clone.value = "jzczhz";
+            if (search.has(elms.type.id))
+                elms.type.value = EASY_;
+        }
+    }
+                            // create and populate g.left/right/start/end...
     const elmsArray = Object.values(elms);
     for (id of ["left","right","start","end"]) {
-        obj = {id};         // create and populate g.left/right/start/end
+        obj = {id};
         for (elm of elmsArray.filter(e => e.id?.startsWith(id)))
             obj[getCase(elm).toLowerCase()] = elm;
-        g[id] = obj;        // as properties of g for parsed-id access later
+        g[id] = obj;        // ...as properties of g for parsed-id access later
     }
-
-    pairOfOthers(g.left, g.right);  //!! is g.left|right.other ever used??
+    pairOfOthers(g.left, g.right);  //!!is g.left|right.other referenced anywhere??
     g.leftRight = [g.left,  g.right];
     g.startEnd  = [g.start, g.end];
 
@@ -168,7 +189,7 @@ function initEasies(obj, hasVisited) {
 
         if (hasVisited) {               // only when called by loadFinally()
             const evt = dummyEvent(CLICK, LOADING);
-            for (const elm of g.clicks)
+            for (const elm of g.boolBtns)
                 elm.dispatchEvent(evt); // loadIt()=>getLocal() previously
         }
     }
@@ -191,6 +212,63 @@ function updateAll() { // identical to multi updateAll()
     updateTime();
     refresh();
     updateCounters();
+}
+//==============================================================================
+//!!E.cV overlap (in)efficiency?? Maybe not, but at last document it.
+//!!units based on current value?? Good idea. Somewhat "unstructured"-like.
+function easeFinally(af, ezs, wait, is) {
+    let blacks, cjs, end, ez, grays, mask, prop, timex;
+    const
+    ctrls = elms.controls,
+    rules = Array.from(document.styleSheets[1].cssRules).slice(0, 5),
+    start = g.start.color.coords;
+    wait += 400;
+                                                    // colors post fade-in:
+    ez  = new Easy({wait, time:1500, type:E.sineOut}),
+    end = E.currentValue;
+    switch (elms.leftSpaces.value) {
+        case Fn.rgb:
+            start.forEach((_, i) => start[i] *= 255);
+        case Fn.hsl: case Fn.hwb:
+            break;
+        default:
+            cjs = g.left.color // for conversions, not just animation
+    }
+    ez.newTarget({cjs, start, end, prop:P.color,  elms:rules.splice(0, 3)});
+    ez.newTarget({cjs, start, end, prop:P.fill,   elms:rules});
+    ez.newTarget({cjs, start, end, prop:P.stroke, elms:rules});
+    prop  = P.bgColor;
+    ez.newTarget({cjs, start,     end, prop, elms:endCanvas});
+    ez.newTarget({cjs, start:255, end, prop, elms:ctrls});
+
+    timex = [elms.time, elms.x];
+    ez.newTarget({cjs, start:timex.map(elm => elm.max), end, prop:P.value, elms:timex});
+    prop = P.accentColor;
+    end  = prop.getn(timex[0]);
+    ez.newTarget({cjs, start, end, prop, elms:timex});
+
+    blacks = [ctrls, elms.startCanvas, elms.endCanvas];
+    grays  = Array.from(document.getElementsByClassName("border-gray"));
+    grays.push(is.multi ? elms.multis : elms.easys);
+
+    prop = P.borderColor;                           // alpha = borderOpacity
+    end  = prop.getn(grays[0])[CFunc.A];            // --border-gray: #0002;
+    mask = C.alpha;                                 // mask as bitmask integer
+    ez.newTarget({end, prop, mask, elms:grays });   // start:0
+    ez.newTarget({     prop, mask, elms:blacks});   // start:0, end:1
+    ezs.add(ez);
+                                                    // ctrls opacity:
+    ez = new Easy({time:wait, type:E.expo, io:E.in});
+    ez.newTarget({prop:P.o, elm:ctrls});
+    ezs.add(ez);
+                                                    // ctrls blur:
+//    ez = new Easy({time:2500, type:E.sineOut}),
+//    obj = {elms:ctrls, prop:P.filter, func:F.blur, start:0.0625, mid:0.5, end:0, units:E.rem};
+//    ez.newTarget({elm:tar, prop:P.filter, func:F.blur, start:0.0625, end:0.5, units:E.rem});
+//    ezs.add(ez);
+
+    af.preInit = true;
+    return elms.canvas;
 }
 //==============================================================================
 // resizeWindow() additionally called by click.collapse()

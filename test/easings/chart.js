@@ -3,17 +3,17 @@ export const
 chart = {},  // SVG chart elements and viewBox array
 range = {};  // SVG vertical pseudo-range element
 
-import {E, Is, Ez} from "../../raf.js";
+import {E, Is, P, Ez} from "../../raf.js";
 
 import {msecs, updateTime} from "../update.js";
 import {CHANGE, INPUT, elms, g, addEventsByElm, listenInputNumber, isInvalid}
                            from "../common.js";
 
-import {refresh}        from "./_update.js";
-import {updateTypeIO}   from "./tio-pow.js";
+import {refresh}                        from "./_update.js";
+import {updateTypeIO, isBezierOrSteps}  from "./tio-pow.js";
 import {updateSplitGap, isUnlocked}     from "./msg.js";
 import {isSteps, maxTime, vtFromElm}    from "./steps.js";
-import {twoLegs, isBezier, bezierArray} from "./index.js";
+import {twoLegs, bezierArray}           from "./index.js";
 //==============================================================================
 function loadChart() {
     let elements = document.getElementsByClassName("chart");
@@ -52,7 +52,7 @@ const change = {
             oldEzY = true;      // set ezY.time, don't call newEzY()
         }
         else {
-            updateSplitGap();   // setSplitGap() already called by inputTime()
+            updateSplitGap();   // setSplitGap() already called by input.time()
             oldEzY = isUnlocked(elms.split)
                  && (isUnlocked(elms.gap) || elms.gap.clear.disabled);
         }
@@ -69,28 +69,31 @@ const change = {
         refresh(evt.target, 0, updateTypeIO(true), false);
     },
     type(evt) {   // #type, #type2
-        let n, has2, isBS, oobOld, wasBS;
-        const tar    = evt.target;
-        const isType = (tar === elms.type);
+        let has2, isBez, isBS, isStp, oobOld, wasBS, wasStp;
+        const
+        tar  = evt.target,
+        n    = Number(tar.value),
+        not2 = (tar === elms.type);
 
         oobOld = isOutOfBounds();
-        n      = Number(tar.value);
-        isBS   = isBezier() || isSteps();
-        if (isType) {       // versus #type2
-            g.type = n;
-            wasBS  = isBS;  // stash previous state
-            isBS   = isBezier() || isSteps();
+        [isBez, isStp, isBS] = isBezierOrSteps();
+        if (not2 || elms.linkType.value) {
+            g.type = n;     // user changed #type or type is linked
+            if (not2) {     // user changed #type
+                wasStp = isStp;
+                wasBS  = isBS;
+                [isBez, isStp, isBS] = isBezierOrSteps();
+                if ((wasStp || isStp) && elms.values.value == elms.values.id)
+                    P.visible(elms.direction.parentNode, wasStp);
+            }
         }
-        else if (elms.linkType.value)
-            g.type = n;     // user changed #type2 and type is linked
-
         has2 = twoLegs();
         if (has2 && isBS)   // modify variable, not <select>
             g.io = E.in;
         else if (wasBS)     // restore variable to match <select>
             g.io = Number(elms.io.value);
 
-        has2 = updateTypeIO(false);
+        has2 = updateTypeIO(false, [isBez, isStp, isBS]);
         if (has2)           // has2 depends on g.io
             oobOld |= isOutOfBounds(Number(elms.type2.value));
 

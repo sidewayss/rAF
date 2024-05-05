@@ -1,4 +1,5 @@
-export {TIME, TYPE, IO, POW, loadTIOPow, setLink, updateTypeIO, isPow};
+export {TIME, TYPE, IO, POW, loadTIOPow, setLink, updateTypeIO, isPow,
+        isBezierOrSteps};
 
 import {E, Ez, P, Easy} from "../../raf.js";
 
@@ -88,11 +89,9 @@ function setLink(btn, b = !btn.value) {
 //==============================================================================
 // updateTypeIO() updates the form based on current values
 //                called by change.io(), change.type(), updateAll()
-function updateTypeIO(isIO) {
+function updateTypeIO(isIO, [isBez, isStp, isBS] = isBezierOrSteps()) {
     const isP     = isPow();
-    const isBez   = isBezier();
-    const isStp   = isSteps();
-    const has2    = !isBez && !isStp && twoLegs();
+    const has2    = !isBS && twoLegs();
     const isP2    = has2 && isPow(Number(elms.type2.value));
     const bothPs  = isP && isP2;
     const eitherP = isP || isP2;
@@ -108,7 +107,7 @@ function updateTypeIO(isIO) {
     if (has2)
         setSplitGap();  //!!only necessary when showing #mid/#split/#gap...
     if (!isIO) {        // false || undefined
-        P.displayed(elms.io,      !(isBez || isStp));
+        P.displayed(elms.io,       !isBS);
         P.displayed(elms.bezier,    isBez);
         P.displayed(elms.divsSteps, isStp);
     }
@@ -123,4 +122,9 @@ function updateTypeIO(isIO) {
 // isPow() <= easingFromObj(), easingFromForm(), updateTypeIO(), refresh()
 function isPow(val = g.type) {
     return val == E.pow;
+}
+function isBezierOrSteps() {
+    const isBez = isBezier();
+    const isStp = isSteps();
+    return [isBez, isStp, isBez || isStp];
 }

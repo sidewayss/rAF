@@ -7,7 +7,7 @@ import {create} from "../../easy/efactory.js";
 const targetPseudoX = create({peri:pseudoUpdate});
 const targetPseudoY = create({peri:()=>{}}); // noop: it requires a func...!!
 
-import {ezX}           from "../load.js";
+import {ezX, raf}      from "../load.js";
 import {storeCurrent}  from "../local-storage.js";
 import {frames, targetInputX, inputX, updateFrame, pseudoFrame,
         pseudoAnimate} from "../update.js";

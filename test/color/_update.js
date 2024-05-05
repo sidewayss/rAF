@@ -2,12 +2,12 @@ export {refresh, initPseudo, newTargets, getMsecs, getFrame, updateX,
         setCounters, formatDuration, oneCounter};
 export const formatFrames = true;
 
-import {E, U, F, P, Ez} from "../../raf.js";
+import {E, U, F, Fn, P, Ez} from "../../raf.js";
 
-import {ezX}                           from "../load.js";
-import {frames, inputX, updateFrame, pseudoFrame,
-        pseudoAnimate}                 from "../update.js";
-import {COUNT, elms, g, elseUndefined} from "../common.js";
+import {ezX}            from "../load.js";
+import {COUNT, elms, g} from "../common.js";
+import {frames, inputX, updateFrame, pseudoFrame, pseudoAnimate}
+                        from "../update.js";
 
 import {ezColor} from "./_load.js";
 import {objEz}   from "./_named.js";
@@ -103,14 +103,14 @@ data  = {[LEFT]:null, [RIGHT]:null},
 
 updaters = {
     one(oneD) {             // only left side showing
-        data[LEFT] = oneD;
+        data[LEFT] = oneD.slice();
         updateFrame(data, [LEFT]);
     },
     left(oneD) {            // runs first
-        data[LEFT] = oneD;
+        data[LEFT] = oneD.slice();
     },
     right(oneD) {           // runs second
-        data[RIGHT] = oneD;
+        data[RIGHT] = oneD.slice();
         updateFrame(data, [LEFT, RIGHT]);
     },
     pseudo(oneD) {          // either or both sides concatenated in oneD
@@ -139,13 +139,20 @@ function getFrame(t, data, keys) {
 //==============================================================================
 // updateX() is called exclusively by inputX()
 function updateX(frm) {
+    let coords, space;
     const arr = [g.left];
     if (elms.compare.value)
         arr.push(g.right)
 
     for (const lr of arr) {
-        lr.color.coords = frm[lr.id];
-        lr.canvas.style.backgroundColor = lr.color.display();
+        space  = lr.spaces.value;
+        coords = frm[lr.id];
+        lr.color.coords = (space == Fn.rgb) ? coords.map(v => v / 255)
+                                           : coords;
+        if (lr.spaces.selectedOptions[0].className)
+            P.bgColor.setIt(lr.canvas, lr.color.display());
+        else
+            P.bgColor.setOne(lr.canvas, coords, F[space]);
     }
 }
 //==============================================================================

@@ -4,7 +4,7 @@ import {E, Ez, Is, Easy, Easies, ACues} from "./raf.js";
 // AFrame: the animation frame manager
 export class AFrame {
     #backup; #callback; #fps; #frame; #gpu; #keepPost; #now; #onArrival; #peri;
-    #post; #promise; #syncZero; #targets; #useNow; #zero;
+    #post; #preInit; #promise; #syncZero; #targets; #useNow; #zero;
     #status    = E.empty;
     #frameZero = true;   // Unfortunately, this is the best default (for now...)
 //==============================================================================
@@ -19,6 +19,7 @@ export class AFrame {
             this.post    = arg.post;       this.keepPost  = arg.keepPost;
             this.useNow  = arg.useNow;     this.frameZero = arg.frameZero;
             this.targets = arg.targets;    this.syncZero  = arg.syncZero;
+            this.preInit = arg.preInit ?? arg.jumpStart;
         }
         else {
             this.#targets = new Set;
@@ -32,6 +33,7 @@ export class AFrame {
                               "a valid onArrival status, a boolean, array-ish, "
                             + "a valid object with properties, or undefined.");
         }
+        this.jumpStart = this.preInit;  // steps-like alias
         Object.seal(this);
     }
 //==============================================================================
@@ -107,6 +109,9 @@ export class AFrame {
     get frameZero()  { return this.#frameZero}
     set frameZero(b) { this.#frameZero = Boolean(b); }
 
+    get preInit()  { return this.#preInit; }
+    set preInit(b) { this.#preInit = Boolean(b); }
+
 // this.onArrival
     get onArrival()    { return this.#onArrival; }
     set onArrival(sts) { this.#onArrival = Easy._validArrival(sts, "AFrame"); }
@@ -170,14 +175,19 @@ export class AFrame {
                 if (isResuming)
                     for (t of this.#targets)
                         t._resume(now);
-                else if (this.#frameZero)
-                    for (t of this.#targets)
-                        t.pre?.(t);
                 else {
-                    for (t of this.#targets) {
-                        t._zero(now);
-                        t.pre?.(t);
+                    if (this.#frameZero)
+                        for (t of this.#targets)
+                            t.pre?.(t);
+                    else {
+                        for (t of this.#targets) {
+                            t._zero(now);
+                            t.pre?.(t);
+                        }
                     }
+                    if (this.#preInit)
+                        for (t of this.#targets)
+                            t.init(t);
                 }
                 this.#status = E.playing;
                 if (this.#frameZero && !isResuming)

@@ -56,7 +56,7 @@ select {
 
 input[type=color] {
   width: 2.5rem;
-  height:var(--butt-size);
+  height:var(--btn-size);
 }
 
 #stop { margin:0 var(--5-8ths) }

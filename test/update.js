@@ -104,6 +104,8 @@ function updateCounters(i = 0, frm = frames[i]) {
     formatNumber(frm.t / MILLI, pad.secs,  D, elms.elapsed);
     ns.setCounters(frm, D, pad);
 }
+//------------------------------------------------------------------------------
+// setFrames() and updateDuration() are called in combination
 // updateDuration() is called by timeFrames(), changePlay(), changeStop()
 function updateDuration(val = secs) {
     return (elms.duration.textContent = ns.formatDuration(val, D));
@@ -119,6 +121,7 @@ function setFrames(val = Math.ceil(secs * FPS)) {
         txt += "f";
     elms.frames.textContent = txt;
 }
+//------------------------------------------------------------------------------
 // getFrames() gets the full set of current frames. The frames array grows but
 //             doesn't shrink, frameCount makes it work, not to be confused with
 //             _update.js/getFrame().

@@ -22,47 +22,47 @@
         <select id="easys"  class="named"></select>
         <select id="multis" class="named" style="display:none"></select>
         <input  id="time" type="range" step="1" min="500" max="9999" value="2000"/>
-        <label for="time" class="lbl-right">2.000s</label>
+        <label for="time" class="lbl-right" style="color:var(--pitch)">2.000s</label>
       </div>
       <div class="row collapse">
         <label for="startInput">Start:</label>
-        <input  id="startInput" type="text" spellcheck="false" value="darkred"/>
+        <input  id="startInput" type="text" class="border-gray" value="darkred" spellcheck="false"/>
         <div    id="startCanvas" class="canvas"></div>
       </div>
       <div class="row collapse mb3-8" style="margin-top:-1px">
         <label for="endInput">End:&nbsp;&nbsp;</label>
-        <input  id="endInput" type="text" spellcheck="false" value="color(--lchuv 86.8 42.9 230)"/>
+        <input  id="endInput" type="text" class="border-gray" value="color(--lchuv 86.8 42.9 230)" spellcheck="false"/>
         <div    id="endCanvas" class="canvas"></div>
       </div>
       <div id="triptych" class="collapse">
-        <button id= "compare" class="symBtn click black" value="true">switch_right</button>
-        <select id= "leftSpaces" class="spaces" style="margin-left:var(--3-16ths)"></select>
-        <select id="rightSpaces" class="spaces" style="margin-left:var(--5-16ths)"></select>
+        <button id= "compare" class="symBtn boolBtn black" value="true">switch_right</button>
+        <select id= "leftSpaces" class="spaces border-gray" style="margin-left:var(--3-16ths)"></select>
+        <select id="rightSpaces" class="spaces border-gray" style="margin-left:var(--5-16ths)"></select>
         <div id="divCopy" class="row ml1-2" style="display:none">
           <button id="data" class="symBtn">data_table</button>
           <button id="code" class="symBtn">data_object</button>
-          <span id="copied">Copied!</span>
         </div>
         <span id=  "lblDisplay" class="symSpan">monitor</span>
-        <span id= "leftDisplay" class="display left" >display-p3</span>
-        <span id="rightDisplay" class="display right">display-p3</span>
+        <span id= "leftDisplay" class="display left" ></span>
+        <span id="rightDisplay" class="display right"></span>
 
-        <span id=  "lblStart" class="symSpan"           >line_start_circle</span>
-        <span id= "leftStart" class="number left"       >1.000 0.000 100.0</span>
-        <span id="rightStart" class="number right"      >1.000 0.000 100.0</span>
+        <span id=  "lblStart"   class="symSpan">line_start_circle</span>
+        <span id= "leftStart"   class="number left">1.000 0.000 100.0</span>
+        <span id="rightStart"   class="number right border-gray">1.000 0.000 100.0</span>
 
-        <span id=  "lblValue" class="symSpan black"     >horizontal_rule</span>
-        <span id= "leftValue" class="number left  black">1.000 0.000 100.0</span>
-        <span id="rightValue" class="number right black">1.000 0.000 100.0</span>
+        <span id=  "lblValue"   class="symSpan black">horizontal_rule</span>
+        <span id= "leftValue"   class="number left  black">1.000 0.000 100.0</span>
+        <span id="rightValue"   class="number right black border-gray">1.000 0.000 100.0</span>
 
-        <span id=  "lblEnd"   class="symSpan"           >line_end_circle</span>
-        <span id= "leftEnd"   class="number left"       >1.000 0.000 100.0</span>
-        <span id="rightEnd"   class="number right"      >1.000 0.000 100.0</span>
+        <span id=  "lblEnd"     class="symSpan">line_end_circle</span>
+        <span id= "leftEnd"     class="number left">1.000 0.000 100.0</span>
+        <span id="rightEnd"     class="number right border-gray">1.000 0.000 100.0</span>
       </div>
       <div class="row">
         <input  id="x" type="range" min="0" max="1" step="1" value="0"/>
-        <button id="roundT"   class="symBtn click">repeat</button> <!-- id != "roundTrip" for the sake of tooltips -->
-        <button id="collapse" class="symBtn click">expand_less</button>
+        <button id="roundT"   class="symBtn boolBtn">repeat</button> <!-- id != "roundTrip" for the sake of tooltips -->
+        <button id="share"    class="symBtn">share</button>
+        <button id="collapse" class="symBtn boolBtn">expand_less</button>
       </div>
       <div id="playback" class="row center">
         <state-button id="play" class="row" data-states='[[0,"play"], [1,"pause"], [2,"resume"]]'></state-button>
@@ -78,6 +78,7 @@
           ><span id="fps">360fps</span>
         </div>
       </div>
+      <span id="copied">Copied!</span>
     </div>
   </body>
 </html>

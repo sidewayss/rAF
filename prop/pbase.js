@@ -62,11 +62,11 @@ export class PBase { // the base class for Prop, Bute, PrAtt, HtmlBute
     set _u   (u)   { this.#units = u; } // backdoor avoids double-validation
 
 //  _unitz() gets the active units, which might be the func's units
-    _unitz(f = this.func) { return f?.units ?? this.units; }
+    _unitz(f = this.func) { return f?._u ?? this.units; }
 //==============================================================================
 //  join() joins an array of sub-values using the appropriate separators
     join(arr, f = this.func, u = this._unitz(f)) {
-        return (f?.join ?? Ez._join)(arr, u, PBase.#separator);
+        return f ? f.join(arr, u) : Ez._join(arr, u, PBase.#separator);
     }
     joinUn(o) { // not static because PBase not exported by raf.js
         let i, str;//!!o.nums and o.seps are 2D byElm!!
@@ -182,11 +182,22 @@ export class PBase { // the base class for Prop, Bute, PrAtt, HtmlBute
                 value = elm.getAttribute(name);
             if (!value)
                 value = getComputedStyle(elm)[name];
-        }                               //!!listOfFuncs funcs animate as isUn??else how to animate them and do this??
-        else if (!isCSS && listOfFuncs.some(v => value.includes(v + E.lp))) { //!!any better way??
-            value = getComputedStyle(elm)[name];
         }
-        else if ((this.isColor && value.startsWith(Fn.rgba))
+        else if (value && listOfFuncs.some(v => value.includes(v + E.lp))) {
+            if (!isCSS)
+                value = getComputedStyle(elm)[name];
+            else {
+                const split = value.split(E.func);
+                if (split[0] == Fn.var)
+                    value = getComputedStyle(document.documentElement)
+                                            .getPropertyValue(split[1]);
+                else
+                    Ez._cantErr("You", "get a numeric value from a CSSStyleRule"
+                                     + `if the property uses ${split[0]}(). `
+                                     + "You must use an HTMLElement instead.");
+            }
+        }
+        else if ((this.isColor && value.startsWith(Fn.rgba))    //!!rgba, not rgb??, "rgb(" is safest
               || (this === F.colorMix && value.includes(Fn.rgb)))
         {   // even elm.style converts hsl/hwb() to rgb()
             const style = elm.getAttribute("style").split(/[:;]\s*/);
@@ -290,7 +301,7 @@ export class PBase { // the base class for Prop, Bute, PrAtt, HtmlBute
              : this.setMany(Ez.toElements(elms), v, f, u);
     }
 //  setOne() - elm must be Element, v must be Number, String, or Array
-    setOne(elm, v, f = this.func, u = this._unitz(f)) {
+    setOne(elm, v, f = this.func, u = this._unitz(f)) { // what about arrays for multi-arg properties?
         v = Is.A(v) ? this.join(v, f) //!!inconsistent validation of u and v!!
                     : Ez._appendUnits(v, u);
 

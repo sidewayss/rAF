@@ -8,7 +8,8 @@ import {Ez, P, U} from "../../raf.js";
 import {msecs, secs} from "../update.js";
 import {MILLI, CLICK, INPUT, CHANGE, elms, addEventToElms, addEventsByElm,
         addEventByClass, formatInputNumber, listenInputNumber, isInvalid,
-        invalidInput, toggleClass, isTag, boolToString} from "../common.js";
+        invalidInput, maxMin, toggleClass, isTag, boolToString}
+                     from "../common.js";
 
 import {refresh}         from "./_update.js";
 import {chart}           from "./chart.js";
@@ -69,10 +70,15 @@ function loadMSG() {
     addEventByClass(CLICK,  LOCK,  click);
     addEventToElms (CHANGE, msg, changeMSG);
     listenInputNumber(msg);                          // must go first
+    addEventToElms (INPUT, msg, input.MSG);          // must go second
     addEventsByElm (INPUT, msg.slice(0, -1), input); // mid, split only
 }
 //==============================================================================
 const input = {
+//  MSG()       #mid, #split, #gap: precedes mid(), split()
+    MSG(evt) {
+        disableClear(evt.target, evt.target.valueAsNumber, true);
+    },
 //  mid()       #mid, also called by updateMidSplit()
     mid() {
         if (!isInvalid(elms.mid)) {
@@ -97,8 +103,8 @@ const click = {
         const elm = evt.target[OTHER];  // #mid, #split, or #gap
         formatInputNumber(elm, elm.default());
         input[elm.id]?.();              // input.mid() or input.split()
-        disableClear(elm);
-        invalidInput(elm, false);
+        disableClear(elm);              // clear disabled
+        invalidInput(elm, false);       // input valid
         refresh(elm, 0, true);
     },
 //  lock()      #lockSplit, #lockGap
@@ -112,13 +118,8 @@ const click = {
 //==============================================================================
 // changeMSG() is the change event handler for #mid, #split, #gap
 function changeMSG(evt) {
-    const tar = evt.target;
-    if (isInvalid(tar))
-        disableClear(tar, Infinity, true);  // enables clear button
-    else {
-        disableClear(tar, tar.valueAsNumber, true);
-        refresh(tar, 0, true);
-    }
+    if (!isInvalid(evt.target))
+        refresh(evt.target, 0, true);
 }
 //==============================================================================
 // updateMidSplit() makes exporting this pair easier, called by updateAll()
@@ -128,26 +129,35 @@ function updateMidSplit() {
 }
 // updateSplitGap() is called by updateAll() and change.time()
 function updateSplitGap() {
-    elms.split.max = Math.max(secs - 0.1, 0);
-    elms.gap  .max = Math.max(secs - elms.split.valueAsNumber - 0.1, 0);
+    let   elm = elms.split
+    const min = Number(elm.min),
+          val = secs - min;
 
-    for (const elm of sgInputs)
+    elm.max      = Math.max(val, min);
+    elms.gap.max = Math.max(val - elm.valueAsNumber, 0);
+
+    for (elm of sgInputs)
         if (elm.valueAsNumber > elm.max)
             formatInputNumber(elm, elm.max);
 }
 // setSplitGap() calculates and sets the automated values for #split and #gap,
-//               based on time and secs, if necessary, called by updateTypeIO()
-//               and inputTime().
+//               based on time and msecs, if necessary, called by input.time()
+//               and updateTypeIO().
 function setSplitGap(time = msecs) {
-    if (!isBezier() && !isSteps())
-        for (const elm of sgInputs)
+    if (!isBezier() && !isSteps()) {
+        let elm, n
+        for (elm of sgInputs) {
             if (isUnlocked(elm.lock))
                 if (!elm.clear.disabled) {
-                    if (time != msecs)       // scale value by time
-                        formatInputNumber(elm, elm.valueAsNumber * (msecs / time));
+                    if (time != msecs) {     // scale value by time
+                        n = elm.valueAsNumber * (msecs / time);
+                        formatInputNumber(elm, maxMin(elm, n));
+                    }
                 }
                 else if (elm === elms.split) // split = 50% of time
                     formatInputNumber(elms.split, secs / 2);
+        }
+    }
 }
 //==============================================================================
 // disableClear() helps changeMSG() and clickClear(), also called by

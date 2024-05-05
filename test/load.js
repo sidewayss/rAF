@@ -3,7 +3,7 @@ FPS = 60,    // assumes 60hz, but adjusts to reality at run-time
 ezX, raf,    // Easy, AFrame
 preDoc;      // prefix for this document, see local-storage.js
 
-import {E, Ez, P, PFactory, Easy, AFrame} from "../raf.js";
+import {E, Ez, F, P, PFactory, Easy, AFrame} from "../raf.js";
 
 import {msecs, loadUpdate, timeFrames}      from "./update.js";
 import {DEFAULT_NAME, loadNamed, disableSave,
@@ -12,9 +12,11 @@ import {getNamed, getNamedBoth, setNamed}   from "./local-storage.js";
 import {INPUT, SELECT, MILLI, COUNT, ONE, dlg, elms, g, formatNumber,
         dummyEvent, errorAlert, errorLog}   from "./common.js";
 /*
-import(_load.js): loadIt, getEasies, initEasies, updateAll, resizeWindow
+import(_load.js): loadIt, getEasies, initEasies, updateAll, resizeWindow;
+                  and showControls for color page.
 */
 let awaitNamed, awaitUpdate, ns, ns_named;
+const RESIZE = "resize";
 
 const awaitFonts = [            // start loading fonts asap
     new FontFace("Roboto Mono",
@@ -62,11 +64,19 @@ async function loadCommon() {
     preDoc    = `${id}-`;           // prefix by document, see local-storage.js
 
     Ez.readOnly(g, "keyName", `${preDoc}name`);
-    const name = localStorage.getItem(g.keyName);
+    let   params,
+          name = localStorage.getItem(g.keyName);
     const hasVisited = (name !== null);
 
+    if (location.search) {
+        params = new URL(location).searchParams;
+        if (params.has(g.keyName)) {
+            i    = Array.from(params.keys()).indexOf(g.keyName);
+            name = Array.from(params.values())[i];
+        }
+    }
     ns = await import(`${dir}_load.js`).catch(errorAlert);
-    const is = ns.loadIt(byTag, hasVisited);
+    const is = ns.loadIt(byTag, hasVisited, params);
 
     awaitNamed  = Ez.promise();      // resolves in loadJSON()
     awaitUpdate = Ez.promise();      // ditto
@@ -74,9 +84,8 @@ async function loadCommon() {
       .then (rsp => loadJSON(rsp, is.multi, dir, ns, hasVisited, msg))
       .catch(err => errorAlert(err, msg));
 
-    const RESIZE = "resize";
     Promise.all([document.fonts.ready, awaitNamed, awaitUpdate])
-      .then (()  => loadFinally(hasVisited, name, RESIZE, id))
+      .then (()  => loadFinally(is, name, hasVisited, id))
       .catch(err => errorAlert(err));
 
     window.addEventListener(RESIZE, ns.resizeWindow, false);
@@ -118,7 +127,7 @@ function loadJSON(response, isMulti, dir, ns, hasVisited, msg) {
 }
 //==============================================================================
 // loadFinally() executes on Promise.all().then(), could be inlined & indented
-function loadFinally(hasVisited, name, resize, id) {
+function loadFinally(is, name, hasVisited, id) {
     let obj;
     if (elms.save)
         Ez.readOnly(g, "restore", `${preDoc}restore`);
@@ -127,8 +136,9 @@ function loadFinally(hasVisited, name, resize, id) {
         let item;
         [item, obj] = getNamedBoth(name);
         if (elms.save){      // exclude color page
-            const restore = localStorage.getItem(g.restore),
-                  isSame  = (item == restore);
+            const
+            restore = localStorage.getItem(g.restore),
+            isSame  = (item == restore);
             disableSave(isSame);
             disablePreset(name, item);
             disableDelete(name);
@@ -140,11 +150,11 @@ function loadFinally(hasVisited, name, resize, id) {
         elms.named.value = name;
     }
     else {                   // user has never visited this page
-        elms.time.dispatchEvent(dummyEvent(INPUT, "isLoading")) ?? timeFrames();
+        elms.time?.dispatchEvent(dummyEvent(INPUT, "isLoading")) ?? timeFrames();
         obj = ns_named.objFromForm(hasVisited);
         setNamed(DEFAULT_NAME, JSON.stringify(obj));
     }
-    window.dispatchEvent(new Event(resize));
+    window.dispatchEvent(new Event(RESIZE));
 
     // msecs and secs are now set, by formFromObj() or time.dispatchEvent().
     // ezX animates elms.x in all pages, and the x-axis of the chart in the
@@ -171,12 +181,17 @@ function loadFinally(hasVisited, name, resize, id) {
     }).catch(err =>          // .catch = fpsBaseLine() only, the show can go on
         errorLog(err, "fpsBaseline() failed")
      ).finally(() => {       // fade document.body into view
-        const ez = new Easy({time:800, type:E.expo, io:E.in});
-        ez.newTarget({elm:document.body, prop:P.o});
-        af.newEasies([ez]);
+        const
+        time = 800,
+        ez   = new Easy({time, type:E.expo, io:E.in}),
+        ezs  = af.newEasies([ez]),
+        tar  = ns.easeFinally?.(af, ezs, time, is) ?? document.body;
+
+        ez.newTarget({elm:tar, prop:P.o});
         af.play()
           .catch(err => {    // don't alert the user, just display the page
-            document.body.style.opacity = ONE;
+            P.o.setIt(tar, ONE);
+            P.filter.setIt(tar, "none");
             errorLog(err, "Fade-in animation failed");
       //++})
       //++.finally(()  => {  // service worker manages caching

@@ -25,7 +25,7 @@ export const g    = {    // g for global, these properties are read-write:
 //====== wrappers for addEventListener() =======================================
 export function addEventByClass(type, name, obj, func) {
     if (obj)
-        func = toFunc(obj, Ez.kebabToCamel(name));
+        func = obj[Ez.kebabToCamel(name)];
     for (const elm of document.getElementsByClassName(name))
         elm.addEventListener(type, func, false);
 }
@@ -37,18 +37,15 @@ export function addEventsByElm(type, elms, obj, noDigits, noPrefix = true) {
     let elm;
     if (noDigits)
         for (elm of elms) // elm never undefined, same function for all digits
-            elm.addEventListener(type, toFunc(obj, elm.id.replace(/\d/, "")), false);
+            elm.addEventListener(type, obj[elm.id.replace(/\d/, "")]);
     else if (noPrefix)
         for (elm of elms)
-            elm.addEventListener(type, toFunc(obj, elm.id), false);
+            elm.addEventListener(type, obj[elm.id]);
     else
         for (elm of elms) // elm maybe undefined, e.g. elms.time in multi
-            elm?.addEventListener(type, toFunc(obj, elm.id, type), false);
+            elm?.addEventListener(type, obj[Ez.toCamel(type, elm.id)]);
 }
 //====== string conversion to/from =============================================
-export function toFunc(container, name, prefix) { //!! returns a function
-    return container[prefix ? Ez.toCamel(prefix, name) : name];
-}
 export function boolToString(b) { // for localStorage and <button>.value
     return b ? "true" : "";
 }
@@ -61,16 +58,17 @@ function inputNumber(evt) {
     tar = evt.target,
     n   = tar.valueAsNumber,
     b   = Number.isNaN(n);
-    invalidInput(tar, b); // preventDefault(),stopPropagation() are useless here
+    invalidInput(tar, b);
     if (!b)
-        formatInputNumber(tar, Math.max(Math.min(n, tar.max), tar.min));
+        formatInputNumber(tar, maxMin(tar, n));
 }
 // listenInputNumber() is the only public access to inputNumber()
 export function listenInputNumber(elements) {
     for (const elm of elements)
         elm.addEventListener(INPUT, inputNumber);
 }
-// invalidInput() helps inputNumber(), input.color(), click.clear()
+// invalidInput() helps inputNumber(), input.color(), click.clear(), more than
+//                one input can be invalid, #x and #play only enabled if none.
 export function invalidInput(elm, b) {
     toggleClass(elm, "invalid", b);
     g.invalids[b ? "add" : "delete"](elm);
@@ -81,25 +79,6 @@ export function invalidInput(elm, b) {
 // isInvalid() returns true for inputs with class="invalid"
 export function isInvalid(elm) {
     return g.invalids.has(elm);
-}
-// changeNumber() validates then formats <input type="number"> as part of
-//                handling the change event in change.pow(), changeMSG().
-export function changeNumber(tar)  {
-    if (tar?.type == "number") {
-        let n = tar.valueAsNumber;
-        if (Number.isNaN(n)) {
-            let lbl = tar.labels.length ? tar.labels[0].textContent.trimEnd()
-                                        : tar.id;
-            if (lbl.at(-1) == ":")
-                lbl = lbl.substring(0, lbl.length - 1).trimEnd();
-            alert(Ez._mustBe(lbl, "a number"));
-            return null;
-        } //---------------------------
-        if (n > tar.max || n < tar.min)
-            n = Math.max(Math.min(n, tar.max), tar.min);
-        formatInputNumber(tar, n);
-        return n;
-    }
 }
 // formatInputNumber() sets decimal places for <input type="number"> by id,
 //                     called by easingFromObj(), vtArray(), inputTypePow(),
@@ -124,6 +103,10 @@ export function formatNumber(n, digits, decimals, elm) {
         elm.textContent = str;
     else
         return str;
+}
+// maxMin() enforces the max and min properties for numeric inputs
+export function maxMin(elm, n = elm.valueAsNumber) {
+    return Math.max(Math.min(n, elm.max), elm.min);
 }
 //====== error messaging =======================================================
 // errorAlert() normalizes alerts

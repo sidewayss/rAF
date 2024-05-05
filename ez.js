@@ -274,18 +274,20 @@ export const Ez = {
         // functions, though they will likely not work properly in this context.
     },
 // =============================================================================
-//  _join() helps Func and Prop.prototype.join()
-    _join(arr, units, separator) {
+//  _join() helps Func/Prop.prototype.join(), arr.map() prevents _appendUnits()
+//          from modifying the user array.
+    _join(arr, units, seps) {
         const isAu = Is.A(units);
-        arr.forEach((v, i) => {
-            arr[i] = this._appendUnits(v, units, i, isAu)
-        });
-        if (Is.A(separator)) {
+        arr = arr.map((v, i) => this._appendUnits(v, units, i, isAu));
+        if (Is.A(seps)) {
             let str = "";
-            separator.forEach((sep, i) => str += arr[i] + sep);
+            if (seps.length >= arr.length)
+                seps = seps.slice(0, arr.length - 1)
+
+            seps.forEach((sep, i) => str += arr[i] + sep);
             return str + arr.at(-1);
         }
-        return arr.join(separator);
+        return arr.join(seps);
     },
 //  _appendUnits() validates excessively as it applies units to numbers. If it's
 //                 a number or string that ends with a number, append the units;

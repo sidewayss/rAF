@@ -27,8 +27,7 @@ async function loadNamed(isMulti, dir, _load) {
     }
     return import(`${dir}_named.js`).then(namespace => {
         ns = namespace;
-        if (elms.copied)
-            loadCopy(dir, ns);
+        loadCopy(dir, ns);
         return ns;
     }); // .catch(errorAlert) in Promise.all() in loadCommon()
 }

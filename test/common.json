@@ -52,6 +52,7 @@
     "lblValue":   "Current value",
     "lblEnd":     "End value",
     "roundT":     "Toggle round-trip",
+    "share":      "Copy link to clipboard, including all current settings",
     "collapse":   "Show/hide control panel",
     "fullBody":   "Toggle canvas size to|from <div>|<body>"
   },

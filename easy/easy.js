@@ -75,7 +75,7 @@ export class Easy {
             this.#lastLeg = o.legs[last];
 
         // o[e] is subject to further change in stepsToLegs()
-        // _firstLeg shares .start and .wait with this, #lastLeg shares .end
+        // _firstLeg shares .start and .wait with o, #lastLeg shares .end
         override(s, this._firstLeg, o, "the first");
         override(e, this.#lastLeg ?? this._firstLeg, o, "the last");
         o[s] = Ez.toNumber(o[s], s, 0);
@@ -168,8 +168,8 @@ export class Easy {
         o.legs.forEach((leg, i) => {
             leg.prev = o.legs[i - 1];   // overwritten by stepsToLegs()
             leg.next = o.legs[i + 1];   // ditto
-            legNumber(leg, s, i); // all non-incremental legs define
-            legNumber(leg, e, i); // start and end.
+            legNumber(leg, s, i);       // all non-incremental legs define
+            legNumber(leg, e, i);       // start and end.
             legNumber(leg, w, i, ...Ez.defZero);
             this.#legsWait += leg[w];
                                         // time and count require extra effort

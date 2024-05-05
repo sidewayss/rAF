@@ -70,7 +70,7 @@
   <rect x="75" y="180" width="160" class="bg-end1"/>
   <text x="155" y="200" class="fg-end1">updateCounters()</text>
 
-  <rect x="105" y="260" width="100" class="start"/>
+  <rect x="115" y="260" width="80" class="start"/>
   <text x="155" y="280">inputX()</text>
   <path d="M155,260 V226"/>
 
@@ -82,11 +82,11 @@
   <path d="M120,500 V466"/>
   <path d="M 40,520 H5 V200 H68"/>
 
-  <rect x="710" y="340" width="150" class="bg-end1"/>
-  <text x="785" y="360" class="fg-end1">updateDuration()</text>
+  <rect x="710" y="310" width="150" class="bg-end1"/>
+  <text x="785" y="330" class="fg-end1">updateDuration()</text>
 
-  <rect x="725" y="420" width="120" class="bg-end"/>
-  <text x="785" y="440" class="fg-end">setFrames()</text>
+  <rect x="725" y="370" width="120" class="bg-end"/>
+  <text x="785" y="390" class="fg-end">setFrames()</text>
 
   <rect x="245" y="500" width="120" class="start"/>
   <text x="305" y="520">loadFinally()</text>
@@ -94,20 +94,20 @@
 
   <rect x="505" y="420" width="180" class="start"/>
   <text x="595" y="440">changePlay().then()</text>
-  <path d="M685,440 H718"/>
-  <path d="M595,420 V370 H703" stroke-dasharray="1 2"/>
+  <path d="M595.5,420 V362" stroke-dasharray="1 2" style="marker-end:none"/>
 
   <rect x="725" y="500" width="120" class="mid"/>
   <text x="785" y="520">timeFrames()</text>
-  <path d="M785,500 V466"/>
-  <path d="M845,520 H895 V360 H866"/>
+  <path d="M785,500 V416"/>
+  <path d="M845,520 H895 V330 H866"/>
 
   <rect x="245" y="420" width="120" class="start"/>
   <text x="305" y="440">changeStop()</text>
   <path d="M305,420 V200 H241"/>
   <path d="M245,440 H186"/>
   <path d="M365,440 H498"/>
-  <path d="M334,420 V349 H703" stroke-dasharray="1 2"/>
+  <path d="M334.5,420 V359.5 H640.5 V329.5 H703" stroke-dasharray="1 2"/>
+  <path d="M640.5,362 V389.5 H718" stroke-dasharray="1 2"/>
 
   <text x="370" y="510" class="footcode" style="text-anchor:start">if (!hasVisited)</text>
   <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
@@ -164,7 +164,7 @@
 
     <rect x="255" y="580" width="100" class="start"/>
     <text x="305" y="600">loadJSON()</text>
-    <path d="M355,600 H389"/>
+    <path d="M355,600 H388"/>
 
     <rect x="395" y="580" width="160" class="mid"/>
     <text x="475" y="600">_load.getEasies()</text>

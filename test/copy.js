@@ -1,9 +1,10 @@
-export {loadCopy, jsonToText, easyToText, copyByKey, copyPointByKey, copyTime};
+export {loadCopy, jsonToText, easyToText, copyByKey, copyPointByKey, copyTime,
+        copyText};
 
 import {E, P, Easy, Easies, AFrame} from "../raf.js";
 
 import {CLICK, EASY_, elms, addEventsByElm, errorAlert, errorLog}
-                from "./common.js";
+        from "./common.js";
 
 let ezCopy, ns, ns_named, rafCopy;
 //==============================================================================
@@ -32,12 +33,11 @@ function loadCopy(dir, _named) {
 //  click.data() copies frames data for tabular validation elsewhere
  const click = {
     code() { copyText(ns.copyCode(ns_named.objEz)); },
-
     data() { copyText(ns.copyData("time (ms)", Easy.eKey)); }
 };
 //==============================================================================
 // ns.copyCode(), ns.copyData() helpers:
-function copyText(txt) { // not exported
+function copyText(txt) {
     navigator.clipboard.writeText(txt)
       .then (() => rafCopy.play().catch(errorLog))
       .catch(errorAlert);

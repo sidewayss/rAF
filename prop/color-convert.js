@@ -6,7 +6,7 @@
 // be called for gradients, so you must set o.currentValue for HSL/HWB there.
 export {fromColor, rgbToHxx, rgbToHsl, rgbToHwb};
 
-import {C, E, Ez} from "../raf.js";
+import {C, U, E, Ez, Fn} from "../raf.js";
 
 import {CFunc} from "./func.js";
 //==============================================================================
@@ -41,7 +41,7 @@ function fromColor(v, toNum, f, u = f?._u, includeFunc = false) {
             if (v.length <= A + 1)  // normalize "RGB(A)" to "RRGGBB(AA)"
                 v = v.replace(/./g, char => char + char);
 
-            arr = v.match(/.2/g).map(hex => parseInt(hex, 16));
+            arr = v.match(/../g).map(hex => parseInt(hex, 16));
             if (arr[A])             // convert alpha to 0-1 or %
                 arr[A] /= (u[A] == U.pct) ? 2.55 : 255;
 

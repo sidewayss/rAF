@@ -3,7 +3,7 @@ export {PFactory, ANGLES, EMPTY_PCT}; // ANGLES, EMPTY_PCT for func.js:CFunc
 import {Func, CFunc, ColorFunc, SRFunc} from "./func.js"
 import {Prop, Bute, PrAtt, HtmlBute}    from "./prop.js"
 
-import {C, HD, U, E, Ez, F, Fn, P, Pn, Is, Ease, Easy} from "../raf.js";
+import {C, HD, M, U, E, Ez, F, Fn, P, Pn, Is, Ease, Easy} from "../raf.js";
 
 // PFactory.init() populates the U, F, Fn, P, Pn objects using these arrays:
 // C = <color>;  Un = gradients and other "unstructured" functions;
@@ -152,8 +152,9 @@ const PFactory = {
         // readOnly() for P because F and this get frozen, but P is extensible.
         // P._pct _len _ang _color help the static global property setters
         // FL, FA, CSSVC for drop-shadow, hue-rotate, stop-color camelCase
-        const funcLP = [...funcSR, ...funcTLP];
-        const propLP = [...svgLP,  ...cssLP];
+        const
+        funcLP = [...funcSR, ...funcTLP],
+        propLP = [...svgLP,  ...cssLP];
 
         keys = [[...funcLP, ...funcF,  ...funcC],  propLP];
         Ez.readOnly(this, "_pct", [...colorFuncs, ...keys2Objects([F, P], keys)]);
@@ -217,19 +218,20 @@ const PFactory = {
         }
 
         // Bitmasks, color functions first:
-        let   arr  = ["R","G","B","A","C"];
-        let   len  = arr.length;        // feColorMatrix has the most args at 20
-        let   rgb  = arr.slice(0, len - 1);
+        let
+        arr = ["R","G","B","A","C"],
+        len = arr.length;               // feColorMatrix has the most args at 20
+
         const RGBC = Array.from(
-            {length:len * rgb.length},
-            (_, i) => arr[i % len] + rgb[Math.floor(i / len)]
-        );
-        rgb = rgb.map(v => v.toLowerCase());
-        const hsl = ["h","s","l"];      // the rest look better in lower case
-        const hwb = [,"w"];
-        const lab = ["l","a","b","alpha"];
-        const lch = [,"c","h"];
-        const xyz = ["x","y","z"];
+            {length:len * (len - 1)},
+            (_, i) => arr[i % len] + arr[Math.floor(i / len)]
+        ),
+        rgb = arr.slice(0, -1).map(v => v.toLowerCase()),
+        hsl = ["h","s","l"],            // the rest look better in lower case
+        hwb = [,"w"],
+        lab = ["l","a","b","alpha"],
+        lch = [,"c","h"],
+        xyz = ["x","y","z"];
 
         arr = ["a","b","c","d"];        // matrix3d() has 16 args
         len = arr.length;
@@ -239,21 +241,25 @@ const PFactory = {
         );
         arr.push("e","f");              // SVG matrix()
 
-        let n = 0.5;                    // create the bitmask values up front
-        const bits  = Array.from({length:RGBC.length}, () => n *= 2);
-        const pairs = [[C,  [RGBC, rgb, hsl, hwb, lab, lch, xyz]],
-                       [HD, [lab, lch, xyz]],
-                       [Ez, [arr, abcd, vB]]];
-        for (const [target, source] of pairs)
-            for (arr of source)         // create the bitmask properties
-                arr.forEach((v, i) => target[v] = bits[i]);
+        let src, tar, n = 0.5;          // create the bitmask values up front
+        const
+        bits  = Array.from({length:RGBC.length}, () => n *= 2),
+        pairs = [[C,  [RGBC, rgb, hsl, hwb]],
+                 [HD, [lab, lch, xyz]],
+                 [M,  [arr, abcd]],
+                 [Ez, [vB]]];
 
-        Ez.tx = Ez.e;                   // for CSS matrix()
-        Ez.ty = Ez.f;
-        Ez.w  = Ez.width;               // for convenience, consistency with P
-        Ez.h  = Ez.height;
-        Ez.z  = Ez.w;                   // for transform3d
-        Ez.angle = Ez.h;                // for rotate3d()
+        for ([tar, src] of pairs)       // create the bitmask properties
+            for (arr of src)
+                arr.forEach((v, i) => tar[v] = bits[i]);
+
+        M.tx = M.e;                     // for CSS matrix()
+        M.ty = M.f;
+        Ez.z      = Ez.w;               // for transform3d
+        Ez.width  = Ez.w;               // for convenience, consistency with P
+        Ez.height = Ez.h;
+        Ez.angle  = Ez.h;               // for rotate3d()
+        C .alpha  = C.a;                // a more readable alias, aligns with HD
 
         // E object, enumerations and string constants:
         let j, key;
@@ -266,7 +272,7 @@ const PFactory = {
             E[key] = key;
 
         // Popular arguments for Ez.toNumber() and Easy.legNumber():
-        // Can't define these inside const Ez because ...Ez.xYZ not ready yet//!!??
+        // Can't define these inside const Ez because ...Ez.foo not available
                            // arguments[2, 3, 4]:
         Ez.undefGrThan0 = [undefined, ...Ez.grThan0];   // > 0, undefined ok
         Ez.undefNotZero = [undefined, ...Ez.notZero];   // !=0, undefined ok

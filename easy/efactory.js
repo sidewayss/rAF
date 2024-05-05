@@ -16,12 +16,14 @@ import {CFunc}    from "../prop/func.js";
 import {PBase}    from "../prop/pbase.js";
 import {rgbToHxx} from "../prop/color-convert.js";
 
-import {E, Ez, Is, Easy} from "../raf.js"
+import {E, Ez, F, Fn, Is, Easy} from "../raf.js"
 
-const keys   = ["f",           "a",           "max",      "min"     ];
-const calcs  = [ ECalc.f,       ECalc.a,       Math.min,   Math.max ];
-const byElms = ["factorByElm", "addendByElm", "maxByElm", "minByElm"];
-const noop   = {cNN:"_noop"};
+const
+    keys   = ["f",           "a",           "max",      "min"     ],
+    calcs  = [ ECalc.f,       ECalc.a,       Math.min,   Math.max ],
+    byElms = ["factorByElm", "addendByElm", "maxByElm", "minByElm"],
+    noop   = {cNN:"_noop"}
+;
 //==============================================================================
 // create() instantiates a subclass of EBase and returns it. Internally, the b
 //          arg is always defined and is the initial error check for Easer vs
@@ -42,7 +44,7 @@ function create(o, set, b = true, q, cls) {
         o.prop = PBase._validate(o.prop, "prop", true);
 
         o.loopByElm = !is1Elm && (o.loopByElm ?? o.loopByElement);
-        o.calcByElm = is1Elm || o.loopByElm;
+        o.calcByElm =  is1Elm || o.loopByElm;
 
         o.isSet = (o.set == E.set); // both these can be set to true later
         o.isNet = (o.set == E.net) || o.prop?.isUn || o.func?.isUn;
@@ -77,9 +79,9 @@ function create(o, set, b = true, q, cls) {
             parseUn(o);             // normalize stuff across elements
         else {
             optional(o);            // adjust o.c for unused optional arguments
-            current(o, cv, is1Elm); // process current values
+            current(o, cv);         // process current values
         }
-        maskCV(o);                  // for configCV (config.param = E.cV)
+        maskCV(o);                  // for o.configCV (config.param = E.cV)
     }
     endToDist(o);                   // convert end to distance = factor
     if (hasElms) {
@@ -122,16 +124,15 @@ function create(o, set, b = true, q, cls) {
 //==============================================================================
 // Everything else is for portioning create() into manageable chunks
 function getCV(o) {
-    let cv;
-    cv = o.currentValue;
-    if (cv) {                              // initial validation of user values
-        cv = Ez.toArray(cv, "getCV");      // see current() for final validation
+    let cv = o.currentValue;
+    if (cv) {                               // initial parsing/validation of
+        cv = Ez.toArray(cv, "getCV");       // user values, current() does more.
         if (cv.length != o.l)
             Ez._mustBeErr("currentValue", "an array the same length as elms");
         //----------------------
         o.cvDims = Ez._dims(cv);
         if (o.cvDims == 2 || Is.Number(cv[0]))
-            if (!o.func && !o.cjs && o.prop.needsFunc) {
+            if (o.prop.needsFunc && !o.func && (!o.func.isColor || !o.cjs)) {
                 const pre = `${o.prop.name} requires a function, and `;
                 const suf = " you must set the func property, e.g {func:F.rgb}";
                 throw new Error(o.cvDims == 2
@@ -139,7 +140,7 @@ function getCV(o) {
                   : `${pre}if currentValue is an array of Number,${suf}`
                 );
             }
-            else if (o.isNet)              // E.net requires full CSS values
+            else if (o.isNet)               // E.net requires full CSS values
                 Ez._mustBeErr("currentValue for {set:E.net}",
                               "an array of strings by element");
     }
@@ -147,7 +148,7 @@ function getCV(o) {
         Ez._cantErr("Unless you define {set:E.set}, you",
                     "leave elements and currentValue undefined");
     //---------------------------
-    if (!cv || o.enableRestore) {
+    if (!cv || o.enableRestore) {           // the DOM values:
         o.restore = o.prop.getMany(o.elms);
         if (!cv)
             cv = o.restore;
@@ -163,19 +164,20 @@ function getFunc(o, cv) {
     //------
     let idx;
     const names = new Array(o.l);
-    cv.forEach((v, i) => {
+    cv.forEach((v, i) => {                  // get cv's function names
         idx = v.indexOf(E.lp);
         names[i] = (idx >= 0) ? v.slice(0, idx) : "";
     });
-    if (!o.func)
+    if (!o.func)                            // fall back to cv, then o.prop
         o.func = names[0] ? F[names[0]] : o.prop.func;
     if (!o.func) {
-        if (o.prop.needsFunc)
-            throw new Error(`${o.prop.name} requires a function.`);
-    }                           // color funcs validated via current()
-    else if (!o.isSet && !o.func.isCFunc
+        if (o.prop.needsFunc)               // defaults should prevent this
+            throw new Error(`${o.prop.name} requires a func!`);
+    }
+    else if (!o.isSet && !o.func.isCFunc    // CFuncs validated in current()
           && (idx = names.findIndex(v => v != o.func.name)) >= 0)
-        throw new Error(`Element ${idx}'s function, ${names[idx]}, does not match {func:F.${o.func.name}}`);
+        throw new Error(`elms[${idx}]'s value's function, "${names[idx]}", `
+                      + `does not match {func:F.${o.func.name}}`);
 }
 //==============================================================================
 // isCjs() validates that val is an instance of Color, but Color is not imported
@@ -184,33 +186,42 @@ function isCjs(obj) {
     try   { return obj?.constructor.name == "Color" && "cam16_jmh" in obj; }
     catch { return false; }
 }
-function isCjsSpace(obj) {  // `in` throws if obj is Number, String
+function isCjsSpace(obj) {  // `in` throws when obj is Number, String
     try { return obj?.constructor.name == "ColorSpace" && "gamutSpace" in obj; }
     catch { return false; }
 }
 // color() sets o.cjs, the primary Color instance
 function color(o, hasElms) {
-    if (o.colorjs)  // alt long name for users
-        o.cjs = o.colorjs;
+    if (hasElms && o.func && o.func.isColor != o.prop.isColor)
+        Ez._cantErr("You", `use ${o.func.name} with ${o.prop.name}`);
+    //-------------
+    if (!o.cjs)
+        o.cjs = o.colorjs;                   // alt long name for users
     if (o.cjs) {
-        if (hasElms && !o.prop.isColor) //!!until .isNet and gradients/color-mix!!
-            Ez._cantErr("You", `use colorjs with ${o.prop.name}`);
-        else if (!isCjs(o.cjs))
+        if (!isCjs(o.cjs))
             Ez._mustBeErr("colorjs", "an instance of Color");
-
+        else if (hasElms && !o.prop.isColor) //!!until .isNet and gradients/color-mix
+            Ez._cantErr("You", `use colorjs with ${o.prop.name}`);
+        else if (o.func && (o.func.space ?? o.func.name) != o.cjs.cssId)
+            Ez._mustBeErr(`The colorjs space (${o.cjs.cssId})` // rgb !=srgb, but why use colorjs for rgb??
+                        + `the same as the func (${o.func.space ?? o.func.name})`);
+        //-------------------
         if (o.displaySpace) {
             let ds = o.displaySpace;
-            if (isCjsSpace(ds))         // it's a ColorSpace instance
-                ds = ds.id;             // - we want the string id
-            o.displaySpace = {space:ds};
-
-            try { o.cjs.display(o.displaySpace); }
-            catch (err) {               // let Color.js validate the space id
+            if (!ds.space) {
+                if (isCjsSpace(ds))          // it's a ColorSpace
+                    ds = ds.id;              // we want the string id as
+                o.displaySpace = {space:ds}; // an object property for Color.js
+            }
+            try {                            // use Color.js to validate it
+                o.cjs.display(o.displaySpace);
+            }
+            catch (err) {
                 err.message = "displaySpace property - " + err.message;
                 throw err;
-             }
+             } //---------
         }
-        o.space = o.cjs.spaceId.replaceAll("-", "_"); // kebab-case to snake_case
+        o.space = o.cjs.spaceId.replaceAll("-", "_");
     } //o.space is used only once, in current(), but it's simpler to set it here
 }
 //==============================================================================
@@ -277,7 +288,6 @@ function af(o, keys, args) {
 //          There are also obvious cases where byElm can be implied.
 function config(o, hasElms) {
     let cfg, hasCV, j, l, prm;
-
     o.config = [];
     o.dims   = [];
     keys.forEach((key, i) => {
@@ -336,8 +346,8 @@ function config(o, hasElms) {
 }
 // paramLength() helps config() validate cfg.param.length
 function paramLength(o, l, key, byElm) {
-    const pairs = [[o.l, "elements"], [o.c, "arguments"]];
-    const pair  = pairs[Number(!byElm)];
+    const pairs = [[o.l, "elements"], [o.c, "arguments"]],
+          pair  = pairs[Number(!byElm)];
     if (l > pair[0])
         throw new Error(`${key} array length exceeds the number of `
                         `${pair[1]}: ${l} > ${pair[0]}`);
@@ -429,9 +439,9 @@ function easies(o, hasElms) {
 }
 //==============================================================================
 function parseUn(o) {       // o.isNet only
-    const lens = o.lens;    // lengths by element
-    const c = o.c;
-    const i = lens.findIndex(len => len < c);
+    const lens = o.lens,    // lengths by element
+          c    = o.c,
+          i    = lens.findIndex(len => len < c);
     if (i >= 0)
         throw new Error(`Your mask has ${c} arguments. elms[${i}] only has ${o.lens[i]}.`);
     //-------------------
@@ -469,19 +479,21 @@ function optional(o) { // not for o.isNet
 //==============================================================================
 // current() processes cv (user-supplied currentValue or o.restore).
 //           It can adjust o.c (argument count) upwards.
-function current(o, cv, is1Elm) { // not for o.isNet, shouldn't be for o.isSet...
+function current(o, cv) {    // not for o.isNet, shouldn't be for o.isSet...
     const lastPlug = o.mask.findLastIndex((v, i, arr) => arr[i - 1] != v - 1)
                    - 1;
-    if (o.currentValue) {  // user-supplied current value
+    if (o.currentValue) {    // user-supplied current value
         // Up-front validation makes the o.currentValue loops more efficient,
         // and is enabled by forcing all values to be of the same type. Mixing
         // types would be unusual, so it's not much of a loss. Values are not
         // validated beyond typeof and isCjs(), except for 1D array of strings.
-        const name = "currentValue";
-        const flat = cv.flat();
-        const type = typeof flat[0];
-        const isString = (type == "string");
-        const isNumber = (type == "number");
+        const
+        name = "currentValue",
+        flat = cv.flat(),
+        type = typeof flat[0],
+        isNumber = (type == "number"),
+        isString = (type == "string");
+
         if (!isString && !isNumber) {
             if (o.cvDims == 2)
                 typeError(flat[0], name);
@@ -497,10 +509,12 @@ function current(o, cv, is1Elm) { // not for o.isNet, shouldn't be for o.isSet..
                           `all the same type. You are mixing ${type} and {typeof v}`);
         //-------------------------------------
         if (o.cvDims == 2) { // convert numbers
-            const isAu = Is.A(o.u);
-            const map  = isString ? v => v
-                       : !isAu    ? v => v + o.u
-                                  : (v, j) => v + o.u[j];
+            const
+            isAu = Is.A(o.u),
+            map  = isString ? v => v
+                 : !isAu    ? v => v + o.u
+                            : (v, j) => v + o.u[j];
+
             o.cv = new Array(o.l);
             cv.forEach((args, i) => {
                 o.c = Math.max(o.c, validCount(o, args.length, lastPlug, name, i));
@@ -530,40 +544,44 @@ function current(o, cv, is1Elm) { // not for o.isNet, shouldn't be for o.isSet..
             //--------------------------
             o.cv = cv.map(v => v + o.u);
         }
-        else             // Color instance as current value
+        else                 // Color as current value, o.space = snake_case
             o.cv = cv.map(v => [...v[o.space], v.alpha]);
     }
-    else { // if (!o.currentValue) parse o.restore, except for o.cjs && is1Elm
-        if (o.cjs) {         // o.cv = all 4 args as numbers, until plugCV()
-            if (is1Elm)
-                o.cv = [[...o.cjs.coords, o.cjs.alpha]];
-            else {           // convert current values to o.cjs's color space
-                parseCV(o, cv);
-                cjsTo(o, o.cv);
-            }
+    else {                   // if (!o.currentValue) parse cv
+        if (o.cjs) {
+            parseCV(o, cv);
+            cjsTo(o, o.cv);  // convert current values to o.cjs's color space
+            if (o.func)      // o.cjs has done its job, don't use it at run-time
+                delete o.cjs;
         }
         else {               // o.cv = parsed DOM values as strings
             const isColor = o.prop.isColor;
             parseCV(o, cv, isColor);
-            if (isColor) {   // handle the CSS color funkiness
-                const space = o.func.space ?? o.func.name;
-                o.cv.forEach((v, _, arr) => {
-                    if (v[0] != o.func.name) {
-                        if (v[0] == Fn.rgba && !o.func.name.startsWith(Fn.rgb)) {
-                            if (o.func.isHXX)
-                                arr.splice(0, CFunc.A, ...rgbToHxx(o.func, arr, o.u));
-                            else
-                                throw new Error(`rgb to ${space} conversion not supported w/o Color.js`);
-                        }
-                        else
-                            throw new Error(`${v[0]} to ${space} conversion not supported w/o Color.js`);
-                    }
+            if (isColor) {   // colors require special treatment
+                let coords;
+                const        // array starts with func name and optional space
+                func  = o.func,
+                name  = func.name,
+                space = func.space,
+                notSp = !space,
+                start = 1 + (notSp ? 0 : 1);
+                o.cv.forEach((v, i, arr) => { // validate and remove name, space
+                    coords = v.slice(start);  // simpler than splicing in-place
+                    if (v[0] == name && (notSp || v[1] == space))
+                        arr[i] = coords;
+                    else if (v[0].startsWith(Fn.rgb) && (func.isRGB || func.isHXX))
+                        arr[i] = func.isRGB
+                               ? coords       // hsl, hwb deconversion required:
+                               : rgbToHxx(func, coords, o.u);
+                    else
+                        throw new Error(`${v[--start]} to ${notSp ? name : space} `
+                                      + "conversion only supported with Color.js");
                 });
-            } //------------ // adjust o.c upwards if appropriate:
+            }                       // adjust o.c upwards if appropriate:
             o.c = Math.max(o.c, Math.max(...o.cv.map((args, i) => {
-                if (args[0]) // invalid DOM values are the user's problem,
+                if (args[0])        // invalid DOM values are the user's problem
                     return args.length;
-                else         // but empty values are rejected.
+                else                // but empty values are rejected
                     throw new Error(`elms[${i}] has no value for ${o.prop.name}, `
                                   + "and you have not provided a currentValue.");
             })));
@@ -624,28 +642,32 @@ function typeError(v, name, isColor) {
 //          it complicates endToDist() and creates the need for ECalc._c22s().
 function maskCV(o) {
     if (!o.configCV) return;
-    //------------------------------------------------------------------------
-    let allValues, byDim, cfg, cv, idx, isSame, len, m, maskCV, prm, sameArgs,
-        sameElms;
-
-    const
+    //-----------------------------------------------------------------
+    let allValues, byElmArg, cfg, cv, cvMask, idx, isSame, len, m, prm,
+        sameArgs, sameElms;
+    const err = "E.currentValue requires elements to have a value in "
+               + o.prop.name + " for every masked argument specified.",
     l    = o.l,
     lm   = o.lm,
     mask = o.mask,
-    err  = "E.currentValue requires elements to have a value in "
-          + o.prop.name + " for every masked argument specified.";
 
+    minLen = mask.at(-1) + 1,
+    notDim = [],
+    hasDim = [],
     // Convert all of o.cv to numbers up front. It makes isSame comparisons
     // more efficient and the code simpler. Yes, it might convert values
     // that are never used as numbers, but converting on demand can convert
     // some values more than once, and these arrays are generally tiny.
-    const minLen = mask.at(-1) + 1;
-    const nums   = o.cjs ? o.cv
-                         : o.cv.map(arr =>
-                                    arr.map(v => Ez.toNumby(v, o.func, o.u)));
-    // Process nums by cfg.dim, 0 is the most diverse
-    byDim = o.configCV.filter(cfg => !cfg.dim);
-    if (byDim.length) {
+    nums = o.cjs
+         ? o.cv
+         : o.cv.map(arr => arr.map(v => Ez.toNumby(v, o.func, o.u)));
+
+    // cfgs with .dim == 0 must be separated because later filters rely on
+    // properties that the next if() modifies: byElm and byArg.
+    for (cfg of o.configCV)
+        (cfg.dim ? hasDim : notDim).push(cfg);
+
+    if (notDim.length) {    // cfg.dim == 0
         let flat, dim;
         allValues = allMustHaveValues(o);
         if (o.oneArg) {
@@ -690,7 +712,7 @@ function maskCV(o) {
                 mask.forEach((w, j) =>  prm[i][j] = v[w]);
             });
         }
-        for (cfg of byDim) {
+        for (cfg of notDim) {
             cfg.dim   = dim;
             cfg.param = prm;
             if (dim == 1 && (o.oneArg || sameElms)) {
@@ -699,29 +721,29 @@ function maskCV(o) {
             }
         }
     }
-    // 1D byElm
-    byDim = o.configCV.filter(cfg => cfg.byElm);
-    if (byDim.length) {
-        for (cfg of byDim) {
+    if (hasDim.length) {    // cfg.dim > 0
+        // 1D byElm
+        byElmArg = hasDim.filter(con => con.byElm);
+        for (cfg of byElmArg) {
             isSame = sameElms ?? lm == 1;
-            maskCV = [];    // the indexes containing E.cV: masked elements
+            cvMask = [];    // the indexes containing E.cV: masked elements
             idx    = 0;
             while ((idx = cfg.param.indexOf(E.cV, idx)) > -1) {
                 mustHaveValue(o.cv[idx], err, idx);
-                maskCV.push(idx);
+                cvMask.push(idx);
             }
             if (!isSame) {
                 cv = [];    // nums for the masked elements only
-                for (m of maskCV)
+                for (m of cvMask)
                     cv.push(nums[m]);
                 isSame = isSameByElm(cv, cv.length, mask, lm);
             }
             if (isSame) {
                 prm = cfg.param;
                 idx = mask[0];
-                m   = maskCV[0]
+                m   = cvMask[0]
                 minArgs(nums[m], idx + 1, err, m);
-                for (m of maskCV)
+                for (m of cvMask)
                     prm[m] = nums[m][idx];
             }
             else {          // creates a 2D byElmByArg array
@@ -738,83 +760,83 @@ function maskCV(o) {
                 cfg.dim++;
             }
         }
-    }
-    // 1D byArg
-    byDim  = o.configCV.filter(cfg => cfg.byArg);
-    if (byDim.length) {
-        allValues = allMustHaveValues(o, allValues);
-        for (cfg of byDim) {
-            isSame = sameArgs ?? l == 1;
-            maskCV = [];      // the indexes containing E.cV
-            idx    = 0;
-            while ((idx = cfg.param.indexOf(E.cV, idx)) > -1)
-                maskCV.push(idx);
-            if (!isSame)
-                isSame = isSameByArg(nums, l, maskCV,
-                                                maskCV.length);
-            len = maskCV.at(-1) + 1;
-            if (isSame) {
-                prm = cfg.param;
-                minArgs(nums[0], len, err, 0);
-                for (m of maskCV)
-                    prm[m] = nums[0][m];
-            }
-            else {            // creates a 2D byElmByArg array
-                prm = new Array.from({length:l}, () => [...cfg.param]);
-                nums.forEach((v, i) => {
-                    minArgs(v, len, err, i);
-                    for (m of maskCV)
-                        prm[i][m] = v[m];
-                });
-                cfg.param = prm;
-                cfg.dim++;
-            }
-        }
-    }
-    // 2D bAbE, byArgByElm: [arg[elm]]
-    byDim = o.configCV.filter(cfg => cfg.bAbE);
-    for (cfg of byDim) {
-        if (!allValues && cfg.param.includes(E.cV))
+        // 1D byArg
+        byElmArg  = hasDim.filter(con => con.byArg);
+        if (byElmArg.length) {
             allValues = allMustHaveValues(o, allValues);
-        cfg.param.forEach((p, i) => {
-            if (p === E.cV) {
-                prm = new Array(l);
-                nums.forEach((v, j) => {
-                    mustBeNumber(v[i], err, j, i);
-                    prm[j] = v[i];
-                });
-                cfg.param[i] = prm;
-            }
-            else if (Is.A(p)) {
-                idx = 0;
-                while ((idx = p.indexOf(E.cV, idx)) > -1) {
-                    mustHaveValue(o.cv[idx], err, idx);
-                    mustBeNumber (nums[idx][i], err, idx, i);
-                    p[idx] = nums[idx][i];
+            for (cfg of byElmArg) {
+                isSame = sameArgs ?? l == 1;
+                cvMask = [];      // the indexes containing E.cV
+                idx    = 0;
+                while ((idx = cfg.param.indexOf(E.cV, idx)) > -1)
+                    cvMask.push(idx);
+                if (!isSame)
+                    isSame = isSameByArg(nums, l, cvMask,
+                                                    cvMask.length);
+                len = cvMask.at(-1) + 1;
+                if (isSame) {
+                    prm = cfg.param;
+                    minArgs(nums[0], len, err, 0);
+                    for (m of cvMask)
+                        prm[m] = nums[0][m];
+                }
+                else {            // creates a 2D byElmByArg array
+                    prm = new Array.from({length:l}, () => [...cfg.param]);
+                    nums.forEach((v, i) => {
+                        minArgs(v, len, err, i);
+                        for (m of cvMask)
+                            prm[i][m] = v[m];
+                    });
+                    cfg.param = prm;
+                    cfg.dim++;
                 }
             }
-        });
-    }
-    // 2D bEbA, byElmByArg: [elm[arg]]
-    byDim = o.configCV.filter(cfg => cfg.dim == 2 && !cfg.bAbE);
-    for (cfg of byDim) {
-        cfg.param.forEach((p, i) => {
-            if (p === E.cV) {
-                mustHaveValue(o.cv[i], err, i);
-                minArgs(nums[i], minLen, err, i);
-                prm = new Array(lm);
-                mask.forEach((w, j) => prm[j] = nums[i][w]);
-                cfg.param[i] = prm;
-            }
-            else if (Is.A(p)) {
-                mustHaveValue(o.cv[i], err, i);
-                len = p.lastIndexOf(E.cV);
-                minArgs(nums[i], len, err, i);
-                idx = 0;
-                while ((idx = p.indexOf(E.cV, idx)) > -1)
-                    p[idx] = nums[i][idx];
-            }
-        });
+        }
+        // 2D bAbE, byArgByElm: [arg[elm]]
+        byElmArg = hasDim.filter(con => con.bAbE);
+        for (cfg of byElmArg) {
+            if (!allValues && cfg.param.includes(E.cV))
+                allValues = allMustHaveValues(o, allValues);
+            cfg.param.forEach((p, i) => {
+                if (p === E.cV) {
+                    prm = new Array(l);
+                    nums.forEach((v, j) => {
+                        mustBeNumber(v[i], err, j, i);
+                        prm[j] = v[i];
+                    });
+                    cfg.param[i] = prm;
+                }
+                else if (Is.A(p)) {
+                    idx = 0;
+                    while ((idx = p.indexOf(E.cV, idx)) > -1) {
+                        mustHaveValue(o.cv[idx], err, idx);
+                        mustBeNumber (nums[idx][i], err, idx, i);
+                        p[idx] = nums[idx][i];
+                    }
+                }
+            });
+        }
+        // 2D bEbA, byElmByArg: [elm[arg]]
+        byElmArg = hasDim.filter(con => con.dim == 2 && !con.bAbE);
+        for (cfg of byElmArg) {
+            cfg.param.forEach((p, i) => {
+                if (p === E.cV) {
+                    mustHaveValue(o.cv[i], err, i);
+                    minArgs(nums[i], minLen, err, i);
+                    prm = new Array(lm);
+                    mask.forEach((w, j) => prm[j] = nums[i][w]);
+                    cfg.param[i] = prm;
+                }
+                else if (Is.A(p)) {
+                    mustHaveValue(o.cv[i], err, i);
+                    len = p.lastIndexOf(E.cV);
+                    minArgs(nums[i], len, err, i);
+                    idx = 0;
+                    while ((idx = p.indexOf(E.cV, idx)) > -1)
+                        p[idx] = nums[i][idx];
+                }
+            });
+        }
     }
     if (o.max && o.min) {
         //!!reorder by dim for minor efficiency gain
@@ -878,12 +900,14 @@ function mustBeNumber(val, err, i1, i2) {
 function endToDist(o) {
     if (!o.isTo || !Is.def(o.a)) return;
     //----------------------------------
-    let prm, val;
-    const f  = o.config[0];
-    const a  = o.config[1];
-    const fp = f.param;
-    const ap = a.param;
-    const la = ap.length;
+    let fp, prm, val;
+    const
+    f  = o.config[0],
+    a  = o.config[1],
+    ap = a.param,
+    la = ap.length;
+    fp = f.param;
+
     // Every factor value must have a corresponding addend value, but I
     // default addend to 0 at the top level, so I do the same here.
     // Addends without factors are sketchy, but I let it slide because
@@ -944,16 +968,16 @@ function endToDist(o) {
         if (f.dim == a.dim && f.byElm != a.byElm) {
             // mismatched 1D arrays: f.dim must be >= a.dim, so factor to 2D
             prm = new Array(la);
-            ap.forEach((_, i) => prm[i] = fp);
+            ap.forEach((_, i) => prm[i] = fp.slice());
             if (f.byArg)
                 delete f.byArg;
             else {
                 delete f.byElm;
                 f.bAbE = true;  // in spite of !o.bAbE
             }
-            f.dim    = 2;
-            fp.param = prm;
-            fp       = prm;
+            f.dim   = 2;
+            f.param = prm;
+            fp = prm;
         }
         switch (f.dim) {
         case 0:
@@ -1423,8 +1447,8 @@ function upDim(o, cfg, prm, calc, dim, swap1D, isMEaser) {
         const l1 = cfg.bAbE ? o.l  : o.lm;
         const undef = prm.length < l2
                    || prm.includes(undefined)
-                   || prm.some(p => p.length < l1
-                                 || p.includes(undefined));
+                   || prm.some(p => Is.A(p) && (p.length < l1
+                                             || p.includes(undefined)));
         dim  = 2;
         noop = [];
         if (undef) {

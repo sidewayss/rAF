@@ -28,6 +28,7 @@ function loadPlay(_update) {
     elms.play.addEventListener(CHANGE, changePlay, false);
     elms.stop.addEventListener(CHANGE, changeStop, false);
 }
+// changePlay() is the change event handler for #play
 function changePlay() {
     if (elms.play.value == PAUSE)        // PAUSE
         raf.pause();
@@ -48,53 +49,42 @@ function changePlay() {
                 if (ezX.e.status > E.tripped)
                     return;              // user clicked #stop
                 //---------------------- // else animation ends:
-                setFrames(g.frameIndex); // don't update msecs or secs
+                setFrames(g.frameIndex); // don't call timeFrames(), updateTime()
                 updateDuration(raf.elapsed / MILLI);
                 ns.flipZero?.();         // !multi //!!what about multi??
                 elms.x   .value = g.frameIndex;
                 elms.stop.value = RESET;
-                if (!ezX.e.status)      // only enabled for status == E.tripped
+                if (!ezX.e.status)       // only enabled for status == E.tripped
                     elms.play.disabled = true;
-            } // else sts == E.pausing, resuming from pause
+            } // else sts == E.pausing
         }).catch(errorAlert);
     }
 }
 // changeStop() handles the click event for #stop and is called w/o evt arg by
-//              pseudoAnimate(), easings change.trip.plays.wait.loopByElm(),
-//              and color click.roundT() to handle cases where sts == E.arrived.
+//              pseudoAnimate(), and: easings change.trip.plays.wait.loopByElm()
+//              and color click.roundT() to handle cases where sts == E.arrived
+//              and pseudoAnimate() is not called.
 function changeStop(evt) {
     if (elms.stop.disabled) return; // nothing to do that hasn't been done
-    //-----------------------------
+    //----------------------------- // only occurs if (!evt)
     elms.x.value = 0;
     elms.stop.value = STOP;
-    elms.stop.disabled = true;  // must precede ns.refresh()
+    elms.stop.disabled = true;      // must precede ns.refresh() below!!
     elms.play.disabled = false;
-    switch (elms.play.value) {
-    case PAUSE:                 // stop = STOP
-        raf.stop();   break;    // cancels animation, resolves promise
-    case RESUME:                // stop = STOP
-        resetPlay();  break;    // pause resolved the promise already
-    case PLAY:                  // stop = RESET, play.disabled = true
-        if (evt) {
-            raf.stop();         // resolves promise => raf.play.then() above
-            ns.refresh();       // calls pseudoAnimate()=>changeStop()
-            updateTime();
+    const val = elms.play.value;
+    if (val == PAUSE)               // stop = STOP
+        raf.stop();                 // - cancels animation, resolves promise
+    else {                          // the promise is already resolved:
+        if (val == RESUME)          // stop = STOP
+            resetPlay();
+        else { // (val == PLAY)     // stop = RESET, play.disabled = true
+            setFrames();            // - revert to pseudo-frames
+            updateTime();           //         and pseudo-time
+            updateDuration();
         }
-        updateDuration();
+        if (evt)                    // user clicked stop
+            ns.refresh();           // calls pseudoAnimate()=>changeStop()!!
     }
-    if (elms.play.value == PLAY) {  // play = disabled, stop = RESET
-        if (evt) {
-            raf.stop();             // resolves promise => raf.play.then() above
-            ns.refresh();           // calls pseudoAnimate()=>changeStop()
-            updateTime();
-        }
-        updateDuration();
-    }
-    else if (raf.isPausing)         // play = RESUME, stop = STOP
-        resetPlay()                 // pause resolved the promise already
-    else                            // play = PAUSE,  stop = STOP
-        raf.stop();                 // cancels animation, resolves promise
-
     updateCounters();
     ns.formatPlayback?.(false, Boolean(evt));
 }

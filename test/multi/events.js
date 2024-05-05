@@ -4,9 +4,8 @@ export const OVERRIDES = ["plays","eKey","trip"];
 
 import {E, P} from "../../raf.js";
 
-import {storeCurrent, getNamedEasy}   from "../local-storage.js";
-import {COUNT, PLAYS, CHANGE, LITE,
-        elms, g, orUndefined, toFunc} from "../common.js";
+import {storeCurrent, getNamedEasy} from "../local-storage.js";
+import {COUNT, PLAYS, CHANGE, LITE, elms, g, orUndefined} from "../common.js";
 
 import {initEasies}     from "./_load.js";
 import {easys, refresh} from "./_update.js";
@@ -19,7 +18,7 @@ const EZ_ = "ez-";
 function loadEvents() {
     let func, i, id;
     for (id of ["easy", ...OVERRIDES]) {    // event listeners not cloned
-        func = toFunc(change, id);
+        func = change[id];
         for (i = 0; i < COUNT; i++)
             elms[id][i].addEventListener(CHANGE, func, false);
     }
@@ -87,7 +86,7 @@ const change = {
 // setEasy() is called by change.easy(), fromFromObj()
 function setEasy(i, name, obj) { // formFromObj() defines obj
     for (const id of OVERRIDES)  // call set.plays(), set.eKey(), set.trip()
-        toFunc(set, id)(i, id, obj?.[id][i]);
+        set[id](i, id, obj?.[id][i]);
 
     const ez = getNamedEasy(name);
     toElm(EZ_, PLAYS, i).textContent = ez.plays;

@@ -1,9 +1,10 @@
-export {E, Ease, F, Fn, HD, Is, P, Pn, U};
+export {E, Ease, F, Fn, HD, Is, M, P, Pn, U};
 
 import {Ez} from "./raf.js";
 
 // All consts, except Is, are fully or partially populated by PFactory.init():
 const U  = {pct:"%"};  // units, e.g. "px", "deg"
+const M  = {};         // bitmasks for matrix() and matrix3d()
 const HD = {};         // bitmasks for CSS L4 (UHD) color functions
 const E  = {           // global constants, PFactory.init() adds enums
     comsp:/[,\s]+/,    currentValue:null,   value:"value", // value, unit, comp

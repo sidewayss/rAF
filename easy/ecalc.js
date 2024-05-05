@@ -1,3 +1,5 @@
+import {Is} from "../raf.js";
+
 // Not exported by raf.js
 export class ECalc {
     #calcs; #oneD; #twoD; #value;
@@ -13,16 +15,13 @@ export class ECalc {
             this.#twoD = o.twoD;
             if (o.dmin < 2) {
                 this.#oneD = new Array(o.l1);
-                if (!o.dmax || o.bySame) {
-                    if (o.easies) {
-                        let ez, m;
-                        for (ez of o.easies)
-                            for (m of o.easy2Mask.get(ez))
+                if (!o.dmax || o.bySame)
+                    if (o.easies)
+                        for (const ez of o.easies)
+                            for (const m of o.easy2Mask.get(ez))
                                 this.#twoD[m] = this.#oneD;
-                    }
                     else
                         this.#twoD.fill(this.#oneD);
-                }
             }
         }
         Object.seal(this);
