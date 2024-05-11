@@ -1,19 +1,23 @@
-export {loadIt, getEasies, initEasies, updateAll, easeFinally, resizeWindow};
+export {loadIt, getEasies, initEasies, updateAll, easeFinally, resizeWindow,
+        isCSSSpace};
+
 export let ezColor;
 export const
     easys    = new Array(COUNT),
     refRange = {}
 ;
 
+import Color    from "https://colorjs.io/dist/color.js";
 import {spaces} from "https://colorjs.io/src/spaces/index.js";
+
 
 import {C, U, E, Fn, F, P, Ez, Easy} from "../../raf.js";
 import {CFunc} from "../../prop/func.js"; //!!need better way to access CFunc.A!!
 
 import {msecs, pad, newEasies, updateTime, updateCounters} from "../update.js";
-import {getLocal, getNamed, getNamedEasy} from "../local-storage.js";
+import {getLocal, getNamed, getNamedJSON} from "../local-storage.js";
 import {COUNT, CHANGE, CLICK, INPUT, EASY_, MEASER_, elms, g, pairOfOthers,
-        dummyEvent} from "../common.js";
+        orUndefined, dummyEvent, errorAlert} from "../common.js";
 
 import {refresh} from "./_update.js";
 import {isMulti, loadEvents, timeFactor, getCase} from "./events.js";
@@ -33,9 +37,9 @@ function loadIt(byTag, hasVisited, params) {
         txt = id;
         css = space.cssId;
         opt = new Option();
-        if (!(css in F))                // no Func for this space = Color.js
-            opt.className = "colorjs";
-        else {
+        //!!if (!(css in F))                // no Func for this space = Color.js
+        //!!    opt.className = "colorjs";  //!! could use css in F instead...
+        if (isCSSSpace(css)) {
             opt.style.color = "black";  // Color.js spaces: var(--charcoal)
             if (id == "srgb")           // F.srgb exists as an alias
                 css = Fn.rgb;           // even Color.js display() uses rgb(),
@@ -62,6 +66,8 @@ function loadIt(byTag, hasVisited, params) {
             }
         });
     }
+    refRange["--acescg"]     .fill(format.positiveThree); //!!
+    refRange["--xyz-abs-d65"].fill(format.one); //!!
     refRange[Fn.rgb] = new Array(COUNT).fill(format.zero);
 
     const                   // clone leftSpaces to create rightSpaces
@@ -132,6 +138,9 @@ const format = {
                            : format.negativeThree(n); // should never happen...
     }
 }
+function isCSSSpace(val) {
+    return val in F;
+}
 //==============================================================================
 // getEasies() is called exclusively by loadJSON()
 function getEasies(hasVisited) {
@@ -166,24 +175,19 @@ function initEasies(obj, hasVisited) {
         lrse.spaces.dispatchEvent(evt); // call change.space() for both
 
     evt = dummyEvent(INPUT, LOADING);
-    for (lrse of g.startEnd)            // dispatchEvent() avoids exports
+    for (lrse of g.startEnd)            // dispatchEvent() avoids im/exports
         lrse.input.dispatchEvent(evt);  // call input.color() for both
 
-    const b = newEasies();
+    const b = newEasies();              // instantiates a new, empty g.easies
     if (b) {                            // ezX added/deleted in newTargets()
         if (isMulti) {
-            let i;
-            const easys = new Array(COUNT);
-
-            for (i = 0; i < COUNT; i++) // get the three easys
-                easys[i] = getNamedEasy(obj.easy[i]);
-
-            const f = timeFactor(easys);
-            for (i = 0; i < COUNT; i++) // scale the time of each easy
-                g.easies.add(setEasy(easys[i], f));
+            const json = obj.easy.map(name => getNamedJSON(name));
+            const f    = timeFactor(json);
+            for (const o of json)       // scale each easy.time by f
+                g.easies.add(newEasy(o, f));
         }
         else {
-            ezColor = setEasy(new Easy(obj));
+            ezColor = newEasy(obj);     // just set ezColor.time = msecs;
             g.easies.add(ezColor);
         }
 
@@ -195,16 +199,18 @@ function initEasies(obj, hasVisited) {
     }
     return b;
 }
-// setEasyTime() helps setEasy() and change.time()
-function setEasyTime(ez, f) {        // f for factor
-    ez.time = f ? Math.round(ez.time * f) : msecs;
-}
-// setEasy() helps initEasies()
-function setEasy(ez, f) {            // f for factor
-    setEasyTime(ez, f);
-    ez.plays = 1;
-    ez.roundTrip = elms.roundT.value;
-    return ez;
+// newEasy(obj) creates a new easy from obj, resetting start and end to default
+// localStorage and presets have {start:0, end:1000} or vice-versa
+// Better for front-end and copyCode() to go with the default: {start:0, end:1}
+function newEasy(obj, f) {
+    for (const key of ["start","end","plays","loopWait","roundTrip","autoTrip"])
+        delete obj[key];                    // leave flipTrip, tripWait intact
+
+    obj.time      = f ? Math.round(obj.time * f) : msecs;
+    obj.roundTrip = orUndefined(elms.roundT.value);
+
+    try         { return new Easy(obj); }
+    catch (err) { errorAlert(err);    }
 }
 //==============================================================================
 // updateAll() called by loadFinally(), openNamed()
@@ -214,60 +220,78 @@ function updateAll() { // identical to multi updateAll()
     updateCounters();
 }
 //==============================================================================
-//!!E.cV overlap (in)efficiency?? Maybe not, but at last document it.
+//!!E.cV overlap (in)efficiency?? Maybe not "fix" it, but at least document it.
 //!!units based on current value?? Good idea. Somewhat "unstructured"-like.
-function easeFinally(af, ezs, wait, is) {
-    let blacks, cjs, end, ez, grays, mask, prop, timex;
-    const
-    ctrls = elms.controls,
-    rules = Array.from(document.styleSheets[1].cssRules).slice(0, 5),
-    start = g.start.color.coords;
-    wait += 400;
-                                                    // colors post fade-in:
-    ez  = new Easy({wait, time:1500, type:E.sineOut}),
-    end = E.currentValue;
-    switch (elms.leftSpaces.value) {
-        case Fn.rgb:
-            start.forEach((_, i) => start[i] *= 255);
-        case Fn.hsl: case Fn.hwb:
-            break;
-        default:
-            cjs = g.left.color // for conversions, not just animation
-    }
-    ez.newTarget({cjs, start, end, prop:P.color,  elms:rules.splice(0, 3)});
-    ez.newTarget({cjs, start, end, prop:P.fill,   elms:rules});
-    ez.newTarget({cjs, start, end, prop:P.stroke, elms:rules});
-    prop  = P.bgColor;
-    ez.newTarget({cjs, start,     end, prop, elms:endCanvas});
-    ez.newTarget({cjs, start:255, end, prop, elms:ctrls});
 
-    timex = [elms.time, elms.x];
-    ez.newTarget({cjs, start:timex.map(elm => elm.max), end, prop:P.value, elms:timex});
-    prop = P.accentColor;
-    end  = prop.getn(timex[0]);
-    ez.newTarget({cjs, start, end, prop, elms:timex});
-
-    blacks = [ctrls, elms.startCanvas, elms.endCanvas];
-    grays  = Array.from(document.getElementsByClassName("border-gray"));
-    grays.push(is.multi ? elms.multis : elms.easys);
-
-    prop = P.borderColor;                           // alpha = borderOpacity
-    end  = prop.getn(grays[0])[CFunc.A];            // --border-gray: #0002;
-    mask = C.alpha;                                 // mask as bitmask integer
-    ez.newTarget({end, prop, mask, elms:grays });   // start:0
-    ez.newTarget({     prop, mask, elms:blacks});   // start:0, end:1
-    ezs.add(ez);
-                                                    // ctrls opacity:
-    ez = new Easy({time:wait, type:E.expo, io:E.in});
-    ez.newTarget({prop:P.o, elm:ctrls});
-    ezs.add(ez);
-                                                    // ctrls blur:
-//    ez = new Easy({time:2500, type:E.sineOut}),
-//    obj = {elms:ctrls, prop:P.filter, func:F.blur, start:0.0625, mid:0.5, end:0, units:E.rem};
-//    ez.newTarget({elm:tar, prop:P.filter, func:F.blur, start:0.0625, end:0.5, units:E.rem});
-//    ezs.add(ez);
+function easeFinally(af, ezs, ez, wait, is) {
+    let end, mask, prop, start, time,
+    elm = elms.controls;
 
     af.preInit = true;
+    ez.newTarget({prop:P.o, elm});          // #controls opacity 0-1
+
+    start = E.currentValue;                 // body filter
+    time  = 400;
+    ez    = new Easy({wait, time});
+    ez.newTarget({start, end:1, prop:P.filter, elm:document.body, set:E.net});
+    ezs.add(ez);
+
+    wait += 200;                           // everything return to original
+    time  = 800;
+    ez    = new Easy({wait, time, type:E.sine, io:E.out});
+    wait += 400;
+    time  = 1050
+    const ez2 = new Easy({wait, time, type:E.pow, pow:2.5});
+    time += 100
+    const ez3 = new Easy({wait, time});
+    ezs.add(ez);                            // contrast
+    ezs.add(ez2);                           // saturation, blur
+    ezs.add(ez3);                           // drop-shadow blur
+    ezs.newTarget({start, end:[1, 0, 1, 0], prop:P.filter, elm, set:E.net,
+                         mask:[0, 1, 2, 8], easies:[ez2, ez2, ez, ez3]});
+    // drop-shadow blur moves from 5 to 8 via getComputedStyle(rgb(), ...)
+
+    let   cjs   = g.left.color;             // cjs can be reset to undefined
+    const space = cjs.space;
+    start = Color.to(elms.startInput.value, space).coords.slice();
+    end   = E.cV;
+    switch (elms.leftSpaces.value) {
+        case Fn.rgb:                        // raison de slice():
+            start.forEach((_, i) => start[i] *= 255);
+        case Fn.hsl: case Fn.hwb:
+            cjs = undefined;
+        default:
+    }
+    wait += 400;
+    time -= 450;
+    elm = [elms.time, elms.x];
+    ez  = new Easy({wait, time});           // test numeric strings with start
+    ez.newTarget({start:elm.map(e => e.max), end, prop:P.value, elm});
+    ezs.add(ez);
+                                            // test animating CSSStyleRules
+    const rules = Array.from(document.styleSheets[1].cssRules).slice(0, 5);
+    ez = new Easy({wait, time, type:E.expo});
+    ez.newTarget({cjs, start, end, prop:P.color,   elms:rules.splice(0, 3)});
+    ez.newTarget({cjs, start, end, prop:P.fill,    elms:rules});
+    ez.newTarget({cjs, start, end, prop:P.stroke,  elms:rules});
+    ez.newTarget({cjs, start, end, prop:P.bgColor, elms:endCanvas});
+
+    prop = P.accentColor;                   // #time, #x again
+    end  = Color.to(prop.getOne(elm[0]), space).coords;
+    ez.newTarget({cjs, start, end, prop, elm});
+
+    prop = P.borderColor;                   // alpha = borderOpacity
+    mask = C.alpha;                         // mask as bitmask integer
+    elm  = Array.from(document.getElementsByClassName("border-gray"));
+    end  = prop.getn(elm[0])[CFunc.A];      // --border-gray: #0002;
+    elm.push(is.multi ? elms.multis : elms.easys);
+    ez.newTarget({end, prop, elm, mask});   // start:0
+
+    elm = [elms.controls, elms.startCanvas, elms.endCanvas];
+    ez.newTarget({prop, elm, mask});        // start:0, end:1
+    ezs.add(ez);
+                                            // "linear", not "default" here:
+    elms.easys[0].text = Easy.type[E.linear];
     return elms.canvas;
 }
 //==============================================================================

@@ -3,7 +3,7 @@ FPS = 60,    // assumes 60hz, but adjusts to reality at run-time
 ezX, raf,    // Easy, AFrame
 preDoc;      // prefix for this document, see local-storage.js
 
-import {E, Ez, F, P, PFactory, Easy, AFrame} from "../raf.js";
+import {E, Ez, P, PFactory, Easy, AFrame} from "../raf.js";
 
 import {msecs, loadUpdate, timeFrames}      from "./update.js";
 import {DEFAULT_NAME, loadNamed, disableSave,
@@ -95,7 +95,7 @@ async function loadCommon() {
 function loadJSON(response, isMulti, dir, ns, hasVisited, msg) {
     if (response.ok)
         response.json().then(json => {
-            g.presets = json.presets;  // must precede loadNamed()/loadFinally()
+            g.presets = json.presets;  // must precede loadNamed()
             loadNamed(isMulti, dir, ns)
               .then(namespace => {
                 ns_named = namespace;
@@ -182,13 +182,16 @@ function loadFinally(is, name, hasVisited, id) {
         errorLog(err, "fpsBaseline() failed")
      ).finally(() => {       // fade document.body into view
         const
-        time = 800,
-        ez   = new Easy({time, type:E.expo, io:E.in}),
+        time = 1000,
+        ez   = new Easy({time, type:E.expo}),
         ezs  = af.newEasies([ez]),
-        tar  = ns.easeFinally?.(af, ezs, time, is) ?? document.body;
+        tar  = ns.easeFinally?.(af, ezs, ez, time, is) ?? document.body;
 
         ez.newTarget({elm:tar, prop:P.o});
         af.play()
+          .then(r => {
+            console.log(r);
+          })
           .catch(err => {    // don't alert the user, just display the page
             P.o.setIt(tar, ONE);
             P.filter.setIt(tar, "none");

@@ -1,5 +1,5 @@
 /* animated: easier to find if they're at the top */
-button, select, span, input[type=text] {
+button, select, span, input[type=text], label, .lbl-right {
   color:var(--pitch);
 }
 .black, span.black {
@@ -23,20 +23,11 @@ state-button[disabled] {
 select, label, pre {
   font-weight:400;
 }
-#controls {
-  padding: 0.5rem 0;  /* different from multi/index.css */
-  background-color:var(--bg-white);
-  opacity:0;
-}
 #x {
   flex-grow: 1;
   width:auto;
   padding:0.5rem 0;
   margin-right:0.25rem;
-}
-#compare {
-  font-size:  1.75rem;
-  margin-left:-1px;    /* I couldn't find another way to align it */
 }
 #stop { margin:0 0.5rem }
 
@@ -65,6 +56,7 @@ body {
   height:100vh;
   background-color:black;
   opacity:1;
+  filter:saturate(1.5) contrast(1.5);
 }
 input[type=text] { /* #startColor, #endColor */
   flex-grow: 1;
@@ -84,6 +76,16 @@ input[type=text]:focus {
   grid-template-rows:   calc(1rem + var(--11-16ths)) repeat(4, 1.5rem);
   justify-items:start;  /* defaults to stretch */
   align-items:  start;  /* ditto */
+}
+#controls {
+  padding: 0.5rem 0; /* different from multi/index.css */
+  background-color:var(--bg-white);
+  opacity:0;
+  filter:saturate(2) blur(12px) contrast(2) drop-shadow(white 0 0 80px);
+}
+#compare {
+  font-size:1.75rem;
+  margin-left:-1px; /* I couldn't find another way to align it */
 }
 .symSpan {
   font-family:"Material Symbols Rounded";
@@ -135,7 +137,6 @@ input[type=text]:focus {
 #type {
   border: none;
   outline:none;
-  color:var(--pitch);
 }
 #share {
   font-size:calc(1.5rem - var(--8th));

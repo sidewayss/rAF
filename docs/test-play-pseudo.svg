@@ -188,6 +188,19 @@
       <use href="#rectEzY"   class="pale-pink"/>
       <use href="#textEzY"/>
     </g>
+    <text y="320" font-style="italic">
+      <tspan x="640">* refresh() called by:</tspan>
+      <tspan x="655" dy="1.35em">- change.time()</tspan>
+      <tspan x="655" dy="1.25em">- change.direction()</tspan>
+      <tspan x="655" dy="1.25em">- change.io()</tspan>
+      <tspan x="655" dy="1.25em">- change.type()</tspan>
+      <tspan x="655" dy="1.25em">- change.pow()</tspan>
+      <tspan x="655" dy="1.25em">- change.bezier()</tspan>
+      <tspan x="655" dy="1.25em">- changeSteps()</tspan>
+      <tspan x="655" dy="1.25em">- changeMSG()</tspan>
+      <tspan x="655" dy="1.25em">- inputTypePow()</tspan>
+      <tspan x="655" dy="1.25em">- click.clear()</tspan>
+    </text>
   </g>
   <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
   <g id="multi" visibility="hidden">

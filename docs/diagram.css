@@ -33,6 +33,9 @@ text {
   dominant-baseline:middle;
   cursor:default;
 }
+tspan {
+  text-anchor:start;
+}
 #bg {
   fill:#000;
 }

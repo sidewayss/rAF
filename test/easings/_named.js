@@ -5,15 +5,15 @@ import {E, Is, P} from "../../raf.js"
 
 import {msecs}        from "../update.js";
 import {DEFAULT_NAME} from "../named.js";
-import {MILLI, INPUT, elms, g, formatNumber, orUndefined, elseUndefined}
+import {INPUT, elms, g, formatNumber, orUndefined, elseUndefined}
                       from "../common.js";
 
-import {setNoWaits}           from "./events.js";
-import {isBezierOrSteps}      from "./tio-pow.js";
-import {initEzXY, updateTrip} from "./index.js";
+import {shallowClone, setNoWaits}      from "./events.js";
+import {isBezierOrSteps}               from "./tio-pow.js";
+import {initEzXY, updateTrip}          from "./index.js";
 import {easingFromObj, easingFromForm} from "./not-steps.js";
-import {FORMAT_END, FORMAT_START, stepsFromObj, stepsFromForm, isSteps}
-                                       from "./steps.js";
+import {FORMAT_END, FORMAT_START, stepsFromObj, stepsFromForm, updateTV,
+        isSteps}                       from "./steps.js";
 //==============================================================================
 // formFromObj() populates the form, sets globals, <= loadFinally(), openNamed()
 function formFromObj(obj) {
@@ -26,7 +26,7 @@ function formFromObj(obj) {
     P.visible(elms.direction.parentNode, notA);
     if (notA) {
         start = obj.start ?? legs?.[0].start ?? 0;
-        end   = obj.end   ?? legs?.[1].end   ?? MILLI;
+        end   = obj.end   ?? legs?.[1].end;
         formatNumber(start, ...FORMAT_START);
         formatNumber(end,   ...FORMAT_END);
 
@@ -67,8 +67,8 @@ function formFromObj(obj) {
 //               called by loadFinally(), clickCode().
 function objFromForm(hasVisited = true) {
     let autoTrip, flipTrip, loopWait, plays, tripWait;
-    const start = Number(elms.start.textContent);
-    const end   = Number(elms.end  .textContent);
+    const end   = Number(elms.end.textContent);
+    const start = orUndefined(Number(elms.start.textContent));
     const loopByElm = orUndefined(elms.loopByElm.checked);
     const roundTrip = orUndefined(elms.roundTrip.checked);
 
@@ -89,7 +89,7 @@ function objFromForm(hasVisited = true) {
         g.type = Number(elms.type.value);
         g.io   = isBS ? E.in : Number(elms.io.value);
         if (isStp)
-            updateVT();
+            updateTV();
     }
     const obj  = {time:msecs, type:orUndefined(g.type), io:orUndefined(g.io),
                   start, end, plays, loopWait, loopByElm,
@@ -123,4 +123,5 @@ function ok(name) {            // called exclusively by clickOk(), easings only
         elms.easeValues.remove(i);
         elms.easeTiming.remove(i);
     }
+    return shallowClone(objEz);
 }

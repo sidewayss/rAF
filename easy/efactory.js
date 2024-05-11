@@ -97,7 +97,7 @@ function create(o, set, b = true, q, cls) {
         tar = calcByElm(o, isME);
     else if (hasElms) {     // multi-element:
         o.bAbE = true;      // default is bAbE, only one exception:
-        o.l2   = o.lm;      //  no 2D arrays and all 1D are byArg
+        o.l2   = o.lm || 1; //  no 2D arrays and all 1D are byArg
         o.l1   = o.l;
         if (Math.max(...o.dims) == 1) {
             const d1    = o.config.filter(cfg => cfg.dim == 1);
@@ -132,7 +132,7 @@ function getCV(o) {
         //----------------------
         o.cvDims = Ez._dims(cv);
         if (o.cvDims == 2 || Is.Number(cv[0]))
-            if (o.prop.needsFunc && !o.func && (!o.func.isColor || !o.cjs)) {
+            if (o.prop.needsFunc && !o.func && !o.cjs) {
                 const pre = `${o.prop.name} requires a function, and `;
                 const suf = " you must set the func property, e.g {func:F.rgb}";
                 throw new Error(o.cvDims == 2
@@ -175,7 +175,7 @@ function getFunc(o, cv) {
             throw new Error(`${o.prop.name} requires a func!`);
     }
     else if (!o.isSet && !o.func.isCFunc    // CFuncs validated in current()
-          && (idx = names.findIndex(v => v != o.func.name)) >= 0)
+          && (idx = names.findIndex(v => v && v != o.func.name)) >= 0)
         throw new Error(`elms[${idx}]'s value's function, "${names[idx]}", `
                       + `does not match {func:F.${o.func.name}}`);
 }
@@ -192,7 +192,7 @@ function isCjsSpace(obj) {  // `in` throws when obj is Number, String
 }
 // color() sets o.cjs, the primary Color instance
 function color(o, hasElms) {
-    if (hasElms && o.func && o.func.isColor != o.prop.isColor)
+    if (hasElms && o.func && o.func.isCFunc != o.prop.isColor)
         Ez._cantErr("You", `use ${o.func.name} with ${o.prop.name}`);
     //-------------
     if (!o.cjs)
@@ -221,7 +221,7 @@ function color(o, hasElms) {
                 throw err;
              } //---------
         }
-        o.space = o.cjs.spaceId.replaceAll("-", "_");
+        o.space = Ez.kebabToSnake(o.cjs.spaceId);
     } //o.space is used only once, in current(), but it's simpler to set it here
 }
 //==============================================================================
@@ -231,15 +231,14 @@ function afurc(o, hasElms) {
     // a number, or an array of numbers.
     // if defined, o.start is addend and o.end is factor, but end gets converted
     // to distance in endToDist(), because at run-time: factor = distance.
-    let key, val;
+    let key, val;  // default, !neg,  !zero, !!def, !float,!null
     const okNull = [undefined, false, false, false, false, false];
 
     // o.a = addend: if it's zero, set it to undefined, adding 0 is pointless
     [key, val] = af(o, ["start","addend"], okNull);
     o.a = (val === 0) ? undefined : val;
 
-    // o.f = factor: can't be zero, modify okNull to throw on zero
-    okNull[2]  = true;
+    // o.f = factor: only end can be zero
     [key, val] = af(o, ["end","factor","distance","dist"], okNull);
     o.f = val;
 
@@ -266,7 +265,12 @@ function af(o, keys, args) {
             break;
     }
     val = o[key];
-    if (Is.A(val)) {
+    if (key[0] == "f" || key[0] == "d")
+        args[2] = true;     // factor, distance cannot be zero
+
+    if (!Is.A(val))
+        val = Ez.toNumber(val, key, ...args);
+    else {
         val.forEach((v, i, a) => {
             if (Is.A(v))
                 v.forEach((n, j, arr) =>
@@ -276,9 +280,6 @@ function af(o, keys, args) {
                 a[i] = Ez.toNumber(v, key, ...args);
         });
     }
-    else
-        val = Ez.toNumber(val, key, ...args);
-
     return [key, val];
 }
 //==============================================================================
@@ -384,7 +385,7 @@ function mask(o, hasElms) {
                 l[i] = 0;
             }
         });
-        o.mask = PBase._maskAll(Math.min(count, Math.max(...l)));
+        o.mask = PBase._maskAll(Math.max(o.r, Math.min(count, Math.max(...l))));
     }
     else if (o.isNet)               // undefined: mask all required args
         o.mask = PBase._maskAll(count);
@@ -549,7 +550,7 @@ function current(o, cv) {    // not for o.isNet, shouldn't be for o.isSet...
     }
     else {                   // if (!o.currentValue) parse cv
         if (o.cjs) {
-            parseCV(o, cv);
+            o.cv = cv; //parseCV(o, cv);
             cjsTo(o, o.cv);  // convert current values to o.cjs's color space
             if (o.func)      // o.cjs has done its job, don't use it at run-time
                 delete o.cjs;

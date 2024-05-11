@@ -3,7 +3,7 @@ export let isMulti;
 
 import Color from "https://colorjs.io/dist/color.js";
 
-import {E, Fn, P} from "../../raf.js";
+import {E, Ez, Fn, P} from "../../raf.js";
 
 import {ezX}                            from "../load.js";
 import {msecs, timeFrames, updateTime}  from "../update.js";
@@ -67,16 +67,18 @@ const input = {
 const change = {
  // time() handles the less-than-immediate tasks
     time(evt) {
-        const ezs = g.easies.easies;    // shallow copy as Array
-        if (isMulti) {
-            const f = timeFactor(ezs, isMulti);
-            for (ez of ezs)
-                if (ez !== ezX)         // for when #stop.value == RESET,
-                    setEasyTime(ez, f); // because this precedes refresh().
-        }
-        else
+        if (!isMulti)
             ezColor.time = msecs;
+        else {
+            const ezs = g.easies.easies;    // shallow copy as Array
+            let   i   = ezs.indexOf(ezX);
+            if (i >= 0)                     // for when #stop.value == RESET,
+                ezs.splice(i, 1)            // because this precedes refresh().
 
+            const f = timeFactor(ezs);
+            for (const ez of ezs)
+                ez.time = Math.round(ez.time * f);
+        }
         updateTime();
         refresh();
         setLocal(evt.target);
@@ -177,16 +179,16 @@ const click = {
 // se[lr.id] = g.start|end.left|right = color coordinates, Array
 // lr[se.id] = g.left|right.start|end = elms.left|rightStart|End, <span>
 function updateOne(se, lr) {
-    let coords = se.color[lr.color.spaceId.replaceAll("-", "_")];
+    let coords = se.color[Ez.kebabToSnake(lr.color.spaceId)].slice();
     if (lr.spaces.value == Fn.rgb)
-        coords = coords.map(v => Math.max(Math.min(v, 1), 0) * 255);
+        coords = coords.map(v => Math.round(Math.max(Math.min(v, 1), 0) * 255));
 
     oneCounter(coords, lr[se.id], lr.range);
     se[lr.id] = coords;
 }
 // timeFactor() helps change.time() and initEasies(), only if (isMulti)
-function timeFactor(easys) {
-    return msecs / Math.max(...easys.map(ez => ez.firstTime));
+function timeFactor(arr) {
+    return msecs / Math.max(...arr.map(obj => obj.time));
 }
 //==============================================================================
 function getCamel(elm) {

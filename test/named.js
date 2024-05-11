@@ -1,6 +1,10 @@
-export {DEFAULT_NAME, ns, preClass, presets,
-        loadNamed, setPrefix, disableSave, disablePreset, disableDelete};
-const DEFAULT_NAME = ""; // default value for <select> and named Easy, MEaser
+export {loadNamed, setPrefix, disableSave, disablePreset, disableDelete};
+export let   ns, preClass, presets; // ns exported for storeCurrent()
+export const
+DEFAULT_NAME = "",   // default value for elms.named[0]
+DEFAULT = "default"; // default text  ditto
+
+import {E, Easy} from "../raf.js";   // all for a reserved name...
 
 import {loadCopy}                             from "./copy.js";
 import {getNamedBoth, setNamed, storeCurrent} from "./local-storage.js";
@@ -10,11 +14,12 @@ import {CHANGE, CLICK, EASY_, MEASER_, dlg, elms, g, addEventsByElm,
 import(_named.js): formFromObj, updateNamed - objFromForm unused
 import(_load.js) : updateAll via loadNamed(..., _load) { ns_load = _load; }
 */
-let ns, ns_load, preClass, presets; // ns exported for storeCurrent()
+let ns_load;                        // for openNamed()
+const LINEAR = Easy.type[E.linear]; // for click.ok()
 //==============================================================================
 // loadNamed() called by loadCommon()
 async function loadNamed(isMulti, dir, _load) {
-    ns_load = _load;                      // for openNamed()
+    ns_load = _load;
     setPrefix(isMulti ? MEASER_ : EASY_); // prefix by class
 
     elms.named.addEventListener(CHANGE, openNamed, false);
@@ -31,7 +36,7 @@ async function loadNamed(isMulti, dir, _load) {
         return ns;
     }); // .catch(errorAlert) in Promise.all() in loadCommon()
 }
-// setPrefix() allows color page to change types
+// setPrefix() helps loadNamed() and lets color page user toggle EASY_ | MEASER_
 function setPrefix(prefix) {
     preClass = prefix;
     presets  = g.presets[preClass];
@@ -60,11 +65,15 @@ const click = {
         // <option> trims .textContent, so I trim .value to avoid confusion
         const name = dlg.name.value.trim();
         if (!name) { // checkValidity() is useless here: it requires user input
-            alert("You must enter a name, and it cannot contain only whitespace.");
+            alert("You must enter a name, and it cannot be 100% whitespace.");
+            return;
+        }
+        else if (name == DEFAULT || name == LINEAR) { // avoid confusion
+            alert(`"${DEFAULT}" and "${LINEAR}" are reserved names.`);
             return;
         } //--------------- storeCurrent() calls disableSave()
-        disablePreset(name, storeCurrent(preClass + name));
-        disableDelete(name);
+        disablePreset(name, storeCurrent(preClass + name, ns.ok?.(name)));
+        disableDelete(name);    // cloned objEz = easings/ns.ok()
         if (presets[name] && elms.preset.disabled)
             localStorage.removeItem(preClass + elm.value);
 
@@ -76,7 +85,6 @@ const click = {
             elm.add(new Option(name), i);
             elm.value = name;
         }
-        ns.ok?.(name);   // easings page has more lists the need updating
         elms.dialog.close();
     },
     cancel() {
@@ -100,17 +108,20 @@ function openNamed() {  // not exported
     disableDelete(name);
     setNamed(name, item);
 }
-// disableSave() called by openNamed(), storeCurrent(), loadFinally()
+// disableSave() called by openNamed(), storeCurrent(), loadFinally(),
+//               b is true when the selected named object is modified.
 function disableSave(b) {
     if (elms.save) {
         elms.save  .disabled = b;
         elms.revert.disabled = b;
         const str = boolToString(!b);
         elms.save  .dataset.enabled = str; // see disablePlay()
-        elms.revert.dataset.enabled = str;
+        elms.revert.dataset.enabled = str; // "italic" = "modified"
+        elms.named.style.fontStyle = b ? "" : "italic";
     }
 }
-// disablePreset() called by openNamed(), clickOk(), loadFinally()
+// disablePreset() called by openNamed(), clickOk(), loadFinally(), presets can
+//                 be modified and saved, elms.preset reverts to preset values.
 function disablePreset(name, item) {
     if (elms.preset) {
         elms.preset.disabled = !name || !item

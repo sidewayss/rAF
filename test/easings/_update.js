@@ -1,4 +1,4 @@
-export {refresh, initPseudo, newTargets, getMsecs, getFrame, updateX,
+export {refresh, storeIt, initPseudo, newTargets, getMsecs, getFrame, updateX,
         setCounters, formatDuration, formatPlayback, drawLine, flipZero};
 
 import {E, U, P, Pn, Easy} from "../../raf.js";
@@ -8,17 +8,17 @@ const targetPseudoX = create({peri:pseudoUpdate});
 const targetPseudoY = create({peri:()=>{}}); // noop: it requires a func...!!
 
 import {ezX, raf}      from "../load.js";
-import {storeCurrent}  from "../local-storage.js";
 import {frames, targetInputX, inputX, updateFrame, pseudoFrame,
         pseudoAnimate} from "../update.js";
 import {MILLI, COUNT, LITE, elms, g, formatNumber, toggleClass}
                        from "../common.js";
 
-import {objFromForm}                     from "./_named.js";
+import {objFromForm}                              from "./_named.js";
+import {storeIt}                                  from "./events.js";
 import {drawSteps, postRefresh, setInfo, isSteps} from "./steps.js";
-import {drawEasing}                      from "./not-steps.js";
-import {chart, range, isOutOfBounds}     from "./chart.js";
-import {ezY, newEzY, twoLegs, isBezier}  from "./index.js";
+import {drawEasing}                               from "./not-steps.js";
+import {chart, range, isOutOfBounds}              from "./chart.js";
+import {ezY, newEzY, twoLegs, isBezier}           from "./index.js";
 //==============================================================================
 // refresh() <= updateAll(), changeStop(), inputTypePow(evt), event handlers in
 //              chart.js, msg.js, steps.js, tio-pow.js.
@@ -46,7 +46,7 @@ function refresh(tar, n, has2   = twoLegs(),
                 return;
             }//--------
         }
-        storeCurrent("", obj);   // if (n) obj is undefined
+        storeIt(obj);            // save obj to localStorage
     }
     pseudoAnimate();             // update frames
     drawLine();                  // draw the line
@@ -54,17 +54,17 @@ function refresh(tar, n, has2   = twoLegs(),
     ezY.clearTargets();          // clear pseudo-targets, ezX uses .oneShot
     postRefresh(ezY.firstTime);  // E.steps needs cleanup post-pseudo-animation
 
-    let oob = isOutOfBounds();
+    let oob = isOutOfBounds();   // handle out-of-bounds y coordinates in chart:
     if (has2 && !isBS)
         oob |= isOutOfBounds(Number(elms.type2.value));
-    if (oob || oobOld) {    // adjust the vertical size of chart and range
+    if (oob || oobOld) {         // adjust the vertical size of chart and range
         let cr, maxY, minY;
-        if (oob) {          // minY and x are negative numbers
+        if (oob) {               // minY and x are negative numbers
             const y = frames.map(frm => frm.y);
             minY = Math.min(...y, 0);
             maxY = Math.max(...y, MILLI);
         }
-        else {              // oobOld
+        else {                   // oobOld
             minY = 0;
             maxY = MILLI;
         }

@@ -1,12 +1,14 @@
 // export everything
 export {getNamed, getNamedEasy, getNamedJSON, getNamedString, getNamedBoth,
-        getLocalNamed, getLocal, setLocal, setNamed, storeCurrent, setLocalBool};
+        getLocalNamed, getLocal, setLocal, setNamed, storeCurrent, setLocalBool,
+        isNamedSteps};
 
-import {E, Easy} from "../raf.js";
+import {E, Ez, Easy} from "../raf.js";
 
 import {preDoc} from "./load.js";
-import {DEFAULT_NAME, ns, preClass, presets, disableSave} from "./named.js";
-import {EASY_, elms, g, boolToString, errorAlert}         from "./common.js";
+import {DEFAULT_NAME, DEFAULT, ns, preClass, presets, disableSave}
+                from "./named.js";
+import {EASY_, elms, g, boolToString, errorAlert} from "./common.js";
 //==============================================================================
 // getNamed() populates a <select> with names of stored objects, called only
 //            during the load process by loadJSON(), getEasies().
@@ -16,7 +18,7 @@ import {EASY_, elms, g, boolToString, errorAlert}         from "./common.js";
 function getNamed(sel = elms.named, pre = preClass, getAll = true) {
     let entries = Object.entries(g.presets[pre]);
     if (!getAll)                              // !getAll = exclude E.steps
-        entries = entries.filter(obj => obj.type != E.steps);
+        entries = entries.filter(([_, obj]) => obj.type != E.steps);
 
     let i, key, val;
     const lenPre = pre.length;                // the prefix string length
@@ -25,20 +27,22 @@ function getNamed(sel = elms.named, pre = preClass, getAll = true) {
     while ((key = localStorage.key(i++))) {   // localStorage has no querying
         if (key.startsWith(pre)) {            // for a single prefix/document
             val = localStorage.getItem(key);  // !getAll = exclude E.steps
-            if (getAll || !val.includes("type:9"))
+            if (getAll || !isNamedSteps(val))
                 names.add(key.slice(lenPre)); // shame it has to check here, but
         }                                     // names and opt don't have type.
     }
-    for (key of Array.from(names).sort())
+    for (key of names)
         sel.add(new Option(key));
 
     const opt = sel.options[0];
     if (opt.value == DEFAULT_NAME) {          // value implied from textContent
         opt.value = DEFAULT_NAME;             // must be set explicitly
-        opt.textContent     = "default";
-        opt.style.fontStyle = "italic";
+        opt.text  = DEFAULT;
     }
     return sel;
+}
+function isNamedSteps(str) {
+    return str.includes("type: 9")
 }
 //==============================================================================
 // getNamedEasy() returns an Easy instance for a named item
@@ -49,10 +53,11 @@ function getNamedEasy(name) {
 // getNamedJSON() returns a JSON object from localStorage or presets, in that
 //                order, localStorage can override a preset of the same name.
 function getNamedJSON(name, pre = preClass) {
-    return JSON.parse(getLocalNamed(name, pre)) ?? g.presets[pre][name];
+    return JSON.parse(getLocalNamed(name, pre))
+                   ?? Ez.shallowClone(g.presets[pre][name]);
 }
 // getNamedString() returns a stringified JSON object, called by storeCurrent(),
-//                  loadFinally(), openNamed()
+//                  loadFinally(), openNamed(), easyToText()
 function getNamedString(name, pre = preClass) {
     return getLocalNamed(name, pre) ?? JSON.stringify(g.presets[pre][name]);
 }
@@ -61,8 +66,8 @@ function getNamedBoth(name) {
     str = getLocalNamed(name);  // localStorage overrides presets
     if (str)
         obj = JSON.parse(str);
-    else {
-        obj = presets[name];
+    else {                      // presets = g.presets[preClass]
+        obj = Ez.shallowClone(presets[name]);
         str = JSON.stringify(obj);
     }
     return [str, obj];
@@ -91,17 +96,16 @@ function setLocalBool(elm, b = elm.checked) {
     setLocal(elm, boolToString(b));
 }
 //==============================================================================
-// storeCurrent() only clickOK() passes in a key, "" is DEFAULT_NAME and is the
-//                one read-only preset.
+// storeCurrent() stores a named object as JSON in localStorage
 function storeCurrent(key, obj = ns.objEz) {
     const str = JSON.stringify(obj);
     localStorage.setItem(g.restore, str);
-    if (key) {
-        localStorage.setItem(key, str);
-        disableSave(true);
+    if (key) {                          // only clickOK() passes in a key.
+        localStorage.setItem(key, str); // DEFAULT_NAME = "", making it the
+        disableSave(true);              // only read-only preset.
     }
     else
-        disableSave(str == (getNamedString(elms.named.value)
-                         ?? JSON.stringify(presets[elms.named.value])));
+        disableSave(str == getNamedString(elms.named.value)
+                        ?? JSON.stringify(presets[elms.named.value]));
     return str;
 }

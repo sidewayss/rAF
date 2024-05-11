@@ -48,7 +48,7 @@ export class Easy {
 
         o[t] = Ez.toNumber(o[t], t, ...Ez.undefGrThan0);
         if (!o.legs) {              // create default legs
-            const ios = splitIO(io);
+            const ios = splitIO(io, Is.def(o.split) || Is.def(o.gap));
             const leg = {type, io:ios[0], bezier:o.bezier};
             o.legs = [leg];
             if (ios.length == 2) {

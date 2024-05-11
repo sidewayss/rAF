@@ -1,6 +1,6 @@
-export {loadEvents, setNoWaits};
+export {loadEvents, shallowClone, storeIt, setNoWaits};
 
-import {E, P} from "../../raf.js";
+import {E, Ez, P} from "../../raf.js";
 
 import {ezX, raf}                   from "../load.js";
 import {msecs, timeFrames}          from "../update.js";
@@ -9,11 +9,11 @@ import {storeCurrent, setLocalBool} from "../local-storage.js";
 import {CHANGE, INPUT, elms, g, addEventToElms, addEventsByElm, elseUndefined}
                                     from "../common.js";
 
-import {drawLine}           from "./_update.js";
-import {objEz}              from "./_named.js";
-import {chart, range}       from "./chart.js";
-import {setSplitGap}        from "./msg.js";
-import {ezY, updateTrip}    from "./index.js";
+import {drawLine}        from "./_update.js";
+import {objEz}           from "./_named.js";
+import {chart, range}    from "./chart.js";
+import {setSplitGap}     from "./msg.js";
+import {ezY, updateTrip} from "./index.js";
 //==============================================================================
 function loadEvents(checks) {
     addEventsByElm(INPUT,  [elms.time], input);
@@ -43,7 +43,7 @@ const change = {
                 ezY.plays = plays;
             else                  //!!
                 alert("No ezY!"); //!!
-            storeCurrent();
+            storeIt();
         }
         setNoWaits();
     },
@@ -58,7 +58,7 @@ const change = {
             alert("No ezY!"); //!!
 
         setNoWaits();
-        storeCurrent();
+        storeIt();
     },
  // <check-box> (requires evt.currentTarget)
     loopByElm(evt) {  // also called by updateAll()
@@ -68,7 +68,7 @@ const change = {
         if (!evt.isUpdateAll) {
             changeStop();
             objEz.loopByElm = loopByElm;
-            storeCurrent();
+            storeIt();
         }
     },
     reset(evt) {
@@ -103,15 +103,30 @@ const change = {
         const tar = evt.currentTarget;
         changeStop();
         setNoWaits();
-        storeCurrent();
+        storeIt();
         ezX[tar.id] = tar.checked;
-    if (ezY)
-        ezY[tar.id] = tar.checked;
-    else                  //!!
-        alert("No ezY!"); //!!
+        if (ezY)
+            ezY[tar.id] = tar.checked;
+        else                  //!!
+            alert("No ezY!"); //!!
 
-    return tar;
+        return tar;
     }
+}
+//==============================================================================
+function shallowClone(obj) {
+    if (obj.easy || obj.timing?.isEasy) {
+        obj = Ez.shallowClone(obj);
+        if (obj.easy)
+            obj.easy   = elms.easyValues.value;
+        else
+            obj.timing = elms.easyTiming.value;
+    }
+    return obj;
+}
+// storeIt() wraps storeCurrent() to use name instead of Easy
+function storeIt(obj = objEz) {
+    storeCurrent("", shallowClone(obj));
 }
 //==============================================================================
 // setNoWaits() sets the g.not_Wait properties, which are used by eGet(),

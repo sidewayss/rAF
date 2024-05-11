@@ -11,9 +11,9 @@ import {COUNT, CHANGE, INPUT, elms, g, is, isTag, dummyEvent}
 import {refresh}                                  from "./_update.js";
 import {initEzXY, updateTrip}                     from "./index.js";
 import {chart, range, loadChart}                  from "./chart.js";
-import {loadTIOPow, setLink, updateTypeIO}        from "./tio-pow.js";
+import {loadTIOPow, updateTypeIO}                 from "./tio-pow.js";
 import {loadMSG, updateMidSplit, updateSplitGap}  from "./msg.js";
-import {loadSteps, loadVT, initSteps, maxTime}    from "./steps.js";
+import {loadSteps, loadTV, initSteps, maxTime}    from "./steps.js";
 import {loadEvents}                               from "./events.js";
 //==============================================================================
 // loadIt() is called by loadCommon()
@@ -115,7 +115,7 @@ function getEasies() {
 
     loadChart();    // events for class="chart", must follow cloning
     loadTIOPow();   // type, io, pow, follows loadChart() for input handler order
-    loadVT();       // steps.js
+    loadTV();       // steps.js
 }
 // initEasies() called once per session by loadFinally()
 function initEasies(obj, hasVisited) {

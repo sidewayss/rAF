@@ -60,22 +60,115 @@
     "Easy-": {
       "": {
         "time": 2000,
-        "start": 0,
         "end": 1000
       },
-      "circIn": {
+      "sineIn": {
         "time": 2000,
-        "start": 0,
         "end": 1000,
-        "type": 2,
-        "io": 0
+        "type": 1
       },
-      "circOut": {
+      "sineOut": {
         "time": 2000,
-        "start": 0,
+        "end": 1000,
+        "type": 1,
+        "io": 1
+      },
+      "circInOut": {
+        "time": 2000,
         "end": 1000,
         "type": 2,
-        "io": 1
+        "io": 4
+      },
+      "circOutIn": {
+        "time": 2000,
+        "end": 1000,
+        "type": 2,
+        "io": 3
+      },
+      "elasticInIn": {
+        "time": 2000,
+        "end": 1000,
+        "type": 5,
+        "io": 2
+      },
+      "bounceOutOut": {
+        "time": 2000,
+        "end": 1000,
+        "type": 6,
+        "io": 5
+      },
+      "pow_0.5": {
+        "time": 2000,
+        "end": 1000,
+        "type": 7,
+        "pow":0.5
+      },
+      "pow_2.5": {
+        "time": 2000,
+        "end": 1000,
+        "type": 7,
+        "pow":2.5
+      },
+      "pow_2.5o/5i": {
+        "end": 1000,
+        "legs": [{
+            "time": 1000,
+            "end": 500,
+            "type": 7,
+            "io": 1,
+            "pow": 2.5
+          }, {
+            "time": 1000,
+            "start": 500,
+            "type": 7,
+            "pow": 5
+          }]
+      },
+      "sine + pow": {
+        "end": 1000,
+        "legs": [{
+            "time": 1000,
+            "end": 500,
+            "type": 1
+          }, {
+            "time": 1000,
+            "start": 500,
+            "type": 7,
+            "io": 1,
+            "pow": 3.3
+          }]
+      },
+      "bezierA": {
+        "time": 2000,
+        "type": 8,
+        "end": 1000,
+        "bezier": [0.57, 0, 0.18,1]
+      },
+      "bezierB": {
+        "time": 2000,
+        "type": 8,
+        "end": 1000,
+        "bezier": [0.75, -0.5, 0.25, 1.33]
+      },
+      "steps_15": {
+        "time": 2000,
+        "type": 9,
+        "end": 1000,
+        "steps": 15
+      },
+      "steps_easeT": {
+        "time": 2000,
+        "type": 9,
+        "end": 1000,
+        "steps": 15,
+        "timing": "sineOut"
+      },
+      "steps_easeV": {
+        "time": 2000,
+        "type": 9,
+        "end": 1000,
+        "steps": 15,
+        "easy": "sineOut"
       }
     },
     "MEaser-": {

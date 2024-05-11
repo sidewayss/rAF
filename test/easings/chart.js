@@ -12,7 +12,7 @@ import {CHANGE, INPUT, elms, g, addEventsByElm, listenInputNumber, isInvalid}
 import {refresh}                        from "./_update.js";
 import {updateTypeIO, isBezierOrSteps}  from "./tio-pow.js";
 import {updateSplitGap, isUnlocked}     from "./msg.js";
-import {isSteps, maxTime, vtFromElm}    from "./steps.js";
+import {isSteps, maxTime, tvFromElm}    from "./steps.js";
 import {twoLegs, bezierArray}           from "./index.js";
 //==============================================================================
 function loadChart() {
@@ -110,7 +110,7 @@ function isOutOfBounds(val = g.type) { // <= change.type(), change.bezier()
         arr = bezierArray();                // Array
         break;
     case E.steps:
-        arr = vtFromElm(elms.values, true); // Array, String or undefined
+        arr = tvFromElm(elms.values, true); // Array, String or undefined
         break;
     case E.back: case E.elastic:
         return true;

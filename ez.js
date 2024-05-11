@@ -66,10 +66,14 @@ export const Ez = {
         return Object.assign(promise, {resolve, reject});
     },
 // =============================================================================
-// Conversion functions:
-//  defaultToTrue() converts undefined to true and everything else to boolean
-    defaultToTrue(val) {
-        return Is.def(val) ? Boolean(val) : true;
+// String case, hyphenation, etc.:
+//  initialCap() capitalizes the first letter of a string
+    initialCap(str) {
+        return str[0].toUpperCase() + str.slice(1)
+    },
+//  toCamel() joins the arguments into a single camelCase string
+    toCamel(...strings) {
+        return strings.reduce((acc, cur) => acc + this.initialCap(cur));
     },
 //  camelToKebab() converts a camelCase string to kebab-case
     camelToKebab(str) {
@@ -81,13 +85,21 @@ export const Ez = {
     // or:
     //  return this.toCamel(str.split("-"));
     },
-//  toCamel() joins the arguments into a single camelCase string
-    toCamel(...strings) {
-        return strings.reduce((acc, cur) => acc + this.initialCap(cur));
+//  kebabToSnake() converts kebab-case string to snake_case, required for
+//                 converting color1.spaceId to color2.prop_name for alt coords.
+//                 Doesn't do a lot, but the function name is informative.
+    kebabToSnake(str) {
+        return str.replaceAll("-", "_");
     },
-//  initialCap() capitalizes the first letter of a string
-    initialCap(str) {
-        return str[0].toUpperCase() + str.slice(1)
+// =============================================================================
+// Conversion functions:
+//  defaultToTrue() converts undefined to true and everything else to boolean
+    defaultToTrue(val) {
+        return Is.def(val) ? Boolean(val) : true;
+    },
+//  toSum() is a callback for Array.prototype.reduce(), reduces to a sum.
+    toSum(sum, v) {
+        return sum + v;
     },
 //  toNumby() is soft numeric conversion for property/attribute string values
     toNumby(v, f, u) {
@@ -149,6 +161,7 @@ export const Ez = {
                 v = [v];        // wrap it
             }
         }
+
         if (!v.length) {        // now it's an Array
             if (notEmpty)
                 throw new Error(err ?? this._cantBe(name, "an empty array"));
@@ -186,10 +199,6 @@ export const Ez = {
                          ...this.okEmptyUndef);
         v.forEach((elm, i) => v[i] = this.toElement(elm, noRules, doc));
         return v;
-    },
-//  toSum() is a callback for Array.prototype.reduce(), reduces to a sum.
-    toSum(sum, v) {
-        return sum + v;
     },
 //  noneToZero() converts NaN to zero for a Color.js color coordinates array.
 //               NaN is the numeric representation of CSS "none". The CSS rules

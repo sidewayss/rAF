@@ -1,17 +1,17 @@
-export {refresh, initPseudo, newTargets, getMsecs, getFrame, updateX,
+export {refresh, initPseudo, newTargets, newTar, getMsecs, getFrame, updateX,
         setCounters, formatDuration, oneCounter};
 export const formatFrames = true;
 
-import {E, U, F, Fn, P, Ez} from "../../raf.js";
+import {E, U, Is, F, Fn, P, Ez} from "../../raf.js";
 
 import {ezX}            from "../load.js";
 import {COUNT, elms, g} from "../common.js";
 import {frames, inputX, updateFrame, pseudoFrame, pseudoAnimate}
                         from "../update.js";
 
-import {ezColor} from "./_load.js";
-import {objEz}   from "./_named.js";
-import {isMulti} from "./events.js";
+import {ezColor, isCSSSpace} from "./_load.js";
+import {objEz}               from "./_named.js";
+import {isMulti}             from "./events.js";
 //==============================================================================
 // redraw() called by updateAll(), changeStop(), input.color(), change.space()
 function refresh() {
@@ -43,24 +43,22 @@ function newTargets(isPseudo) {
     g.easies[isPseudo ? "delete" : "add"](ezX);
 }
 // newTar() helps newTargets()
-function newTar(lr, isPseudo, isComp) {
+function newTar(lr, isPseudo, isComp) { // isComp only defined by newTargets()
     let side;
-    const o = {};
-    if (isMulti) {                    // slice out ezX:
+    const o = {},
+    hasComp = Is.def(isComp);
+
+    if (hasComp && isMulti)             // slice out ezX:
         o.easies = isPseudo ? g.easies : g.easies.slice(1);
-        o.eKey   = objEz.eKey;
-    }
-    else
-        o.eKey = E.unit;
 
     if (lr) {
         side = lr.id,
         o.start = Ez.noneToZero(g.start[side]);
         o.end   = Ez.noneToZero(g.end  [side]);
-        o.currentValue = [o.start];   // currentValue must be 2D byElmByArg
+        o.currentValue = [o.start];     // currentValue must be 2D byElmByArg
     }
-    else {                            // !lr == isPseudo && isComp
-        let arr, se;                  // two targets in one, double the fun
+    else {                              // !lr == isPseudo && isComp
+        let arr, se;                    // two targets in one, double the fun
         for (se of g.startEnd) {
             arr = [];
             for (side of g.leftRight.map(obj => obj.id))
@@ -73,17 +71,17 @@ function newTar(lr, isPseudo, isComp) {
 
     if (isPseudo)
         o.peri = updaters.pseudo;
-    else {
+    else if (hasComp) {                 // else copyCode()
         o.peri = updaters[isComp ? side : "one"];
         o.elm  = lr.canvas;
-        o.prop = P.bgColor;           // .className = "colorjs" or ""
-        if (lr.spaces.selectedOptions[0].className)
-            o.cjs = lr.color;
-        else
+        o.prop = P.bgColor;
+        if (isCSSSpace(lr.spaces.value))
             o.func = F[lr.spaces.value];
+        else
+            o.cjs = lr.color;
     }
 
-    const mask = [];                  // create mask if any start[i] == end[i]
+    const mask = [];                    // create mask if any start[i] == end[i]
     for (let i = 0; i < COUNT; i++)
         if (o.start[i] != o.end[i])
             mask.push(i);
@@ -148,11 +146,11 @@ function updateX(frm) {
         space  = lr.spaces.value;
         coords = frm[lr.id];
         lr.color.coords = (space == Fn.rgb) ? coords.map(v => v / 255)
-                                           : coords;
-        if (lr.spaces.selectedOptions[0].className)
-            P.bgColor.setIt(lr.canvas, lr.color.display());
-        else
+                                            : coords;
+        if (isCSSSpace(space))
             P.bgColor.setOne(lr.canvas, coords, F[space]);
+        else
+            P.bgColor.setIt(lr.canvas, lr.color.display());
     }
 }
 //==============================================================================

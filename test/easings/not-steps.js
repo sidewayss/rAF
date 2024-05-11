@@ -75,8 +75,9 @@ function easingFromForm(obj) {
             delete obj[id];
 
         obj.legs = [
-            {time:split, end:  mid, type:orUndefined(g.type), io:ios[0], pow},
-            {time:time2, start:mid, type:type2,     wait:gap, io:ios[1], pow:pow2}
+            {time:split, type:orUndefined(g.type), io:ios[0], pow, end:mid},
+            {time:time2, type:type2,               io:ios[1], pow:pow2,
+             wait:orUndefined(gap)}
         ];
         return obj;
     }
