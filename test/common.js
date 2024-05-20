@@ -49,65 +49,6 @@ export function addEventsByElm(type, elms, obj, noDigits, noPrefix = true) {
 export function boolToString(b) { // for localStorage and <button>.value
     return b ? "true" : "";
 }
-//====== number formatting, validation, limitation =============================
-// inputNumber() is the first event handler registered for the input event on
-//               <input type="number">, uses g.invalids to cancel downstream
-//               events because preventDefault() and stopPropagation() do zilch.
-function inputNumber(evt) {
-    const
-    tar = evt.target,
-    n   = tar.valueAsNumber,
-    b   = Number.isNaN(n);
-    invalidInput(tar, b);
-    if (!b)
-        formatInputNumber(tar, maxMin(tar, n));
-}
-// listenInputNumber() is the only public access to inputNumber()
-export function listenInputNumber(elements) {
-    for (const elm of elements)
-        elm.addEventListener(INPUT, inputNumber);
-}
-// invalidInput() helps inputNumber(), input.color(), click.clear(), more than
-//                one input can be invalid, #x and #play only enabled if none.
-export function invalidInput(elm, b) {
-    toggleClass(elm, "invalid", b);
-    g.invalids[b ? "add" : "delete"](elm);
-    b = Boolean(g.invalids.size);
-    elms.x   .disabled = b;
-    elms.play.disabled = b;
-}
-// isInvalid() returns true for inputs with class="invalid"
-export function isInvalid(elm) {
-    return g.invalids.has(elm);
-}
-// formatInputNumber() sets decimal places for <input type="number"> by id,
-//                     called by easingFromObj(), vtArray(), inputTypePow(),
-//                               clickClear(), updateSplitGap(), setSplitGap().
-export function formatInputNumber(elm, n) {
-    let decimals;
-    switch (elm.id[0]) {
-    case "m":
-    case "v": decimals = 0; break; // mid, v0-2
-    case "p": decimals = 1; break; // pow and pow2
-    case "b": decimals = 2; break; // bezier0-3
-    default:  decimals = 3;        // split, gap, t0-2
-    }
-    elm.value = Number(n).toFixed(decimals);
-}
-// formatNumber() formats numbers for non-<input type="number"> elements,
-//                called by formFromObj(), loadFinally(), updateCounters(),
-//                          both setCounters()s, multi refresh().
-export function formatNumber(n, digits, decimals, elm) {
-    const str = n.toFixed(decimals).padStart(digits);
-    if (elm)
-        elm.textContent = str;
-    else
-        return str;
-}
-// maxMin() enforces the max and min properties for numeric inputs
-export function maxMin(elm, n = elm.valueAsNumber) {
-    return Math.max(Math.min(n, elm.max), elm.min);
-}
 //====== error messaging =======================================================
 // errorAlert() normalizes alerts
 export function errorAlert(err, msg) {

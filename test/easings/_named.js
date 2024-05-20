@@ -3,10 +3,9 @@ export let objEz;
 
 import {E, Is, P} from "../../raf.js"
 
-import {msecs}        from "../update.js";
-import {DEFAULT_NAME} from "../named.js";
-import {INPUT, elms, g, formatNumber, orUndefined, elseUndefined}
-                      from "../common.js";
+import {msecs, formatNumber}                        from "../update.js";
+import {DEFAULT_NAME}                               from "../named.js";
+import {INPUT, elms, g, orUndefined, elseUndefined} from "../common.js";
 
 import {shallowClone, setNoWaits}      from "./events.js";
 import {isBezierOrSteps}               from "./tio-pow.js";
@@ -19,33 +18,36 @@ import {FORMAT_END, FORMAT_START, stepsFromObj, stepsFromForm, updateTV,
 function formFromObj(obj) {
     let elm, end, start, val;
     const
-    legs = obj.legs,
-    func = isSteps(obj.type) ? stepsFromObj : easingFromObj,
-    notA = !func(obj, legs); // if Is.A(obj.steps) stepsFromObj() returns true
+    leg0 = obj.legs?.[0],
+    leg1 = obj.legs?.[1];
 
-    P.visible(elms.direction.parentNode, notA);
-    if (notA) {
-        start = obj.start ?? legs?.[0].start ?? 0;
-        end   = obj.end   ?? legs?.[1].end;
-        formatNumber(start, ...FORMAT_START);
-        formatNumber(end,   ...FORMAT_END);
-
-        elms.direction.value = start < end ? DEFAULT_NAME : 1;
-    }
-
-    g.type = obj.type ?? legs?.[0].type ?? E.linear;
+    g.type = obj.type ?? leg0?.type ?? E.linear;
     if (Is.def(obj.io))
         g.io = obj.io;
-    else if (legs)
-        g.io = legs[0].io ? (legs[1].io ? E.outOut : E.outIn)
-                          : (legs[1].io ? E.inOut  : E.inIn);
+    else if (leg0)
+        g.io = leg0.io ? (leg1.io ? E.outOut : E.outIn)
+                       : (leg1.io ? E.inOut  : E.inIn);
     else
         g.io = E.in;         // Easy.prototype's default value
 
     elms.io  .value = g.io;
     elms.type.value = g.type;
-    elms.time.value = obj.time;
+    elms.time.value = obj.time ?? (leg0 ? leg0.time + leg1.time
+                                        : elms.time.max / 2);
     elms.time.dispatchEvent(new Event(INPUT));
+
+    const                    // easingFromObj() requires g.type be set
+    func = isSteps(obj.type) ? stepsFromObj : easingFromObj,
+    notA = !func(obj, leg0, leg1);
+    P.visible(elms.direction.parentNode, notA);
+    if (notA) {              // if Is.A(obj.steps) stepsFromObj() returns true
+        start = obj.start ?? leg0?.start ?? 0;
+        end   = obj.end   ?? leg1?.end;
+        formatNumber(start, ...FORMAT_START);
+        formatNumber(end,   ...FORMAT_END);
+
+        elms.direction.value = start < end ? DEFAULT_NAME : 1;
+    }
 
     for (elm of g.trips) {   // roundTrip and related elements
         val = obj[elm.id];
@@ -106,22 +108,24 @@ function updateNamed(obj) {
     return true;
 }
 //==============================================================================
-function ok(name) {            // called exclusively by clickOk(), easings only
-    const isStp = isSteps();   // easeValues, easeTiming exclude E.steps
-    const vals  = Array.from(elms.easeValues.options)
-                       .map (opt => opt.value);
-    i = vals.indexOf(name);
-    if (i < 0) {               // new name
-        if (!isStp) {          // maintain a-z sort order
+function ok(name) {             // called exclusively by clickOk(), easings only
+    const                       // easyValues, easyTiming exclude E.steps
+    isStp = isSteps(),
+    vals  = Array.from(elms.easyValues.options)
+                 .map (opt => opt.value);
+
+    let i = vals.indexOf(name);
+    if (i < 0) {                // new name
+        if (!isStp) {           // maintain a-z sort order
             const opt = new Option(name);
             i = vals.findIndex(v => v > name);
-            elms.easeValues.add(opt, i);
-            elms.easeTiming.add(opt, i);
+            elms.easyValues.add(opt, i);
+            elms.easyTiming.add(opt, i);
         }
     }
-    else if (isStp) {          // existing name
-        elms.easeValues.remove(i);
-        elms.easeTiming.remove(i);
+    else if (isStp) {           // existing name
+        elms.easyValues.remove(i);
+        elms.easyTiming.remove(i);
     }
     return shallowClone(objEz);
 }

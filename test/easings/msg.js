@@ -6,13 +6,13 @@ export const MSG = ["mid","split","gap"];
 import {Ez, P, U} from "../../raf.js";
 
 import {msecs, secs} from "../update.js";
+import {listenInputNumber, formatInputNumber, isInvalid, invalidInput, maxMin}
+                     from "../input-number.js";
 import {MILLI, CLICK, INPUT, CHANGE, elms, addEventToElms, addEventsByElm,
-        addEventByClass, formatInputNumber, listenInputNumber, isInvalid,
-        invalidInput, maxMin, toggleClass, isTag, boolToString}
+        addEventByClass, toggleClass, isTag, boolToString}
                      from "../common.js";
 
-import {refresh}         from "./_update.js";
-import {chart}           from "./chart.js";
+import {chart, refresh}  from "./_update.js";
 import {isSteps}         from "./steps.js";
 import {OTHER, isBezier} from "./index.js";
 
@@ -55,7 +55,7 @@ function loadMSG() {
                 obj[elm.className] = elm;
         }
     }
-    elms.gap.min = 0;
+    elms.gap.dataset.min = 0;
     formatInputNumber(elms.split, elms.time.valueAsNumber / 2);
     formatInputNumber(elms.gap, 0);
     div.parentNode.insertBefore(elms[divGap], div.nextElementSibling);
@@ -68,10 +68,10 @@ function loadMSG() {
     sgInputs  = msg.slice(1);
     addEventByClass(CLICK,  CLEAR, click);
     addEventByClass(CLICK,  LOCK,  click);
-    addEventToElms (CHANGE, msg, changeMSG);
-    listenInputNumber(msg);                          // must go first
-    addEventToElms (INPUT, msg, input.MSG);          // must go second
-    addEventsByElm (INPUT, msg.slice(0, -1), input); // mid, split only
+    listenInputNumber(msg);                           // must go first
+    addEventToElms (INPUT,  msg, input.MSG);          // must go second
+    addEventToElms (CHANGE, msg, changeMSG);          // must go second too
+    addEventsByElm (INPUT,  msg.slice(0, -1), input); // mid, split only
 }
 //==============================================================================
 const input = {
@@ -130,15 +130,15 @@ function updateMidSplit() {
 // updateSplitGap() is called by updateAll() and change.time()
 function updateSplitGap() {
     let   elm = elms.split
-    const min = Number(elm.min),
+    const min = Number(elm.dataset.min),
           val = secs - min;
 
-    elm.max      = Math.max(val, min);
-    elms.gap.max = Math.max(val - elm.valueAsNumber, 0);
+    elm.dataset.max      = Math.max(val, min);
+    elms.gap.dataset.max = Math.max(val - elm.valueAsNumber, 0);
 
     for (elm of sgInputs)
-        if (elm.valueAsNumber > elm.max)
-            formatInputNumber(elm, elm.max);
+        if (elm.valueAsNumber > elm.dataset.max)
+            formatInputNumber(elm, elm.dataset.max);
 }
 // setSplitGap() calculates and sets the automated values for #split and #gap,
 //               based on time and msecs, if necessary, called by input.time()

@@ -5,12 +5,13 @@ preDoc;      // prefix for this document, see local-storage.js
 
 import {E, Ez, P, PFactory, Easy, AFrame} from "../raf.js";
 
-import {msecs, loadUpdate, timeFrames}      from "./update.js";
-import {DEFAULT_NAME, loadNamed, disableSave,
-        disablePreset, disableDelete}       from "./named.js";
-import {getNamed, getNamedBoth, setNamed}   from "./local-storage.js";
-import {INPUT, SELECT, MILLI, COUNT, ONE, dlg, elms, g, formatNumber,
-        dummyEvent, errorAlert, errorLog}   from "./common.js";
+import {getNamed, getNamedBoth, setNamed}            from "./local-storage.js";
+import {msecs, loadUpdate, timeFrames, formatNumber} from "./update.js";
+import {DEFAULT_NAME, loadNamed, disableSave, disablePreset, disableDelete}
+                                                     from "./named.js";
+
+import {INPUT, SELECT, MILLI, COUNT, ONE, dlg, elms, g, dummyEvent, errorAlert,
+        errorLog} from "./common.js";
 /*
 import(_load.js): loadIt, getEasies, initEasies, updateAll, resizeWindow;
                   and showControls for color page.
@@ -154,7 +155,8 @@ function loadFinally(is, name, hasVisited, id) {
         obj = ns_named.objFromForm(hasVisited);
         setNamed(DEFAULT_NAME, JSON.stringify(obj));
     }
-    window.dispatchEvent(new Event(RESIZE));
+    if (is.multi)
+        window.dispatchEvent(new Event(RESIZE));
 
     // msecs and secs are now set, by formFromObj() or time.dispatchEvent().
     // ezX animates elms.x in all pages, and the x-axis of the chart in the
@@ -167,6 +169,9 @@ function loadFinally(is, name, hasVisited, id) {
         return;
     //----------------
     ns.updateAll(obj);
+    if (!is.multi)
+        window.dispatchEvent(new Event(RESIZE));
+
     Object.seal(g);
     Object.seal(elms);       // can't freeze: color page elms.named is variable
 
@@ -189,9 +194,6 @@ function loadFinally(is, name, hasVisited, id) {
 
         ez.newTarget({elm:tar, prop:P.o});
         af.play()
-          .then(r => {
-            console.log(r);
-          })
           .catch(err => {    // don't alert the user, just display the page
             P.o.setIt(tar, ONE);
             P.filter.setIt(tar, "none");

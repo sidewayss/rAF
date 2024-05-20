@@ -1,5 +1,5 @@
 // export everything
-export {getNamed, getNamedEasy, getNamedJSON, getNamedString, getNamedBoth,
+export {getNamed, getNamedEasy, getNamedObj, getNamedString, getNamedBoth,
         getLocalNamed, getLocal, setLocal, setNamed, storeCurrent, setLocalBool,
         isNamedSteps};
 
@@ -14,45 +14,49 @@ import {EASY_, elms, g, boolToString, errorAlert} from "./common.js";
 //            during the load process by loadJSON(), getEasies().
 //            The list of named objects contains both presets and user items
 //            from localStorage. Those names can overlap, in which case the
-//            user item overrides the preset. pre is for prefix, not preset.
-function getNamed(sel = elms.named, pre = preClass, getAll = true) {
-    let entries = Object.entries(g.presets[pre]);
-    if (!getAll)                              // !getAll = exclude E.steps
-        entries = entries.filter(([_, obj]) => obj.type != E.steps);
-
-    let i, key, val;
-    const lenPre = pre.length;                // the prefix string length
-    const names  = new Set(entries.map(v => v[0]));
+//            user item overrides the preset.
+function getNamed(sel = elms.named, prefix = preClass, getAll = true) {
+    let i, key, opt, val;
+    const                                       // !getAll = exclude E.steps
+    keys   = getAll ? Object.keys(g.presets[prefix])
+                    : Object.entries(g.presets[prefix])
+                            .filter(([_, obj]) => obj.type != E.steps)
+                            .map(pair => pair[0]),
+    names  = new Set(keys),                     // start with presets
+    lenPre = prefix.length;
     i = 0;
-    while ((key = localStorage.key(i++))) {   // localStorage has no querying
-        if (key.startsWith(pre)) {            // for a single prefix/document
-            val = localStorage.getItem(key);  // !getAll = exclude E.steps
+    while ((key = localStorage.key(i++))) {     // then add the local names:
+        if (key.startsWith(prefix)) {           // localStorage has no querying
+            val = localStorage.getItem(key);    // for a single prefix/document.
             if (getAll || !isNamedSteps(val))
-                names.add(key.slice(lenPre)); // shame it has to check here, but
-        }                                     // names and opt don't have type.
+                names.add(key.slice(lenPre));
+        }
     }
-    for (key of names)
-        sel.add(new Option(key));
-
-    const opt = sel.options[0];
-    if (opt.value == DEFAULT_NAME) {          // value implied from textContent
-        opt.value = DEFAULT_NAME;             // must be set explicitly
+    for (key of names) {
+        opt = new Option(key)
+        opt.style.fontStyle = "normal";         // sel is sometimes "italic"
+        sel.add(opt);
+    }
+    opt = sel[0];
+    if (opt.value == DEFAULT_NAME) {            // value implied from text
+        opt.value = DEFAULT_NAME;               // must be set explicitly
         opt.text  = DEFAULT;
     }
     return sel;
 }
-function isNamedSteps(str) {
-    return str.includes("type: 9")
+// isNamedSteps() searches a JSON or modified-JSON string for type:E.steps
+function isNamedSteps(str, isCopy) {
+    return str.includes(isCopy ? "type: 9" : '"type":9');
 }
 //==============================================================================
 // getNamedEasy() returns an Easy instance for a named item
 function getNamedEasy(name) {
-    try         { return new Easy(getNamedJSON(name, EASY_)); }
+    try         { return new Easy(getNamedObj(name, EASY_)); }
     catch (err) { errorAlert(err); }
 }
-// getNamedJSON() returns a JSON object from localStorage or presets, in that
+// getNamedObj() returns a JSON object from localStorage or presets, in that
 //                order, localStorage can override a preset of the same name.
-function getNamedJSON(name, pre = preClass) {
+function getNamedObj(name, pre = preClass) {
     return JSON.parse(getLocalNamed(name, pre))
                    ?? Ez.shallowClone(g.presets[pre][name]);
 }

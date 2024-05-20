@@ -115,6 +115,7 @@ input[type=text]:focus {
 }
 #canvas {
   z-index:-1;
+  pointer-events:none;
   position:absolute;
   width: 100vw;
   height:100vh;
@@ -130,7 +131,7 @@ input[type=text]:focus {
   width:50%;
 }
 #time {
-  width: 7ch;
+  width: 3.5rem; /* was 7ch font-size increased, should be 5.833ch now */
   flex-grow: 1;
   margin-left:0.5rem;
 }

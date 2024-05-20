@@ -1,12 +1,14 @@
-export {loadCopy, jsonToText, easyToText, multiToText, copyText, copyTime,
-        copyByKey, copyFrameByKey, rgxPropertyValue};
+export {loadCopy, easyToText, multiToText, copyText, copyTime, copyByKey,
+        copyFrameByKey, rgxPropertyValue};
 
 
 import {E, Is, P, Easy, Easies, AFrame} from "../raf.js";
 
-import {getNamedJSON, isNamedSteps} from "./local-storage.js";
+import {getNamedObj, isNamedSteps} from "./local-storage.js";
 import {MILLI, CLICK, EASY_, elms, addEventsByElm, errorAlert, errorLog}
         from "./common.js";
+
+import {TYPE, IO, TIMING, EASY} from "./easings/index.js";
 
 let ezCopy, ns, ns_named, rafCopy;
 const
@@ -65,16 +67,17 @@ function copyFrameByKey(keys, f) {
     return txt;
 }
 //==============================================================================
-// copyCode() helpers, imported by _copy.js, except nameToJS(), nameToText()
-function jsonToText(obj) {
-    return JSON.stringify(obj).replaceAll('"', '')
-                              .replaceAll(',', ', ');
-}
-function easyToText(name, target, str, isSteps) {
-    if (!Is.def(str)) {
-        // Too funky to modify the JSON string, convert to object and back again.
-        // Leaves plays, roundTrip, etc, that are deleted by color page, intact.
-        const obj = getNamedJSON(name, EASY_);
+// copyCode() helpers
+function easyToText(name, obj, isSteps) {
+    let isMulti, isRecursion;
+    const
+    newObj  = !obj,
+    isEasy  = Is.def(isSteps),
+    varName = nameToJS(name);
+
+    if (newObj) {
+        // Leaves plays, roundTrip, etc, that are deleted by color page, intact
+        obj = getNamedObj(name, EASY_);
         delete obj.start;
         delete obj.end;
         if (obj.mid)
@@ -84,28 +87,35 @@ function easyToText(name, target, str, isSteps) {
             leg[0].end   = mid;
             leg[1].start = mid;
         }
-        str = jsonToText(obj);
+        if (isEasy)
+            isRecursion = true;
+        else
+            isMulti     = true;
     }
-    const addRaf  = (target === true),          // easings
-          varName = nameToJS(name);
-    let   txt     = nameToText(varName, str);
-    if (Is.def(target)) {                       // easings, color
-        txt = IMPORT + txt;
-        if (!addRaf)                            // color
-            `${name}.newTarget(${target});\n`
+    let str = jsonToText(obj);
+    for (const p of [TYPE, IO, "jump"])           // replace numbers with E.name
+        str = str.replace(rgxPropertyValue(p),    // e.g. "7" = "E.pow"
+                          (m, v) => `${p}:${E.prefix}${Easy[p][v]}${m.at(-1)}`);
+
+    let txt = nameToText(varName, str);
+    if (!isEasy) {                                // multi, color
+        isSteps = isNamedSteps(str, true);
+        if (!isMulti)                             // color
+            txt += `${name}.newTarget(${jsonToText(obj)});\n`;
     }
-    if (!Is.def(isSteps))                       // multi, color
-        isSteps = isNamedSteps(txt);
-    if (isSteps)
-        for (const p of ["timing", "easy"])     //!!TIMING, EASY in steps.js!!
-            if (txt.includes(p + ":")) {
+    if (isSteps) {
+        for (const p of [TIMING, EASY])           // recursion only once because
+            if (txt.includes(p + ":")) {          // <select>s are steps-free:
                 const val = txt.match(rgxPropertyValue(p))[1];
-                if (!val.startsWith("["))       // timing can be an array
-                    txt = nameToText(nameToJS(val)) + txt;
+                if (!val.startsWith("["))         // timing can be an array
+                    txt = easyToText(val, null, false) + txt;
             }
-    return addRaf                               // easings
+    }
+    if (!newObj)
+        txt = IMPORT + txt;                       // easings outer, color
+    return isEasy && !isRecursion                 // easings outer
          ? txt + `const raf = new AFrame(new Easies(${varName}));\n`
-         : txt;                                 // multi, color
+         : txt;                                   // easings inner, multi, color
 }
 function multiToText(obj, fromObj) {
     let   txt  = IMPORT;
@@ -125,13 +135,18 @@ function multiToText(obj, fromObj) {
     return txt;
 }
 function rgxPropertyValue(p) {
-    return new RegExp(`${p}:(.*?),`);
+    return new RegExp(`${p}:(.*?)[,|}]`);
 }
-//===============================
-function nameToJS(name) {        // helps easyToText()
+//======================== not exported:
+function jsonToText(obj) {
+    return JSON.stringify(obj).replaceAll('"', '')
+                              .replaceAll(',', ', ');
+}
+// nameToJS() helps easyToText() convert a name to a JavaScript variable name
+function nameToJS(name) {
     if (name) {
-        name = name.replaceAll(/^\w/, "");  // only [A-Za-z0-9_] for JavaScript
-        if (/\d/.test(name[0]))             // can't start with a number either
+        name = name.replaceAll(/[^\w]/g, ""); // only [A-Za-z0-9_]
+        if (/\d/.test(name[0]))               // can't start with a number
             name = name.slice(1);
         return name;
     }

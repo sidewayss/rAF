@@ -4,11 +4,10 @@ import {U, Ez} from "../../raf.js";
 
 import {getFrames}        from "../update.js";
 import {MEASER_, elms, g} from "../common.js";
-import {jsonToText, easyToText, multiToText, copyTime} from "../copy.js";
+import {easyToText, multiToText, copyTime} from "../copy.js";
 
 import {isCSSSpace} from "./_load.js";
 import {newTar}     from "./_update.js";
-let id, isCSS; // shared by copyCode(), copyObj(), thus indirectly by multiObj()
 //==============================================================================
 function copyData(txt) {
     moveCopied(elms.data.getBoundingClientRect());
@@ -20,22 +19,22 @@ function copyData(txt) {
     return txt;
 }
 //==============================================================================
+let id, isCSS; // shared by copyCode(), copyObj(), thus indirectly by multiObj()
 function copyCode() {
     let txt;
     moveCopied(elms.code.getBoundingClientRect());
     id    = g.left.spaces.value;
     isCSS = isCSSSpace(id);
-    txt   = isCSS
-          ? ""
-          : `const color = new Color("${g.left.color.spaceId}", 0);\n`;
+    txt   = isCSS ? ""
+                  : `const color = new Color("${g.left.color.spaceId}", 0);\n`;
 
     if (elms.type.value == MEASER_)
-        txt += multiToText(getNamedJSON(elms.multis.value), multiObj);
+        txt += multiToText(getNamedObj(elms.multis.value), multiObj);
     else {
         const
         name = elms.easys.value,
-        obj  = copyObj(id);
-        txt += easyToText(name, jsonToText(obj));
+        obj  = copyObj();
+        txt += easyToText(name, obj);
     }
     return txt;
 }

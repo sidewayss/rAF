@@ -11,13 +11,15 @@ import {initEasies}     from "./_load.js";
 import {easys, refresh} from "./_update.js";
 import {objFromForm}    from "./_named.js";
 
+import {EASY} from "../easings/index.js";
+
 const EZ_ = "ez-";
 //==============================================================================
 // loadEvents() adds event listeners to source and cloned elements, as they are
 //              not cloned, called by getEasies().
 function loadEvents() {
     let func, i, id;
-    for (id of ["easy", ...OVERRIDES]) {    // event listeners not cloned
+    for (id of [EASY, ...OVERRIDES]) {  // event listeners are not cloned
         func = change[id];
         for (i = 0; i < COUNT; i++)
             elms[id][i].addEventListener(CHANGE, func, false);
@@ -25,7 +27,7 @@ function loadEvents() {
 }
 //==============================================================================
 const change = {
-    plays(evt) {                    // <select>.value = "1"|"2"|"3"|DEFAULT_NAME
+    plays(evt) {                // <select>.value = "1"|"2"|"3"|DEFAULT_NAME
         const [tar, i, id] = change.pt(evt);
         set.plays(i, id, orUndefined(tar.value), tar);
     },

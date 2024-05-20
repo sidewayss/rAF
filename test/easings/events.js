@@ -3,33 +3,21 @@ export {loadEvents, shallowClone, storeIt, setNoWaits};
 import {E, Ez, P} from "../../raf.js";
 
 import {ezX, raf}                   from "../load.js";
-import {msecs, timeFrames}          from "../update.js";
 import {changeStop}                 from "../play.js";
 import {storeCurrent, setLocalBool} from "../local-storage.js";
-import {CHANGE, INPUT, elms, g, addEventToElms, addEventsByElm, elseUndefined}
+import {CHANGE, elms, g, addEventToElms, addEventsByElm, elseUndefined}
                                     from "../common.js";
 
-import {drawLine}        from "./_update.js";
-import {objEz}           from "./_named.js";
-import {chart, range}    from "./chart.js";
-import {setSplitGap}     from "./msg.js";
-import {ezY, updateTrip} from "./index.js";
+import {chart, range, drawLine} from "./_update.js";
+import {objEz}                  from "./_named.js";
+import {ezY, updateTrip}        from "./index.js";
 //==============================================================================
 function loadEvents(checks) {
-    addEventsByElm(INPUT,  [elms.time], input);
     addEventsByElm(CHANGE, [...checks, elms.plays], change);
     addEventToElms(CHANGE, [elms.loopWait, elms.tripWait], change.wait);
 }
 //==============================================================================
-const input = {
- // time() is also called by formFromObj(), openNamed()
-    time(evt) { // event fired prior to change.time(), which is in chart.js
-        const prev = msecs;
-        timeFrames(evt);
-        setSplitGap(prev);
-    }
-};
-//==============================================================================
+// >> change event handlers
 const change = {
  // <select>
     plays(evt) {  // also called by updateAll().

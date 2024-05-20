@@ -1,30 +1,32 @@
 export {loadIt, getEasies, initEasies, updateAll, resizeWindow};
 
-import {E, U, P, Pn, Ez, Ease, Easy} from "../../raf.js";
+import {E, U, P, Pn, Is, Ease, Ez, Easy} from "../../raf.js";
 
 import {ezX}      from "../load.js";
 import {getLocal} from "../local-storage.js";
-import {newEasies, updateTime, updateCounters} from "../update.js";
+import {pad, newEasies, updateTime, updateCounters} from "../update.js";
 import {COUNT, CHANGE, INPUT, elms, g, is, isTag, dummyEvent}
                   from "../common.js";
 
-import {refresh}                                  from "./_update.js";
-import {initEzXY, updateTrip}                     from "./index.js";
-import {chart, range, loadChart}                  from "./chart.js";
-import {loadTIOPow, updateTypeIO}                 from "./tio-pow.js";
-import {loadMSG, updateMidSplit, updateSplitGap}  from "./msg.js";
-import {loadSteps, loadTV, initSteps, maxTime}    from "./steps.js";
-import {loadEvents}                               from "./events.js";
+import {chart, range, refresh}                   from "./_update.js";
+import {initEzXY, updateTrip}                    from "./index.js";
+import {loadTIOPow, updateTypeIO}                from "./tio-pow.js";
+import {loadMSG, updateMidSplit, updateSplitGap} from "./msg.js";
+import {loadSteps, loadTV, initSteps, maxTime}   from "./steps.js";
+import {loadEvents}                              from "./events.js";
+
+let borderW, lefty, padLeft, ratio, subtraH, subtraW, topBott; // resizeWindow()
 //==============================================================================
 // loadIt() is called by loadCommon()
 function loadIt(byTag, hasVisited) {
     let clone, cr, elm, i;
+    ++pad.unit;                         // an extra leading space for -0.123
+    ++pad.comp;                         // ditto
 
     Ez.readOnly(chart, "svg", document.getElementById("chart"));
     Ez.readOnly(range, "svg", document.getElementById("y"));
     Ez.readOnly(chart, Pn.vB, P.viewBox.getn(chart.svg));
     Ez.readOnly(range, Pn.vB, P.viewBox.getn(range.svg));
-//!!chart.rectY = P.x .getn(chart.canvas);
 
     for (cr of [chart, range])
         for (elm of cr.svg.children)    // they all have ids
@@ -58,18 +60,19 @@ function loadIt(byTag, hasVisited) {
 
     clone = elm.cloneNode(true);
     clone.id = id;
-    elms[id] = clone;
-    div.appendChild(clone);             // <input>
+    clone.className = "";
+    div.appendChild(clone);             // <select>
+    elms[id] = clone;                   // elms.tripWait
 
     const checks = byTag.at(-1);        // <check-box>s
     Ez.readOnly(g, "trips", checks.filter(e => e.id.endsWith("Trip")));
-    g.trips.push(clone);                // <select> = tripWait = clone
+    g.trips.push(clone);
 
     loadEvents(checks);
-    loadSteps();        // type == E.steps
-    loadMSG();          // mid, split, gap
+    loadSteps();                	    // type == E.steps
+    loadMSG();                  	    // mid, split, gap
 
-    if (hasVisited) // return visitor to this page
+    if (hasVisited)                     // return visitor to this page
         for (elm of [elms.reset, elms.zero, elms.drawAsSteps])
             elm.checked = getLocal(elm);
 //!!else            // user is new to this page
@@ -99,12 +102,12 @@ function getEasies() {
         elm.value = ease[i];
         elm.id    = id + i;             // "bezier0" to "bezier3"
         if (i % 2) {                    // y values can be out of bounds
-            elm.min ="-0.9";
-            elm.max = "1.9";
+            elm.dataset.min ="-0.9";
+            elm.dataset.max = "1.9";
         }
         else {
-            elm.min = "0";
-            elm.max = "1";
+            elm.dataset.min = "0";
+            elm.dataset.max = "1";
         }
         elms.beziers[i] = elm;
     }
@@ -113,13 +116,13 @@ function getEasies() {
     elm.insertBefore(lpar, elm.firstElementChild); // leading parenthesis
     divs[3].appendChild(rpar);                     // trailing parenthesis
 
-    loadChart();    // events for class="chart", must follow cloning
-    loadTIOPow();   // type, io, pow, follows loadChart() for input handler order
+    loadTIOPow();   // type, io, pow, calls loadChart() for input handler order
     loadTV();       // steps.js
 }
-// initEasies() called once per session by loadFinally()
+// initEasies() inits the Easies and sets set-once variables for resizeWindow(),
+//              called once per session by loadFinally().
 function initEasies(obj, hasVisited) {
-    const b = newEasies(ezX);
+    let b = newEasies(ezX);
     if (b) {
         const evt = dummyEvent(CHANGE, "isInitEasies");
         for (const elm of [elms.reset, elms.zero])
@@ -127,10 +130,16 @@ function initEasies(obj, hasVisited) {
 
         initSteps(obj, hasVisited);
         updateTrip();
-        return initEzXY(obj);
+        b = initEzXY(obj);
+        if (b) {                                // pseudo-constants:
+            ratio = chart.viewBox[E.w] / 1403;  // 1403 = E.elastic height
+            lefty = document.getElementsByClassName("lefty");
+            padLeft = P.pL.getn(lefty[0]);
+            topBott = P.pT.getn(document.body) + P.pB.getn(document.body);
+            borderW = P.top.getn(elms.shadow);
+    	}
     }
-    else
-        return b;
+    return b;
 }
 //==============================================================================
 function updateAll() {  // called by loadFinally(), openNamed()
@@ -148,38 +157,53 @@ function updateAll() {  // called by loadFinally(), openNamed()
 }
 //==============================================================================
 // resizeWindow() handles resize events for window, here instead of events.js
-//                so that load.js can use it in addEventListener for all pages.
-function resizeWindow() {                 // margin changes w/zoom
-    const margin = parseFloat(getComputedStyle(document.body).margin);
-    const divX   = elms.x.parentNode;
+//                so that load.js can use it in addEventListener for all pages,
+//                assumes no zooming by the user post page-load because of all
+//                the set-once pseudo-constants set in initEasy(). Zooming was
+//                weird anyway... subtrahends must wait until after updateAll().
+//                Resizing is stuttering in my tests. Should I throttle it??
+function resizeWindow() {
+    if (!Is.def(subtraH)) {
+        subtraH = topBott                   // height subtrahend
+                + borderW
+                + elms.diptych.offsetHeight
+                + elms.x.offsetHeight;
+        subtraW = (borderW * 2)             // width  subtrahend
+                + padLeft
+                + lefty[1].offsetWidth
+                + range.svg.clientWidth;
+    }
+    // Safari doesn't auto-size svg within a <div>, must be done explicitly
+    // 600 is the minimum chart width, below that the browser applies scrollbars
+    const
+    innerW = window.innerWidth,
+    w = innerW - subtraW,                   // available width
+    h = window.innerHeight - subtraH;       // available height
 
-    const availableH = window.innerHeight
-                     - margin - margin    //-top-bottom margins
-                     - elms.triptych.previousElementSibling.offsetHeight
-                     - divX.offsetHeight;
+    let n = Math.max(608, Math.min(w, h * ratio));
+    P.w.set(chart.svg, n);
+    P.h.set(range.svg, P.h.get(chart.svg)); // clientHeight is integer
 
-    const availableW = window.innerWidth
-                     - margin - margin;   //-left-right margins
-                     - elms.sidebar.offsetWidth
-                     - range.svg.offsetWidth;
+    // Set diptych left's width for better vertical alignment with triptych
+    let elm = lefty[0];
+    P.w.set(elm, Math.round((n / 2)
+                          + elms.sidebar.offsetWidth
+                          - P.mR.getn(elms.left)));
 
-    // Safari doesn't auto-size svg within a <div>, so must be done this way
-    let n = availableW > availableH ? divX.offsetWidth
-                                    : Math.floor(availableW); //*02
-    chart.svg.style.width  = n + U.px;
-    range.svg.style.height = n + U.px;
+    // Size the box-shadow background element
+    const
+    l = elm.getBoundingClientRect().left,   // P.w.set() changes it
+    r = innerW
+      - Math.round(y.getBoundingClientRect().right)
+      - padLeft;
+    elm = elms.shadow.style;
+    elm.left   = l + U.px;
+    elm.width  = innerW - r - l + U.px;
+    elm.height = document.body.clientHeight - borderW + U.px;
 
     // Center #copied in the available space
     n  = elms.code.offsetLeft + elms.code.offsetWidth;
-    n += (chart.svg.parentNode.offsetLeft - n ) / 2;
-    n -= elms.copied.offsetWidth / 2;
+    n += ((chart.svg.parentNode.offsetLeft - n ) / 2)
+       - (elms.copied.offsetWidth / 2);
     elms.copied.style.left = n + U.px;
-
-    // Set diptych left's width for better vertical alignment
-    elms.left.firstElementChild.style.width =
-        Math.round(
-            (chart.svg.clientWidth / 2)
-          + elms.sidebar.offsetWidth
-          - parseFloat(getComputedStyle(elms.left).marginRight)
-        ) + U.px;
 }

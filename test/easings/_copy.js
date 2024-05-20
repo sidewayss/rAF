@@ -1,13 +1,10 @@
 export {copyCode, copyData};
 
-import {E, Easy} from "../../raf.js";
+import {getFrames} from "../update.js";
+import {easyToText, copyByKey, copyFrameByKey, copyTime,} from "../copy.js";
 
-import {getFrames}        from "../update.js";
-import {jsonToText, easyToText, copyByKey, copyFrameByKey, copyTime,
-        rgxPropertyValue} from "../copy.js";
-
-import {TYPE, IO} from "./tio-pow.js";
-import {isSteps}  from "./steps.js";
+import {shallowClone} from "./events.js";
+import {isSteps}      from "./steps.js";
 //==============================================================================
 function copyData(txt, keys) {
     txt += "\ty";
@@ -18,12 +15,5 @@ function copyData(txt, keys) {
 }
 //==============================================================================
 function copyCode(obj) {
-    let p, txt;                     // p for property
-    txt = jsonToText(obj);
-    for (p of [TYPE, IO, "jump"])   // replace numbers with "E." //!!for other pages too!!
-        txt = txt.replace(          // e.g. "0" = "E.linear"
-                rgxPropertyValue(p),
-                (_, v) => `${p}:${E.prefix}${Easy[p][v]},`
-            );
-    return easyToText("easy", true, txt, isSteps()); // "easy" here, "ez" th
-}
+    return easyToText("easy", shallowClone(obj), isSteps());
+}                  // "easy" here, "ez" there...

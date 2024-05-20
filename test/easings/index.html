@@ -11,17 +11,19 @@
     <script src=  "../load.js" type="module"></script>
   </head>
   <body>
-    <!-- diptych is one row with each side's <div> containing two rows -->
+    <div id="shadow"></div>
+    <!-- diptych is one row with two unevenly sized columns -->
+    <!-- split in the center of the window -->
     <div id="diptych">
       <div id="left" class="mr1-2">
-        <div class="col">
+        <div class="col lefty">
           <!-- diptych left side row 1 ---------------------------->
-          <div class="flex between mb3-8 pl3-8">
+          <div class="flex between mb3-8 pl1-8">
             <div class="row">
               <label for="plays">Plays:</label>
               <select id="plays" class="mr1-2"></select>
               <label for="loopWait" class="pr0">wait:</label>
-              <select id="loopWait" class="mr1"></select>
+              <select id="loopWait" class="mr1-2"></select>
             </div>
             <div class="row">
               <label for="time">Time:</label>
@@ -30,7 +32,7 @@
             </div>
           </div>
           <!-- diptych left side row 2a for E.steps ---------------->
-          <div id="userSteps" class="div-steps row between mb3-8 pl3-8">
+          <div id="userSteps" class="div-steps row between mb3-8 pl1-8">
             <div class="row">
               <pre>times:</pre>
               <div class="row end">
@@ -44,7 +46,7 @@
             </div>
           </div>
           <!-- diptych left side row 2 (row 3 for steps) ---------->
-          <div class="flex between pl3-8">
+          <div class="flex between pl1-8">
             <div class="row">
               <check-box id="roundTrip" data-label="Round trip" class="row"></check-box>
               <check-box id="flipTrip"  data-label="flip"       class="row pl3-16 pr3-16"></check-box>
@@ -61,32 +63,44 @@
           </div>
         </div>
       </div>
-      <div id="right">
-        <div class="col"> <!-- Col 1 -->
-          <!-- Row 1 -->
-          <div class="row mb3-8 ml1-2">
-            <label for="type">Ease:</label>
-            <select id="type" class="chart type-pow"></select>
-            <div class="div-steps row ml3-8 mr1-2">
-              <select id="steps" class="steps" style="text-align:right"></select>
-              <select id="count" disabled style="text-align:right; pointer-events:none; display:none">
-                <option selected>3</option> <!-- disabled <select> = decorated text -->
-                <option>00</option> <!-- for two-digit width, never displayed -->
-              </select>
-            </div>
-            <div class="div-steps row">
-              <label for="jump">Jump:</label>
-              <select id="jump" class="steps"></select>
-            </div>
-          </div>
-          <!-- Row 2 - only a sibset of <div>s displayed at one time -->
+      <div id="right" class="col">
+        <div class="row mb3-8 ml1-2">   <!-- Row 1 -->
+          <label for="type">Type:</label>
+          <select id="type" class="chart type-pow"></select>
           <div id="div2" class="row end">
             <button id="linkType" class="link linked" value="true">link</button>
           </div>
-          <div id="bezier" class="row ml3-8">
+          <div class="div-steps row ml3-8 mr1-2">
+            <select id="steps" class="steps" style="text-align:right"></select>
+            <select id="count" disabled style="text-align:right; pointer-events:none; display:none">
+              <option selected>3</option> <!-- disabled <select> = decorated text -->
+              <option>00</option> <!-- for two-digit width, never displayed -->
+            </select>
+          </div>
+          <div class="div-steps row">
+            <label for="jump">Jump:</label>
+            <select id="jump" class="steps"></select>
+          </div>
+        </div>
+        <div class="row ml1-2">         <!-- Row 2 -->
+          <div class="row">
+            <label for="io">&nbsp;&nbsp;Io:</label>
+            <select id="io" class="chart"></select>
+          </div>
+          <div class="row ml1-2">
+            <label id="lblPow" for="pow">Pow:</label>
+            <input id="pow" class="chart-number type-pow w3"
+                  type="number" min="0.1" max="9.0" step="0.1" value="2.0"/>
+          </div>
+          <div id="divPow2" class="row end">
+            <button id="linkPow" class="link linked" value="true">link</button>
+            <input  id="pow2" class="chart-number type-pow w3"
+                  type="number" min="0.1" max="9.0" step="0.1" value="2.0"/>
+          </div>
+          <div id="bezier" class="row ml3-16">
             <div class="row align-end">
               <pre class="lbl-paren">&lpar;</pre>
-              <pre>,</pre>
+              <pre class="comma">,</pre>
               <input class="chart-number w4" type="number"step="0.01"/>
               <pre class="lbl-paren">&rpar;</pre>
             </div>
@@ -97,36 +111,25 @@
           </div>
           <div id="divValues" class="div-steps row ml1-2"></div>
         </div>
-        <div class="col"> <!-- Col 2 -->
-          <div class="row ml3-8 mb3-8">
-            <select id="io" class="chart"></select>
-            <input  id="pow"  class="chart-number type-pow w3 ml3-8"
-                  type="number" min="0.1" max="9.0" step="0.1" value="2.0"/>
-          </div>
-          <div id="divPow2" class="row end">
-            <button id="linkPow" class="link linked" value="true">link</button>
-            <label  id="lblPow" for="pow2">Power:</label>
-            <input  id="pow2" class="chart-number type-pow w3"
-                  type="number" min="0.1" max="9.0" step="0.1" value="2.0"/>
-          </div>
-        </div>
       </div>
     </div>
+    <!-- triptych is one row with three unevenly sized columns -->
+    <!-- center column is centered in the window -->
     <div id="triptych">
-      <!-- Triptych Col 1 - left ---------------------------------->
+      <!-- triptych col 1: left -->
       <div class="flex end">
-        <div class="col">
+        <div class="col lefty" style="padding-top:var(--16th)"> <!-- padding compensates for lack thereof in element above -->
           <div class="row checklist">
-            <check-box id="reset" class="row pl3-8" data-label="Auto reset"></check-box>
-            <div class="row between align-start grow"
-                 style="margin:0 var(--3-8ths) 0 var(--15-16ths); position:relative; top:var(--3-16ths)">
+            <check-box id="reset" class="row pl1-8" data-label="Auto reset"></check-box>
+            <div class="row evenly align-start grow"
+                 style="position:relative; top:0.15625rem"> <!-- 5/32nds splits the difference for rem units scaling -->
               <state-button id="play" class="row" data-states='[[0,"play"], [1,"pause"], [2,"resume"]]'></state-button>
               <state-button id="stop" class="row" data-states='[[0,"stop"], [1,"reset"]]' disabled></state-button>
             </div>
           </div>
-          <check-box id="loopByElm"   class="row checklist pl3-8" data-label="Loop &#xD7; 3 elements"></check-box>
-          <check-box id="zero"        class="row checklist pl3-8" data-label="Frame zero"            ></check-box>
-          <check-box id="drawAsSteps" class="row checklist pl3-8" data-label="Draw line as steps"    ></check-box>
+          <check-box id="zero"        class="row checklist pl1-8" data-label="Frame zero"            ></check-box>
+          <check-box id="loopByElm"   class="row checklist pl1-8" data-label="Loop &#xD7; 3 elements"></check-box>
+          <check-box id="drawAsSteps" class="row checklist pl1-8" data-label="Draw line as steps"    ></check-box>
           <div id="placeholder" class="row"></div>
           <div id="sidebar">
             <p>Start:<span id="start" class="sidebar ml5-16">   0</span></p>
@@ -156,7 +159,7 @@
               <button id="code" class="symBtn">data_object</button>
               <span id="copied">Copied!</span>
             </div>
-            <div class="row pl3-16 mt1-2">
+            <div class="row pl1-8 mt1-2">
               <label for="named">Name:</label>
               <select id="named" class="named"></select>
             </div>
@@ -169,7 +172,7 @@
           </div>
         </div>
       </div>
-      <!-- Triptych Col 2 - center -------------------------------->
+      <!-- triptych col 2: center -->
       <div class="col align-center">
         <input id="x" type="range" class="row checklist" min="0" max="1" step="1" value="0"/>
         <svg id="chart" viewBox="-15 -15 1030 1030">
@@ -183,7 +186,7 @@
           <circle   id="dot0" style="fill:#00F;"/>
         </svg>
       </div>
-      <!-- Triptych Col 1 - right --------------------------------->
+      <!-- triptych col 3: right -->
       <div class="col align-start">
         <div class="row checklist"></div>
         <svg id="y" viewBox="0 -15 28 1030">
@@ -194,6 +197,9 @@
           <circle id="dotY0"  cx="14" style="fill:#00F;"/>
         </svg>
       </div>
+      <div style="background-color:var(--pitch);"></div>
+      <div style="background-color:var(--pitch);"></div>
+      <div style="background-color:var(--pitch);"></div>
     </div>
     <!-- "Save Named" Dialog -->
     <dialog id="dialog">

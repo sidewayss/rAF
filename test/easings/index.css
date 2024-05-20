@@ -1,4 +1,10 @@
 /* overrides of common.css */
+body {
+  margin:0;
+  padding:var(--3-16ths) 0 var(--7-16ths) var(--3-16ths);
+  background-color:#131313;
+}
+
 .row { height:calc(1rem + var(--9-16ths)); }
 
 p.hi { font-weight:500; }
@@ -9,9 +15,6 @@ p.hi { font-weight:500; }
 }
 .symBtn {
   margin-left:var(--5-8ths);
-}
-#save, #revert {
-  font-size:1.5rem;
 }
 #save, #data {
   margin-left:var(--16th);
@@ -71,11 +74,63 @@ input.secs { /* #t0, #t1, #t1 */
   visibility:hidden;
 }
 
+#chart {
+  stroke:black;
+  stroke-width:2px;
+  transform:scaleY(-1); /* bottom-to-top: 0 to 1000 */
+}
+#y {
+  transform:scaleY(-1); /* ditto */
+  pointer-events:none;
+  height:1px;           /* must have initial value */
+}
+#canvas {
+  fill:white;
+  stroke:var(--medium-gray);
+}
+line, #crosshairs {
+  fill:none;
+  stroke-dasharray:4;
+  stroke-width:1px;
+}
+line { /* #dashX, #dashY */
+  stroke:#77F;
+}
+#crosshairs {
+  stroke:#AAA;
+}
+#line {
+  fill:none;
+  stroke:var(--dark-blue);
+  stroke-width:4px;
+  stroke-linejoin:round;
+}
+#trackY, #marksY {
+  stroke:var(--medium-gray);
+  stroke-width:2px;
+  stroke-dasharray:none;
+}
+circle {
+  r:12px;
+  fill-opacity:0.5;
+  stroke:var(--dark-blue);
+  stroke-width:3px;
+}
+
 /* <div> */
+#shadow {
+  z-index:-1;
+  pointer-events:none;
+  position:absolute;
+  top:var(--3-16ths);
+  background-color:var(--bg-white);
+  box-shadow:0 0 2px var(--pitch) inset;
+}
 #diptych {
   display:grid;
   grid-template-columns:1fr 1fr;
   row-gap:0.5rem;
+  padding-top:var(--9-16ths);
 }
 #triptych {
   display:grid;
@@ -86,8 +141,10 @@ input.secs { /* #t0, #t1, #t1 */
   justify-content:flex-end;
   text-align:end;
 }
+.lefty {
+  padding-left:var(--5-8ths);
+}
 #right {
-  display:flex;
   border-left:1px solid;
   padding-bottom:0;
 }
@@ -102,11 +159,15 @@ input.secs { /* #t0, #t1, #t1 */
   height:calc(1rem + var(--11-16ths)); /* .row height + 2px for borders?? */
 }
 #divCopy {
-  padding:0.75rem 0 0.5rem var(--3-16ths);
+  padding:0.75rem 0 0.5rem var(--8th);
   margin-top:var(--9-16ths);
 }
 #divSave {
   padding:0.5rem 0 0.5rem calc(5ch + var(--3-8ths));
+}
+.checklist, input.checklist {
+  margin:0;
+  padding:var(--16th) 0;
 }
 
 /* <button> */
@@ -132,8 +193,18 @@ input.secs { /* #t0, #t1, #t1 */
   align-self:flex-start;
   color:var(--dark-gray);
 }
+.locked {
+  color:var(--dark-blue);
+}
 .link {
+  color:var(--darkest-blue);
   font-size:calc(1rem + var(--5-8ths));
+  margin:0 var(--7-16ths);
+}
+#linkPow {
+  margin:0 var(--3-16ths);
+}
+.linked {
   color:var(--medium-blue);
 }
 
@@ -152,29 +223,18 @@ input.secs { /* #t0, #t1, #t1 */
 }
 .lock:hover:not(:disabled),
 .link:hover:not(:disabled) {
-  color:var(--accent-blue);
   background:radial-gradient(ellipse at center, #0002 0, #0000 80%);
 }
 .lock:active:hover,
 .link:active:hover {
-  color:var(--medium-blue);
   background:radial-gradient(ellipse at center, #0044 0, #0000 90%);
 }
 
-#linkType {
-  margin:0 0.25rem 0 0;
-}
-#linkPow {
-  margin:0 var(--8th) 0 0;
-}
-.locked {
-  color:var(--dark-blue);
-}
-.linked { /* not necessary with colors the same now... */
-  color:var(--medium-blue);
-}
 
 /* miscellaneous */
+.comma {
+  padding-right:var(--8th);
+}
 .emph { /* emphasis for sidebar labels */
   color:var(--dark-blue);
   font-weight:500;
@@ -183,8 +243,9 @@ input.secs { /* #t0, #t1, #t1 */
 .mr0 { margin-right: 0 }
 .pr0 { padding-right:0 }
 
-.pl1-2 { padding-left:0.5rem; }
-.pl1-8 { padding-left:var(--8th); }
+.pl1-2  { padding-left:0.5rem;      }
+.pl1-8  { padding-left:var(--8th);  }
+.pl1-16 { padding-left:var(--16th); }
 
 .w3 { width:3rem; }
 .w4 { width:4rem; }

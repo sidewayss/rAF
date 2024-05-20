@@ -1,30 +1,32 @@
 export {easingFromObj, easingFromForm, drawEasing};
 
-import {E, Is, P, Ez, Easy} from "../../raf.js";
-import {splitIO}            from "../../easy/easy-construct.js";
+import {E, Is, P, Ez} from "../../raf.js";
+import {splitIO}      from "../../easy/easy-construct.js";
 
 import {msecs, frames, frameCount} from "../update.js";
 import {setLocalBool}              from "../local-storage.js";
-import {MILLI, TWO, elms, g, formatInputNumber, orUndefined, elseUndefined}
+import {formatInputNumber}         from "../input-number.js";
+import {MILLI, TWO, elms, g, orUndefined, elseUndefined}
                                    from "../common.js";
 
-import {chart}                               from "./chart.js";
-import {MSG, disableClear}                   from "./msg.js";
-import {TIME, TYPE, IO, POW, setLink, isPow} from "./tio-pow.js";
-import {LINK, pointToString, twoLegs, isBezier, bezierArray} from "./index.js";
+import {chart}             from "./_update.js";
+import {MSG, disableClear} from "./msg.js";
+import {setLink, isPow}    from "./tio-pow.js";
+import {LINK, TYPE, IO, POW, pointToString, twoLegs, isBezier, bezierArray}
+                           from "./index.js";
 //==============================================================================
 // easingFromObj() creates an object from localStorage and updates controls,
-//                   called exclusively by formFromObj()
-function easingFromObj(obj, legs) {
-    elms.type2.value = legs?.[1]?.type ?? g.type;
+//                 called exclusively by formFromObj()
+function easingFromObj(obj, leg0, leg1) {
+    elms.type2.value = leg1?.type ?? g.type;
     if (isPow())
-        formatInputNumber(elms.pow, obj.pow ?? legs[0].pow);
+        formatInputNumber(elms.pow, obj.pow ?? leg0.pow);
     else if (isBezier())
         for (let i = 0; i < 4; i++)
             formatInputNumber(elms.beziers[i], obj.bezier[i]);
 
-    if (legs?.[1].pow)
-        formatInputNumber(elms.pow2, legs[1].pow);
+    if (leg1?.pow)
+        formatInputNumber(elms.pow2, leg1.pow);
     else
         elms.pow2.value = elms.pow.value;
 
@@ -35,9 +37,9 @@ function easingFromObj(obj, legs) {
             elms[id].value == elms[id + TWO].value
         );
 
-    [legs?.[0].end,                      // #mid,
-     legs?.[0].time,                     // #split,
-     legs?.[1].wait].forEach((v, i) => { // #gap - initial default values:
+    [leg0?.end,                          // #mid,
+     leg0?.time,                         // #split,
+     leg1?.wait].forEach((v, i) => {     // #gap - initial default values:
         id  = MSG[i];
         elm = elms[id];
         n   = obj[id] ?? v;
@@ -45,11 +47,11 @@ function easingFromObj(obj, legs) {
         val    = isDefN ? n / getDF(id)  // default value
                         : elm.default(); // fallback
         formatInputNumber(elm, val);
-        disableClear(elm, n, isDefN);
+        disableClear(elm, val, isDefN);
     });
 }
 // easingFromForm() creates an object from controls for localStorage or
-//                   new Easy(), called exclusively by objFromForm().
+//                  new Easy(), called exclusively by objFromForm().
 function easingFromForm(obj) {
     let gap, mid, pow, split;
     const isP   = isPow();
@@ -66,12 +68,15 @@ function easingFromForm(obj) {
         pow = elms.pow.valueAsNumber;
 
     if (useLegs) {
-        const ios   = splitIO(g.io, true).map(v => orUndefined(v));
-        const time2 = msecs - split - gap;
-        const type2 = orUndefined(Number(elms.type2.value));
-        const pow2  = elseUndefined(isPow(type2), elms.pow2.valueAsNumber);
+        let pow2, type2;
+        const
+        ios   = splitIO(g.io, true).map(v => orUndefined(v)),
+        time2 = msecs - split - gap;
+        type2 = Number(elms.type2.value);
+        pow2  = elseUndefined(isPow(type2), elms.pow2.valueAsNumber);
+        type2 = orUndefined(type2);         // can't be undefined for isPow()
 
-        for (let id of [TIME,TYPE,IO]) // set by each leg instead
+        for (let id of ["time", TYPE, IO])  // set by each leg instead
             delete obj[id];
 
         obj.legs = [

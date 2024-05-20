@@ -1,30 +1,38 @@
 // export everything but update
-export {ezY, LINK, OTHER, initEzXY, newEzY,
-        pointToString, updateTrip, twoLegs, isBezier, bezierArray};
+export {initEzXY, newEzY, pointToString, updateTrip, twoLegs, isBezier,
+        bezierArray};
+
+export let ezY;
+export const
+    LINK   = "link",
+    OTHER  = "other",
+    TYPE   = "type",    // would be in tio-pow.js if not for _update.js
+    IO     = "io",
+    POW    = "pow",
+    TIMING = "timing",  // would be in steps.js if not for _update.js
+    EASY   = "easy"     // ditto
+;
 
 import {E, P, Easy} from "../../raf.js";
 
 import {ezX}                        from "../load.js";
 import {PLAYS, elms, g, errorAlert} from "../common.js";
-
-import {objEz} from "./_named.js";
-import {TIME}  from "./tio-pow.js";
-
-let ezY;
-const LINK  = "link";
-const OTHER = "other";
 //==============================================================================
 // Animation object functions:
 // initEzXY() called by loadFinally=>updateAll(), openNamed=>updateNamed()
 function initEzXY(obj) {
     const b = Boolean(newEzY(obj));
-    if (b)
-        for (const prop of [TIME, PLAYS, "loopWait", ...g.trips.map(elm => elm.id)])
+    if (b) {
+        ezX.time = obj.legs
+                 ? obj.legs[0].time + obj.legs[1].time + (obj.legs[1].wait ?? 0)
+                 : obj.time;
+        for (const prop of [PLAYS, "loopWait", ...g.trips.map(elm => elm.id)])
             ezX[prop] = obj[prop];
+    }
     return b;
 }
 // newEzY() called by initEzXY() and refresh()
-function newEzY(obj = objEz) {
+function newEzY(obj) {
     g.easies.delete(ezY);
     try {
         ezY = new Easy(obj);

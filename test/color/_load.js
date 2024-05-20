@@ -10,12 +10,11 @@ export const
 import Color    from "https://colorjs.io/dist/color.js";
 import {spaces} from "https://colorjs.io/src/spaces/index.js";
 
-
 import {C, U, E, Fn, F, P, Ez, Easy} from "../../raf.js";
 import {CFunc} from "../../prop/func.js"; //!!need better way to access CFunc.A!!
 
 import {msecs, pad, newEasies, updateTime, updateCounters} from "../update.js";
-import {getLocal, getNamed, getNamedJSON} from "../local-storage.js";
+import {getLocal, getNamed, getNamedObj} from "../local-storage.js";
 import {COUNT, CHANGE, CLICK, INPUT, EASY_, MEASER_, elms, g, pairOfOthers,
         orUndefined, dummyEvent, errorAlert} from "../common.js";
 
@@ -28,7 +27,7 @@ const LOADING = "isLoading";
 // loadIt() is called by loadCommon()
 function loadIt(byTag, hasVisited, params) {
     let css, elm, id, max, obj, opt, rng, space, txt;
-    pad.frame = 4;         // prevents freezing of pad in loadUpdate() :(
+    pad.frame = 4;
 
     elm = elms.leftSpaces; // populate leftSpaces <select>:
     const sorted = Object.values(spaces).sort((a, b) => a.id < b.id ? -1 : 1);
@@ -181,7 +180,7 @@ function initEasies(obj, hasVisited) {
     const b = newEasies();              // instantiates a new, empty g.easies
     if (b) {                            // ezX added/deleted in newTargets()
         if (isMulti) {
-            const json = obj.easy.map(name => getNamedJSON(name));
+            const json = obj.easy.map(name => getNamedObj(name));
             const f    = timeFactor(json);
             for (const o of json)       // scale each easy.time by f
                 g.easies.add(newEasy(o, f));

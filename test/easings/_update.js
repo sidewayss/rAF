@@ -1,5 +1,8 @@
 export {refresh, storeIt, initPseudo, newTargets, getMsecs, getFrame, updateX,
         setCounters, formatDuration, formatPlayback, drawLine, flipZero};
+export const
+chart = {},  // SVG chart elements and viewBox array
+range = {};  // SVG vertical pseudo-range element
 
 import {E, U, P, Pn, Easy} from "../../raf.js";
 
@@ -7,25 +10,21 @@ import {create} from "../../easy/efactory.js";
 const targetPseudoX = create({peri:pseudoUpdate});
 const targetPseudoY = create({peri:()=>{}}); // noop: it requires a func...!!
 
-import {ezX, raf}      from "../load.js";
-import {frames, targetInputX, inputX, updateFrame, pseudoFrame,
-        pseudoAnimate} from "../update.js";
-import {MILLI, COUNT, LITE, elms, g, formatNumber, toggleClass}
-                       from "../common.js";
+import {ezX, raf} from "../load.js";
+import {frames, targetInputX, inputX, updateFrame, pseudoFrame, pseudoAnimate,
+        eGet, formatNumber}                       from "../update.js";
+import {MILLI, COUNT, LITE, elms, g, toggleClass} from "../common.js";
 
 import {objFromForm}                              from "./_named.js";
 import {storeIt}                                  from "./events.js";
 import {drawSteps, postRefresh, setInfo, isSteps} from "./steps.js";
 import {drawEasing}                               from "./not-steps.js";
-import {chart, range, isOutOfBounds}              from "./chart.js";
-import {ezY, newEzY, twoLegs, isBezier}           from "./index.js";
+import {isOutOfBounds}                            from "./chart.js";
+import {ezY, newEzY, twoLegs}                     from "./index.js";
 //==============================================================================
 // refresh() <= updateAll(), changeStop(), inputTypePow(evt), event handlers in
 //              chart.js, msg.js, steps.js, tio-pow.js.
-function refresh(tar, n, has2   = twoLegs(),
-                         isBS   = isBezier() || isSteps(),
-                         oobOld = false)
-{
+function refresh(tar, n, has2 = twoLegs(), oobOld = false) {
     if (tar) {                   // !tar = called by updateAll()
         let obj;
         if (n)
@@ -55,7 +54,7 @@ function refresh(tar, n, has2   = twoLegs(),
     postRefresh(ezY.firstTime);  // E.steps needs cleanup post-pseudo-animation
 
     let oob = isOutOfBounds();   // handle out-of-bounds y coordinates in chart:
-    if (has2 && !isBS)
+    if (!oob && has2)
         oob |= isOutOfBounds(Number(elms.type2.value));
     if (oob || oobOld) {         // adjust the vertical size of chart and range
         let cr, maxY, minY;
@@ -69,7 +68,7 @@ function refresh(tar, n, has2   = twoLegs(),
             maxY = MILLI;
         }
         const x = chart.viewBox[E.x];
-        const h = maxY - x - x - minY
+        let   h = maxY - x - x - minY;
         for (cr of [chart, range]) {
             cr.viewBox[E.y] = Math.ceil(minY + x);
             cr.viewBox[E.h] = Math.ceil(h);
@@ -78,6 +77,8 @@ function refresh(tar, n, has2   = twoLegs(),
         range.svg.style.height = chart.svg.clientHeight + U.px;
         range.trackY.setAttribute(Pn.y1, minY);
         range.trackY.setAttribute(Pn.y2, maxY);
+
+        elms.shadow.style.height = document.body.clientHeight + U.px;
     }
 }
 //==============================================================================
@@ -132,13 +133,13 @@ function postY() {
 }
 // update() is the g.easies.peri() callback
 function update() {
-    updateFrame(ezX.e.value, ezY.e);
+    updateFrame(ezX.e.value, eGet(ezY));
 }
 // pseudoUpdate() is the pseudo-animation callback, ezX.target.peri() only. For
 //                E.steps w/jump:E.start|E.none, ezY ends before ezX, but ezY.e
 //                remains intact for drawing the rest of the line.
 function pseudoUpdate(_, e) {
-    pseudoFrame(e.value, ezY.e);
+    pseudoFrame(e.value, ezY.e); //!!does this ever need eGet()?? test it!!
 }
 //==============================================================================
 function getMsecs() {
@@ -172,7 +173,7 @@ function updateX(frm, isReset) {
 // setCounters() is called exclusively by updateCounters()
 function setCounters(frm, d, pad) {
     for (var key of Easy.eKey)
-        elms[key].textContent = formatNumber(frm[key], pad[key], d);
+        formatNumber(frm[key], pad[key], d, elms[key]);
 }
 // formatDuration() is called exclusively by updateDuration()
 function formatDuration(val, d) {

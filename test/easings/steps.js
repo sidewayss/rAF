@@ -7,21 +7,20 @@ export const
 
 import {E, Is, Ez, P, Easy} from "../../raf.js";
 
-import {D, pad, frames, secs}   from "../update.js";
-import {getNamed, getNamedEasy} from "../local-storage.js";
-import {SELECT, MILLI, COUNT, CHANGE, INPUT, elms, g, addEventByClass,
-        isInvalid, listenInputNumber, formatNumber, formatInputNumber}
-                                from "../common.js";
+import {D, pad, frames, secs, formatNumber} from "../update.js";
+import {getNamed, getNamedEasy}             from "../local-storage.js";
+import {listenInputNumber, formatInputNumber,
+        isInvalid}                          from "../input-number.js";
+import {SELECT, MILLI, COUNT, CHANGE, INPUT,
+        elms, g, addEventByClass}           from "../common.js";
 
-import {refresh}              from "./_update.js";
-import {chart, isOutOfBounds} from "./chart.js";
-import {OTHER, pointToString} from "./index.js";
+import {chart, refresh}                     from "./_update.js";
+import {isOutOfBounds}                      from "./chart.js";
+import {OTHER, TIMING, EASY, pointToString} from "./index.js";
 
 let STEPS;
 const
-    TIMING = "timing",
     VALUES = "values",
-    EASY   = "easy",
     USER   = "user",
     DIV    = "div",
     IDX_LINEAR = 0,
@@ -33,7 +32,7 @@ const
 function loadSteps() {
     let i, sel, str;
     STEPS = Easy.type[E.steps]; // must wait for PFactory.init() to run
-    Ez.readOnly(elms,
+    Ez.readOnly(elms,           // elms.divsSteps is for updateTypeIO()
                 Ez.toCamel(`${DIV}s`, STEPS),
                 document.getElementsByClassName(`${DIV}-${STEPS}`));
 
@@ -102,8 +101,8 @@ function loadTV() { // called exclusively by getEasies() during page load
         for (i = 0; i < COUNT; i++) {         // arr = [<input type="number">]
             elm      = arr[i];
             elm.id   = id[0] + i;             // "v0-2" or "t0-2"
-            elm.min  = min;
-            elm.step = step;
+            elm.min  = min;                   // listenInputNumber() converts
+            elm.step = step;                  // .min to .dataset.min
             if (isT)
                 elm.nextElementSibling.htmlFor = elm.id
         }
@@ -111,7 +110,7 @@ function loadTV() { // called exclusively by getEasies() during page load
         elms[Ez.toCamel(USER, id)] = arr;
         divUser = divUser.nextElementSibling;
     }
-    elms.userValues.forEach(inp => inp.max = MILLI + 100);
+    elms.userValues.forEach(inp => inp.dataset.max = MILLI + 100);
     addEventByClass(CHANGE, STEPS, null, changeSteps);
     elms.userTiming.at(-1).addEventListener(INPUT, inputLastTime);
 }
@@ -129,7 +128,7 @@ function initSteps(obj) {
 //           3 the same, which is crude, but viable because it tests rAF's
 //           handling of non-ascending timing values. All 3 have .min = 0;
 function maxTime() {
-    elms.userTiming.forEach(elm => elm.max = secs);
+    elms.userTiming.forEach(elm => elm.dataset.max = secs);
 }
 // defUserInputs() populates elms.userValues|Timing with default values
 function defUserInputs([key, val]) {
@@ -161,7 +160,7 @@ function changeSteps(evt) { // #values/timing.other[0], elms.userValues/Timing.
         if (isInvalid(tar))
             return;
     }
-    refresh(tar, 0, false, true, isOutOfBounds());
+    refresh(tar, 0, false, isOutOfBounds());
 }
 //==============================================================================
 // stepsFromObj() called exclusively by formFromObj()
@@ -228,10 +227,10 @@ function updateTV() {
     const isUTV = isUT || isUserTV(elms[VALUES]);
 
     displayInfo(isUT);
-    P.displayed(elms.steps, !isUTV);
-    P.displayed(elms.count,  isUTV);
-    P.visible  (elms.jump.parentNode,
-                !isUT && elms[VALUES].selectedIndex != IDX_EASY);
+    P.displayed(elms.count, isUTV);   // the disabled, fixed at 3 <select>
+    P.displayed([elms.steps, elms.jump.parentNode], !isUTV);
+//!!P.visible  (elms.jump.parentNode,
+//!!            !isUT && elms[VALUES].selectedIndex != IDX_EASY);
 
     if (!isUTV && !elms.steps.selectedIndex && !elms.jump.selectedIndex)
         elms.steps.selectedIndex = 1; // {steps:1, jump:E.none} is not valid

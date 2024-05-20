@@ -169,6 +169,40 @@
         "end": 1000,
         "steps": 15,
         "easy": "sineOut"
+      },
+      "steps_easeTV": {
+        "time": 2000,
+        "type": 9,
+        "end": 1000,
+        "steps": 15,
+        "timing": "sineOut",
+        "easy": "sineOut"
+      },
+      "mid": {
+        "time": 2000,
+        "io": 4,
+        "end": 1000,
+        "mid": 667
+      },
+      "split": {
+        "time": 2000,
+        "io": 4,
+        "end": 1000,
+        "split": 667
+      },
+      "gap": {
+        "time": 2000,
+        "io": 4,
+        "end": 1000,
+        "gap": 250
+      },
+      "msg": {
+        "time": 2000,
+        "io": 4,
+        "end": 1000,
+        "mid": 667,
+        "split": 667,
+        "gap": 250
       }
     },
     "MEaser-": {

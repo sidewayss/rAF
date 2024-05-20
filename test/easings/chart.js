@@ -1,54 +1,48 @@
 export {loadChart, isOutOfBounds};
-export const
-chart = {},  // SVG chart elements and viewBox array
-range = {};  // SVG vertical pseudo-range element
 
 import {E, Is, P, Ez} from "../../raf.js";
 
-import {msecs, updateTime} from "../update.js";
-import {CHANGE, INPUT, elms, g, addEventsByElm, listenInputNumber, isInvalid}
-                           from "../common.js";
+import {msecs, timeFrames, updateTime}          from "../update.js";
+import {listenInputNumber, isInvalid}           from "../input-number.js";
+import {CHANGE, INPUT, elms, g, addEventsByElm} from "../common.js";
 
-import {refresh}                        from "./_update.js";
-import {updateTypeIO, isBezierOrSteps}  from "./tio-pow.js";
-import {updateSplitGap, isUnlocked}     from "./msg.js";
-import {isSteps, maxTime, tvFromElm}    from "./steps.js";
-import {twoLegs, bezierArray}           from "./index.js";
+import {refresh}                                 from "./_update.js";
+import {updateTypeIO, isBezierOrSteps}           from "./tio-pow.js";
+import {updateSplitGap, setSplitGap, isUnlocked} from "./msg.js";
+import {isSteps, maxTime, tvFromElm}             from "./steps.js";
+import {twoLegs, bezierArray}                    from "./index.js";
 //==============================================================================
-function loadChart() {
+function loadChart() { // called by loadTIOPow() so cloning is finished prior
     let elements = document.getElementsByClassName("chart");
     addEventsByElm(CHANGE, elements, change, true);
+    elms.type2.addEventListener(CHANGE, change.type);  // listeners don't clone
 
     elements = document.getElementsByClassName("chart-number");
-    listenInputNumber(elements);                      // must go first
-    addEventsByElm(INPUT, elms.beziers, input,  true);
+    listenInputNumber(elements);                       // must go first
+    addEventsByElm(INPUT, elms.beziers, input, true);  // true = numbered ids
+    addEventsByElm(INPUT, [elms.time],  input);
 }
 //==============================================================================
-// Event handlers all call refresh().
-// >> input event handlers:
+// Event handlers, all call refresh():
+// >> input event handlers
 const input = {
-//    pow(evt) {    // #pow, #pow2
-//        refresh(evt.target, 0, undefined, false);
-//        inputOne(evt, [, false]);
-//    },
     bezier(evt) { // #bezier0-3
         if (!isInvalid(evt.target))
-            refresh(evt.target, 0, false, true, isOutOfBounds());
-//        inputOne(evt, [false, true, isOutOfBounds()]);
+            refresh(evt.target, 0, false, isOutOfBounds());
+    },
+    time(evt) { // called indirectly by formFromObj()
+        const prev = msecs;
+        timeFrames(evt);
+        setSplitGap(prev);
     }
 };
-//function inputOne(evt, args) {
-//    if (changeNumber(evt.target) !== null)
-//        refresh(evt.target, 0, ...args);
-//}
-//--------------------------
-// >> change event handlers:
+// >> change event handlers
 const change = {
     time(evt) {
         let oldEzY;
         updateTime();
         if (isSteps()) {
-            maxTime();          // userTiming[i].max = secs
+            maxTime();          // userTiming[i].dataset.max = secs
             oldEzY = true;      // set ezY.time, don't call newEzY()
         }
         else {
@@ -66,7 +60,7 @@ const change = {
     },
     io(evt) {
         g.io = Number(evt.target.value);
-        refresh(evt.target, 0, updateTypeIO(true), false);
+        refresh(evt.target, 0, updateTypeIO(true));
     },
     type(evt) {   // #type, #type2
         let has2, isBez, isBS, isStp, oobOld, wasBS, wasStp;
@@ -97,13 +91,13 @@ const change = {
         if (has2)           // has2 depends on g.io
             oobOld |= isOutOfBounds(Number(elms.type2.value));
 
-        refresh(tar, 0, has2, isBS, oobOld);
+        refresh(tar, 0, has2, oobOld);
     }
 };
-//===========================================================================
-// isOutOfBounds() returns a boolean indicating if any points are outside of
-//                   the 0-1000 range,
-function isOutOfBounds(val = g.type) { // <= change.type(), change.bezier()
+//==============================================================================
+// isOutOfBounds() returns bool = true if any points are outside (or might be
+//                 outside) the 0-1000 range, which only occurs for four types.
+function isOutOfBounds(val = g.type) {
     let arr;
     switch (val) {
     case E.bezier:
@@ -112,11 +106,11 @@ function isOutOfBounds(val = g.type) { // <= change.type(), change.bezier()
     case E.steps:
         arr = tvFromElm(elms.values, true); // Array, String or undefined
         break;
-    case E.back: case E.elastic:
-        return true;
-    default:
+    case E.back: case E.elastic:            // these two are always oob, and
+        return true;                        // the only way type2 can be oob,
+    default:                                // 'cuz bezier/steps is 1 leg only.
         return false;
     }
     return Is.A(arr) ? Ez.unitOutOfBounds(arr)
-                     : Boolean(arr);
-}
+                     : Boolean(arr);        // true here may or may not be oob,
+}                                           // refresh() will run the numbers.

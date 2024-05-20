@@ -1,7 +1,7 @@
 :root {
   --fade-75: 0.75;
   --bg-white:     #FAFAFA;
-  --sidebar-white:#FDFDFD;
+  --sidebar-white:#FEFEFE;
   --darkest-blue: #004;
   --dark-blue:    #007;
   --medium-blue:  #019;
@@ -26,8 +26,10 @@
   --11-16ths: calc(11 * var(--16th));
   --15-16ths: calc(1rem - var(--16th));
 }
-html * {
+html {
   font-size: 1rem;
+}
+html * {
   font-family:"Roboto Mono", monospace;
   accent-color :var(--medium-blue);
   outline-color:var(--charcoal);
@@ -42,48 +44,6 @@ body {
           blur(3px)
           drop-shadow(1rem 1rem 1.25rem #0FFE)
           invert(12%); */
-}
-#chart {
-  stroke:black;
-  stroke-width:2px;
-  transform:scaleY(-1); /* bottom-to-top: 0 to 1000 */
-}
-#y {
-  transform:scaleY(-1); /* ditto */
-  pointer-events:none;
-  height:1px;           /* must have initial value */
-}
-#canvas {
-  fill:white;
-  stroke:var(--medium-gray);
-}
-line, #crosshairs {
-  fill:none;
-  stroke-dasharray:4;
-  stroke-width:1px;
-}
-line { /* #dashX, #dashY */
-  stroke:#77F;
-}
-#crosshairs {
-  stroke:#AAA;
-}
-#line {
-  fill:none;
-  stroke:var(--dark-blue);
-  stroke-width:4px;
-  stroke-linejoin:round;
-}
-#trackY, #marksY {
-  stroke:var(--medium-gray);
-  stroke-width:2px;
-  stroke-dasharray:none;
-}
-circle {
-  r:12px;
-  fill-opacity:0.5;
-  stroke:var(--dark-blue);
-  stroke-width:3px;
 }
 
 p {
@@ -107,6 +67,9 @@ label, pre, button, check-box {
   user-select:none;
 }
 /* <button>, <select>, <input> */
+select, input {
+  font-size:1rem;           /* they don't inherit from html */
+}
 input[type=range] {
   margin:0;
 }
@@ -233,27 +196,24 @@ check-box:active {
   stroke:var(--medium-blue);
   color: var(--medium-blue);
 }
-.checklist, input.checklist {
-  margin:1px 0;
-}
 
 /* <state-button> - #play, #stop */
 state-button {
   opacity:0.9;
-  fill   :var(--accent-blue);
-  stroke :var(--accent-blue);
+  fill   :var(--medium-blue);
+  stroke :var(--medium-blue);
   stroke-width:4px;
   stroke-linejoin:round;
   stroke-linecap :round;
 }
 state-button:hover {
   opacity:1;
-  fill   :var(--dark-blue);
-  stroke :var(--dark-blue);
+  fill   :var(--accent-blue);
+  stroke :var(--accent-blue);
 }
 state-button:active {
-  fill  :var(--darkest-blue);
-  stroke:var(--darkest-blue);
+  fill  :var(--dark-blue);
+  stroke:var(--dark-blue);
 }
 state-button[disabled] {
   opacity:0.15;
@@ -272,7 +232,7 @@ state-button.hi {
 }
 .col {
   display:flex;
-  flex-flow:column;
+  flex-direction:column;
 }
 .flex    { display:flex; }
 .end     { justify-content:flex-end; }

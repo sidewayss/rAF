@@ -1,29 +1,30 @@
 export {loadUpdate, inputX, timeFrames, updateTime, updateFrame, pseudoFrame,
-        updateCounters, updateDuration, setFrames, getFrames, eGet, newEasies,
-        pseudoAnimate};
+        updateCounters, formatNumber, updateDuration, setFrames, getFrames,
+        eGet, newEasies, pseudoAnimate};
 
 export let
-msecs, secs,  // alternate versions of time, both integers
-targetInputX, // only imported by easings/_update.js
-frameCount;   // ditto         by easings/non-steps.js
-
+    msecs, secs,  // alternate versions of time, both integers
+    targetInputX, // only imported by easings/_update.js
+    frameCount    // ditto         by easings/non-steps.js
+;
 export const
-D = 3,        // D for decimals: .toFixed(D) = milliseconds, etc.
-frames = [],  // time, x, y, and eKey values by frame
-pad    = {    // string.pad() values for formatting numbers
-    frame:5,
-    milli:MILLI.toString().length,
-    secs: D + 3,
-    value:D + 5,  // overriden in loadUpdate() if (isMulti)
-    unit: D + 2,
-    comp: D + 2
-};
+    D = 3,        // D for decimals: .toFixed(D) = milliseconds, etc.
+    frames = [],  // time, x, y, and eKey values by frame
+    pad    = {    // string.pad() values for formatting numbers
+        frame:5,
+        milli:MILLI.toString().length,
+        secs: D + 3,
+        value:D + 5,  // overriden in loadUpdate() if (isMulti)
+        unit: D + 2,
+        comp: D + 2
+    }
+;
 
 import {E, Is, P, Easies} from "../raf.js";
 
 import {FPS, ezX, raf}        from "./load.js";
 import {loadPlay, changeStop} from "./play.js";
-import {MILLI, COUNT, INPUT, elms, g, formatNumber, errorAlert}
+import {MILLI, COUNT, INPUT, elms, g, errorAlert}
                               from "./common.js";
 /*
 import(_update.js): getFrame, initPseudo, updateX;
@@ -38,7 +39,7 @@ async function loadUpdate(isMulti, dir) {
         frames[0] = {t:0, x:Array.from({length:COUNT}, () => new Object)};
         pad.value = pad.milli;
     }
-    //!!Object.freeze(pad); //!!it's color page's fault
+    Object.freeze(pad);
 
     elms.x.addEventListener(INPUT, inputX, false);
     return import(`${dir}_update.js`).then(namespace => {
@@ -104,6 +105,16 @@ function updateCounters(i = 0, frm = frames[i]) {
     formatNumber(frm.t / MILLI, pad.secs,  D, elms.elapsed);
     ns.setCounters(frm, D, pad);
 }
+// formatNumber() formats numbers for non-<input type="number"> elements,
+//                called by formFromObj(), loadFinally(), updateCounters(),
+//                          setCounters()s, multi refresh().
+function formatNumber(n, digits, decimals, elm) {
+    const str = n.toFixed(decimals).padStart(digits);
+    if (elm)
+        elm.textContent = str;
+    else
+        return str;
+}
 //------------------------------------------------------------------------------
 // setFrames() and updateDuration() are called in combination
 // updateDuration() is called by timeFrames(), changePlay(), changeStop()
@@ -129,8 +140,7 @@ function getFrames() {
     return frames.slice(0, frameCount + 1);
 }
 //==============================================================================
-// eGet() chooses ez.e or ez.e2, called by multi.getFrame() and
-//                               easings.update()=>updateFrame()=>getFrame()
+// eGet() chooses ez.e or ez.e2, called by multi.getFrame() and easings.update()
 function eGet(ez) {
     const e = ez.e;
     return !(e.unit % 1) && ((g.notLoopWait && e.status == E.outbound)

@@ -8,10 +8,11 @@ export const
 ;
 import {E, U, F, P, Easy} from "../../raf.js";
 
-import {ezX}                              from "../load.js";
-import {frames, pad, eGet, pseudoAnimate} from "../update.js";
-import {storeCurrent}                     from "../local-storage.js";
-import {COUNT, elms, g, formatNumber}     from "../common.js";
+import {ezX}            from "../load.js";
+import {storeCurrent}   from "../local-storage.js";
+import {COUNT, elms, g} from "../common.js";
+import {frames, pad, formatNumber, eGet, pseudoAnimate}
+                        from "../update.js";
 
 import {clipEnd, clipStart} from "./_load.js";
 import {multiFromObj}       from "./index.js";
@@ -81,12 +82,23 @@ function updateX(frm) {
 }
 // setCounters() is called exclusively by updateCounters()
 function setCounters(frm, defD) {
-    let d, i, k, key;
+    let decimals, digits, elements, i, isValue, key, n, txt;
     for (key of Easy.eKey) {
-        d = (key[0] == "v") ? 0 : defD; // d for decimals, "v" = "value"
-        k = pad[key];
-        for (i = 0; i < COUNT; i++)
-            elms[key][i].textContent = formatNumber(frm.x[i][key], k, d);
+        isValue  = (key[0] == "v");
+        digits   = pad[key];
+        decimals = isValue ? 0 : defD;
+        elements = elms[key];
+        if (isValue)
+            for (i = 0; i < COUNT; i++)
+                formatNumber(frm.x[i][key], digits, decimals, elements[i]);
+        else
+            for (i = 0; i < COUNT; i++) {   // convert "-0.123" to "-.123"
+                n   = frm.x[i][key]
+                txt = formatNumber(n, digits, decimals);
+                elements[i].textContent = n < 0
+                                        ? txt[0] + txt.slice(txt, 2)
+                                        : txt;
+            }
     }
 }
 // formatDuration() is called exclusively by updateDuration()

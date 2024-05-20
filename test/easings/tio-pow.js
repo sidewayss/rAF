@@ -1,21 +1,16 @@
-export {TIME, TYPE, IO, POW, loadTIOPow, setLink, updateTypeIO, isPow,
-        isBezierOrSteps};
+export {loadTIOPow, setLink, updateTypeIO, isPow, isBezierOrSteps};
 
 import {E, Ez, P, Easy} from "../../raf.js";
 
-import {TWO, CLICK, INPUT, elms, g, addEventByClass, formatInputNumber,
-        isInvalid, pairOfOthers, toggleClass, boolToString} from "../common.js";
+import {formatInputNumber, isInvalid} from "../input-number.js";
+import {TWO, CLICK, INPUT, elms, g, addEventByClass, pairOfOthers, toggleClass,
+        boolToString}                 from "../common.js";
 
-import {refresh}     from "./_update.js";
-import {chart}       from "./chart.js";
-import {setSplitGap} from "./msg.js";
-import {isSteps}     from "./steps.js";
-import {LINK, twoLegs, isBezier} from "./index.js";
-
-const TIME = "time";
-const TYPE = "type";
-const IO   = "io";
-const POW  = "pow";
+import {chart, refresh} from "./_update.js";
+import {loadChart}      from "./chart.js";
+import {setSplitGap}    from "./msg.js";
+import {isSteps}        from "./steps.js";
+import {LINK, TYPE, POW, twoLegs, isBezier} from "./index.js";
 //==============================================================================
 // loadTIOPow() is called by easings.loadIt(), once per session
 function loadTIOPow() {
@@ -34,6 +29,7 @@ function loadTIOPow() {
     sel.removeChild(sel.lastElementChild); // no steps multi-leg here
     sel.removeChild(sel.lastElementChild); // ditto bezier
     sel.id += TWO;
+
     elms[sel.id] = sel;
     elms.div2.appendChild(sel);
     g.disables.push(sel);
@@ -41,6 +37,7 @@ function loadTIOPow() {
     for (id of [TYPE, POW])                // each one is the other's other
         pairOfOthers(elms[id], elms[id + TWO]);
 
+    loadChart(); // chart events must follow cloning and precede addEvent(INPUT)
     addEventByClass(INPUT, `${TYPE}-${POW}`, null, inputTypePow);
     addEventByClass(CLICK, LINK,             null, inputTypePow);
 }
@@ -62,15 +59,15 @@ function inputTypePow(evt) {
         link = elms[Ez.toCamel(LINK, id)],
         val  = elms[id + suff[0]].value,
         two  = elms[id + suff[1]],
-        isLink = (tar === link)
+        isLink = (tar === link)             // is target a link button?
     ;
     if (isLink)
-        setLink(tar);
-    if (link.value && two.value != val) { // if (isLink) two.value can == val
-        if (isP)                          // pow, pow2, linkPow
-            formatInputNumber(two, val);
-        else {                            // type, type2, linkType
-            two.value = val;
+        setLink(tar);                       // toggles link.value, so that
+    if (link.value && two.value != val) {  // if (isLink) two.value can == val.
+        if (isP)
+            formatInputNumber(two, val);    // pow, pow2, linkPow
+        else {
+            two.value = val;                // type, type2, linkType
             if (isLink) {
                 updateTypeIO();
                 refreshIt = true;
@@ -94,7 +91,7 @@ function updateTypeIO(isIO, [isBez, isStp, isBS] = isBezierOrSteps()) {
     const has2    = !isBS && twoLegs();
     const isP2    = has2 && isPow(Number(elms.type2.value));
     const bothPs  = isP && isP2;
-    const eitherP = isP || isP2;
+//!!const eitherP = isP || isP2;
 
     P.displayed(elms.pow,     isP);
     P.displayed(elms.linkPow, bothPs);
@@ -111,11 +108,11 @@ function updateTypeIO(isIO, [isBez, isStp, isBS] = isBezierOrSteps()) {
         P.displayed(elms.bezier,    isBez);
         P.displayed(elms.divsSteps, isStp);
     }
-    if (eitherP) {
-        toggleClass(elms.divPow2, "end", bothPs);
-        if (isP2)
-            toggleClass(elms.pow2, "ml1-2", !bothPs);
-    }
+//!!if (eitherP) {
+//!!    toggleClass(elms.divPow2, "end", bothPs);
+//!!    if (isP2)
+//!!        toggleClass(elms.pow2, "ml1-2", !bothPs);
+//!!}
     return has2;        // convenient for a couple of callers
 }
 //==============================================================================

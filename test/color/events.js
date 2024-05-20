@@ -11,7 +11,8 @@ import {setPrefix}                      from "../named.js";
 import {changeStop}                     from "../play.js";
 import {copyText}                       from "../copy.js";
 import {setLocal, setLocalBool}         from "../local-storage.js";
-import {CHANGE, CLICK, INPUT, MEASER_, elms, g, is, boolToString, invalidInput,
+import {invalidInput}                   from "../input-number.js";
+import {CHANGE, CLICK, INPUT, MEASER_, elms, g, is, boolToString,
         addEventToElms, addEventsByElm} from "../common.js";
 
 import {ezColor, refRange, resizeWindow} from "./_load.js";

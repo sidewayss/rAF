@@ -1,5 +1,5 @@
 01 // solved: there to update dots[i].cx and cy
-02 Math.floor(availableH * RATIO) // old version of code
+02 // solved: return to aspect ratio calculation ->Math.floor(availableH * RATIO) // old version of code
 03 refresh(two); // why two? solved: doesn't matter, but it's the element that changed.
 04 ++g.frame // points.length could also increase pre-playback for roundTrip/loop
 05 new Easy() requires a time, see updateTime() (should it default to 1?? Allow undefined?? zero??)
