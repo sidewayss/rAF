@@ -1,7 +1,10 @@
 // To put it bluntly: <input type="number"> sucks. This code is necessary to
 // format the values properly while spinning (mouse & arrow keys) versus while
 // inputting numbers as text. Exports everything except isSpinning and number.
+import {Ez} from "../raf.js";
+
 import {INPUT, CHANGE, elms, g, toggleClass} from "./common.js";
+
 let isSpinning;
 //==============================================================================
 // >> number contains event handlers
@@ -85,5 +88,5 @@ export function formatInputNumber(elm, n) {
 }
 // maxMin() enforces the max and min properties for numeric inputs
 export function maxMin(elm, n = elm.valueAsNumber) {
-    return Math.max(Math.min(n, elm.dataset.max), elm.dataset.min);
+    return Ez.clamp(elm.dataset.min, n, elm.dataset.max);
 }

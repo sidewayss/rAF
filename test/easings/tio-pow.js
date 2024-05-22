@@ -31,7 +31,7 @@ function loadTIOPow() {
     sel.id += TWO;
 
     elms[sel.id] = sel;
-    elms.div2.appendChild(sel);
+    elms.divType2.appendChild(sel);
     g.disables.push(sel);
 
     for (id of [TYPE, POW])                // each one is the other's other
@@ -87,32 +87,27 @@ function setLink(btn, b = !btn.value) {
 // updateTypeIO() updates the form based on current values
 //                called by change.io(), change.type(), updateAll()
 function updateTypeIO(isIO, [isBez, isStp, isBS] = isBezierOrSteps()) {
-    const isP     = isPow();
-    const has2    = !isBS && twoLegs();
-    const isP2    = has2 && isPow(Number(elms.type2.value));
-    const bothPs  = isP && isP2;
-//!!const eitherP = isP || isP2;
-
-    P.displayed(elms.pow,     isP);
-    P.displayed(elms.linkPow, bothPs);
-    P.displayed(elms.lblPow,  bothPs);
-    P.displayed([elms.pow2, elms.divPow2], isP2);
-    P.displayed([elms.div2, elms.divMid, chart.dashX, chart.dashY], has2);
-
-    P.visible([elms.divSplit, elms.divGap], has2);
-    P.displayed(elms.placeholder, !has2);
-    if (has2)
-        setSplitGap();  //!!only necessary when showing #mid/#split/#gap...
-    if (!isIO) {        // false || undefined
-        P.displayed(elms.io,       !isBS);
+    if (!isIO) {
         P.displayed(elms.bezier,    isBez);
-        P.displayed(elms.divsSteps, isStp);
+        P.displayed(elms.divsSteps, isStp); // an array of <div>s
+        P.displayed(elms.divIo,    !isBS);
     }
-//!!if (eitherP) {
-//!!    toggleClass(elms.divPow2, "end", bothPs);
-//!!    if (isP2)
-//!!        toggleClass(elms.pow2, "ml1-2", !bothPs);
-//!!}
+    const
+    has2 = !isBS && twoLegs(),
+    isP  = isPow(),
+    isP2 = has2 && isPow(Number(elms.type2.value));
+
+    P.displayed(elms.placeholder, !has2);
+    P.displayed([elms.divType2, elms.divMid, chart.dashX, chart.dashY], has2);
+    P.visible  ([elms.divSplit, elms.divGap], has2);
+    if (has2)
+        setSplitGap();  // only necessary when showing #mid/#split/#gap...
+
+    P.displayed(elms.divPow,  isP || isP2);
+    P.displayed(elms.pow,     isP);         // <label> always shows
+    P.displayed(elms.divPow2, isP2);
+    P.displayed(elms.linkPow, isP && isP2); // <input> always shows
+
     return has2;        // convenient for a couple of callers
 }
 //==============================================================================

@@ -1,6 +1,6 @@
 export {loadChart, isOutOfBounds};
 
-import {E, Is, P, Ez} from "../../raf.js";
+import {E, U, Is, P, Ez} from "../../raf.js";
 
 import {msecs, timeFrames, updateTime}          from "../update.js";
 import {listenInputNumber, isInvalid}           from "../input-number.js";
@@ -72,8 +72,8 @@ const change = {
         oobOld = isOutOfBounds();
         [isBez, isStp, isBS] = isBezierOrSteps();
         if (not2 || elms.linkType.value) {
-            g.type = n;     // user changed #type or type is linked
-            if (not2) {     // user changed #type
+            g.type = n;         // user changed #type or type is linked
+            if (not2) {         // user changed #type
                 wasStp = isStp;
                 wasBS  = isBS;
                 [isBez, isStp, isBS] = isBezierOrSteps();
@@ -81,14 +81,18 @@ const change = {
                     P.visible(elms.direction.parentNode, wasStp);
             }
         }
+        if (wasStp || isStp) {  // E.steps has a third row in diptych
+            const h = elms.right.firstElementChild.offsetHeight;
+            P.h.set(elms.shadow, P.h.getn(elms.shadow) + (wasStp ? -h : h));
+        }
         has2 = twoLegs();
-        if (has2 && isBS)   // modify variable, not <select>
+        if (has2 && isBS)       // modify variable, not <select>
             g.io = E.in;
-        else if (wasBS)     // restore variable to match <select>
+        else if (wasBS)         // restore variable to match <select>
             g.io = Number(elms.io.value);
 
         has2 = updateTypeIO(false, [isBez, isStp, isBS]);
-        if (has2)           // has2 depends on g.io
+        if (has2)               // has2 depends on g.io
             oobOld |= isOutOfBounds(Number(elms.type2.value));
 
         refresh(tar, 0, has2, oobOld);

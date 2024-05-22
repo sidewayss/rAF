@@ -21,10 +21,10 @@ const RESIZE = "resize";
 
 const awaitFonts = [            // start loading fonts asap
     new FontFace("Roboto Mono",
-                 "url(/raf/test/fonts/RobotoMono.ttf)",
+                 "url(/fonts/RobotoMono.ttf)",
                  {weight:"400 500"}),
     new FontFace("Material Symbols Rounded",
-                 "url(/raf/test/fonts/MaterialSymbolsRounded.woff2)")
+                 "url(/fonts/MaterialSymbolsRounded.woff2)")
 ];
 awaitFonts.forEach(f => document.fonts.add(f));
 //==============================================================================

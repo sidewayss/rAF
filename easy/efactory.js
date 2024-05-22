@@ -385,7 +385,7 @@ function mask(o, hasElms) {
                 l[i] = 0;
             }
         });
-        o.mask = PBase._maskAll(Math.max(o.r, Math.min(count, Math.max(...l))));
+        o.mask = PBase._maskAll(Ez.clamp(o.r, Math.max(...l), count));
     }
     else if (o.isNet)               // undefined: mask all required args
         o.mask = PBase._maskAll(count);

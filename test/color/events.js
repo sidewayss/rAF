@@ -182,7 +182,7 @@ const click = {
 function updateOne(se, lr) {
     let coords = se.color[Ez.kebabToSnake(lr.color.spaceId)].slice();
     if (lr.spaces.value == Fn.rgb)
-        coords = coords.map(v => Math.round(Math.max(Math.min(v, 1), 0) * 255));
+        coords = coords.map(v => Math.round(Ez.clamp(0, v, 1)) * 255);
 
     oneCounter(coords, lr[se.id], lr.range);
     se[lr.id] = coords;

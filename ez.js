@@ -39,6 +39,10 @@ export const Ez = {
     newArray2D(length, ...args) {
         return Array.from({length}, () => new Array(...args));
     },
+//  clamp() clamps val between min and max limits
+    clamp(min, val, max) {
+        return Math.max(min, Math.min(val, max));
+    },
 // =============================================================================
 //  flip() flips a unit interval, a value between 0-1 inclusive
     flip(unit) {

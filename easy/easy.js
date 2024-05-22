@@ -606,18 +606,20 @@ _reset(sts, forceIt) {
     _calc(now, leg, e) {
         if (now >= leg.time) {
             leg = this._nextLeg(leg, e);  // sets this._leg and e.status
-            const hasNext = e.status > E.tripped;
-            const waitNow = e.waitNow;
-            if (!hasNext || waitNow) {    // E.arrived, E.tripped, or waiting
-                if (hasNext)
-                    leg = leg.prev;
+            const
+            hasNext = e.status > E.tripped,
+            waitNow = e.waitNow,
+            isSteps = (leg.type == E.steps);
+            if (!hasNext || waitNow || isSteps) { // E.steps must return in this block
+                if (hasNext)              // E.arrived, E.tripped, E.waiting
+                    leg = leg.prev;       // i.e. e.status <= E.waiting (or isSteps)
                 this.#set_e(e, leg.end, leg.unit);
-                if (hasNext || (!e.status && leg.type == E.steps))
-                    return;               // waiting or steps = E.arrived
+                if (hasNext || (!e.status && isSteps)) //!!these comments need revisions!!
+                    return;               // waiting or steps = E.arrived, or steps !e.waitNow...
                 //----------------------- //!!loopbyelm + steps must continue!!
                 this._leg = this._inbound ? this.#lastLeg : this._firstLeg;
                 e = this.e2;              // for looping, autoTrip steps no wait
-                if (leg.type == E.steps) {
+                if (isSteps) {
                     if (!waitNow)
                         this.#set_e(e, leg.end, leg.unit);
                     return;               // steps = E.tripped
@@ -637,9 +639,9 @@ _reset(sts, forceIt) {
         let time   = leg.time;
         this._now -= time;
         //!!Is there a way to condense this logic?? some identical repitition!!
-        if (next) {             // proceed to the next leg
-            this._leg = next;   // skipping a leg happens, especially with
-            wait = next.wait;   // eased steps.
+        if (next) {             // proceed to the next leg, skipping a leg
+            this._leg = next;   // happens, especially with eased steps.
+            wait = next.wait;
             while (next && this._now >= time + wait) {
                 time += wait + next.time;
                 next = next.next

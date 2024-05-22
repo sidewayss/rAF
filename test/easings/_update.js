@@ -58,20 +58,19 @@ function refresh(tar, n, has2 = twoLegs(), oobOld = false) {
         oob |= isOutOfBounds(Number(elms.type2.value));
     if (oob || oobOld) {         // adjust the vertical size of chart and range
         let cr, maxY, minY;
-        if (oob) {               // minY and x are negative numbers
+        if (oob) {               // set new boundaries
             const y = frames.map(frm => frm.y);
             minY = Math.min(...y, 0);
             maxY = Math.max(...y, MILLI);
         }
-        else {                   // oobOld
+        else {                   // restore standard boundaries
             minY = 0;
             maxY = MILLI;
         }
         const x = chart.viewBox[E.x];
-        let   h = maxY - x - x - minY;
         for (cr of [chart, range]) {
             cr.viewBox[E.y] = Math.ceil(minY + x);
-            cr.viewBox[E.h] = Math.ceil(h);
+            cr.viewBox[E.h] = Math.ceil(maxY - x - x - minY);
             P.vB.setIt(cr.svg, cr.viewBox.join());
         }
         range.svg.style.height = chart.svg.clientHeight + U.px;

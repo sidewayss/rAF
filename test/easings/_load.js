@@ -1,6 +1,6 @@
 export {loadIt, getEasies, initEasies, updateAll, resizeWindow};
 
-import {E, U, P, Pn, Is, Ease, Ez, Easy} from "../../raf.js";
+import {E, U, P, Pn, Ease, Ez, Easy} from "../../raf.js";
 
 import {ezX}      from "../load.js";
 import {getLocal} from "../local-storage.js";
@@ -8,14 +8,23 @@ import {pad, newEasies, updateTime, updateCounters} from "../update.js";
 import {COUNT, CHANGE, INPUT, elms, g, is, isTag, dummyEvent}
                   from "../common.js";
 
-import {chart, range, refresh}                   from "./_update.js";
-import {initEzXY, updateTrip}                    from "./index.js";
-import {loadTIOPow, updateTypeIO}                from "./tio-pow.js";
-import {loadMSG, updateMidSplit, updateSplitGap} from "./msg.js";
-import {loadSteps, loadTV, initSteps, maxTime}   from "./steps.js";
-import {loadEvents}                              from "./events.js";
+import {chart, range, refresh}                          from "./_update.js";
+import {initEzXY, updateTrip}                           from "./index.js";
+import {loadTIOPow, updateTypeIO}                       from "./tio-pow.js";
+import {loadMSG, updateMidSplit, updateSplitGap}        from "./msg.js";
+import {loadSteps, loadTV, initSteps, maxTime, isSteps} from "./steps.js";
+import {loadEvents}                                     from "./events.js";
 
-let borderW, lefty, padLeft, ratio, subtraH, subtraW, topBott; // resizeWindow()
+// a constant, some pseudo-constants, and a variable for resizeWindow()
+const sizes = [
+    {w:855, h:941, factor:1, size:"100%"  },  // 16px
+    {w:806, h:896, factor:1, size:"93.75%"},  // 15px
+    {w:759, h:841, factor:1, size:"87.5%" },  // 14px
+    {w:720, h:799, factor:0, size:"81.25%"},  // 13px - factor set in loadIt()
+    {w:675, h:749, factor:0, size:"75%"   }   // 12px - ditto
+];
+let borderW, boxStyle, checkH, checkW, factorW, iSize, lefties, leftW, minW,
+    oobRatio, padLeft, subtraH, subtraW, topBott;
 //==============================================================================
 // loadIt() is called by loadCommon()
 function loadIt(byTag, hasVisited) {
@@ -68,40 +77,47 @@ function loadIt(byTag, hasVisited) {
     Ez.readOnly(g, "trips", checks.filter(e => e.id.endsWith("Trip")));
     g.trips.push(clone);
 
+    const
+    shadow = checks[0].shadowRoot,
+    check  = shadow.getElementById("check"),
+    box    = shadow.getElementById("box");
+    checkW = P.w.getn(check);           // pseudo-constants for resizeWindow()
+    checkH = P.h.getn(check);
+    minW   = P.minWidth.getn(chart.svg);
+    i = P.w.getn(box);                  // scaling factor for small checkboxes
+    i = (i - 1) / i;                    // 12/13
+    sizes.filter(sz => !sz.factor).forEach(obj => obj.factor = i);
+
     loadEvents(checks);
     loadSteps();                	    // type == E.steps
     loadMSG();                  	    // mid, split, gap
-
     if (hasVisited)                     // return visitor to this page
         for (elm of [elms.reset, elms.zero, elms.drawAsSteps])
             elm.checked = getLocal(elm);
-//!!else            // user is new to this page
-//!!    elms.io.selectedIndex = 0; //!!necessary??
-
     return is();
 }
 //==============================================================================
 // getEasies() is called exclusively by loadJSON()
 function getEasies() {
-    let i,              // all but i and elm are consts, but this reads better
+    let i,    // all but i and elm are consts, but this reads better
     size = 4,
     id   = Easy.type[E.bezier],
     div  = elms[id],
-    elm  = div.firstElementChild,       // sub-<div> wrapper
+    elm  = div.firstElementChild,          // sub-<div> wrapper
     divs = [elm],
     lpar = elm.removeChild(elm.firstElementChild),
     rpar = elm.removeChild(elm.lastElementChild),
-    ease = Ease.ease[0][id];            // default CSS "ease" as bezier array
+    ease = Ease.ease[0][id];               // default CSS "ease" as bezier array
 
-    for (i = 1; i < size; i++)          // clone sub-<div>
+    for (i = 1; i < size; i++)             // clone sub-<div>
         divs.push(div.appendChild(elm.cloneNode(true)));
 
-    elms.beziers = new Array(ease.length);  // the 4 <input>s
+    elms.beziers = new Array(ease.length); // the 4 <input>s
     for (i = 0; i < size; i++) {
         elm = divs[i].getElementsByTagName(INPUT)[0];
         elm.value = ease[i];
-        elm.id    = id + i;             // "bezier0" to "bezier3"
-        if (i % 2) {                    // y values can be out of bounds
+        elm.id    = id + i;                // "bezier0" to "bezier3"
+        if (i % 2) {                       // y values can be out of bounds
             elm.dataset.min ="-0.9";
             elm.dataset.max = "1.9";
         }
@@ -131,12 +147,12 @@ function initEasies(obj, hasVisited) {
         initSteps(obj, hasVisited);
         updateTrip();
         b = initEzXY(obj);
-        if (b) {                                // pseudo-constants:
-            ratio = chart.viewBox[E.w] / 1403;  // 1403 = E.elastic height
-            lefty = document.getElementsByClassName("lefty");
-            padLeft = P.pL.getn(lefty[0]);
-            topBott = P.pT.getn(document.body) + P.pB.getn(document.body);
-            borderW = P.top.getn(elms.shadow);
+        if (b) {                                      // pseudo-constants:
+            const cw = chart.viewBox[E.w];
+            factorW  = cw / (cw + range.viewBox[E.w]);
+            oobRatio = cw / 1403;                     // 1403 = E.elastic height
+            lefties  = document.getElementsByClassName("lefty");
+            boxStyle = document.styleSheets[1].cssRules[0].style;
     	}
     }
     return b;
@@ -160,48 +176,62 @@ function updateAll() {  // called by loadFinally(), openNamed()
 //                so that load.js can use it in addEventListener for all pages,
 //                assumes no zooming by the user post page-load because of all
 //                the set-once pseudo-constants set in initEasy(). Zooming was
-//                weird anyway... subtrahends must wait until after updateAll().
-//                Resizing is stuttering in my tests. Should I throttle it??
+//                weird anyway...
+//                Safari doesn't auto-size <svg> within <div>, gotta do it here.
+//                Resizing is stuttering in my tests. I should throttle it...
 function resizeWindow() {
-    if (!Is.def(subtraH)) {
+    const
+    innerW = window.innerWidth,
+    innerH = window.innerHeight;
+
+    let i = sizes.findIndex(obj => innerW >= obj.w && innerH >= obj.h);
+    if (i < 0)
+        i = sizes.length - 1;
+    if (i != iSize) {                   // change root font-size and friends
+        const sz = sizes[i];
+        boxStyle.width  = (checkW * sz.factor) + U.px;
+        boxStyle.height = (checkH * sz.factor) + U.px;
+        document.documentElement.style.fontSize = sz.size;
+        iSize   = i;                    // pseudo-consts for resizeWindow():
+        padLeft = P.pL.getn(lefties[0]);
+        leftW   = elms.sidebar.getBoundingClientRect().width
+                - P.mR.getn(elms.left);     // lefties[0] width
+        borderW = P.top.getn(elms.shadow);  // border width
+        topBott = P.pT.getn(document.body)  // top + bottom padding
+                + P.pB.getn(document.body);
+        subtraW = (borderW * 2)             // width  subtrahend
+                + padLeft
+                + lefties[1].offsetWidth;
         subtraH = topBott                   // height subtrahend
                 + borderW
                 + elms.diptych.offsetHeight
                 + elms.x.offsetHeight;
-        subtraW = (borderW * 2)             // width  subtrahend
-                + padLeft
-                + lefty[1].offsetWidth
-                + range.svg.clientWidth;
+        if (isSteps())                      // remove E.steps's extra row height
+                subtraH -= elms.divValues.offsetHeight;
     }
-    // Safari doesn't auto-size svg within a <div>, must be done explicitly
-    // 600 is the minimum chart width, below that the browser applies scrollbars
-    const
-    innerW = window.innerWidth,
-    w = innerW - subtraW,                   // available width
-    h = window.innerHeight - subtraH;       // available height
+    let elm,
+    n = Ez.clamp(
+        minW,                           // absolute minimum width
+        factorW  * (innerW - subtraW),  // available width - range.svg width
+        oobRatio * (innerH - subtraH)   // width of available height for oob
+    );
+    P.w.set(chart.svg, n);              // set chart width, range height
+    P.h.set(range.svg, P.h.get(chart.svg));
 
-    let n = Math.max(608, Math.min(w, h * ratio));
-    P.w.set(chart.svg, n);
-    P.h.set(range.svg, P.h.get(chart.svg)); // clientHeight is integer
+    elm = lefties[0];                   // set diptych left's width for better
+    P.w.set(elm, (n / 2) + leftW);      // vertical alignment with triptych.
 
-    // Set diptych left's width for better vertical alignment with triptych
-    let elm = lefty[0];
-    P.w.set(elm, Math.round((n / 2)
-                          + elms.sidebar.offsetWidth
-                          - P.mR.getn(elms.left)));
-
-    // Size the box-shadow background element
-    const
-    l = elm.getBoundingClientRect().left,   // P.w.set() changes it
+    const                               // size box-shadow background element
+    l = elm.getBoundingClientRect().left, // must follow P.w.set(elm, )
     r = innerW
-      - Math.round(y.getBoundingClientRect().right)
+      - Math.round(range.svg.getBoundingClientRect().right)
       - padLeft;
     elm = elms.shadow.style;
     elm.left   = l + U.px;
     elm.width  = innerW - r - l + U.px;
     elm.height = document.body.clientHeight - borderW + U.px;
 
-    // Center #copied in the available space
+    // Center the #copied notification element in the available space
     n  = elms.code.offsetLeft + elms.code.offsetWidth;
     n += ((chart.svg.parentNode.offsetLeft - n ) / 2)
        - (elms.copied.offsetWidth / 2);

@@ -1,3 +1,7 @@
+check-box::part(box) {
+  width:18px;
+  height:15px;
+}
 /* overrides of common.css */
 body {
   margin:0;
@@ -78,6 +82,7 @@ input.secs { /* #t0, #t1, #t1 */
   stroke:black;
   stroke-width:2px;
   transform:scaleY(-1); /* bottom-to-top: 0 to 1000 */
+  min-width:492px;
 }
 #y {
   transform:scaleY(-1); /* ditto */
@@ -129,7 +134,7 @@ circle {
 #diptych {
   display:grid;
   grid-template-columns:1fr 1fr;
-  row-gap:0.5rem;
+  /* row-gap:0.5rem; */
   padding-top:var(--9-16ths);
 }
 #triptych {
@@ -142,7 +147,7 @@ circle {
   text-align:end;
 }
 .lefty {
-  padding-left:var(--5-8ths);
+  padding-left:0.5rem;
 }
 #right {
   border-left:1px solid;
@@ -251,7 +256,10 @@ circle {
 .w4 { width:4rem; }
 
 .lbl-paren {
-  font-size:calc(1rem + var(--5-16ths));
-  margin:0;
-  padding:0;
+  font-size: calc(1rem + var(--3-8ths));
+  margin: 0;
+  padding: 0;
+  line-height: 25px;  /* vertical alignment scales better w/fixed px units */
+  position: relative;
+  top: calc(var(--16th) * -2);
 }

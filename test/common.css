@@ -26,9 +26,6 @@
   --11-16ths: calc(11 * var(--16th));
   --15-16ths: calc(1rem - var(--16th));
 }
-html {
-  font-size: 1rem;
-}
 html * {
   font-family:"Roboto Mono", monospace;
   accent-color :var(--medium-blue);
@@ -276,6 +273,7 @@ input.mt1px { margin-top: 1px; }
 
 .pt5-8  { padding-top:   var(--5-8ths);  }
 .pt3-8  { padding-top:   var(--3-8ths);  }
+.pb3-8  { padding-bottom:var(--3-8ths);  }
 .pb5-8  { padding-bottom:var(--5-8ths);  }
 .pl3-8  { padding-left:  var(--3-8ths);  }
 .pl3-16 { padding-left:  var(--3-16ths); }

@@ -178,6 +178,14 @@
         "timing": "sineOut",
         "easy": "sineOut"
       },
+      "steps_outIn":{
+        "time": 3125,
+        "type": 9,
+        "end": 1000,
+        "steps": 30,
+        "jump": 3,
+        "timing": "pow_2.5o/5i"
+      },
       "mid": {
         "time": 2000,
         "io": 4,
