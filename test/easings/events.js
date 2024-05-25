@@ -107,7 +107,7 @@ function shallowClone(obj) {
         obj = Ez.shallowClone(obj);
         if (obj.easy)
             obj.easy   = elms.easyValues.value;
-        else
+        if (obj.timing?.isEasy)
             obj.timing = elms.easyTiming.value;
     }
     return obj;

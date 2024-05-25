@@ -1,4 +1,4 @@
-export {copyCode, copyData, moveCopied};
+export {copyCode, copyData};
 
 import {U, Ez} from "../../raf.js";
 

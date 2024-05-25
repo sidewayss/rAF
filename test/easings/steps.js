@@ -184,7 +184,7 @@ function stepsFromObj(obj) {
                 isAV = true;
             }
         }
-        else if (obj[e]) {
+        else if (Is.def(obj[e])) {  // empty string is valid
             sel.selectedIndex   = IDX_EASY;
             sel[OTHER][0].value = obj[e];
             obj[e] = getNamedEasy(obj[e]);
@@ -227,10 +227,10 @@ function updateTV() {
     const isUTV = isUT || isUserTV(elms[VALUES]);
 
     displayInfo(isUT);
-    P.displayed(elms.count, isUTV);   // the disabled, fixed at 3 <select>
-    P.displayed([elms.steps, elms.jump.parentNode], !isUTV);
-//!!P.visible  (elms.jump.parentNode,
-//!!            !isUT && elms[VALUES].selectedIndex != IDX_EASY);
+    P.displayed(elms.count,  isUTV);  // the disabled <select>, fixed at 3
+    P.displayed(elms.steps, !isUTV);
+    P.displayed(elms.jump.parentNode, // jump is irrelevant in these two cases
+                !isUT && elms[VALUES].selectedIndex != IDX_EASY);
 
     if (!isUTV && !elms.steps.selectedIndex && !elms.jump.selectedIndex)
         elms.steps.selectedIndex = 1; // {steps:1, jump:E.none} is not valid

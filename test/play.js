@@ -83,7 +83,7 @@ function changeStop(evt) {
             updateDuration();
         }
         if (evt)                    // user clicked stop
-            ns.refresh();           // calls pseudoAnimate()=>changeStop()!!
+            ns.refresh(evt.target); // calls pseudoAnimate()=>changeStop()!!
     }
     updateCounters();
     ns.formatPlayback?.(false, Boolean(evt));

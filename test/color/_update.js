@@ -10,7 +10,6 @@ import {frames, inputX, updateFrame, pseudoFrame, pseudoAnimate}
                         from "../update.js";
 
 import {ezColor, isCSSSpace} from "./_load.js";
-import {objEz}               from "./_named.js";
 import {isMulti}             from "./events.js";
 //==============================================================================
 // redraw() called by updateAll(), changeStop(), input.color(), change.space()

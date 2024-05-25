@@ -68,7 +68,7 @@ function steps(o, leg) {
     else {                          // auto-generate linear waits based
         const                       // on steps/ends and jump.
         j    = "jump",              //  E.end is the CSS steps() default
-        jump = leg.easy ? E.end     // leg.easy ignores jump
+        jump = leg.easy ? E.end     // leg.easy ignores jump as irrelevant
                         : Number(leg[j] ?? o[j] ?? E.end);
 
         if (!Easy.jump[jump])

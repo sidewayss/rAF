@@ -1,5 +1,5 @@
-export {loadCopy, easyToText, multiToText, copyText, copyTime, copyByKey,
-        copyFrameByKey, rgxPropertyValue};
+export {loadCopy, easyToText, multiToText, copyTime, copyByKey, copyFrameByKey,
+        rgxPropertyValue};
 
 
 import {E, Is, P, Easy, Easies, AFrame} from "../raf.js";
@@ -19,10 +19,9 @@ function loadCopy(dir, _named) {
     ns_named = _named;
     addEventsByElm(CLICK, [elms.code, elms.data], click);
     ezCopy = new Easy({         // "Copied!" notification fades in/out
-                time:1000,      type:E.sine,   io:E.out,
-                roundTrip:true, autoTrip:true, tripWait:250
-            });
-
+        time:1000, type:E.sine, io:E.out, roundTrip:true, flipTrip:false,
+        tripWait:300
+    });
     ezCopy.newTarget({elm:elms.copied, prop:P.o});
     if (elms.copy)              // for multi only, label underneath "Copied!"
         ezCopy.newTarget({elm:elms.copy, prop:P.o, eKey:E.comp});

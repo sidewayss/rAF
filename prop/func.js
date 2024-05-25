@@ -3,7 +3,7 @@ export {Func, CFunc, ColorFunc, SRFunc};
 
 import {PFactory, ANGLES, EMPTY_PCT} from "./pfactory.js";
 import {E, Ez, Fn, Is, U} from "../raf.js";
-
+//==============================================================================
 class Func {                    //\ Func: CSS or SVG function
     #units; #separator;          // c = count, r = required, s = separator
     constructor(name, units, utype, c, r, s = E.comma) {
@@ -21,7 +21,7 @@ class Func {                    //\ Func: CSS or SVG function
             case Fn.skew:        // units = "" for transforms
             case Fn.scale: case Fn.translate:
                 c = 2;  r = 1;  break;
-            case Fn.rotate:      // values for CSS rotate()
+            case Fn.rotate:      // these settings are for CSS rotate()
                 c = 1;  r = 1;  break;
             case Fn.matrix:
                 c = 6;  r = 6;  break;
@@ -34,17 +34,17 @@ class Func {                    //\ Func: CSS or SVG function
                 break;
             case Fn.matrix3d:
                 c = 16; r = 16; break
-            default:             // 1 arg or N args, N args = isUn
+            default:             // 1 arg or N args, N args == isUn = 0 here
                 const n = Number(!this.IsUn);
-                c = n;           // isUn never uses count/required internally,
-                r = n;           // but 0 is a better value than 1.
+                c = n;           // isUn never uses count or required
+                r = n;           // internally, but 0 is a better value than 1
             }
         }
         Ez.readOnly(this, "count",    c); // count    = total    argument count
         Ez.readOnly(this, "required", r); // required = required argument count
         this.#units = units;
         this.#separator = s;
-        Ez.is(this, "Func"); // doubles with isCFunc, isSRFunc
+        Ez.is(this, "Func");     // along with isCFunc, isSRFunc
     }
 // this.units
     get units()  {
@@ -54,16 +54,14 @@ class Func {                    //\ Func: CSS or SVG function
     }
     set units(val) {    // units arrays are a necessary hassle
         val = PFactory._validUnits(val, this.name, this);
-        if (this.isCFunc) {
-            if (this.hasHue) {
+        if (this.isCFunc)
+            if (this.hasHue)
                 if (this.isHXX)
                     this.#units[0] = val;
                 else    // lch, oklch
                     this.#units.fill(val, 0, CFunc.A - 1);
-            }
             else
                 this.#units.fill(val, 0, CFunc.A);
-        }
         else
             this.isSRFunc     ? this.#units.fill(val)
           : this.isDropShadow ? this.#units.fill(val, 0, 3)
@@ -111,9 +109,9 @@ class Func {                    //\ Func: CSS or SVG function
     }
 }
 //==============================================================================
-class CFunc extends Func {          //\ CFunc: CSS color functions
-    static _funcs = {};              // see PFactory.alphaUnits(), hueUnits()
-    static A = 3;                    // alpha value index in arguments
+class CFunc extends Func {      //\ CFunc: CSS color functions
+    static _funcs = {};          // see PFactory.alphaUnits(), hueUnits()
+    static A = 3;                // alpha value index in arguments
     constructor(name, units, utype) {
         const u = (name[0] == "h")
                 ? [units, U.pct, U.pct, units]  // units = ""
@@ -146,7 +144,6 @@ class ColorFunc extends CFunc { //\ ColorFunc: CSS color() function
     static spaces  = ["srgb-linear","a98-rgb","prophoto-rgb",
                       "display-p3","rec2020","xyz-d65","xyz-d50"];
     static aliases = [,"a98rgb","prophoto", "p3",,"xyz",];
-
     #space;
     constructor(units, utype, space) {
         super(Fn.color, units, utype);
@@ -156,20 +153,20 @@ class ColorFunc extends CFunc { //\ ColorFunc: CSS color() function
     get prefix() { return `${this.name}(${this.space} `; }
 }
 //==============================================================================
-class SRFunc extends Func { //\ SRFunc: <shape-radius> = circle(), ellipse()
+class SRFunc extends Func {     //\ SRFunc: <shape-radius> = circle(), ellipse()
     constructor(name, units, utype) {
         let c, r, s, u;
         const at = " at ";
         if (name == Fn.circle) {
-            u = [units, units, units];
-            c = 3;
-            r = 1;
-            s = [at, E.sp];
+            u = [units, units, units];  // units
+            c = 3;                      // arg count
+            r = 1;                      // required arg count
+            s = [at, E.sp];             // separators
         }
         else {  // ellipse
             u = [units, units, units, units];
-            r = 2;
             c = 4;
+            r = 2;
             s = [E.sp, at, E.sp];
         }
         super(name, u, utype, c, r, s);

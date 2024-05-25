@@ -127,6 +127,17 @@ input[type=text]:focus {
   width:calc(1rem + var(--9-16ths)); /* same as <select> height */
   border:1px solid black;
 }
+#startRgb, #endRgb {
+  position:absolute;
+  opacity:0;
+  border-radius:0;
+}
+#startRgb:hover, #endRgb:hover {
+  opacity:0.6;
+}
+#startRgb:active, #endRgb:active {
+  opacity:1;
+}
 #leftCanvas, #rightCanvas { /* children of #canvas */
   width:50%;
 }

@@ -770,7 +770,7 @@ function maskCV(o) {
                 cvMask = [];      // the indexes containing E.cV
                 idx    = 0;
                 while ((idx = cfg.param.indexOf(E.cV, idx)) > -1)
-                    cvMask.push(idx);
+                    cvMask.push(idx++);
                 if (!isSame)
                     isSame = isSameByArg(nums, l, cvMask,
                                                     cvMask.length);

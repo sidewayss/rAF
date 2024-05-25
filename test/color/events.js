@@ -3,13 +3,12 @@ export let isMulti;
 
 import Color from "https://colorjs.io/dist/color.js";
 
-import {E, Ez, Fn, P} from "../../raf.js";
+import {E, Ez, Fn, Is, P} from "../../raf.js";
 
 import {ezX}                            from "../load.js";
 import {msecs, timeFrames, updateTime}  from "../update.js";
 import {setPrefix}                      from "../named.js";
 import {changeStop}                     from "../play.js";
-import {copyText}                       from "../copy.js";
 import {setLocal, setLocalBool}         from "../local-storage.js";
 import {invalidInput}                   from "../input-number.js";
 import {CHANGE, CLICK, INPUT, MEASER_, elms, g, is, boolToString,
@@ -17,7 +16,6 @@ import {CHANGE, CLICK, INPUT, MEASER_, elms, g, is, boolToString,
 
 import {ezColor, refRange, resizeWindow} from "./_load.js";
 import {refresh, oneCounter}             from "./_update.js";
-import {moveCopied}                      from "./_copy.js";
 
 const btnText = { // textContent: boolean as number is index into each array
     compare: ["switch_left", "switch_right"],
@@ -27,11 +25,14 @@ const btnText = { // textContent: boolean as number is index into each array
 //==============================================================================
 // loadEvents() is called exclusively by loadIt(), helps keep stuff private
 function loadEvents() {
-    addEventsByElm(CLICK,  [elms.share, ...g.boolBtns], click);
-    addEventsByElm(INPUT,  [elms.time],                 input);
-    addEventsByElm(CHANGE, [elms.time, elms.type],      change);
+    addEventsByElm(CLICK,  g.boolBtns,  click);
+    addEventsByElm(INPUT,  [elms.time], input);
+    addEventsByElm(CHANGE, [elms.time, elms.type], change);
+
     addEventToElms(INPUT,  [elms.startInput, elms.endInput],    input.color);
+    addEventToElms(CHANGE, [elms.startRgb,   elms.endRgb],      change.rgb);
     addEventToElms(CHANGE, [elms.leftSpaces, elms.rightSpaces], change.space);
+
     change.type();              // sets isMulti
     return is({multi:isMulti});
 }
@@ -47,14 +48,19 @@ const input = {
         try { se.color = new Color(tar.value); }
         catch {
             invalidInput(tar, true);
-            return;     // only saves valid values to localStorage
+            return;
         }
-        //------------------------
+        //-----------------------
         invalidInput(tar, false);
+
         se.canvas.style.backgroundColor = se.color.display();
+        if (Is.def(evt.type))          // else called by change.rgb()
+            se.rgb.value = se.color.to("srgb").toString({format: "hex"});
+
         for (const lr of g.leftRight)
             updateOne(se, lr);
-        setLocal(tar);
+
+        setLocal(tar);                 // only save valid values to localStorage
         if (!evt.isLoading)
             refresh();
     },
@@ -118,6 +124,13 @@ const change = {
             setPrefix(val);                 // must precede openNamed()
             elms.named.dispatchEvent(new Event(CHANGE)); // calls openNamed()
         }
+    },
+    rgb(evt) {
+        const
+        tar = evt.target,
+        inp = g[getCamel(tar)].input;
+        inp.value = tar.value;
+        input.color({target:inp});
     }
 };
 //==============================================================================
@@ -145,15 +158,6 @@ const click = {
         else
             ezColor.roundTrip = b;
     },
- // share() is not a boolean button
-    share() {
-        let txt = `${location.href.split("?")[0]}?${g.keyName}=${elms.named.value}`;
-        for (const elm of g.searchElms)
-            txt += `&${elm.id}=${elm.value}`;
-
-        moveCopied(elms.share.getBoundingClientRect());
-        copyText(txt);
-    },
  // collapse() shows|hides inputs & counters
     collapse(evt) {
         const b = click.boolBtn(evt);
@@ -163,13 +167,16 @@ const click = {
     },
  // boolBtn() helps the boolean buttons (symBtns as pseudo-checkboxes)
     boolBtn(evt) {
+        let b;
         const tar = evt.target;
-        const b   = !tar.value;
-        tar.value = boolToString(b);
-
+        if (evt.isLoading)
+            b = Boolean(tar.value);
+        else {
+            b = !tar.value;
+            tar.value = boolToString(b);
+            setLocalBool(tar, b);
+        }
         tar.textContent = btnText[tar.id][Number(b)];
-        if (!evt.isLoading)
-            setLocalBool(tar, !b);
         return b;
     }
 };
@@ -182,7 +189,7 @@ const click = {
 function updateOne(se, lr) {
     let coords = se.color[Ez.kebabToSnake(lr.color.spaceId)].slice();
     if (lr.spaces.value == Fn.rgb)
-        coords = coords.map(v => Math.round(Ez.clamp(0, v, 1)) * 255);
+        coords = coords.map(v => Math.round(Ez.clamp(0, v, 1) * 255));
 
     oneCounter(coords, lr[se.id], lr.range);
     se[lr.id] = coords;

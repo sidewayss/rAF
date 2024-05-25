@@ -1,6 +1,6 @@
 export {loadChart, isOutOfBounds};
 
-import {E, U, Is, P, Ez} from "../../raf.js";
+import {E, Is, P, Ez} from "../../raf.js";
 
 import {msecs, timeFrames, updateTime}          from "../update.js";
 import {listenInputNumber, isInvalid}           from "../input-number.js";
@@ -116,5 +116,5 @@ function isOutOfBounds(val = g.type) {
         return false;
     }
     return Is.A(arr) ? Ez.unitOutOfBounds(arr)
-                     : Boolean(arr);        // true here may or may not be oob,
+                     : Is.def(arr);         // true here may or may not be oob,
 }                                           // refresh() will run the numbers.

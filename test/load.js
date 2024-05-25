@@ -65,19 +65,11 @@ async function loadCommon() {
     preDoc    = `${id}-`;           // prefix by document, see local-storage.js
 
     Ez.readOnly(g, "keyName", `${preDoc}name`);
-    let   params,
-          name = localStorage.getItem(g.keyName);
+    let name = localStorage.getItem(g.keyName);
     const hasVisited = (name !== null);
 
-    if (location.search) {
-        params = new URL(location).searchParams;
-        if (params.has(g.keyName)) {
-            i    = Array.from(params.keys()).indexOf(g.keyName);
-            name = Array.from(params.values())[i];
-        }
-    }
     ns = await import(`${dir}_load.js`).catch(errorAlert);
-    const is = ns.loadIt(byTag, hasVisited, params);
+    const is = ns.loadIt(byTag, hasVisited);
 
     awaitNamed  = Ez.promise();      // resolves in loadJSON()
     awaitUpdate = Ez.promise();      // ditto

@@ -186,6 +186,22 @@
         "jump": 3,
         "timing": "pow_2.5o/5i"
       },
+      "steps_oIline":{
+        "time": 3125,
+        "type": 9,
+        "end": 1000,
+        "steps": 30,
+        "easy": "",
+        "timing": "pow_2.5o/5i"
+      },
+      "steps_oIbezB":{
+        "time": 3125,
+        "type": 9,
+        "end": 1000,
+        "steps": 30,
+        "easy": "bezierB",
+        "timing": "pow_2.5o/5i"
+      },
       "mid": {
         "time": 2000,
         "io": 4,
@@ -215,7 +231,7 @@
     },
     "MEaser-": {
       "": {
-        "easy":  ["","circIn","circOut"],
+        "easy":  ["","sineIn","sineOut"],
         "plays": ["","",""],
         "eKey":  ["unit","unit","unit"],
         "trip":  ["","",""]

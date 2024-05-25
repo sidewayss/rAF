@@ -10,22 +10,23 @@ export const
 import Color    from "https://colorjs.io/dist/color.js";
 import {spaces} from "https://colorjs.io/src/spaces/index.js";
 
-import {C, U, E, Fn, F, P, Ez, Easy} from "../../raf.js";
+import {C, U, E, Fn, F, P, Is, Ez, Easy} from "../../raf.js";
 import {CFunc} from "../../prop/func.js"; //!!need better way to access CFunc.A!!
 
 import {msecs, pad, newEasies, updateTime, updateCounters} from "../update.js";
-import {getLocal, getNamed, getNamedObj} from "../local-storage.js";
-import {COUNT, CHANGE, CLICK, INPUT, EASY_, MEASER_, elms, g, pairOfOthers,
-        orUndefined, dummyEvent, errorAlert} from "../common.js";
+import {getLocal, getNamed, getNamedObj}            from "../local-storage.js";
+import {MILLI, COUNT, CHANGE, CLICK, INPUT, EASY_, MEASER_, elms, g,
+        pairOfOthers, orUndefined, dummyEvent, errorAlert} from "../common.js";
 
-import {refresh} from "./_update.js";
+import {refresh}                                  from "./_update.js";
 import {isMulti, loadEvents, timeFactor, getCase} from "./events.js";
 
 let collapsed, controlsWidth, expanded, padding;
-const LOADING = "isLoading";
+const LOADING   = "isLoading";
+const START_END = ["start","end"];
 //==============================================================================
 // loadIt() is called by loadCommon()
-function loadIt(byTag, hasVisited, params) {
+function loadIt(_, hasVisited) {
     let css, elm, id, max, obj, opt, rng, space, txt;
     pad.frame = 4;
 
@@ -36,8 +37,6 @@ function loadIt(byTag, hasVisited, params) {
         txt = id;
         css = space.cssId;
         opt = new Option();
-        //!!if (!(css in F))                // no Func for this space = Color.js
-        //!!    opt.className = "colorjs";  //!! could use css in F instead...
         if (isCSSSpace(css)) {
             opt.style.color = "black";  // Color.js spaces: var(--charcoal)
             if (id == "srgb")           // F.srgb exists as an alias
@@ -79,39 +78,28 @@ function loadIt(byTag, hasVisited, params) {
                             // initialize elms.type
     [EASY_, MEASER_].forEach((v, i) => elms.type.options[i].value = v);
 
-                            // (re)set control values, except elms.named
-    const byClass    = (v) => Array.from(document.getElementsByClassName(v));
+                            // (re)set control values
+    const byClass = (v) => Array.from(document.getElementsByClassName(v));
     elms.collapsible = byClass("collapse");
     g.boolBtns       = byClass("boolBtn");
 
-    g.searchElms = [elms.type, elm, clone, ...byTag[0]];
-    const search = new Map(g.searchElms.map(se => [se.id, se]));
-    if (params) {
-        for ([id, txt] of params) {
-            if (search.has(id)) {
-                elms[id].value = txt;
-                search.delete(id);
-            }
-            else
-                console.info(`Invalid URLSearchParam: ${id}=${txt}`);
+    if (hasVisited) {
+        const restore = [elms.type, elms.time, elms.startInput, elms.endInput,
+                         elm, clone, ...g.boolBtns];
+        for (elm of restore) {
+            txt = getLocal(elm)
+            if (txt !== null)
+                elm.value = txt;
         }
     }
-    if (search.size) {
-        if (hasVisited)
-            for (elm of [...g.boolBtns, ...search.values()])
-                elm.value = getLocal(elm);
-        else {
-            if (search.has(elm.id))
-                elm.selectedIndex = 0;
-            if (search.has(clone.id))
-                clone.value = "jzczhz";
-            if (search.has(elms.type.id))
-                elms.type.value = EASY_;
-        }
+    else {
+        elm.selectedIndex = 0;
+        clone.value       = "jzczhz";
+        elms.type.value   = EASY_;
     }
                             // create and populate g.left/right/start/end...
     const elmsArray = Object.values(elms);
-    for (id of ["left","right","start","end"]) {
+    for (id of ["left", "right", ...START_END]) {
         obj = {id};
         for (elm of elmsArray.filter(e => e.id?.startsWith(id)))
             obj[getCase(elm).toLowerCase()] = elm;
@@ -121,6 +109,17 @@ function loadIt(byTag, hasVisited, params) {
     g.leftRight = [g.left,  g.right];
     g.startEnd  = [g.start, g.end];
 
+    let bw, prop, rgb;
+    for (id of START_END) {
+        elm = g[id].canvas;
+        rgb = g[id].rgb.style;
+        obj = elm.getBoundingClientRect();
+        bw  = P.borderWidth.getn(elm);
+        for (prop of ["top","left"])    // these two need border-width offset
+            rgb[prop] = obj[prop] + bw + U.px;
+        for (prop of ["width","height"])
+            rgb[prop] = obj[prop] + U.px;
+    }
     return loadEvents();
 }
 const format = {
@@ -198,18 +197,38 @@ function initEasies(obj, hasVisited) {
     }
     return b;
 }
-// newEasy(obj) creates a new easy from obj, resetting start and end to default
-// localStorage and presets have {start:0, end:1000} or vice-versa
+// newEasy(obj) creates a new Easy(obj), resetting start and end to default.
+// localStorage and presets have {start:0, end:1000} or vice-versa.
 // Better for front-end and copyCode() to go with the default: {start:0, end:1}
+// Two-legged objects require start and end to be scaled.
 function newEasy(obj, f) {
-    for (const key of ["start","end","plays","loopWait","roundTrip","autoTrip"])
-        delete obj[key];                    // leave flipTrip, tripWait intact
+    let key;
+    const isDown = (obj.end != MILLI);
 
+    // More than start and end need reset, but flipTrip, tripWait remain intact
+    for (key of [...START_END,"plays","loopWait","roundTrip","autoTrip"])
+        delete obj[key];
+
+    // Scale obj.mid and leg.end|start to 0-1 range
+    scaleOne(obj, "mid", isDown);
+    if (obj.legs)
+        for (const leg of obj.legs)
+            for (key of START_END)
+                scaleOne(leg, key, isDown);
+
+    // Scale time to match elms.time and set roundTrip
     obj.time      = f ? Math.round(obj.time * f) : msecs;
     obj.roundTrip = orUndefined(elms.roundT.value);
 
     try         { return new Easy(obj); }
     catch (err) { errorAlert(err);    }
+}
+function scaleOne(obj, key, isDown) {     // helps newEasy()
+    if (Is.def(obj[key])) {
+        obj[key] /= MILLI;
+        if (isDown)                       // convert 1-0 to 0-1
+            obj[key] = Ez.flip(obj[key]);
+    }
 }
 //==============================================================================
 // updateAll() called by loadFinally(), openNamed()
@@ -223,7 +242,7 @@ function updateAll() { // identical to multi updateAll()
 //!!units based on current value?? Good idea. Somewhat "unstructured"-like.
 
 function easeFinally(af, ezs, ez, wait, is) {
-    let end, mask, prop, start, time,
+    let end, ez2, ez3, mask, prop, start, time,
     elm = elms.controls;
 
     af.preInit = true;
@@ -238,11 +257,13 @@ function easeFinally(af, ezs, ez, wait, is) {
     wait += 200;                           // everything return to original
     time  = 800;
     ez    = new Easy({wait, time, type:E.sine, io:E.out});
+
     wait += 400;
     time  = 1050
-    const ez2 = new Easy({wait, time, type:E.pow, pow:2.5});
+    ez2   = new Easy({wait, time, type:E.pow, pow:2.5});
+
     time += 100
-    const ez3 = new Easy({wait, time});
+    ez3   = new Easy({wait, time});
     ezs.add(ez);                            // contrast
     ezs.add(ez2);                           // saturation, blur
     ezs.add(ez3);                           // drop-shadow blur
@@ -254,26 +275,25 @@ function easeFinally(af, ezs, ez, wait, is) {
     const space = cjs.space;
     start = Color.to(elms.startInput.value, space).coords.slice();
     end   = E.cV;
-    switch (elms.leftSpaces.value) {
-        case Fn.rgb:                        // raison de slice():
-            start.forEach((_, i) => start[i] *= 255);
-        case Fn.hsl: case Fn.hwb:
-            cjs = undefined;
-        default:
-    }
-    wait += 400;
-    time -= 450;
-    elm = [elms.time, elms.x];
-    ez  = new Easy({wait, time});           // test numeric strings with start
+    if  (elms.leftSpaces.value == Fn.rgb)   // raison de slice():
+        start.forEach((_, i) => start[i] *= 255);
+
+    time -= 50;
+    elm = [elms.time, elms.x];              // test numeric strings with start:
+    ez  = new Easy({wait, time, type:E.sine, io:E.inOut});
     ez.newTarget({start:elm.map(e => e.max), end, prop:P.value, elm});
     ezs.add(ez);
                                             // test animating CSSStyleRules
     const rules = Array.from(document.styleSheets[1].cssRules).slice(0, 5);
-    ez = new Easy({wait, time, type:E.expo});
-    ez.newTarget({cjs, start, end, prop:P.color,   elms:rules.splice(0, 3)});
-    ez.newTarget({cjs, start, end, prop:P.fill,    elms:rules});
-    ez.newTarget({cjs, start, end, prop:P.stroke,  elms:rules});
-    ez.newTarget({cjs, start, end, prop:P.bgColor, elms:endCanvas});
+    wait += 400;
+    time -=  40;
+    ez    = new Easy({wait, time, type:E.expo});
+    time -= 150;
+    ez2   = new Easy({wait, time, type:E.sine, io:E.out});
+    ez .newTarget({cjs, start, end, prop:P.color,   elms:rules.splice(0, 3)});
+    ez2.newTarget({cjs, start, end, prop:P.fill,    elms:rules});
+    ez2.newTarget({cjs, start, end, prop:P.stroke,  elms:rules});
+    ez2.newTarget({cjs, start, end, prop:P.bgColor, elms:endCanvas});
 
     prop = P.accentColor;                   // #time, #x again
     end  = Color.to(prop.getOne(elm[0]), space).coords;
@@ -289,6 +309,7 @@ function easeFinally(af, ezs, ez, wait, is) {
     elm = [elms.controls, elms.startCanvas, elms.endCanvas];
     ez.newTarget({prop, elm, mask});        // start:0, end:1
     ezs.add(ez);
+    ezs.add(ez2);
                                             // "linear", not "default" here:
     elms.easys[0].text = Easy.type[E.linear];
     return elms.canvas;

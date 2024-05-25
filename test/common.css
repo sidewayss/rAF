@@ -15,6 +15,7 @@
   --border-gray:  1px solid #0002;
   --border-hidden:1px solid transparent;
   --btn-size: 1.75rem;
+
   --8th:  calc(1rem / 8);
   --3-8ths:  calc(3 * var(--8th));
   --5-8ths:  calc(5 * var(--8th));
