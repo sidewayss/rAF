@@ -54,9 +54,8 @@ export class AFrame {
         if (!val.length)
             this.clearTargets(); // sets #status = E.empty
         else {
-            val = new Set(val);
-            this.#targets = val;
-            this.#backup  = new Set(val);
+            this.#targets = new Set(val);
+            this.#backup  = new Set(this.#targets);
             if (this.isEmpty)
                 this.#status = E.original;
         }
@@ -253,7 +252,7 @@ export class AFrame {
                 }
             }
             const forceIt = !hasArrived;      // an alternate interpretation
-            for (t of this.#targets)
+            for (t of this.#backup)           // #targets is (partially) spent
                 t._reset(sts, forceIt);       // see ../docs/onArrival.svg
             if (sts == E.empty)
                 this.clearTargets();          // sets #status = E.empty

@@ -4,7 +4,6 @@ check-box::part(box) {
 }
 /* overrides of common.css */
 body {
-  margin:0;
   padding:var(--3-16ths) 0 var(--7-16ths) var(--3-16ths);
   background-color:#131313;
 }
@@ -23,15 +22,15 @@ p.hi { font-weight:500; }
 #save, #data {
   margin-left:var(--16th);
 }
-#code {
-  padding-right:1px;
-}
 #info {
   color:var(--medium-blue);
   font-size:1.75rem;
   border:none;
   background-color:transparent;
   margin-left:var(--16th);
+}
+#info:hover {
+  color:blue;
 }
 
 /* for this page only */

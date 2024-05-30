@@ -24,28 +24,27 @@ const change = {
         const plays = Number(elms.plays.value);
         const b     = plays > 1;
         P.visible([elms.loopWait, elms.loopWait.labels[0]], b);
+        setNoWaits();
         if (!evt.isUpdateAll) {
-            changeStop();       // in case we're pausing or we've arrrived
             ezX.plays = plays;
             if (ezY)
                 ezY.plays = plays;
             else                  //!!
                 alert("No ezY!"); //!!
+            changeStop();       // in case we're pausing or we've arrrived
             storeIt();
         }
-        setNoWaits();
     },
     wait(evt) {   // #loopWait and #tripWait
         const tar  = evt.target;
         const wait = Number(tar.value);
-        changeStop();
         ezX[tar.id] = wait;
         if (ezY)
             ezY[tar.id] = wait;
         else                  //!!
             alert("No ezY!"); //!!
-
         setNoWaits();
+        changeStop();
         storeIt();
     },
  // <check-box> (requires evt.currentTarget)
@@ -54,8 +53,8 @@ const change = {
         for (var cr of [chart, range])              // exclude one dot per cr
             P.visible(cr.dots.slice(1), loopByElm);
         if (!evt.isUpdateAll) {
-            changeStop();
             objEz.loopByElm = loopByElm;
+            changeStop();
             storeIt();
         }
     },
@@ -89,15 +88,14 @@ const change = {
  // trip() helps roundTrip(), autoTrip(), flipTrip()
     trip(evt) {
         const tar = evt.currentTarget;
-        changeStop();
-        setNoWaits();
-        storeIt();
         ezX[tar.id] = tar.checked;
         if (ezY)
             ezY[tar.id] = tar.checked;
         else                  //!!
             alert("No ezY!"); //!!
-
+        setNoWaits();
+        changeStop();
+        storeIt();
         return tar;
     }
 }

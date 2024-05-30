@@ -132,9 +132,11 @@ function disablePreset(name, item) {
     }
 }
 // disableDelete() called by openNamed(), clickOk(), loadFinally()
-function disableDelete(name) { // can't delete default or presets
-    if (elms.delete) {
-        elms.delete.disabled = !name || !presets[name];
-        elms.delete.dataset.enabled = boolToString(!elms.delete.disabled);
+function disableDelete(name) { // can't delete presets, including default
+    const elm = elms.delete;
+    if (elm) {
+        const dis    = Boolean(presets[name]);
+        elm.disabled = dis;
+        elm.dataset.enabled = boolToString(!dis);
     }
 }

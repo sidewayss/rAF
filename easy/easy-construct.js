@@ -87,11 +87,9 @@ function legType(o, leg, i, defaultType, isInc) {
             break;
         case E.increment:
             legNumber(leg, name, i, ...Ez.undefNotZero);
-            break;
-        case E.bezier:
-            leg[name] = toBezier(leg[name], leg.time, name);
-        case E.steps:
-        }                // steps validated after leg.time is established
+        case E.bezier:   // new EBezier() must wait until leg.time defined
+        case E.steps:    // ditto steps validation
+        }
     }
 }
 function getIO(io, defaultEase = E.in) {

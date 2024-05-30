@@ -161,6 +161,7 @@
         "type": 9,
         "end": 1000,
         "steps": 15,
+        "jump": 2,
         "timing": "sineOut"
       },
       "steps_easeV": {
@@ -168,6 +169,7 @@
         "type": 9,
         "end": 1000,
         "steps": 15,
+        "jump": 2,
         "easy": "sineOut"
       },
       "steps_easeTV": {
@@ -175,6 +177,7 @@
         "type": 9,
         "end": 1000,
         "steps": 15,
+        "jump": 2,
         "timing": "sineOut",
         "easy": "sineOut"
       },
@@ -191,6 +194,7 @@
         "type": 9,
         "end": 1000,
         "steps": 30,
+        "jump": 1,
         "easy": "",
         "timing": "pow_2.5o/5i"
       },
@@ -199,6 +203,7 @@
         "type": 9,
         "end": 1000,
         "steps": 30,
+        "jump": 2,
         "easy": "bezierB",
         "timing": "pow_2.5o/5i"
       },

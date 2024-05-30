@@ -35,6 +35,7 @@ html * {
 }
 /* By tag */
 body {
+  margin:0;
   background-color:var(--bg-white);
   caret-color:transparent;
   opacity:0; /* javascript fades it in */
@@ -198,20 +199,21 @@ check-box:active {
 /* <state-button> - #play, #stop */
 state-button {
   opacity:0.9;
+  stroke-width:3px;
   fill   :var(--medium-blue);
   stroke :var(--medium-blue);
-  stroke-width:4px;
   stroke-linejoin:round;
   stroke-linecap :round;
 }
 state-button:hover {
   opacity:1;
+  stroke-width:4px;
   fill   :var(--accent-blue);
   stroke :var(--accent-blue);
 }
 state-button:active {
-  fill  :var(--dark-blue);
-  stroke:var(--dark-blue);
+  stroke-width:3px;
+  fill:none;
 }
 state-button[disabled] {
   opacity:0.15;

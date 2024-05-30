@@ -92,11 +92,11 @@ function setCounters(frm, defD) {
             for (i = 0; i < COUNT; i++)
                 formatNumber(frm.x[i][key], digits, decimals, elements[i]);
         else
-            for (i = 0; i < COUNT; i++) {   // convert "-0.123" to "-.123"
-                n   = frm.x[i][key]
+            for (i = 0; i < COUNT; i++) { // convert "-0.123" to "-.123"
+                n   = frm.x[i][key];      // formatNumber rounds -Number.EPSILON
                 txt = formatNumber(n, digits, decimals);
-                elements[i].textContent = n < 0
-                                        ? txt[0] + txt.slice(txt, 2)
+                elements[i].textContent = n + Number.EPSILON < 0
+                                        ? txt[0] + txt.slice(2)
                                         : txt;
             }
     }
@@ -105,12 +105,10 @@ function setCounters(frm, defD) {
 function formatDuration(val, d) {
     return val.toFixed(d) + U.seconds;
 }
-// formatPlayback() helps changeStop(), formatPlay()
-function formatPlayback(isPlaying, b = true) {
-    if (b) {
-        elms.clip.style.opacity = g.clipOpacity[Number(isPlaying)]; // see multi.loadIt()
-        P.visible(elms.ucvDivs.map(div => div.firstElementChild), !isPlaying); //!!if this can be elms.value[i], then ucvDivs is a local var for _load!!
-    }
+// formatPlayback() helps changePlay(), changeStop()
+function formatPlayback(isPlaying) {
+    elms.clip.style.opacity = g.clipOpacity[Number(isPlaying)]; // see multi.loadIt()
+    P.visible(elms.ucvDivs.map(div => div.firstElementChild), !isPlaying); //!!if this can be elms.value[i], then ucvDivs is a local var for _load!!
 }
 //==============================================================================
 // setClipPair() populates clip, pair by pair, mask by mask.

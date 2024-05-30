@@ -68,8 +68,7 @@ function steps(o, leg) {
     else {                          // auto-generate linear waits based
         const                       // on steps/ends and jump.
         j    = "jump",              //  E.end is the CSS steps() default
-        jump = leg.easy ? E.end     // leg.easy ignores jump as irrelevant
-                        : Number(leg[j] ?? o[j] ?? E.end);
+        jump = Number(leg[j] ?? o[j] ?? E.end);
 
         if (!Easy.jump[jump])
             Ez._invalidErr(j, jump, Easy._listE(j));
@@ -156,23 +155,29 @@ function stepsToLegs(o, leg, ez, idx, last, lastLeg) {
 //         either no end, or no duration; and its legs cannot be E.steps, to
 //         avoid infinite easeSteps loops and because not-eased is linear or
 //         fixed values, which is pointless.
+//         For eased values, jump:E.start has no effect because time=0 produces
+//         value=0. So E.start is the same as E.none, E.end same as E.both.
 function easeSteps(ez, nows, time, start, dist, isDown, name) {
     Easy._validate(ez, name);               // phase one validation
     if (ez.isIncremental)                   // phase two
         Ez._cantBeErr(name, "class Incremental");
     //--------------------------------------
-    const ezDown   = ez.end < ez.start;
-    const isTiming = (name[0] == "t");
-    let leg = ez._firstLeg;
+    const
+    ezDown   = ez.end < ez.start,
+    isTiming = (name[0] == "t");
+    let  leg = ez._firstLeg;
     do {
         if (leg.type == E[s])               // phase three
             Ez._cantBeErr(name, `type:E.${s}`);
         if (isTiming                        // phase four
          && (leg.down != ezDown
           || (leg.type >= E.back   && leg.type <= E.bounce)
-          || (leg.type == E.bezier && Ez.unitOutOfBounds(leg.bezier.array))))
-            Ez._cantBeErr(name, "an Easy that changes direction. "
-                              + "Time only moves in one direction");
+          || (leg.type == E.bezier && Ez.unitOutOfBounds(leg.bezier.array)))) {
+            const
+            msg = Ez._cantBe(name, "an Easy that changes direction. "
+                                 + "Time only moves in one direction");
+            throw new Error(msg, {cause:"reverse time"}); //!!better *not* as string...
+        }
     } while ((leg = leg.next));
     //---------------------------------------- validation complete
     ez._zero(0);                            // prep for pseudo-animation

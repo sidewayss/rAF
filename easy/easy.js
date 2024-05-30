@@ -2,8 +2,8 @@ import {easings}            from "./easings.js";
 import {create}             from "./efactory.js";
 import {EBase}              from "./easer.js";
 import {steps, stepsToLegs} from "./easy-steps.js"
-import {override, spreadToEmpties, legNumber, getType, legType, getIO, splitIO}
-                            from "./easy-construct.js"
+import {override, spreadToEmpties, legNumber, getType, legType, getIO, splitIO,
+        toBezier}           from "./easy-construct.js"
 
 import {E, Ez, Is, Easies} from "../raf.js";
 
@@ -29,7 +29,7 @@ export class Easy {
     constructor(obj, isInc = false) {
         Ez._validObj(obj, "Easy constructor's only argument");
         const c = "count", e = "end", s = "start", t = "time", w = "wait";
-        const o = Object.assign({}, obj); // can't use structuredClone()...
+        const o = Ez.shallowClone(obj);
 
         this.pre  = o.pre;          // use setters for validation
         this.peri = o.peri;
@@ -247,6 +247,8 @@ export class Easy {
                 leg.part = leg.dist / this.#dist; // leg's part of the whole
                 leg.io   = getIO(leg.io, io);
                 leg.ease = easings[leg.io][leg.type];
+                if (leg.type == E.bezier)         // must wait for leg.time
+                    leg.bezier = toBezier(leg.bezier, leg.time);
             }
         });
     }
@@ -493,8 +495,8 @@ export class Easy {
 //  _reset() helps AFrame.prototype.#cancel() via Easies, calls one of the
 //           public reset methods below or does nothing.
 //           see ../../docs/onArrival.svg for flow.
-_reset(sts, forceIt) {
-        if (!forceIt)
+_reset(sts, forceIt) {  // sts == undefined is local only
+        if (!forceIt)   // forceIt means sts is defined
             sts = this.#onArrival;
         switch (sts) {
         case E.arrived:
@@ -505,7 +507,7 @@ _reset(sts, forceIt) {
             this.init();          break;
         case E.original:
             this.restore();       break;
-        default: // E.empty or undefined == noop
+        default:        // E.empty or undefined == noop
         }
         // any status can call clearTargets() if #oneShot == true
         if (this.#oneShot || sts == E.empty)

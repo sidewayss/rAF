@@ -37,7 +37,10 @@ function newEzY(obj) {
     try {
         ezY = new Easy(obj);
     } catch (err) {
-        errorAlert(err);
+        if (err.cause == "reverse time")    // maybe eventually a switch??
+            alert(err.message);
+        else
+            errorAlert(err);
         return;
     }
     g.easies.add(ezY);

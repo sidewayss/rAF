@@ -109,13 +109,13 @@ function updateCounters(i = 0, frm = frames[i]) {
 //                called by formFromObj(), loadFinally(), updateCounters(),
 //                          setCounters()s, multi refresh().
 function formatNumber(n, digits, decimals, elm) {
-    if (n < 0 && n >= -Number.EPSILON)  // unfortunately, it happens
+    if (n < 0 && n >= -Number.EPSILON)  // unfortunately, it happens regularly
         n = 0;
-    const str = n.toFixed(decimals).padStart(digits);
+    const txt = n.toFixed(decimals).padStart(digits);
     if (elm)
-        elm.textContent = str;
+        elm.textContent = txt;
     else
-        return str;
+        return txt;
 }
 //------------------------------------------------------------------------------
 // setFrames() and updateDuration() are called in combination

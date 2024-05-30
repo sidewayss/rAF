@@ -98,7 +98,7 @@ function loadJSON(response, isMulti, dir, ns, hasVisited, msg) {
             );
             loadUpdate(isMulti, dir)
               .then (() => {
-                ns.getEasies(hasVisited);
+                ns.getEasies(hasVisited, json);
                 awaitUpdate.resolve();
             }).catch(
                 awaitUpdate.reject

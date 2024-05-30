@@ -16,14 +16,14 @@ import {LINK, TYPE, IO, POW, pointToString, twoLegs, isBezier, bezierArray}
                            from "./index.js";
 //==============================================================================
 // easingFromObj() creates an object from localStorage and updates controls,
-//                 called exclusively by formFromObj()
-function easingFromObj(obj, leg0, leg1) {
-    elms.type2.value = leg1?.type ?? g.type;
-    if (isPow())
-        formatInputNumber(elms.pow, obj.pow ?? leg0.pow);
-    else if (isBezier())
+//                 called exclusively by formFromObj().
+function easingFromObj(obj, leg0, leg1, wasStp, wasOob) {
+    const isBez = isBezier();
+    if (isBez)
         for (let i = 0; i < 4; i++)
             formatInputNumber(elms.beziers[i], obj.bezier[i]);
+    else if (isPow())
+        formatInputNumber(elms.pow, obj.pow ?? leg0.pow);
 
     if (leg1?.pow)
         formatInputNumber(elms.pow2, leg1.pow);
@@ -31,12 +31,6 @@ function easingFromObj(obj, leg0, leg1) {
         elms.pow2.value = elms.pow.value;
 
     let elm, id, isDefN, n, val;
-    for (id of [TYPE, POW])              // #linkType and #linkPow
-        setLink(
-            elms[Ez.toCamel(LINK, id)],
-            elms[id].value == elms[id + TWO].value
-        );
-
     [leg0?.end,                          // #mid,
      leg0?.time,                         // #split,
      leg1?.wait].forEach((v, i) => {     // #gap - initial default values:
@@ -49,6 +43,14 @@ function easingFromObj(obj, leg0, leg1) {
         formatInputNumber(elm, val);
         disableClear(elm, val, isDefN);
     });
+    if (!isBez) {                        // bezier has only one leg here
+        elms.type2.value = leg1?.type ?? g.type;
+        for (id of [TYPE, POW])          // #linkType and #linkPow
+            setLink(
+                elms[Ez.toCamel(LINK, id)],
+                elms[id].value == elms[id + TWO].value
+            );
+    }
 }
 // easingFromForm() creates an object from controls for localStorage or
 //                  new Easy(), called exclusively by objFromForm().

@@ -176,13 +176,13 @@ export class Easies {
         for (const ez of this.#easies)  // easys must go first because measers
             ez._reset(sts, forceIt);    // use their values.
 
-        let t;
+        let t;                          // #targets is Set(MEaser)
         if (sts == E.original)
             for (t of this.#targets)
                 t._restore();
         else {
             let vals;
-            for (t of this.#targets) {
+            for (t of this.#targets) {  // apply each easy's value
                 vals = [];
                 t.easies.forEach((ez, i) => {
                     vals[i] = t.eVal(ez.e, i);

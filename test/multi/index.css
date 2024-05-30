@@ -1,18 +1,11 @@
 /* overrides of common.css */
+body {
+  background-color: var(--pitch);
+}
 @media (height < 307px) {
   html * {
     font-family:monospace;
   }
-}
-
-body {
-  margin:0.5rem 0 0 0;
-/*
-  height:985px;
-  background-repeat:no-repeat;
-  background-size:100% 100%;
-  background-image:radial-gradient(ellipse at center 216px, var(--bg-white) 324px, gray);
-*/
 }
 @media (height < 360px) {
   body { margin-top:0; }
@@ -73,6 +66,13 @@ input[type=color] {
 
 /* additions to common.css */
 /* <div> */
+#controls {
+  background-color: var(--bg-white);
+  padding: 0.5rem;
+  border-radius: var(--8th);
+  box-shadow: 0 0 2px var(--pitch) inset;
+  margin-top: var(--3-16ths);
+}
 #bgWhite {
   border:1px solid var(--line-gray);
   background-color:white;
@@ -86,7 +86,7 @@ input[type=color] {
   position:absolute;
   pointer-events:none;
   background:linear-gradient(to bottom right, var(--bg-white), var(--bg-white));
-  opacity:0.15;
+  opacity:0.1;
 /*clip-path:polygon(
 /*  0px    0px, 16px   0px,                         /*  0, 1, 2, 3 */
 /*  16px   9px, 17px   9px, 17px  71px, 16px  71px, /*  4, 5, 6, 7, 8, 9,10,11 */

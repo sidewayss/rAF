@@ -4,7 +4,6 @@ export let objEz;
 import {E, Is, P} from "../../raf.js"
 
 import {msecs, formatNumber}                        from "../update.js";
-import {DEFAULT_NAME}                               from "../named.js";
 import {INPUT, elms, g, orUndefined, elseUndefined} from "../common.js";
 
 import {shallowClone, setNoWaits}      from "./events.js";
@@ -13,13 +12,19 @@ import {initEzXY, updateTrip}          from "./index.js";
 import {easingFromObj, easingFromForm} from "./not-steps.js";
 import {FORMAT_END, FORMAT_START, stepsFromObj, stepsFromForm, updateTV,
         isSteps}                       from "./steps.js";
+
+const
+funcFromObj  = [easingFromObj,  stepsFromObj],
+funcFromForm = [easingFromForm, stepsFromForm];
+
 //==============================================================================
 // formFromObj() populates the form, sets globals, <= loadFinally(), openNamed()
 function formFromObj(obj) {
     let elm, end, start, val;
     const
     leg0 = obj.legs?.[0],
-    leg1 = obj.legs?.[1];
+    leg1 = obj.legs?.[1],
+    wasStp = isSteps();
 
     g.type = obj.type ?? leg0?.type ?? E.linear;
     if (Is.def(obj.io))
@@ -28,34 +33,31 @@ function formFromObj(obj) {
         g.io = leg0.io ? (leg1.io ? E.outOut : E.outIn)
                        : (leg1.io ? E.inOut  : E.inIn);
     else
-        g.io = E.in;         // Easy.prototype's default value
+        g.io = E.in;           // Easy.prototype's default value
 
     elms.io  .value = g.io;
     elms.type.value = g.type;
-    elms.time.value = obj.time ?? (leg0 ? leg0.time + leg1.time
-                                        : elms.time.max / 2);
+    elms.time.value = obj.time
+                   ?? (leg0 ? leg0.time + leg1.time
+                            : elms.time.max / 2);
     elms.time.dispatchEvent(new Event(INPUT));
 
-    const                    // easingFromObj() requires g.type be set
-    func = isSteps(obj.type) ? stepsFromObj : easingFromObj,
-    notA = !func(obj, leg0, leg1);
+    const notA = !funcFromObj[Number(isSteps())](obj, leg0, leg1, wasStp);
     P.visible(elms.direction.parentNode, notA);
-    if (notA) {              // if Is.A(obj.steps) stepsFromObj() returns true
+    if (notA) {                // if Is.A(obj.steps) stepsFromObj() returns true
         start = obj.start ?? leg0?.start ?? 0;
         end   = obj.end   ?? leg1?.end;
         formatNumber(start, ...FORMAT_START);
         formatNumber(end,   ...FORMAT_END);
-
-        elms.direction.value = start < end ? DEFAULT_NAME : 1;
+        elms.direction.selectedIndex = Number(start > end);
     }
-
-    for (elm of g.trips) {   // roundTrip and related elements
+    for (elm of g.trips) {     // roundTrip and related elements
         val = obj[elm.id];
-        if (elm.isCheckBox)  // <check-box>
+        if (elm.isCheckBox)    // <check-box>
             elm.checked = Is.def(val) || elm === elms.roundTrip
                         ? val     // roundTrip default = false
                         : true;   // autoTrip, flipTrip default = true
-        else                 // <select>
+        else                   // <select>
             elm.value = val ?? 0; // tripWait default = 0
     }
     elms.plays   .value    = obj.plays    ?? 1;
@@ -97,7 +99,7 @@ function objFromForm(hasVisited = true) {
                   start, end, plays, loopWait, loopByElm,
                   roundTrip, autoTrip, flipTrip, tripWait};
 
-    objEz = (isStp ? stepsFromForm : easingFromForm)(obj);
+    objEz = funcFromForm[Number(isStp)](obj);
     return objEz;
 }
 //==============================================================================

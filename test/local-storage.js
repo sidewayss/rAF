@@ -3,7 +3,7 @@ export {getNamed, getNamedEasy, getNamedObj, getNamedString, getNamedBoth,
         getLocalNamed, getLocal, setLocal, setNamed, storeCurrent, setLocalBool,
         isNamedSteps};
 
-import {E, Ez, Easy} from "../raf.js";
+import {E, Is, Ez, Easy} from "../raf.js";
 
 import {preDoc} from "./load.js";
 import {DEFAULT_NAME, DEFAULT, ns, preClass, presets, disableSave}
@@ -50,8 +50,14 @@ function isNamedSteps(str, isCopy) {
 }
 //==============================================================================
 // getNamedEasy() returns an Easy instance for a named item
-function getNamedEasy(name) {
-    try         { return new Easy(getNamedObj(name, EASY_)); }
+function getNamedEasy(name, recurseIt) {
+    const obj = getNamedObj(name, EASY_);
+    if (recurseIt) {
+        for (const prop of ["timing","easy"])        // for E.steps only
+            if (Is.String(obj[prop]))                // can be array, undefined
+                obj[prop] = getNamedEasy(obj[prop]); // recurse only one level
+    }
+    try         { return new Easy(obj); }
     catch (err) { errorAlert(err); }
 }
 // getNamedObj() returns a JSON object from localStorage or presets, in that

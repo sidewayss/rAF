@@ -4,6 +4,7 @@ export const OVERRIDES = ["plays","eKey","trip"];
 
 import {E, P} from "../../raf.js";
 
+import {timeFrames}                 from "../update.js";
 import {storeCurrent, getNamedEasy} from "../local-storage.js";
 import {COUNT, PLAYS, CHANGE, LITE, elms, g, orUndefined} from "../common.js";
 
@@ -43,6 +44,7 @@ const change = {
     easy(evt) {
         const tar = evt.target;
         setEasy(Number(tar.id.at(-1)), tar.value);
+        timeFrames();   	           // each Easy has its own duration
         if (initEasies(objFromForm()))
             refresh();
     },
@@ -50,7 +52,7 @@ const change = {
     pt(evt) {
         const tar = evt.currentTarget; //!!or evt.target??
         const [i, id] = i_id(tar);
-        multiNoWaits(i);
+        multiNoWaits(i, easys[i]);
         storeCurrent(objFromForm());
         return [tar, i, id];
     }
@@ -90,13 +92,14 @@ function setEasy(i, name, obj) { // formFromObj() defines obj
     for (const id of OVERRIDES)  // call set.plays(), set.eKey(), set.trip()
         set[id](i, id, obj?.[id][i]);
 
-    const ez = getNamedEasy(name);
+    const ez = getNamedEasy(name, true); //!!returns undefined if it fails!!
     toElm(EZ_, PLAYS, i).textContent = ez.plays;
     P.visible(elms.trip[i].parentNode, ez.roundTrip);
     if (ez.roundTrip)
         setHref(toElm(EZ_, "trip",  i), ez.autoTrip);
-    easys[i] = ez;
+
     multiNoWaits(i, ez);
+    easys[i] = ez;
 }
 //====== local helpers =========================================================
 // swapClasses() is the same as classList.replace(), except it doesn't require
@@ -120,10 +123,14 @@ function setHref(elm, val, isInd) {
                               : val ? "#chk"
                                     : "#box");
 }
-function multiNoWaits(i, ez = easys[i]) {
-    const trip = elms.trip[i].value;
-    g.notLoopWait[i] = !ez.loopWait && (Number(elms.plays[i].value) || ez.plays) > 1;
-    g.notTripWait[i] = ez.roundTrip && !ez.tripWait && (trip || (!trip && ez.autoTrip));
+// multiNoWaits() sets the g.not_Wait properties, which are used by eGet(),
+//                <= change.plays(), change.trip(), setEasy()
+function multiNoWaits(i, ez) {      // ez = easys[i]
+    g.notLoopWait[i] = !ez.loopWait
+                    && (Number(elms.plays[i].value) || ez.plays) > 1;
+
+    g.notTripWait[i] = !ez.tripWait && ez.roundTrip
+                    && (elms.trip[i].value || ez.autoTrip);
 }
 // i_id() splits a numbered id, e.g. "id0", into number and string
 function i_id(elm) {

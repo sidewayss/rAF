@@ -84,7 +84,7 @@ function getEasies(hasVisited) {
         for (i = 0; i < COUNT; i++) {// order, better than all three the same.
             elm = elms.easy[i];
             elm.selectedIndex = i;
-            easys[i] = getNamedEasy(elm.value);
+            easys[i] = getNamedEasy(elm.value); // default easys not recursive!!returns undefined if failure
         }
 }
 //==============================================================================
@@ -105,36 +105,38 @@ function updateAll() {
 //==============================================================================
 // resizeWindow() resizes the polygon: y-values and all stationary x-values
 function resizeWindow() {
-    let elm, i, m, mask, val;
-
+    let i, m, mask, tmp, val,
     elm = elms.bgWhite;
-    const bw     = parseFloat(getComputedStyle(elm).borderTopWidth);
-    const top    = elm.offsetTop;
-    const height = elm.offsetHeight;
-    elms.filler.style.height = (height - bw - bw) + U.px;
-    i = elms.filler.offsetWidth + bw + 1; // some viewport scales require the +1
+    const
+    bw     = parseFloat(getComputedStyle(elm).borderTopWidth),
+    top    = elm.offsetTop,
+    height = elm.offsetHeight,
+    width  = elms.filler.offsetWidth + bw + 1, // some viewport scales require the +1
+    style  = elms.clip.style;
 
-    const style  = elms.clip.style;
+    elms.filler.style.height = (height - bw - bw) + U.px;
+
     style.top    = top    + U.px;
     style.height = height + U.px;
     style.left   = elm.offsetLeft + U.px;
 
-    elm = elms.template;
-    clipEnd = elm.firstElementChild.offsetWidth
-            + elm.lastElementChild.clientWidth  // exclude the right border
-            - elm.lastElementChild.lastElementChild.offsetWidth;
+    tmp = elms.template;
+    elm = tmp.lastElementChild;
+    val = elm.lastElementChild.offsetWidth;
+    clipEnd = tmp.firstElementChild.offsetWidth
+            + elm.clientWidth             // exclude the right border
+            - val;
 
-           style.width = clipEnd + U.px;
-//!!elms.x.style.width = clipEnd + 8 + U.px;
+    style.width = clipEnd + val + U.px;   // allows for out-of-bounds values
     elms.copied.style.left = elms.copy.offsetLeft
                            - (elms.copied.offsetWidth - elms.copy.offsetWidth)
                            - 2 + U.px;
     const sizes = [                       // 16 x,y pairs: 0-31
-        [i, [2,4, 10,12, 18,20, 26,28]],  // x-axis: even numbers
-        [height, [29, 31]]                // y-axis: odd  numbers
+        [width, [2,4, 10,12, 18,20, 26,28]], // x-axis: even numbers
+        [height, [29, 31]]                   // y-axis: odd  numbers
     ];
-    if (clipStart != i) {
-        clipStart = i;
+    if (clipStart != width) {
+        clipStart = width;
         if (!Is.def(clip[MASK_X[0]]) || clip[MASK_X[0]] == clipStart)
             sizes.push([clipStart, MASK_X]);
         else

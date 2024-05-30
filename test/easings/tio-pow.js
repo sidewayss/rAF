@@ -42,32 +42,31 @@ function loadTIOPow() {
     addEventByClass(CLICK, LINK,             null, inputTypePow);
 }
 //==============================================================================
-// inputTypePow() is the input event handler for class="type-pow" and
-//                   the click event handler for class="link".
+// inputTypePow() is the input event handler for class="type-pow"
+//               and the click event handler for class="link",
+//               type and type2 have a change handler in chart.js
 function inputTypePow(evt) {
     let refreshIt;
     const
-        tar = evt.target,
-        isP = tar.id.includes("ow")
-    ;
+    tar = evt.target,
+    isP = tar.id.includes("ow");        // pow, pow2, linkPow
     if (isP && isInvalid(tar))
         return;
-    //---------
+    //----------------------
     const
-        id   = isP ? POW : TYPE,
-        suff = tar.id.endsWith(TWO) ? [TWO,""] : ["",TWO],
-        link = elms[Ez.toCamel(LINK, id)],
-        val  = elms[id + suff[0]].value,
-        two  = elms[id + suff[1]],
-        isLink = (tar === link)             // is target a link button?
-    ;
+    id   = isP ? POW : TYPE,
+    suff = tar.id.endsWith(TWO) ? [TWO,""] : ["",TWO],
+    link = elms[Ez.toCamel(LINK, id)],
+    val  = elms[id + suff[0]].value,
+    two  = elms[id + suff[1]],
+    isLink = (tar === link);                // is target a link button?
     if (isLink)
         setLink(tar);                       // toggles link.value, so that
-    if (link.value && two.value != val) {  // if (isLink) two.value can == val.
+    if (link.value && two.value != val) {   // if (isLink) two.value can == val.
         if (isP)
-            formatInputNumber(two, val);    // pow, pow2, linkPow
-        else {
-            two.value = val;                // type, type2, linkType
+            formatInputNumber(two, val);
+        else {                              // type, type2, linkType
+            two.value = val;
             if (isLink) {
                 updateTypeIO();
                 refreshIt = true;

@@ -4,7 +4,7 @@ export const
 chart = {},  // SVG chart elements and viewBox array
 range = {};  // SVG vertical pseudo-range element
 
-import {E, U, P, Pn, Easy} from "../../raf.js";
+import {E, U, P, Pn, Is, Ez, Easy} from "../../raf.js";
 
 import {create} from "../../easy/efactory.js";
 const targetPseudoX = create({peri:pseudoUpdate});
@@ -15,16 +15,15 @@ import {frames, targetInputX, inputX, updateFrame, pseudoFrame, pseudoAnimate,
         eGet, formatNumber}                       from "../update.js";
 import {MILLI, COUNT, LITE, elms, g, toggleClass} from "../common.js";
 
-import {objFromForm}                              from "./_named.js";
-import {storeIt}                                  from "./events.js";
-import {drawSteps, postRefresh, setInfo, isSteps} from "./steps.js";
-import {drawEasing}                               from "./not-steps.js";
-import {isOutOfBounds}                            from "./chart.js";
-import {ezY, newEzY, twoLegs}                     from "./index.js";
+import {objFromForm}                       from "./_named.js";
+import {ezY, newEzY, twoLegs, bezierArray} from "./index.js";
+import {storeIt}                           from "./events.js";
+import {drawEasing}                        from "./not-steps.js";
+import {drawSteps, tvFromElm, postRefresh, setInfo, isSteps} from "./steps.js";
 //==============================================================================
 // refresh() <= updateAll(), changeStop(), inputTypePow(evt), event handlers in
 //              chart.js, msg.js, steps.js, tio-pow.js.
-function refresh(tar, n, has2 = twoLegs(), oobOld = false) {
+function refresh(tar, n, has2 = twoLegs()) {
     if (tar) {                   // !tar = called by updateAll()
         let obj;
         if (n)
@@ -47,18 +46,20 @@ function refresh(tar, n, has2 = twoLegs(), oobOld = false) {
         }
         storeIt(obj);            // save obj to localStorage
     }
+    let isStp = isSteps();
     pseudoAnimate();             // update frames
-    drawLine();                  // draw the line
+    drawLine(isStp);             // draw the line
     inputX();                    // move the dot(s), uses updated frames
     ezY.clearTargets();          // clear pseudo-targets, ezX uses .oneShot
     postRefresh(ezY.firstTime);  // E.steps needs cleanup post-pseudo-animation
 
-    let oob = isOutOfBounds();   // handle out-of-bounds y coordinates in chart:
-    if (!oob && has2)
-        oob |= isOutOfBounds(Number(elms.type2.value));
-    if (oob || oobOld) {         // adjust the vertical size of chart and range
+    let isOob = isOutOfBounds(); // handle out-of-bounds y coordinates in chart:
+    if (!isOob && has2)
+        isOob |= isOutOfBounds(Number(elms.type2.value));
+
+    if (isOob || g.isOob) {      // adjust the vertical size of chart and range
         let cr, maxY, minY;
-        if (oob) {               // set new boundaries
+        if (isOob) {             // set new boundaries
             const y = frames.map(frm => frm.y);
             minY = Math.min(...y, 0);
             maxY = Math.max(...y, MILLI);
@@ -76,15 +77,42 @@ function refresh(tar, n, has2 = twoLegs(), oobOld = false) {
         range.svg.style.height = chart.svg.clientHeight + U.px;
         range.trackY.setAttribute(Pn.y1, minY);
         range.trackY.setAttribute(Pn.y2, maxY);
-
-        elms.shadow.style.height = document.body.clientHeight + U.px;
     }
+    if (g.isStp === isStp)       // undefined !== false here
+        isStp = false;
+    else {                       // steps adds a row to diptych
+        g.isStp = isStp;
+        isStp = true;            // = changed to or from E.steps
+    }
+    if (isStp || isOob || g.isOob)
+        elms.shadow.style.height = document.body.clientHeight + U.px;
+
+    g.isOob = isOob;
 }
+// isOutOfBounds() helps refresh(), returns true if any points are outside (or might
+//                 be outside) the 0-1000 range, which only occurs for four types.
+function isOutOfBounds(val = g.type) {
+    let arr;
+    switch (val) {
+    case E.bezier:
+        arr = bezierArray();                // Array
+        break;
+    case E.steps:
+        arr = tvFromElm(elms.values, true); // Array, String or undefined
+        break;
+    case E.back: case E.elastic:            // these two are always oob, and
+        return true;                        // the only way type2 can be oob,
+    default:                                // 'cuz bezier/steps is 1 leg only.
+        return false;
+    }
+    return Is.A(arr) ? Ez.unitOutOfBounds(arr)
+                     : Is.def(arr);         // true here may or may not be oob,
+}                                           // refresh() will run the numbers.
 //==============================================================================
 // drawLine() routes the job to drawSteps() or drawEasing(),
 //            called by refresh(), flipZero(), change.drawAsSteps()
-function drawLine() {
-    isSteps() ? drawSteps() : drawEasing();
+function drawLine(isStp = isSteps()) {
+    isStp ? drawSteps() : drawEasing();
 }
 // initPseudo() sets frames[0], calls newTargets(true)
 function initPseudo() {
@@ -188,14 +216,25 @@ function formatPlayback(isPlaying) {
 //==============================================================================
 // flipZero() flips frames[0] after non-autoTrip return trip, easings only
 function flipZero() {
-    const isTripping = elms.roundTrip.checked     // roundTrip
-                    && !elms.autoTrip.checked     // !autoTrip
-                    && ezX.e.status != E.tripped; // return trip
-    const u = Number(isTripping); // unit = 1 or 0
-    const x = u * MILLI;
-    const y = isTripping != Boolean(elms.direction.value)
-            ? MILLI
-            : 0;
-    frames[0] = vucFrame(0, x, y, y, u, 1 - u);
+    if (elms.roundTrip.checked        // roundTrip
+     && !elms.autoTrip.checked        // && !autoTrip
+     && ezX.e.status != E.tripped) {  // && end of return trip
+        const                         // E.steps can end at non-MILLI value
+        n = P.isVisible(elms.direction.parentNode)
+          ? Ez.flip(elms.direction.selectedIndex)
+          : 1,                        // and steps userValues forces Flow:Up
+        y = n * Number(elms.end.textContent),
+        u = y / MILLI;
+        frames[0] = vucFrame(0, MILLI, y, y, u, Ez.flip(u));
+    }
     drawLine();
+//!!const
+//!!isTripping = elms.roundTrip.checked                     // roundTrip
+//!!          && !elms.autoTrip.checked                     // && !autoTrip
+//!!          && ezX.e.status != E.tripped,                 // && return trip
+//!!u = Number(isTripping),                                 // unit = 1 or 0
+//!!x = MILLI * u,                                          // x = 0 or 1000
+//!!y = MILLI * Number(u != elms.direction.selectedIndex);  // y = ditto
+//!!
+//!!frames[0] = vucFrame(0, x, y, y, u, 1 - u);
 }

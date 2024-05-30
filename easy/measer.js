@@ -10,8 +10,8 @@ class MEBase extends EBase { // M = multi E = Easer, the multi-ease base class
     #easies; #loopEasy;
     constructor(o) {
         super(o);
-        this.#easies = o.easies;      // validated in EFactory.#easies()
-        this._autoTripping = Array.from({length:o.lz}, () => undefined);
+        this.#easies = o.easies;        // validated in EFactory.#easies()
+        this._autoTripping = new Array(o.lz);
         if (this.loopByElm) {
             const easies = o.easies;
             let   time   = easies[0].loopTime;
@@ -20,9 +20,9 @@ class MEBase extends EBase { // M = multi E = Easer, the multi-ease base class
                               "the same for all easies");
             //-------
             let p, v;
-            const plays = this.plays; // #plays is not available here
+            const plays = this.plays;   // #plays is not available here
             p = 0;
-            time  = Math.max(...easies.map(ez => ez.firstTime));
+            time = Math.max(...easies.map(ez => ez.firstTime));
             easies.forEach((ez, i) => {
                 if (time - ez.firstTime - ez.loopWait > 0) //!!needs testing!!
                     Ez._cantErr("MEaser loopByElm:", "align easies' loops");

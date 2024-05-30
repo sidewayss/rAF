@@ -103,5 +103,6 @@ circle.on,
 .bg-end2a    { fill:#005577 }
 .bg-end2b    { fill:#428    }
 .bg-end2c    { fill:#009    }
+.bg-end-dead { fill:#666 }
 .no-shadow   { filter:none  }
 .shadow      { filter:var(--shadow) }

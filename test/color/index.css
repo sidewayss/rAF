@@ -52,7 +52,6 @@ html * {
   accent-color:var(--pitch);
 }
 body {
-  margin:0;
   height:100vh;
   background-color:black;
   opacity:1;
@@ -176,10 +175,5 @@ state-button:hover {
   stroke-width:4px;
 }
 state-button:active {
-  fill:  none;
-  stroke:black; /* necessary to override common.css */
   stroke-width:3px;
-}
-@media (width < 375px) { /* squeeze it into 360px */
-  span  { font-size:var(--15-16ths) }
 }

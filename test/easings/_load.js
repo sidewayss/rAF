@@ -2,11 +2,12 @@ export {loadIt, getEasies, initEasies, updateAll, resizeWindow};
 
 import {E, U, P, Pn, Ease, Ez, Easy} from "../../raf.js";
 
-import {ezX}      from "../load.js";
-import {getLocal} from "../local-storage.js";
+import {ezX}                                        from "../load.js";
+import {getLocal}                                   from "../local-storage.js";
+import {formatInputNumber}                          from "../input-number.js";
 import {pad, newEasies, updateTime, updateCounters} from "../update.js";
 import {COUNT, CHANGE, INPUT, elms, g, is, isTag, dummyEvent}
-                  from "../common.js";
+                                                    from "../common.js";
 
 import {chart, range, refresh}                          from "./_update.js";
 import {initEzXY, updateTrip}                           from "./index.js";
@@ -98,33 +99,35 @@ function loadIt(byTag, hasVisited) {
 }
 //==============================================================================
 // getEasies() is called exclusively by loadJSON()
-function getEasies() {
+function getEasies(_, json) {
     let i,    // all but i and elm are consts, but this reads better
-    size = 4,
     id   = Easy.type[E.bezier],
     div  = elms[id],
     elm  = div.firstElementChild,          // sub-<div> wrapper
     divs = [elm],
     lpar = elm.removeChild(elm.firstElementChild),
     rpar = elm.removeChild(elm.lastElementChild),
-    ease = Ease.ease[0][id];               // default CSS "ease" as bezier array
+    ease = Ease.ease[0][id],               // default CSS "ease" as bezier array
+    size = ease.length;
 
     for (i = 1; i < size; i++)             // clone sub-<div>
         divs.push(div.appendChild(elm.cloneNode(true)));
 
-    elms.beziers = new Array(ease.length); // the 4 <input>s
+    const titles = json.titles;
+    elms.beziers = new Array(size);        // the 4 <input>s
     for (i = 0; i < size; i++) {
-        elm = divs[i].getElementsByTagName(INPUT)[0];
-        elm.value = ease[i];
-        elm.id    = id + i;                // "bezier0" to "bezier3"
+        elm    = divs[i].getElementsByTagName(INPUT)[0];
+        elm.id = id + i;                   // "bezier0" to "bezier3"
+        formatInputNumber(elm, ease[i]);   // default value is CSS "ease" curve
         if (i % 2) {                       // y values can be out of bounds
-            elm.dataset.min ="-0.9";
-            elm.dataset.max = "1.9";
+            elm.min ="-0.9";               // moved to elm.dataset later
+            elm.max = "1.9";               // ditto
         }
-        else {
-            elm.dataset.min = "0";
-            elm.dataset.max = "1";
+        else {                             // x values are clamped within bounds
+            elm.min = "0";
+            elm.max = "1";
         }
+        elm.title = `${titles[elm.id]}: range ${elm.min} to ${elm.max}`;
         elms.beziers[i] = elm;
     }
     elm = divs[0];
@@ -137,14 +140,14 @@ function getEasies() {
 }
 // initEasies() inits the Easies and sets set-once variables for resizeWindow(),
 //              called once per session by loadFinally().
-function initEasies(obj, hasVisited) {
+function initEasies(obj) {
     let b = newEasies(ezX);
     if (b) {
         const evt = dummyEvent(CHANGE, "isInitEasies");
         for (const elm of [elms.reset, elms.zero])
             elm.dispatchEvent(evt);
 
-        initSteps(obj, hasVisited);
+        initSteps(obj);
         updateTrip();
         b = initEzXY(obj);
         if (b) {                                      // pseudo-constants:

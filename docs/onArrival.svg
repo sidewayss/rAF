@@ -56,8 +56,8 @@
       <text x="475" y="250">E.empty</text>
       <path d="M475,270 V303"/>
 
-      <use href="#rhombus"  class="bg-end1" x="635" y="250"/>
-      <text x="635" y="250" class="fg-end1">undefined</text>
+      <use href="#rhombus"  class="bg-end-dead" x="635" y="250"/>
+      <text x="635" y="250" class="fg-end">undefined</text>
 
       <use href="#rhombus" x="795" y="250" class="pale-purple"/>
       <text x="795" y="250">else</text>

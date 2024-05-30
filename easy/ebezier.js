@@ -25,7 +25,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import {Ez} from "../raf.js";
-
+//==============================================================================
 export class EBezier {
 //  #accuracy is a relative level of precision for the calculation. If you want
 //  more or less precision you can set this.time to a bigger or smaller number.
@@ -43,7 +43,7 @@ export class EBezier {
         Ez.readOnly(this, "ax", 1 -  this.bx  - this.cx);
         Ez.readOnly(this, "ay", 1 -  this.by  - this.cy);
 
-        Ez.readOnly(this, "x1", x1);
+        Ez.readOnly(this, "x1", x1);    // required for .reversed and .array
         Ez.readOnly(this, "y1", y1);
         Ez.readOnly(this, "x2", x2);
         Ez.readOnly(this, "y2", y2);
@@ -52,18 +52,24 @@ export class EBezier {
         Ez.is(this);
         Object.seal(this);
     }
-//  get reversed() is for round-tripping
+//==============================================================================
+// this.array() returns the original four values as an array
+    get array() {
+        return [this.x1, this.y1, this.x2, this.y2];
+    }
+// this.reversed is for round-tripping
     get reversed() {
         return new EBezier(1 - this.x2, 1 - this.y2,
                            1 - this.x1, 1 - this.y1,
                            this.#time);
     }
-//  set time() calculates the accuracy for evaluating a timing function
-//             for an animation with the specified duration.
+// this.time calculates #accuracy, the precision for evaluating a timing
+//           function in an animation with the specified duration.
     set time(time) {
         this.#accuracy =  1 / (200 * time);
         this.#time = time;
     }
+//==============================================================================
 //  solve() is called as this.#leg.ease() in Easy.prototype.#ease().
     solve(x) {
         return this.#sampleCurveY(this.#solveCurveX(x));

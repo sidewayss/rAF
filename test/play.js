@@ -51,7 +51,7 @@ function changePlay() {
                 //---------------------- // else animation ends:
                 setFrames(g.frameIndex); // don't call timeFrames(), updateTime()
                 updateDuration(raf.elapsed / MILLI);
-                ns.flipZero?.();         // !multi //!!what about multi??
+                ns.flipZero?.();         // color doesn't need it //!! multi does!!
                 elms.x   .value = g.frameIndex;
                 elms.stop.value = RESET;
                 if (!ezX.e.status)       // only enabled for status == E.tripped
@@ -71,22 +71,20 @@ function changeStop(evt) {
     elms.stop.value = STOP;
     elms.stop.disabled = true;      // must precede ns.refresh() below!!
     elms.play.disabled = false;
-    const val = elms.play.value;
-    if (val == PAUSE)               // stop = STOP
-        raf.stop();                 // - cancels animation, resolves promise
-    else {                          // the promise is already resolved:
-        if (val == RESUME)          // stop = STOP
-            resetPlay();
-        else { // (val == PLAY)     // stop = RESET, play.disabled = true
-            setFrames();            // - revert to pseudo-frames
-            updateTime();           //         and pseudo-time
-            updateDuration();
-        }
-        if (evt)                    // user clicked stop
-            ns.refresh(evt.target); // calls pseudoAnimate()=>changeStop()!!
-    }
+    switch (elms.play.value) {
+    case RESUME:                    // stop = STOP, promise resolved
+        resetPlay();
+    case PAUSE:                     // stop = STOP, promise unresolved
+        raf.stop();                 // -RESUME: reset raf
+        break;                      // -PAUSE: cancel animation, resolve promise
+    case PLAY:                      // stop = RESET, play.disabled = true except
+        setFrames();                // when E.tripped and no autoTrip.
+        updateTime();
+        updateDuration();
+    }                               // only easings refresh() uses target arg:
+    ns.refresh(evt?.target);        // calls pseudoAnimate()=>changeStop()!!
     updateCounters();
-    ns.formatPlayback?.(false, Boolean(evt));
+    ns.formatPlayback?.(false);
 }
 //==============================================================================
 // resetPlay() helps changePlay(), changeStop()
