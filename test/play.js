@@ -3,12 +3,12 @@ export {loadPlay, changeStop};
 import {E, P} from "../raf.js";
 
 import {ezX, raf} from "./load.js";
-import {updateCounters, updateTime, updateDuration, setFrames}
-                  from "./update.js";
+import {frameIndex, updateCounters, updateTime, updateDuration, setFrames,
+        prePlay}  from "./update.js";
 import {MILLI, ZERO, ONE, TWO, LITE, CHANGE, elms, g, toggleClass, errorAlert}
                   from "./common.js";
 
-let ns; // _update.js namespace: refresh, formatPlay, flipZero (easings)
+let ns; // _update.js namespace: refresh, formatPlay, postPlay (easings)
 //==============================================================================
 // -- Button States --
 // initial: PLAY   STOP  = stop disabled
@@ -34,9 +34,9 @@ function changePlay() {
         raf.pause();
     else {                               // PLAY or RESUME
         if (elms.play.value == PLAY) {
-            g.frameIndex = 0;
+            prePlay();
             ns.newTargets();
-            ns.formatPlayback?.(true);
+            ns.formatPlayback?.(true);   // multi only
             elms.stop.disabled = false;
         }
         formatPlay(true);
@@ -44,19 +44,17 @@ function changePlay() {
         elms.play.value = PAUSE;
         elms.stop.value = STOP;
         raf.play()
-          .then(sts => {                 // ...some time later:
-            if (!resetPlay(sts == E.pausing)) {
-                if (ezX.e.status > E.tripped)
-                    return;              // user clicked #stop
-                //---------------------- // else animation ends:
-                setFrames(g.frameIndex); // don't call timeFrames(), updateTime()
-                updateDuration(raf.elapsed / MILLI);
-                ns.flipZero?.();         // color doesn't need it //!! multi does!!
-                elms.x   .value = g.frameIndex;
-                elms.stop.value = RESET;
-                if (!ezX.e.status)       // only enabled for status == E.tripped
+          .then(sts => {                // if (!pausing and !#stop.onclick)
+            if (!resetPlay(sts == E.pausing) || ezX.e.status <= E.tripped) {
+                if (!ezX.e.status)      // E.arrived or E.tripped
                     elms.play.disabled = true;
-            } // else sts == E.pausing
+                elms.stop.value = RESET;
+                                        // don't call updateTime(), timeFrames()
+                updateDuration(raf.elapsed / MILLI);
+                setFrames(frameIndex);
+                elms.x.value = frameIndex;
+                ns.postPlay?.();        // color doesn't need it //!!multi does
+            }
         }).catch(errorAlert);
     }
 }
@@ -66,23 +64,24 @@ function changePlay() {
 //              and pseudoAnimate() is not called.
 function changeStop(evt) {
     if (elms.stop.disabled) return; // nothing to do that hasn't been done
-    //----------------------------- // only occurs if (!evt)
+    //-----------------------------
     elms.x.value = 0;
     elms.stop.value = STOP;
     elms.stop.disabled = true;      // must precede ns.refresh() below!!
     elms.play.disabled = false;
     switch (elms.play.value) {
-    case RESUME:                    // stop = STOP, promise resolved
-        resetPlay();
-    case PAUSE:                     // stop = STOP, promise unresolved
-        raf.stop();                 // -RESUME: reset raf
-        break;                      // -PAUSE: cancel animation, resolve promise
-    case PLAY:                      // stop = RESET, play.disabled = true except
-        setFrames();                // when E.tripped and no autoTrip.
-        updateTime();
+    case RESUME:                    // stop = STOP,  e.status == E.pausing
+        resetPlay();                // was pausing, promise resolved previously
+    case PAUSE:                     // stop = STOP,  e.status >  E.tripped
+        raf.stop(true);             // was playing, resolves promise, cancelAF()
+        break;                      // sets e.everything to E.original
+    case PLAY:                      // stop = RESET, e.status <= E.tripped
+        setFrames();                // play.disabled = true, except
+        updateTime();               // when E.tripped && !autoTrip.
         updateDuration();
     }                               // only easings refresh() uses target arg:
-    ns.refresh(evt?.target);        // calls pseudoAnimate()=>changeStop()!!
+    if (evt !== null)               // null = called by pseudoAnimate()
+        ns.refresh(evt?.target);    // calls pseudoAnimate()=>changeStop(null)!!
     updateCounters();
     ns.formatPlayback?.(false);
 }

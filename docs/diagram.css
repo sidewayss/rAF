@@ -6,7 +6,7 @@
 path:not(.check), rect:not(#bg, .box), use[data-name], ellipse, polyline {
   stroke:#000;
 }
-path:not(.check), rect:not(#bg, .box, .legend, .title) {
+path:not(.check), rect:not(#bg, .box, .legend, .title), ellipse {
   filter:var(--shadow);
 }
 path {
@@ -14,7 +14,7 @@ path {
   translate:0.5px 0.5px;
 }
 path:not(.check) {
-  marker-end:url(#arrowhead);
+  marker-end:url(#arrow-end);
 }
 rect:not(#bg, .box, .legend, .title) {
   height:40px;
@@ -87,6 +87,7 @@ circle.on,
   text.on.active { fill:  #000 }
    use.on.active { stroke:#000; fill:#FFF }
 
+.pale-green  { fill:#EFFFF7 }
 .palest-blue { fill:#F7FFFF }
 .pale-blue   { fill:#EFF7FF }
 .pale-purple { fill:#F7EFFF }
@@ -103,6 +104,7 @@ circle.on,
 .bg-end2a    { fill:#005577 }
 .bg-end2b    { fill:#428    }
 .bg-end2c    { fill:#009    }
-.bg-end-dead { fill:#666 }
+.bg-end-dead { fill:#666    }
+.border-gray { stroke:#555  }
 .no-shadow   { filter:none  }
 .shadow      { filter:var(--shadow) }

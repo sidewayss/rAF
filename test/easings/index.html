@@ -49,8 +49,8 @@
           <div class="flex between pl1-8">
             <div class="row">
               <check-box id="roundTrip" data-label="Round trip" class="row"></check-box>
-              <check-box id="flipTrip"  data-label="flip"       class="row pl3-16 pr3-16"></check-box>
-              <check-box id="autoTrip"  data-label="auto"       class="row pl3-8"></check-box>
+              <check-box id="flipTrip"  data-label="flip"       class="row pl3-16 pr3-16" checked></check-box>
+              <check-box id="autoTrip"  data-label="auto"       class="row pl3-8" checked></check-box>
               <div class="row"></div> <!-- tripWait cloned from loopWait -->
             </div>
             <div class="row">
@@ -119,42 +119,44 @@
     <div id="triptych">
       <!-- triptych col 1: left -->
       <div class="flex end">
-        <div class="col lefty" style="padding-top:var(--16th)"> <!-- padding compensates for lack thereof in element above -->
-          <div class="row checklist">
-            <check-box id="reset" class="row pl1-8" data-label="Auto reset"></check-box>
-            <div class="row evenly align-start grow"
-                 style="position:relative; top:0.15625rem"> <!-- 5/32nds splits the difference for rem units scaling -->
+        <div class="col lefty align-start" style="padding-top:var(--16th)"> <!-- padding compensates for lack thereof in element above -->
+          <div class="row" style="align-self:stretch"> <!-- stretch because playback buttons spread evenly-->
+            <check-box id="useNow" class="row pl1-8" data-label="Use now() "></check-box>
+            <div class="row evenly align-start grow">
               <state-button id="play" class="row" data-states='[[0,"play"], [1,"pause"], [2,"resume"]]'></state-button>
               <state-button id="stop" class="row" data-states='[[0,"stop"], [1,"reset"]]' disabled></state-button>
             </div>
           </div>
-          <check-box id="zero"        class="row checklist pl1-8" data-label="Frame zero"            ></check-box>
+          <check-box id="frameZero"   class="row checklist pl1-8" data-label="Frame zero" checked></check-box>
+          <check-box id="initZero"    class="row checklist pl1-8" data-label="Init zero" disabled style="display:none"></check-box>
           <check-box id="loopByElm"   class="row checklist pl1-8" data-label="Loop &#xD7; 3 elements"></check-box>
-          <check-box id="drawAsSteps" class="row checklist pl1-8" data-label="Draw line as steps"    ></check-box>
-          <div id="placeholder" class="row"></div>
+          <check-box id="drawAsSteps" class="row checklist pl1-8" data-label="Draw line as steps"></check-box>
           <div id="sidebar">
-            <p>Start:<span id="start" class="sidebar ml5-16">   0</span></p>
+            <p                   >time:<span   id="elapsed" class="ml5-16"></span><span class="slash">/</span><span id="duration"></span></p>
+            <p class="mb3-8"     >frame:<span  id="frame"   class="ml5-16"></span><span class="slash">/</span><span id="frames"></span></p>
+            <p class="bt"        >value: <span id="value"   class="ml5-16"></span></p>
+            <p class="bt bt-dots">unit:<span   id="unit"></span><span class="slash ">/</span><span class="fixed">1</span></p>
+            <p class="mb3-8"     >comp:<span   id="comp"></span><span class="slash ">/</span><span class="fixed">1</span></p>
+            <p class="bt"        >Start: <span id="start" class="fixed ml5-16">   0</span></p>
             <div id="divMid" class="row">
-              <p>Mid: &nbsp;<input id="mid" class="sidebar w3"
+              <p>Mid: &nbsp;&nbsp;<input id="mid" class="w3"
                              type="number" min="100" max="900" value="500"/></p>
               <button id="clearMid" class="clear" disabled>close</button>
             </div>
-            <p class="mb3-8">End: &nbsp;<span id="end" class="sidebar ml5-16">1000</span></p>
-            <p class="sidebar bt bt-dots mb3-8">value:<span id="value" class="ml5-16"></span></p>
-            <p class="bt bt-dots">unit:<span  id="unit"    class="sidebar ml5-16"></span><span class="slash sidebar">/</span><span class="sidebar">1</span></p>
-            <p class="mb3-8"     >comp:<span  id="comp"    class="sidebar ml5-16"></span><span class="slash sidebar">/</span><span class="sidebar">1</span></p>
-            <p class="sidebar bt">frame:<span id="frame"   class="ml5-16"></span><span class="slash">/</span><span id="frames"></span></p>
-            <p class="sidebar"   >time:<span  id="elapsed" class="ml5-16"></span><span class="slash">/</span><span id="duration"></span></p>
+            <p>End: &nbsp;&nbsp;<span id="end" class="fixed ml5-16">1000</span></p>
           </div>
-          <div class="col" style="border-left:var(--border-hidden)">
-            <div id="divSplit" class="row end">
-              <button class="lock">lock_open</button>
-              <button class="clear" disabled>close</button>
+          <div id="placeholder" class="row"></div>
+          <div class="col pl1-8" style="border-left:var(--border-hidden);">
+            <div id="divSplit" class="row">
               <label></label>
               <input type="number" min="0.05" step="0.001"/>
               <label>s</label>
+              <button class="clear" disabled>close</button>
+              <button class="lock">lock_open</button>
             </div>
-            <div id="divCopy" class="row bt">
+          </div>
+          <div class="col" style="border-left:var(--border-hidden)">
+            <div id="divCopy" class="row bt mt1-2">
               <pre>Copy:</pre>
               <button id="data" class="symBtn">data_table</button>
               <button id="code" class="symBtn">data_object</button>
@@ -175,21 +177,21 @@
       </div>
       <!-- triptych col 2: center -->
       <div class="col align-center">
-        <input id="x" type="range" class="row checklist" min="0" max="1" step="1" value="0"/>
+        <input id="x" type="range" class="row" min="0" max="1" step="1" value="0"/>
         <svg id="chart" viewBox="-15 -15 1030 1030">
-          <rect     id="canvas" width="1000" height="1000"/>
-          <line     id="dashX"  x1="500" x2="500" y1=  "2" y2="999"/>
-          <line     id="dashY"  x1=  "2" x2="999" y1="500" y2="500"/>
-          <path     id="crosshairs" d="M500,2 V999 M2,500 H999"/>
-          <polyline id="line"/> <!-- dots: reverse order = z-order -->
-          <circle   id="dot2" style="fill:#F00; visibility:hidden"/>
-          <circle   id="dot1" style="fill:#0F0; visibility:hidden"/>
-          <circle   id="dot0" style="fill:#00F;"/>
+          <rect   id="canvas" width="1000" height="1000"/>
+          <line   id="dashX"  x1="500" x2="500" y1=  "2" y2="999"/>
+          <line   id="dashY"  x1=  "2" x2="999" y1="500" y2="500"/>
+          <path   id="crosshairs" d="M500,2 V999 M2,500 H999"/>
+          <path   id="line"/>                                        <!-- can't be polyline for loop(ByElm), unfortunately -->
+          <circle id="dot2" style="fill:#F00; visibility:hidden"/> <!-- dots: reverse order = z-order -->
+          <circle id="dot1" style="fill:#0F0; visibility:hidden"/>
+          <circle id="dot0" style="fill:#00F;"/>
         </svg>
       </div>
       <!-- triptych col 3: right -->
       <div class="col align-start">
-        <div class="row checklist"></div>
+        <div class="row"></div>
         <svg id="y" viewBox="0 -15 28 1030">
           <path   id="marksY"  d="M2,0 H26 M6,500 H22 M2,1000 H26"/>
           <line   id="trackY" x1="14" x2="14" y1="0" y2="1000"/>
@@ -202,6 +204,19 @@
       <div style="background-color:var(--pitch);"></div>
       <div style="background-color:var(--pitch);"></div>
     </div>
+    <!-- Error/Warning/Info Dialog -->
+    <dialog id="msgBox">
+      <div class="col">
+        <div class="row" style="height:unset; align-items:flex-start;">
+          <img id="icon"/>
+          <div class="col">
+            <p id="title" class="notMono"></p>
+            <p id="msg"   class="notMono"></p>
+          </div>
+        </div>
+        <button id="close">Close</button>
+      </div>
+    </dialog>
     <!-- "Save Named" Dialog -->
     <dialog id="dialog">
       <input  id="name" type="text" minlength="1" maxlength="12" autocomplete="off"/>

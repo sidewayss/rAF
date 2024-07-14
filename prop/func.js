@@ -115,14 +115,14 @@ class CFunc extends Func {      //\ CFunc: CSS color functions
     constructor(name, units, utype) {
         const u = (name[0] == "h")
                 ? [units, U.pct, U.pct, units]  // units = ""
-                : [units, units, units, units]; // alpha units set separately
+                : [units, units, units, units]; // alpha has its own get/setters
 
         super(name, u, utype, CFunc.A + 1, CFunc.A, [E.sp, E.sp, " / "]);
 
         CFunc._funcs[name] = this;
         Ez.is(this, "CFunc");
     }
-// this.alphaUnits are the units for the alpha argument
+// this.alphaUnits are the units for the alpha argument: "" or U.pct
     get alphaUnits() { return this._u[CFunc.A]; }
     set alphaUnits(val) {
         this._u[CFunc.A] = PFactory._validUnits(val, "alphaUnits", EMPTY_PCT);

@@ -1,30 +1,37 @@
-export {refresh, storeIt, initPseudo, newTargets, getMsecs, getFrame, updateX,
-        setCounters, formatDuration, formatPlayback, drawLine, flipZero};
+export {refresh, storeIt, initPseudo, newTargets, getMsecs, getFrame,
+        updateX, setCounters, formatDuration, drawLine, syncZero, isInitZero,
+        postPlay};
+
+export let wasStp;  // see wasOob below
 export const
-chart = {},  // SVG chart elements and viewBox array
-range = {};  // SVG vertical pseudo-range element
+chart = {},         // SVG chart elements and viewBox array
+range = {},         // SVG vertical pseudo-range element
+loopFrames = [];
 
 import {E, U, P, Pn, Is, Ez, Easy} from "../../raf.js";
 
 import {create} from "../../easy/efactory.js";
 const targetPseudoX = create({peri:pseudoUpdate});
-const targetPseudoY = create({peri:()=>{}}); // noop: it requires a func...!!
+const targetPseudoY = create({peri:()=>{}});    // noop, requires a function...
 
 import {ezX, raf} from "../load.js";
-import {frames, targetInputX, inputX, updateFrame, pseudoFrame, pseudoAnimate,
-        eGet, formatNumber}                       from "../update.js";
-import {MILLI, COUNT, LITE, elms, g, toggleClass} from "../common.js";
+import {frames, playZero, targetInputX, inputX, eGet, callbacks, updateFrame,
+        pseudoFrame, pseudoAnimate, formatNumber} from "../update.js";
+import {MILLI, COUNT, elms, g} from "../common.js";
 
 import {objFromForm}                       from "./_named.js";
-import {ezY, newEzY, twoLegs, bezierArray} from "./index.js";
 import {storeIt}                           from "./events.js";
-import {drawEasing}                        from "./not-steps.js";
-import {drawSteps, tvFromElm, postRefresh, setInfo, isSteps} from "./steps.js";
+import {ezY, newEzY, twoLegs, bezierArray} from "./index.js";
+import {tvFromElm, setInfo, isSteps}       from "./steps.js";
+
+let wasOob; // persistent variable for refresh()
 //==============================================================================
-// refresh() <= updateAll(), changeStop(), inputTypePow(evt), event handlers in
-//              chart.js, msg.js, steps.js, tio-pow.js.
+// refresh() <= updateAll(), change.initZero(), changeStop(), inputTypePow(evt),
+//              event handlers in chart.js, msg.js, steps.js, tio-pow.js.
 function refresh(tar, n, has2 = twoLegs()) {
-    if (tar) {                   // !tar = called by updateAll()
+    if (!tar)                    // updateAll(), change.initZero(), changeStop()
+        ezY.init();              // reuse existing ezY, for multi-leg, E.steps
+    else {
         let obj;
         if (n)
             ezY.time = n;        // the one property that doesn't use newEzY()
@@ -42,52 +49,53 @@ function refresh(tar, n, has2 = twoLegs()) {
                 default:
                 }
                 return;
-            }//--------
+            } //-------
         }
         storeIt(obj);            // save obj to localStorage
     }
-    let isStp = isSteps();
+    const isStp = isSteps();
     pseudoAnimate();             // update frames
     drawLine(isStp);             // draw the line
     inputX();                    // move the dot(s), uses updated frames
-    ezY.clearTargets();          // clear pseudo-targets, ezX uses .oneShot
-    postRefresh(ezY.firstTime);  // E.steps needs cleanup post-pseudo-animation
-
-    let isOob = isOutOfBounds(); // handle out-of-bounds y coordinates in chart:
-    if (!isOob && has2)
-        isOob |= isOutOfBounds(Number(elms.type2.value));
-
-    if (isOob || g.isOob) {      // adjust the vertical size of chart and range
-        let cr, maxY, minY;
-        if (isOob) {             // set new boundaries
-            const y = frames.map(frm => frm.y);
-            minY = Math.min(...y, 0);
-            maxY = Math.max(...y, MILLI);
-        }
-        else {                   // restore standard boundaries
-            minY = 0;
-            maxY = MILLI;
-        }
-        const x = chart.viewBox[E.x];
-        for (cr of [chart, range]) {
-            cr.viewBox[E.y] = Math.ceil(minY + x);
-            cr.viewBox[E.h] = Math.ceil(maxY - x - x - minY);
-            P.vB.setIt(cr.svg, cr.viewBox.join());
-        }
-        range.svg.style.height = chart.svg.clientHeight + U.px;
-        range.trackY.setAttribute(Pn.y1, minY);
-        range.trackY.setAttribute(Pn.y2, maxY);
+    if (isStp) {                 // E.steps needs cleanup post-pseudo-animation
+        setInfo(ezY.firstTime / MILLI);
+        if (elms.jump.value < E.end && elms.roundTrip.checked)
+            frames.at(-1).y = Number(elms.end.textContent);
     }
-    if (g.isStp === isStp)       // undefined !== false here
-        isStp = false;
-    else {                       // steps adds a row to diptych
-        g.isStp = isStp;
-        isStp = true;            // = changed to or from E.steps
-    }
-    if (isStp || isOob || g.isOob)
+
+    const   // Handle out-of-bounds y coordinates in chart and range:
+    isOob = isOutOfBounds() || (has2 ? isOutOfBounds(Number(elms.type2.value))
+                                     : false),
+    oobChanged = isOob || wasOob,
+    stpChanged = isStp !== wasStp;
+    if (oobChanged || stpChanged) {
+        if (oobChanged) {            // adjust the vertical size of chart, range
+            let cr, maxY, minY;
+            const x = chart.viewBox[E.x];
+            if (isOob) {             // set new boundaries
+                const y = frames.map(frm => frm.y);
+                minY = Math.min(...y, 0);
+                maxY = Math.max(...y, MILLI);
+            }
+            else {                   // restore standard boundaries
+                minY = 0;
+                maxY = MILLI;
+            }
+            for (cr of [chart, range]) {
+                cr.viewBox[E.y] = Math.ceil(minY + x);
+                cr.viewBox[E.h] = Math.ceil(maxY - x - x - minY);
+                P.vB.setIt(cr.svg, cr.viewBox.join());
+            }
+            range.svg.style.height = chart.svg.clientHeight + U.px;
+            range.trackY.setAttribute(Pn.y1, minY);
+            range.trackY.setAttribute(Pn.y2, maxY);
+            wasOob = isOob;
+        }
+        if (stpChanged)              // changed to|from E.steps
+            wasStp = isStp;
+
         elms.shadow.style.height = document.body.clientHeight + U.px;
-
-    g.isOob = isOob;
+    }
 }
 // isOutOfBounds() helps refresh(), returns true if any points are outside (or might
 //                 be outside) the 0-1000 range, which only occurs for four types.
@@ -109,46 +117,101 @@ function isOutOfBounds(val = g.type) {
                      : Is.def(arr);         // true here may or may not be oob,
 }                                           // refresh() will run the numbers.
 //==============================================================================
-// drawLine() routes the job to drawSteps() or drawEasing(),
-//            called by refresh(), flipZero(), change.drawAsSteps()
+// drawLine() called by refresh(), postPlay(), change.drawAsSteps()
 function drawLine(isStp = isSteps()) {
-    isStp ? drawSteps() : drawEasing();
+    let   frame, i, index, l, map, slice;
+    const str   = [],
+    loopIndexes = [0],
+    drawAsLine  = !isStp && !elms.drawAsSteps.checked,
+    hasWaiting  =  isStp || ezY.loopWait || ezY.tripWait;
+//!!           || (Number(elms.tripWait.value) &&  elms.roundTrip.checked)
+//!!           || (Number(elms.loopWait.value) && (elms.loopByElm.checked
+//!!                                            || Number(elms.plays.value) > 1));
+
+    if (loopFrames.length)
+        loopIndexes.push(...loopFrames);
+
+    // loopIndexes.length maxes out at 9, so looped ifs are no big deal
+    for (i = 0, l = loopIndexes.length; i < l;) {
+        index = loopIndexes[i];
+        frame = frames[index];
+        str.push(`M${pointToString(frame.x, frame.y)}L`);
+                                        // slice off this iteration's frames
+        slice = frames.slice(index + Number(Boolean(i)), loopIndexes[++i]);
+        if (hasWaiting)                 // remove duplicate, consecutive frames
+            slice = slice.filter((frm, j) => frm.value != slice[j - 1]?.value);
+
+        if (drawAsLine)
+            map = slice.map(frm => pointToString(frm.x, frm.y));
+        else {                          // j is offset by -1 relative to slice
+            map = slice.slice(1).map((frm, j) =>
+                      pointToString(frm.x, slice[j].y)
+                    + pointToString(frm.x, frm.y));
+            if (isStp) {
+                frame = slice[0];
+                str.push(pointToString(frame.x, frame.y));
+            }
+        }
+        str.push(...map);
+        //if (isStp  && )
+    }
+    P.d.set(chart.line, str.join("").trimEnd());
 }
+// pointToString() helps drawLine() convert x and y to comma-separated pair
+function pointToString(x, y) {
+    return `${x.toFixed(2)},${y.toFixed(2)} `;
+}
+//==============================================================================
 // initPseudo() sets frames[0], calls newTargets(true)
 function initPseudo() {
-    const y   = Number(elms.start.textContent); // y = 0 or 1000
-    const u   = y ? 1 : 0;                      // u for e.unit
+    const
+    y = Number(elms.start.textContent), // y = 0 or 1000
+    u = y ? 1 : 0;                      // u for e.unit
     frames[0] = vucFrame(0, 0, y, y, u, 1 - u);
+    loopFrames.length = 0;              // for loopByElm post-play pre-stop
     newTargets(true);
 }
 //==============================================================================
 // newTargets() calls Easy.proto.newTarget() as needed, with and without .prop
 //              and .elms, called by changePlay(), initPseudo(true).
 function newTargets(isPseudo) {
-    ezX.oneShot = isPseudo;          // test Easy.prototype.oneShot
+    let cb;
+    const CBs = ["onAutoTrip","onLoop"];
     if (isPseudo) {
-        ezX.targets = targetPseudoX; // replace the targets, tests set targets()
-        ezY.targets = targetPseudoY; // refresh() clears them after use
-        g.easies.peri = undefined;
+        ezY.targets = targetPseudoY;    // ezY is always a new instance
+        if (!ezX.targets.size) {        // ezX.oneShot is true = only non-pseudo
+            ezX.targets  = targetPseudoX;// test set targets()
+            g.easies.peri = undefined;
+            for (cb of CBs)
+                ezY[cb] = undefined;
+        }
     }
-    else if (!ezX.targets.size) {    // add targets on first play only
-        ezX.addTarget(targetInputX); // test Easy.prototype.addTarget()
-        ezY.post = postY;            // test Easy.prototype.post()
-        g.easies.peri = update;      // test Easies.prototype.peri()
-
-        let arr, cr, ez, prop;       // cr for chart|range
+    else {                              // refresh() runs between every playback
+        let arr, cr, ez, prop;          // cr for chart|range
         const loopByElm = elms.loopByElm.checked;
-        if (loopByElm) {             // test single-element targets
+
+        g.easies.peri = update;         // test Easies.proto.peri()
+        ezY.post      = postY;          // test Easy.proto.post()
+        for (cb of CBs)
+            ezY[cb] = callbacks[cb];
+
+        ezY.clearTargets();             // sometimes unnecessary
+        ezX.clearTargets();             // not always  necessary
+        ezX.addTarget(targetInputX);    // test Easy.proto.addTarget()
+        if (loopByElm) {                // test single-element targets
+            let tar;
             arr = [[ezX, P.cx, chart],
                    [ezY, P.cy, chart],
                    [ezY, P.cy, range]];
-            for ([  ez,  prop, cr] of arr)
-                ez.newTarget({prop, loopByElm, elms:cr.dots});
+            for ([ez, prop, cr] of arr)
+                tar = ez.newTarget({prop, loopByElm, elms:cr.dots});
+                                        // callback for one target only
+            tar.onLoopByElm = callbacks.onLoopByElm;
         }
-        else {                       // test single and multi-element targets
+        else {                          // test single and multi-element targets
             arr = [[ezX, P.cx, [chart]],
                    [ezY, P.cy, [chart, range]]];
-            for ([  ez,  prop, cr] of arr)
+            for ([ez, prop, cr] of arr)
                 ez.newTarget({prop, elms:cr.map(v => v.dots[0])});
         }
     }
@@ -160,7 +223,7 @@ function postY() {
 }
 // update() is the g.easies.peri() callback
 function update() {
-    updateFrame(ezX.e.value, eGet(ezY));
+    updateFrame(eGet(ezX).value, eGet(ezY));
 }
 // pseudoUpdate() is the pseudo-animation callback, ezX.target.peri() only. For
 //                E.steps w/jump:E.start|E.none, ezY ends before ezX, but ezY.e
@@ -169,18 +232,32 @@ function pseudoUpdate(_, e) {
     pseudoFrame(e.value, ezY.e); //!!does this ever need eGet()?? test it!!
 }
 //==============================================================================
+// syncZero() is the raf.syncZero callback, not called by pseudo, initPseudo()
+//            resets frames[0] between every playback.
+function syncZero() {
+    if (isInitZero())
+        frames[0] = getFrame(0, 0, ezY.e);
+    frames[0].t = Math.round(playZero - performance.now());
+}
+// isInitZero() determines if raf.initZero should apply to playback frames, it
+//              doesn't apply to pseudo frames.
+function isInitZero() {
+    const elm = elms.initZero;
+    return elm.checked && !elm.disabled;
+}
+//==============================================================================
 function getMsecs() {
     return elms.time.valueAsNumber;
 }
 // getFrame() creates a frame object, <= update.js: update(), pseudoAnimate()
 function getFrame(t, x, e) {
-    const frm = {t, x, y:e.value};  // frm.y = frm.value, for convenience
-    for (var key of Easy.eKey)
+    const frm  = {t, x, y:e.value};  // frm.y = frm.value, for convenience
+    for (var key of ["status", ...Easy.eKey])
         frm[key] = e[key];
     return frm;
 }
 // vucFrame() creates a frame object based on value, unit, comp, called by
-//            initPseudo(), flipZero(), a convenience for easings only.
+//            initPseudo(), postPlay(), a convenience, for easings only.
 function vucFrame(t, x, y, value, unit, comp) { // value, unit, comp versus e
     return {t, x, y, value, unit, comp};
 }
@@ -204,28 +281,19 @@ function setCounters(frm, d, pad) {
 }
 // formatDuration() is called exclusively by updateDuration()
 function formatDuration(val, d) {
-    return val.toFixed(val < 10 ? d : d - 1) + U.seconds;
-}
-// formatPlayback() helps changeStop(), formatPlay()
-function formatPlayback(isPlaying) {
-    let arr, elm, lite;
-    for ([arr, lite] of [[g.sideElms, LITE[0]], [g.sideLbls, LITE[1]]])
-        for (elm of arr)
-            toggleClass(elm, lite, isPlaying);
+    return val.toFixed(d) + (val < 10 ? U.seconds : "");
 }
 //==============================================================================
-// flipZero() flips frames[0] after non-autoTrip return trip, easings only
-function flipZero() {
-    if (elms.roundTrip.checked        // roundTrip
-     && !elms.autoTrip.checked        // && !autoTrip
-     && ezX.e.status != E.tripped) {  // && end of return trip
-        const                         // E.steps can end at non-MILLI value
-        n = P.isVisible(elms.direction.parentNode)
-          ? Ez.flip(elms.direction.selectedIndex)
-          : 1,                        // and steps userValues forces Flow:Up
-        y = n * Number(elms.end.textContent),
-        u = y / MILLI;
-        frames[0] = vucFrame(0, MILLI, y, y, u, Ez.flip(u));
+// postPlay() flips frames[0] after non-autoTrip return trip, easings only
+function postPlay() {
+    if (elms.roundTrip.checked           // roundTrip
+     && !elms.autoTrip.checked           // && !autoTrip
+     && ezX.e.status != E.tripped) {     // && end of return trip
+        const
+        v = Number(elms.end.textContent) // E.steps can end at non-MILLI value
+          * Number(!elms.direction.selectedIndex),
+        u = Math.ceil(v) / MILLI;        // unit is 0 or 1
+        frames[0] = vucFrame(0, MILLI, v, v, u, Ez.comp(u));
     }
     drawLine();
 //!!const

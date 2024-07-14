@@ -1,39 +1,35 @@
 //!!rename #targets to #active and #backup to #targets to mimic class Easies!!
-import {E, Ez, Is, Easy, Easies, ACues} from "./raf.js";
+import {E, Ez, Is, Easies, ACues} from "./raf.js";
 
 // AFrame: the animation frame manager
 export class AFrame {
-    #backup; #callback; #fps; #frame; #gpu; #keepPost; #now; #onArrival; #peri;
-    #post; #preInit; #promise; #syncZero; #targets; #useNow; #zero;
-    #status    = E.empty;
-    #frameZero = true;   // Unfortunately, this is the best default (for now...)
+    #backup; #callback; #fps; #frame; #frameZero; #gpu; #keepPost; #initZero;
+    #now; #oneShot; #peri; #post; #promise; #status; #syncZero; #targets;
+    #useNow; #zero;
 //==============================================================================
-    constructor(arg) {   // arg is int, bool, arrayish, object, or undefined
-        this.#callback = this.#animate; // overwritten by this.useNow setter
+    constructor(arg) {    // arg is int, bool, arrayish, object, or undefined
+        this.#status    = E.empty;
+        this.#callback  = this.#animate; // overwritten by this.useNow below
+        this.#frameZero = true;          // ditto this.frameZero and else if
+
         if (arg?.isEasies || arg?.isACues)
             this.targets = arg;
         else if (Is.Arrayish(arg))
             this.targets = Ez.toArray(arg, "new AFrame(targets)", AFrame.#validTarget, false);
-        else if (Ez._validObj(arg)) {
-            this.peri    = arg.peri;       this.onArrival = arg.onArrival;
-            this.post    = arg.post;       this.keepPost  = arg.keepPost;
-            this.useNow  = arg.useNow;     this.frameZero = arg.frameZero;
-            this.targets = arg.targets;    this.syncZero  = arg.syncZero;
-            this.preInit = arg.preInit ?? arg.jumpStart;
-        }
+        else if (Ez._validObj(arg))
+            for (const p of ["peri","post","keepPost","oneShot","useNow",
+                             "targets","frameZero","initZero","syncZero"])
+                this[p] = arg[p];
         else {
             this.#targets = new Set;
             this.#backup  = new Set;
-            if (Easy._validArrival(arg, undefined, true) !== false)
-                this.#onArrival = arg;  // legit int status or undefined
-            else if (arg === true || arg === false)
-                this.#frameZero = arg;
-            else
+            if (arg === true || arg === false)
+                this.#frameZero = arg;  //!!iffy choice of property, oneShot, initZero instead??
+            else if (Is.def(arg))
                 Ez._mustBeErr("new AFrame(arg): arg",
-                              "a valid onArrival status, a boolean, array-ish, "
-                            + "a valid object with properties, or undefined.");
+                              "a boolean, array-ish, a valid object with "
+                            + "properties, or undefined.");
         }
-        this.jumpStart = this.preInit;  // steps-like alias
         Object.seal(this);
     }
 //==============================================================================
@@ -99,33 +95,26 @@ export class AFrame {
         return t;
     }
 //==============================================================================
+// this.oneShot causes #stop() to clear targets on arrival
+    get oneShot()  { return this.#oneShot; }
+    set oneShot(b) { this.#oneShot = Boolean(b); }
+
     get useNow()  { return this.#useNow; }
     set useNow(b) {
         this.#useNow   = Boolean(b);
         this.#callback = b ? this.#animateNow : this.#animate;
     }
 
-    get frameZero()  { return this.#frameZero}
+    get frameZero()  { return this.#frameZero }
     set frameZero(b) { this.#frameZero = Boolean(b); }
 
-    get preInit()  { return this.#preInit; }
-    set preInit(b) { this.#preInit = Boolean(b); }
+    get initZero()  { return this.#initZero; }
+    set initZero(b) { this.#initZero = Boolean(b); }
 
-// this.onArrival
-    get onArrival()    { return this.#onArrival; }
-    set onArrival(sts) { this.#onArrival = Easy._validArrival(sts, "AFrame"); }
-
-// this.oneShot is an alias/shortcut for onArrival(E.empty)
-    get oneShot()  { return this.#onArrival == E.empty; }
-    set oneShot(b) { // if (!b && this.#onArrival != E.empty)
-        if (b)       // then it's already "off", leave #onArrival alone
-            this.#onArrival = E.empty;
-        else if (this.#onArrival == E.empty)
-            this.#onArrival = undefined;
-    }
 // this.syncZero is optional, run by #animateZero(), only if #frameZero == true
     get syncZero()    { return this.#syncZero; }
     set syncZero(val) { this.#syncZero = Ez._validFunc(val, ".syncZero"); }
+
 // this.peri is optional, runs once per frame, helps throttle events
     get peri()    { return this.#peri; }
     set peri(val) { this.#peri = Ez._validFunc(val, ".peri"); }
@@ -135,30 +124,11 @@ export class AFrame {
 // this.keepPost indicates whether to keep or delete this.#post after playing it
     get keepPost()    { return this.#keepPost; }
     set keepPost(val) { this.#keepPost = Boolean(val); }
+
 // this.fps
     get fps()    { return this.#fps; }
 // this.gpu
     get gpu()    { return this.#gpu; }
-
-//  status-related properties and methods:
-    get status()     { return this.#status; }
-    get atOrigin()   { return this.#status == E.original; }
-    get atStart()    { return this.#status == E.initial;  }
-    get atInitial()  { return this.#status == E.initial;  }
-    get atEnd()      { return this.#status == E.arrived;  }
-    get hasArrived() { return this.#status == E.arrived;  }
-    get isPausing()  { return this.#status == E.pausing;  }
-    get isPlaying()  { return this.#status == E.playing;  }
-    get isEmpty()    { return this.#status == E.empty;    }
-
-//  public status setters: #stop() with different statuses
-    arrive () { return this.#stop(E.arrived);  }
-    init   () { return this.#stop(E.initial);  }
-    stop   () { return this.#stop(E.initial);  }
-    restore() { return this.#stop(E.original); }
-    pause  () { return this.#stop(E.pausing);  }
-    clear  () { return this.#stop(E.empty);    }
-    cancel () { return this.#stop(); }
 //==============================================================================
 //  play() initiates the #animate() callback loop
     play() {
@@ -168,34 +138,27 @@ export class AFrame {
                 this.#promise.resolve(E.empty);
             else {
                 let t;
-                const now = this.#useNow ? performance.now()
-                                         : document.timeline.currentTime;
-                const isResuming = this.isPausing;
-                if (isResuming)
+                const now = this.#useNow
+                          ? performance.now()
+                          : document.timeline.currentTime,
+                isZero = !this.isPausing;
+                if (isZero) {           // starting from zero
+                    for (t of this.#targets)
+                        t.pre?.(t);
+                    if (!this.#frameZero)
+                        this.#setZero(now);
+                }
+                else {                  // resuming from pause
+                    this.#zero = this.#zero + now - this.#now;
+                    this.#now  = now;
                     for (t of this.#targets)
                         t._resume(now);
-                else {
-                    if (this.#frameZero)
-                        for (t of this.#targets)
-                            t.pre?.(t);
-                    else {
-                        for (t of this.#targets) {
-                            t._zero(now);
-                            t.pre?.(t);
-                        }
-                    }
-                    if (this.#preInit)
-                        for (t of this.#targets)
-                            t.init(t);
                 }
                 this.#status = E.playing;
-                if (this.#frameZero && !isResuming)
+                if (isZero && this.#frameZero)
                     this.#frame = requestAnimationFrame(t => this.#animateZero(t));
-                else {
-                    this.#zero  = isResuming ? this.#zero + now - this.#now : now;
-                    this.#now   = now;
-                    this.#frame = requestAnimationFrame(t => this.#callback(t));
-                }
+                else { console.log("animate()")
+                    this.#frame = requestAnimationFrame(t => this.#callback(t));}
             }
         }
         return this.#promise;
@@ -205,64 +168,95 @@ export class AFrame {
         this.#now = timeStamp;           // set it first so callbacks can use it
         for (const t of this.#targets) { // execute this frame
             if (t._next(timeStamp)) {    // true = arrived, finished
-                t.post?.(t);
+                t.post?.(t);             // ACues or Easies.proto.post()
                 this.#targets.delete(t);
             }
         }
         if (this.#peri?.(this, timeStamp) || this.#targets.size)
             this.#frame = requestAnimationFrame(t => this.#callback(t));
         else
-            this.#stop(this.#onArrival, true);
+            this.#stop(E.arrived, true);
     }
 //  #animateNow() is the animation callback that uses performance.now()
     #animateNow() { this.#animate(performance.now()); }
 
-//  #animateZero() is for one frame only
+//  #animateZero() is the callback for one frame only
     #animateZero(timeStamp) {
-        this.#zero = timeStamp;
-        this.#now  = timeStamp;
         if (this.#useNow)
             timeStamp = performance.now();
-        for (const t of this.#targets)
-            t._zero(timeStamp);
-        this.#syncZero?.(timeStamp);  // not an exact sync unless #useNow
+        this.#setZero (timeStamp);
+        console.log("animateZero()")
         this.#callback(timeStamp);    // timeStamp is always less than now
     }
+//  #setZero() helps play() and #animateZero()
+    #setZero(now) {
+        this.#zero = now;
+        this.#now  = now;
+        for (const t of this.#targets) {
+            t._zero(now);
+            if (this.#initZero)
+                t.init(t);
+        }
+        this.#syncZero?.(now);
+    }
 //==============================================================================
+//  status-related properties and methods:
+    get status()     { return this.#status; }
+    get atOrigin()   { return this.#status == E.original; }
+    get atInitial()  { return this.#status == E.initial;  }
+    get hasArrived() { return this.#status == E.arrived;  }
+    get isPausing()  { return this.#status == E.pausing;  }
+    get isPlaying()  { return this.#status == E.playing;  }
+    get isEmpty()    { return this.#status == E.empty;    }
+
+//  reset methods call #stop() with different statuses
+    arrive(isArriving) { return this.#stop(E.arrived,  isArriving, true); }
+    init  (isArriving) { return this.#stop(E.initial,  isArriving, true); }
+    stop  (isArriving) { return this.#stop(E.original, isArriving, true); }
+    pause ()           { return this.#stop(E.pausing); }
+    cancel()           { return this.#stop(); }
+
 //  #stop() stops the animation and leaves it in the requested state
-    #stop(sts, hasArrived) {
-        const wasPlaying = this.isPlaying;
-        if (wasPlaying && !hasArrived)
+//          isArriving does #post() and #oneShot
+//          runReset runs #reset(sts, runReset)
+    #stop(sts, isArriving, runReset) {
+        let ez, t;
+        const                     // #targets is (partially) spent
+        easieses   = Array.from(this.#backup).filter(v => v.isEasies),
+        wasPlaying = this.isPlaying,
+        notCancel   = Is.def(sts);
+        if (wasPlaying && !isArriving)
             cancelAnimationFrame(this.#frame);
 
-        if (sts == E.pausing)
-            this.#status = sts;
-        else {
-            let t;
-            const isArriving = hasArrived ?? !sts;  // E.arrived = 0 = !sts
-            if (isArriving && (wasPlaying || this.isPausing)) {
-                if (!hasArrived)
-                    for (t of this.#targets)  // remaining targets, not #backup
-                        t._runPost();
-                if (this.#post) {
-                    const post = this.#post;  // this.#post can be set in post()
-                    if (!this.#keepPost)      // and it defaults to single-use.
-                        this.#post = undefined;
-                    post(this);
-                }
-            }
-            const forceIt = !hasArrived;      // an alternate interpretation
-            for (t of this.#backup)           // #targets is (partially) spent
-                t._reset(sts, forceIt);       // see ../docs/onArrival.svg
-            if (sts == E.empty)
-                this.clearTargets();          // sets #status = E.empty
-            else {
-                this.#targets = new Set(this.#backup);
-                this.#status  = sts ?? E.arrived;
+        if (isArriving && !sts && (wasPlaying || this.isPausing)) {
+            const post = this.#post;    // this.#post can be set in post()
+            if (post) {
+                if (!this.#keepPost)    // and it defaults to single-use.
+                    this.#post = undefined;
+                post(this);             // run it
             }
         }
+        if (notCancel) {                // requires targets intact
+            this.#status = sts;
+            if (runReset)               // _reset() cascades down to [M]Easer
+                for (t of easieses)
+                    t._reset(sts);
+        }
+        if (isArriving) {               // evaluate #oneShot
+            for (t of easieses) {       // cascade bottom-up, clearing targets
+                for (ez of t.easies)
+                    if (ez.oneShot)
+                        ez.clearTargets();
+                if (t.oneShot)
+                    t.clearTargets();
+            }
+        }
+        if (isArriving && this.#oneShot)
+            this.clearTargets();        // sets #status = E.empty
+        else if (notCancel)
+            this.#targets = new Set(this.#backup);
 
-        if (wasPlaying)                       // .then() won't execute otherwise
+        if (wasPlaying)
             this.#promise.resolve(this.#status);
         return this.#status;
     }

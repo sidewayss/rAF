@@ -10,7 +10,7 @@ class MEBase extends EBase { // M = multi E = Easer, the multi-ease base class
     #easies; #loopEasy;
     constructor(o) {
         super(o);
-        this.#easies = o.easies;        // validated in EFactory.#easies()
+        this.#easies = o.easies;        // [Easy] validated in EFactory.easies()
         this._autoTripping = new Array(o.lz);
         if (this.loopByElm) {
             const easies = o.easies;
@@ -47,6 +47,10 @@ class MEBase extends EBase { // M = multi E = Easer, the multi-ease base class
     get easies()   { return this.#easies.slice(); }
     get loopEasy() { return this.#loopEasy; } // see Easies.prototype._next()
 
+//  restore() calls super.restore() with the ezs argument
+    restore() {
+        super.restore(null, this.#easies);
+    }
 //  _zero() resets stuff before playback
     _zero() {
         let i, l;

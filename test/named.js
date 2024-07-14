@@ -27,8 +27,10 @@ async function loadNamed(isMulti, dir, _load) {
         elms.multis.addEventListener(CHANGE, openNamed, false);
     else if (elms.save) {
         elms.revert.addEventListener(CLICK,  openNamed, false);
-        const btns = [elms.save, elms.preset, elms.delete, dlg.ok, dlg.cancel];
-        addEventsByElm(CLICK, btns, click);
+        addEventsByElm(
+            CLICK,
+            [elms.save, elms.preset, elms.delete, dlg.ok, dlg.cancel, dlg.close],
+            click);
     }
     return import(`${dir}_named.js`).then(namespace => {
         ns = namespace;
@@ -89,6 +91,9 @@ const click = {
     },
     cancel() {
         elms.dialog.close();
+    },
+    close() {
+        elms.msgBox.close();
     }
 } // reply all, u turn left, turn left, subdirectory arrow left
 //==============================================================================

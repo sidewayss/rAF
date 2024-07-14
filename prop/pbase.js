@@ -4,7 +4,9 @@ import {fromColor} from "./color-convert.js";
 
 import {E, Ez, F, Fn, Is, P} from "../raf.js";
 
-const listOfFuncs = [Fn.calc,"var","attr","max","min","clamp"];
+// const arrays for style/attribute values that require getComputedStyle()
+const listOfValues = ["auto","inherit","initial","revert","revert-layer","unset"];
+const listOfFuncs  = [Fn.calc,"var","attr","max","min","clamp"];
 
 export class PBase { // the base class for Prop, Bute, PrAtt, HtmlBute
     static #separator = E.sp;   // only font-family separates w/comma, and
@@ -113,7 +115,7 @@ export class PBase { // the base class for Prop, Bute, PrAtt, HtmlBute
         const isAm = Is.A(m);
         if (!isAm)
             try {
-                m = Ez.toNumber(m, name, ...Ez.defGrThan0, true);
+                m = Ez.toNumber(m, name, ...Ez.intGrThan0, true);
             } catch {
                 Ez._mustBeErr(name, "a positive integer or an Array");
             }
@@ -121,7 +123,7 @@ export class PBase { // the base class for Prop, Bute, PrAtt, HtmlBute
         let mask;
         if (isAm && !m.includes(undefined)) { // m is a dense array
             mask = Ez.toArray(m, name, (val, nm) => {
-                return Ez.toNumber(val, nm, ...Ez.defNotNeg, true);
+                return Ez.toNumber(val, nm, ...Ez.intNotNeg, true);
             });
             name += " values";
             Ez._mustAscendErr(mask, name);
@@ -172,43 +174,49 @@ export class PBase { // the base class for Prop, Bute, PrAtt, HtmlBute
             a[i] = this.getOne(elms[i]);
         return a;
     }
-//  getOne() overridden by Bute and HtmlBute
-    getOne(elm) { // elm must be pre-validated as Element or CSSStyleRule
+//  getOne() overridden by Bute and HtmlBute, maybe it should always use gCS()
+//           if (!isCSS), does gCS() mangle anything except color properties?
+//           .style preserves units, gCS() converts units to its constant value.
+    getOne(elm) {  // elm must be pre-validated as Element or CSSStyleRule
         const isCSS = Is.CSSRule(elm);
         const name  = this.name;
         let   value = elm.style[name];  // style overrides attribute in HTML/SVG
-        if (!value && !isCSS) {
-            if (this.isPrAtt)
-                value = elm.getAttribute(name);
-            if (!value)
-                value = getComputedStyle(elm)[name];
-        }
-        else if (value && listOfFuncs.some(v => value.includes(v + E.lp))) {
-            if (!isCSS)
-                value = getComputedStyle(elm)[name];
-            else {
-                const split = value.split(E.func);
-                if (split[0] == Fn.var)
-                    value = getComputedStyle(document.documentElement)
-                                            .getPropertyValue(split[1]);
-                else
-                    Ez._cantErr("You", "get a numeric value from a CSSStyleRule"
-                                     + `if the property uses ${split[0]}(). `
-                                     + "You must use an HTMLElement instead.");
+        if (value) {
+            if ((this.isColor || this === F.colorMix) && value.includes(Fn.rgb)) {
+                // elm.style converts hsl(), hwb() to rgb() or rgba()
+                // parse getAttribute("style") to get the original value
+                const style = elm.getAttribute("style").split(/[:;]\s*/);
+                value = style[style.indexOf(this.name) + 1];
+            }
+            else { // some values and funcs require calling getComputedStyle()
+                const isFunc = listOfFuncs.some(v => value.includes(v + E.lp));
+                if (isFunc || listOfValues.includes(value)) {
+                    if (isCSS) {        // var() is the only one that's gettable
+                        const split = isFunc ? value.split(E.func) : [value];
+                        if (split[0] != Fn.var)
+                            Ez._cantErr("You", `get a numeric value from a CSSStyleRule if the property uses ${split[0]}(). You must use an HTMLElement instead.`);
+                        else
+                            value = getComputedStyle(document.documentElement)
+                                                    .getPropertyValue(split[1]);
+                    }
+                    else                // fall back to gCS()
+                        value = getComputedStyle(elm)[name];
+                }
             }
         }
-        else if ((this.isColor && value.startsWith(Fn.rgba))    //!!rgba, not rgb??, "rgb(" is safest
-              || (this === F.colorMix && value.includes(Fn.rgb)))
-        {   // even elm.style converts hsl/hwb() to rgb()
-            const style = elm.getAttribute("style").split(/[:;]\s*/);
-            value = style[style.indexOf(this.name) + 1];
+        else if (!isCSS) {              // && !value
+            if (this.isPratt)           // fall back to attribute
+                value = elm.getAttribute(name);
+            if (!value)                 // fall all the way back to gCS()
+                value = getComputedStyle(elm)[name];
         }
-        return value?.trim() ?? "";     // getAttribute() returns null, not ""
+        return value.trim();            // .style and gCS() return "" for empty
     }
 //  getn() wraps get() to return Number or [Number] instead of String.
     getn(elms, f, u) {
         let v = this.get(elms);
-        return Is.A(v) ? this.#a2N(v, f, u) : this._2Num(v, f, u);
+        return Is.A(v) ? v.map(w => this._2Num(w, f, u))
+                       : this._2Num(v, f, u);
     }
 //  _2Num() parses a string into a Number or an array of Number (and/or String
 //          because toNumby() returns the original value instead of NaN). Uses
@@ -219,9 +227,6 @@ export class PBase { // the base class for Prop, Bute, PrAtt, HtmlBute
              ? Ez.toNumby(arr[0], f, u)
              : arr.map(n => Ez.toNumby(n, f, u));
     }
-//  #a2N() is an array-based wrapper for _2Num()
-    #a2N(a, f, u) { return a.map(v => this._2Num(v, f, u)); }
-
 //  getUn() is for "unstructured" props & funcs, though it can be used with any
 //  prop or func, ideally one that has numeric parameters.
     getUn(elms) {
@@ -278,15 +283,15 @@ export class PBase { // the base class for Prop, Bute, PrAtt, HtmlBute
         }
     }
 //  parse() parses one element's value into an array
-    parse(v, f = this.func, u, includeFunc) { // default arg values violation
+    parse(v, f = this.func, u) {
         if (this.isUn || f?.isUn)
             throw new Error("Prop.prototype.parse() is not designed for "
                 + `"unstructured" ${this.isUn ? "properties" : "functions"} `
                 + `such as ${this.isUn ? this.name : f.name + "()"}.`);
         else if (this.isColor)      // function, #hex, or color name
-            return fromColor(v, false, f, u, includeFunc);
+            return fromColor(v, false, f, u);
         else if (v.at(-1) == E.rp)  // non-color function
-            return v.split(E.sepfunc).slice(Number(!includeFunc), -1);
+            return v.split(E.sepfunc).slice(1, -1);
         else                        // property or attribute value(s)
             return v.split(E.comsp);
     }

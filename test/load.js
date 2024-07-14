@@ -3,15 +3,15 @@ FPS = 60,    // assumes 60hz, but adjusts to reality at run-time
 ezX, raf,    // Easy, AFrame
 preDoc;      // prefix for this document, see local-storage.js
 
-import {E, Ez, P, PFactory, Easy, AFrame} from "../raf.js";
+import {E, Ez, P, PFactory, Easy, Easies, AFrame} from "../raf.js";
 
 import {getNamed, getNamedBoth, setNamed}            from "./local-storage.js";
 import {msecs, loadUpdate, timeFrames, formatNumber} from "./update.js";
 import {DEFAULT_NAME, loadNamed, disableSave, disablePreset, disableDelete}
                                                      from "./named.js";
 
-import {INPUT, SELECT, MILLI, COUNT, ONE, dlg, elms, g, dummyEvent, errorAlert,
-        errorLog} from "./common.js";
+import {MILLI, COUNT, ONE, INPUT, SELECT, BUTTON, DIV, LABEL, dlg, elms, g,
+        dummyEvent, errorAlert, errorLog} from "./common.js";
 /*
 import(_load.js): loadIt, getEasies, initEasies, updateAll, resizeWindow;
                   and showControls for color page.
@@ -20,6 +20,12 @@ let awaitNamed, awaitUpdate, ns, ns_named;
 const RESIZE = "resize";
 
 const awaitFonts = [            // start loading fonts asap
+    new FontFace("Roboto",
+                 "url(/fonts/Roboto-Regular.ttf)",
+                 {weight:"400"}),
+    new FontFace("Roboto",
+                 "url(/fonts/Roboto-Medium.ttf)",
+                 {weight:"500"}),
     new FontFace("Roboto Mono",
                  "url(/fonts/RobotoMono.ttf)",
                  {weight:"400 500"}),
@@ -33,13 +39,17 @@ async function loadCommon() {
     let elm, i;                      // collect HTMLElements by tag, then by id
     PFactory.init();                 // raf.js infrastructure init
 
-    const tags = [INPUT, SELECT, "button","dialog","div","label","span",
+    const tags = [INPUT, SELECT, BUTTON, "dialog", DIV, LABEL,"span",
                   "state-button","check-box"];
 
     const byTag = tags.map(tag => [...document.body.getElementsByTagName(tag)]);
 
-    if (byTag[3].length)             // break out <dialog> sub-elements by id
-        for (elm of [...byTag[0].splice(-1, 1), ...byTag[2].splice(-2, 2)])
+    if (byTag[3].length)             // break out <dialog> sub-elements by id:
+        for (elm of [...byTag[0].splice(-1, 1),         // last <input>
+                     ...byTag[2].splice(-3, 3),         // last 3 <button>s
+                     document.getElementById("icon"),   // <img>
+                     document.getElementById("title"),  // <p>
+                     document.getElementById("msg")])   // <p>
             dlg[elm.id] = elm;
 
     for (elm of byTag.flat())        // populate elms by id
@@ -47,7 +57,7 @@ async function loadCommon() {
             elms[elm.id] = elm;
                                      // elms.x doesn't disable the normal way
     byTag[0].splice(byTag[0].indexOf(elms.x), 1);
-    Ez.readOnly(g, "buttons",  byTag[2]);          // <button>
+    Ez.readOnly(g, "buttons",  byTag[2]);          // <button>, see disablePlay()
     Ez.readOnly(g, "playback", byTag.at(-2));      // <state-button> #play,#stop
     Ez.readOnly(g, "disables", [...byTag[0],       // <input>
                                 ...byTag[1],       // <select>
@@ -119,7 +129,7 @@ function loadJSON(response, isMulti, dir, ns, hasVisited, msg) {
         alert(`${msg}\nHTTP error ${response.status} ${response.statusText}`);
 }
 //==============================================================================
-// loadFinally() executes on Promise.all().then(), could be inlined & indented
+// loadFinally() executes on Promise.all().then(), could be inlined & indented:)
 function loadFinally(is, name, hasVisited, id) {
     let obj;
     if (elms.save)
@@ -178,18 +188,51 @@ function loadFinally(is, name, hasVisited, id) {
     }).catch(err =>          // .catch = fpsBaseLine() only, the show can go on
         errorLog(err, "fpsBaseline() failed")
      ).finally(() => {       // fade document.body into view
-        const
+        let
         time = 1000,
         ez   = new Easy({time, type:E.expo}),
         ezs  = af.newEasies([ez]),
-        tar  = ns.easeFinally?.(af, ezs, ez, time, is) ?? document.body;
-
-        ez.newTarget({elm:tar, prop:P.o});
+        elm  = ns.easeFinally?.(af, ezs, ez, time, is)
+            ?? document.body;
+        ez.newTarget({elm, prop:P.o});    // opacity
+        af.oneShot = true;   // needs testing, see (!hasVisited) below
         af.play()
           .catch(err => {    // don't alert the user, just display the page
-            P.o.setIt(tar, ONE);
-            P.filter.setIt(tar, "none");
             errorLog(err, "Fade-in animation failed");
+            P.opacity.setIt(elm, ONE);
+            P.filter .setIt(elm, "none"); // not all pages require this
+          })
+          .finally(() => {  // only for first-time visitors to easings page
+            if (!hasVisited && is.easings) {//!!separate into two easys!!
+                elm = elms.named;
+                obj = {time:750, roundTrip:true};
+                const
+                props = [P.color, P.borderColor, P.borderRadius, P.boxShadow],
+                boxSh = {elm, mask:[2], cV:"0 0 0rem red"},
+                cbCbR = {elm, start:E.cV},
+                //ez3 = new Easy({wait:1500, plays:3, ...obj}),
+                ez2 = new Easy({wait:2250, ...obj, plays:2});
+                ez  = new Easy({wait:1500, ...obj, tripWait:3000});
+                ez .newTarget({prop:props[0], ...cbCbR, end:"red"});
+                ez .newTarget({prop:props[1], ...cbCbR, end:"red"});
+                ez2.newTarget({prop:props[2], ...cbCbR, distance:E.cV});
+                ez .newTarget({prop:props[3], ...boxSh, distance:1});
+                ez2.newTarget({prop:props[3], ...boxSh, start:1, end:0.25});
+
+                af.addTarget(new Easies([ez, ez2])); // af.oneShot == true
+                af.play().catch(err => {             // must precede showModal()
+                    errorLog(err, "elms.named animation failed");
+                    for (const p of props)
+                        p.cut(elm);
+                });
+                dlg.icon.src = "/icons/info.svg";
+                dlg.title.textContent = "Welcome to the rAF easings page."
+                dlg.msg.innerHTML =
+                    "I suggest you begin by exploring the presets in the "
+                  + "<span>Name</span> drop-down at the bottom, left."
+                ;
+                elms.msgBox.showModal();
+            }
       //++})
       //++.finally(()  => {  // service worker manages caching
       //++  navigator.serviceWorker.register("../sw.js")

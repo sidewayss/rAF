@@ -1,23 +1,21 @@
-export {easingFromObj, easingFromForm, drawEasing};
+export {easingFromObj, easingFromForm};
 
-import {E, Is, P, Ez} from "../../raf.js";
-import {splitIO}      from "../../easy/easy-construct.js";
+import {Is, Ez}  from "../../raf.js";
+import {splitIO} from "../../easy/easy-construct.js";
 
-import {msecs, frames, frameCount} from "../update.js";
-import {setLocalBool}              from "../local-storage.js";
-import {formatInputNumber}         from "../input-number.js";
+import {msecs}             from "../update.js";
+import {formatInputNumber} from "../input-number.js";
 import {MILLI, TWO, elms, g, orUndefined, elseUndefined}
-                                   from "../common.js";
+                           from "../common.js";
 
-import {chart}             from "./_update.js";
 import {MSG, disableClear} from "./msg.js";
 import {setLink, isPow}    from "./tio-pow.js";
-import {LINK, TYPE, IO, POW, pointToString, twoLegs, isBezier, bezierArray}
+import {LINK, TYPE, IO, POW, twoLegs, isBezier, bezierArray}
                            from "./index.js";
 //==============================================================================
 // easingFromObj() creates an object from localStorage and updates controls,
 //                 called exclusively by formFromObj().
-function easingFromObj(obj, leg0, leg1, wasStp, wasOob) {
+function easingFromObj(obj, leg0, leg1) {
     const isBez = isBezier();
     if (isBez)
         for (let i = 0; i < 4; i++)
@@ -92,24 +90,7 @@ function easingFromForm(obj) {
         return Object.assign(obj, {mid, split, gap, pow,
                                    bezier:elseUndefined(isBez, bezierArray())});
 }
-//==============================================================================
-// drawEasing() helps drawLine()
-function drawEasing(evt) {
-    let str;
-    if (elms.drawAsSteps.checked) {
-        str = frames.map((frm, i) =>
-            `${pointToString(frm.x, frm.y)} `
-          + `${pointToString(frames[Math.min(i + 1, frameCount)].x, frm.y)}`
-        );
-    }
-    else
-        str = frames.map(frm => `${pointToString(frm.x, frm.y)}`);
-
-  //chart.line.setAttribute(Pn.points, str.join(E.sp));
-    P.points.set(chart.line, str.join(E.sp));
-    if (evt)
-        setLocalBool(evt.target);
-}
-function getDF(id) { // divisor or factor
+// getDF() gets a divisor or factor
+function getDF(id) {
     return id.endsWith("d") ? 1 : MILLI; // "mid" ends with "d"
 }

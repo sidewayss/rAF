@@ -46,9 +46,9 @@ class Bute extends PBase {
     }
 //  count() returns argument count
     count(f = this.func) {
-        if (f)              //$$ the price of supporting SVG rotate()
+        if (f)          // the price of supporting SVG rotate()
             return f === F.r ? 3 : f.count;
-        //-----------------
+        //-------------
         switch (this) {
         case P.bF:      // baseFrequency
             return  2;
@@ -89,7 +89,7 @@ class Bute extends PBase {
 //  _unitz() overrides PBase because SVG transforms don't use units
     _unitz() { return this.units; }
 
-//  isDef() exists because this.getOne() changes null to ""
+//  isDef() exists because this.getOne() changes null to "", unused internally
     isDef(elm)  { return elm.getAttribute(this.name) !== null; }
 }
 //==============================================================================

@@ -7,9 +7,9 @@ import {E, Ez, Is, Easy} from "../raf.js";
 import {CFunc}           from "../prop/func.js"
 
 class EBase {
-    #assign; #autoTrip; #cElms; #cjs; #eKey; #elms; #evaluate; #iElm;
-    #loopByElm; #mask; #oneD; #peri; #plays; #prop; #restore; #setOne;
-    #space; #twoD; #value;
+    #assign; #autoTrip; #cElms; #cjs; #eKey; #elms; #evaluate; #hasF;
+    #iElm; #isSDE; #loopByElm; #mask; #oneD; #onLoop; #onLoopByElm; #peri;
+    #plays; #prop; #restore; #setOne; #space; #twoD; #value;
 
     _autoTripping;  // the active autoTrip value during an animation
 
@@ -19,6 +19,8 @@ class EBase {
                 this.#oneD = o.oneD;
                 this.#iElm = 0;     // EaserByElm.proto.apply() calls _setElm()
                 this.#loopByElm = o.loopByElm;
+                if (o.loopByElm)
+                    this.onLoopByElm = o.onLoopByElm;
             }
             else {                  // Easer.proto.apply() calls _set()
                 this._set = this.#setElms;
@@ -47,12 +49,12 @@ class EBase {
             Ez.is(this, "MEaser");  // do it here so setters can use it below
         }
                                     // use setters for values not yet validated
-        this.#mask = o.mask;     this.#cElms   = o.l;
-        this.#twoD = o.twoD;     this.#value   = o.value;
-        this.#peri = o.peri;     this.#restore = o.restore;
-        this.plays = o.plays;    this.evaluate = o.evaluate;
-        this.eKey  = o.eKey;     this.autoTrip = o.autoTrip;
-
+        this.#mask  = o.mask;     this.#cElms   = o.l;
+        this.#twoD  = o.twoD;     this.#value   = o.value;
+        this.#peri  = o.peri;     this.#restore = o.restore;
+        this.#isSDE = o.isSDE;    this.#hasF    = Boolean(o.f);
+        this.plays  = o.plays;    this.evaluate = o.evaluate;
+        this.eKey   = o.eKey;     this.autoTrip = o.autoTrip;
         Ez.is(this, "Easer");
     }
 //  static _validate() validates that obj is an instance an Easer class
@@ -72,7 +74,6 @@ class EBase {
         this.#assign(this.#twoD, this.#mask, this.#value);
         this.#elms.forEach((elm, i) => this.#setOne(prop, elm, val[i]));
         this.#peri?.(this.#twoD, e);
-      //console.log(val.map(v => v.toFixed(2)));
     }
 //  #runPeri() does not apply values to an element property, no elms, no prop
     #runPeri(e) {
@@ -86,8 +87,6 @@ class EBase {
         this.#mask.forEach((m, i) => val[m] = oneD[i]);
         this.#setOne(this.#prop, elm, val);
         this.#peri?.(oneD, e, elm);
-      //console.log(val.join(""));
-      //console.log(oneD.map(v => v.toFixed(2)));
     }
 //==============================================================================
 // The two #setOne functions:
@@ -113,9 +112,15 @@ class EBase {
         );
     }
 //==============================================================================
-// Getters, setters, and some related methods:
+// Callbacks, getters, setters, and some related methods:
     get peri()    { return this.#peri; }
     set peri(val) { this.#peri = Ez._validFunc(val, "peri"); }
+
+    get onLoop()    { return this.#onLoop; }
+    set onLoop(val) { this.#onLoop = Ez._validFunc(val, "onLoop"); }
+
+    get onLoopByElm()    { return this.#onLoopByElm; }
+    set onLoopByElm(val) { this.#onLoopByElm = Ez._validFunc(val, "onLoopByElm"); }
 
     get loopByElm()    { return this.#loopByElm; }
     set loopByElm(val) { this.#loopByElm = Boolean(val); }
@@ -139,20 +144,19 @@ class EBase {
                 ?? (this.isMEaser ? this.#MEval : this.#Eval);
     }
 
-// this.eKeys, this.autoTrip, this.plays are byEasy arrays for MEBase
+// this.eKey, this.autoTrip, this.plays are byEasy arrays for MEBase
+// this.eKey
     get eKey()    {
-        return this.isMEaser
-             ? this.#eKey.slice()
-             : this.#eKey;
+        return this.isMEaser ? this.#eKey.slice() : this.#eKey;
     }
     set eKey(val) {
         const name = "eKey";
         if (!this.isMEaser)
-            this.#eKey = EBase.#validEKey(val, name);
+            this.#eKey = this.#validEKey(val, name);
         else if (!Is.Arrayish(val))
-            this.#eKey.fill(EBase.#validEKey(val, name));
+            this.#eKey.fill(this.#validEKey(val, name));
         else {
-            const eKey = Ez.toArray(val, name, EBase.#validEKey);
+            const eKey = Ez.toArray(val, name, this.#validEKey);
             const lNew = eKey.length;
             const lOld = this.#eKey.length;
             if (lNew != lOld)
@@ -162,18 +166,30 @@ class EBase {
             this.#eKey = eKey;
         }
     }
-    static #validEKey(val, name) {
-        if (!Is.def(val))
-            return E.value; // hard default
-        else if (Easy.eKey.includes(val))
+    #validEKey(val, name) {
+        const isDef = Is.def(val);
+        if (this.#isSDE) {
+            if (isDef) {
+                const eKey = "The eKey property";
+                const SDE  = "because you created it using start-distance-end style"
+                if (val != E.unit)
+                    Ez._mustBeErr(`${eKey} for this ${this.constructor.name}`,
+                                `E.unit ${SDE}`);
+                else if (Is.def(this.#eKey))
+                    console.info(`${eKey} was already set to E.unit by default ${SDE}.`);
+            }
+            return E.unit;
+        }
+        if (!isDef)   // hasFactor defaults to E.unit
+            return this.#hasF ? E.unit : E.value;
+        if (Easy.eKey.includes(val))
             return val;
         else
             Ez._invalidErr(name, val, Easy._listE(name));
     }
+// this.autoTrip
     get autoTrip()  {
-        return this.isMEaser
-             ? this.#autoTrip.slice()
-             : this.#autoTrip;
+        return this.isMEaser ? this.#autoTrip.slice() : this.#autoTrip;
     }
     set autoTrip(val) { // 3 states: true, false, undefined
         const validate = EBase.#validTrip;
@@ -184,10 +200,9 @@ class EBase {
     static #validTrip(val) {
         return Is.def(val) ? Boolean(val) : val;
     }
+// this.plays
     get plays()    {
-        return this.isMEaser
-             ? this.#plays.slice()
-             : this.#plays;
+        return this.isMEaser ? this.#plays.slice() : this.#plays;
     }
     set plays(val) {    // a positive integer or undefined
         const validate = EBase.#validPlays;
@@ -195,26 +210,27 @@ class EBase {
                        ? this.#tripPlays(val, "plays", this.#plays, validate)
                        : validate(val);
     }
-    static #validPlays(val) {
-        return Ez.toNumber(val, "plays", undefined, ...Ez.intGrThan0);
+    static #validPlays(val) {           // default, !neg,!zero,!float,!undef,!null
+        return Ez.toNumber(val, "plays", undefined, true, true, true, false, false);
     }
-    #tripPlays(val, name, cv, validate) {
+//  MEaser only:
+    #tripPlays(val, name, currentVal, validate) {
         const arr = Ez.toArray(val, name, validate, ...Ez.okEmptyUndef);
         if (!arr.length || (arr.length == 1 && arr[0] == val)) {
-            arr.length = cv.length;
-            arr.fill(arr[0]);
+            arr.length = currentVal.length; // should always be > 1
+            arr.fill(arr[0]);               // undefined || val
         }
         return arr;
     }
-// Some MEaser-specific methods are here because of private members
+//  Some MEaser methods are here to accommodate shared private members:
+    meEKey(i, val) {
+        this.#eKey[i]     = this.#meOne(val, "meEKey",  this.#validEKey);
+    }
     meTrip(i, val) {
         this.#autoTrip[i] = this.#meOne(val, "meTrip",  EBase.#validTrip);
     }
     mePlays(i, val) {
-        this.#plays   [i] = this.#meOne(val, "mePlays", EBase.#validPlays);
-    }
-    meEKey(i, val) {
-        this.#eKey    [i] = this.#meOne(val, "meEKey",  EBase.#validEKey);
+        this.#plays[i]    = this.#meOne(val, "mePlays", EBase.#validPlays);
     }
     #meOne(val, name, validate) {
         return this.isMEaser ? validate(val) // console.log returns undefined
@@ -222,7 +238,7 @@ class EBase {
     }
 //==============================================================================
 // "Protected" methods:
-//  _autoTrippy() returns run-time autoTrip, falling back to ez.autoTrip or false
+//  _autoTrippy() returns run-time autoTrip, falls back to ez.autoTrip or false
     _autoTrippy(ez, autoTrip) { return autoTrip ?? ez.autoTrip ?? false; }
 
 //  _zero() resets stuff before playback
@@ -232,12 +248,18 @@ class EBase {
         if (this.#loopByElm)
             this.#iElm = 0;
     }
-//  _restore() reverts to the values from when this instance was created
-    _restore() {
+//  restore() reverts to the elms' values from when this instance was created,
+//            or the initial values if {enableRestore:false}. If called directly
+//            and !this.#restore, each e/ez.e must be initialized beforehand.
+    restore(e, ezs) {
         if (this.#restore)
             this.#prop.setEm(this.#elms, this.#restore);
-        else
-            throw new Error("These settings require explicitly enabling {restore:true}.");
+        else if (e)         // Easer
+            this.apply(e);
+        else if (ezs)       // MEaser
+            ezs.forEach(ez => this.apply(ez.e));
+    //!!else
+    //!!    Ez._cantErr("You", "restore values with {enableRestore:false}");
     }
 //  _nextElm() moves to the next element for loopByElm, cycles back to zero
     _nextElm(plugCV = this.isMEaser) { // plugCV for MEaser w/loopByElm

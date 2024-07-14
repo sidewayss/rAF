@@ -64,7 +64,7 @@ function getFrame(t, oneD, isMask) {
     const frm = {t, x:new Array(COUNT)};
 
     for (i = 0; i < COUNT; i++) {
-        e = eGet(easys[i]); // pseudo-animate could always be easys[i].e...
+        e = eGet(easys[i], g.notLoopWait[i], g.notTripWait[i]);
         value = oneD[i * 2];
         if (isMask)
             value = clip[value];

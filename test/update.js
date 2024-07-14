@@ -1,11 +1,11 @@
-export {loadUpdate, inputX, timeFrames, updateTime, updateFrame, pseudoFrame,
-        updateCounters, formatNumber, updateDuration, setFrames, getFrames,
-        eGet, newEasies, pseudoAnimate};
-
+export {loadUpdate, inputX, timeFrames, prePlay, updateTime, updateCounters,
+        formatNumber, updateDuration, setFrames, eGet, callbacks, updateFrame,
+        pseudoFrame, pseudoAnimate, newEasies};
 export let
     msecs, secs,  // alternate versions of time, both integers
     targetInputX, // only imported by easings/_update.js
-    frameCount    // ditto         by easings/non-steps.js
+    frameIndex,   // the current frame
+    playZero      // for measuring time between changePlay() and first frame
 ;
 export const
     D = 3,        // D for decimals: .toFixed(D) = milliseconds, etc.
@@ -27,11 +27,14 @@ import {loadPlay, changeStop} from "./play.js";
 import {MILLI, COUNT, INPUT, elms, g, errorAlert}
                               from "./common.js";
 /*
-import(_update.js): getFrame, initPseudo, updateX;
-                    refresh, flipZero, formatPlayback pass through to play.js.
+import(_update.js): formatDuration, formatFrames, getFrame, getMsecs,
+                    initPseudo, isInitZero, setCounters, updateX;
+                    postPlay and loopFrames for easings only.
 */
-let ns,         // _update.js namespace
-    prevCount;  // previous frameCount for scaling #x.value
+let ns,           // _update.js namespace
+    lastFrame,    // frames.length - 1
+    prevLast,     // previous lastFrame for scaling #x.value
+    isContinuing; // isLooping || isAutoTripping during animation
 //==============================================================================
 // loadUpdate() is called by loadCommon()
 async function loadUpdate(isMulti, dir) {
@@ -41,6 +44,7 @@ async function loadUpdate(isMulti, dir) {
     }
     Object.freeze(pad);
 
+    isContinuing = false;                 // not strictly necessary
     elms.x.addEventListener(INPUT, inputX, false);
     return import(`${dir}_update.js`).then(namespace => {
         ns = namespace;
@@ -66,38 +70,29 @@ function timeFrames(evt) {
     else
         updateDuration();
 }
+// prePlay() helps changePlay(), exports can't be set outside the module
+function prePlay() {
+    playZero   = performance.now();
+    frameIndex = 0;
+}
 //==============================================================================
 // updateTime() is called by change.time(), changeStop(), and updateAll().
 //              !addIt is easings page, doesn't add targetInputX to ezX.targets
 //              because next run is pseudoAnimate() and a different target.
 function updateTime() {
-    const f      = prevCount ? elms.x.valueAsNumber / prevCount : 0;
-    prevCount    = frameCount;          // for next time
-    elms.x.value = Math.round(f * frameCount);
+    const f  = prevLast ? elms.x.valueAsNumber / prevLast : 0;
+    prevLast = lastFrame; // for next time
 
-    ezX.time    = msecs;
-    const addIt = !ns.flipZero;
-    if (addIt)                          // changing factor requires new target
-        ezX.cutTarget(targetInputX);    // see newTargets()
+    elms.x.value = Math.round(f * lastFrame);
+    ezX.time     = msecs;
+    const addIt  = !ns.drawLine;
+    if (addIt)                       // changing factor requires new target
+        ezX.cutTarget(targetInputX); // see newTargets()
 
-    targetInputX = ezX.newTarget(
-        {elm:elms.x, prop:P.value, factor:frameCount / MILLI},
+    targetInputX = ezX.newTarget(    // for factor: eKey defaults to E.unit
+        {elm:elms.x, prop:P.value, factor:lastFrame},
         addIt
     );
-}
-// updateFrame() consolidates easy.peri() code, records frames, sets textContent
-//         NOTE: Chrome pre-v120 currentTime can be > first frame's timeStamp.
-function updateFrame(...args) {
-    const t = raf.elapsed;      // frames[0] isn't modified by animation
-    if (t > 0) {                // ignore frameZero & Chrome pre-v120 1st frame
-        const frm = ns.getFrame(t, ...args)
-        frames[++g.frameIndex] = frm;
-        updateCounters(g.frameIndex, frm);
-    }
-}
-// pseudoFrame() is the pseudoAnimation version of updateFrame()
-function pseudoFrame(...args) {
-    frames[++g.frameIndex] = ns.getFrame(0, ...args); // 0 is dummy time
 }
 // updateCounters() is called by inputX(), updateFrame(), and changeStop()
 function updateCounters(i = 0, frm = frames[i]) {
@@ -123,33 +118,85 @@ function formatNumber(n, digits, decimals, elm) {
 function updateDuration(val = secs) {
     return (elms.duration.textContent = ns.formatDuration(val, D));
 }
-//==============================================================================
 // setFrames() is called by timeFrames(), changePlay()
 function setFrames(val = Math.ceil(secs * FPS)) {
     elms.x.max    = val;
-    frameCount    = val;
-    frames.length = val + 1;        //!!no more grow but don't shrink policy??
-    let txt = frameCount.toString();
-    if (ns.formatFrames)            // multi and color
-        txt += "f";
-    elms.frames.textContent = txt;
-}
-//------------------------------------------------------------------------------
-// getFrames() gets the full set of current frames. The frames array grows but
-//             doesn't shrink, frameCount makes it work, not to be confused with
-//             _update.js/getFrame().
-function getFrames() {
-    return frames.slice(0, frameCount + 1);
+    lastFrame     = val;
+    frames.length = val + 1;
+    elms.frames.textContent = val.toString() + (ns.formatFrames ? "f" : "");
 }
 //==============================================================================
-// eGet() chooses ez.e or ez.e2, called by multi.getFrame() and easings.update()
+// eGet() chooses ez.e or ez.e2, called by multi.getFrame(), easings.update();
+//        multi defines notLW, notTW args; returns e2 when:
+//          unit is a whole number && (looping w/o wait || tripping w/o wait)
 function eGet(ez) {
     const e = ez.e;
-    return !(e.unit % 1) && ((g.notLoopWait && e.status == E.outbound)
-                          || (g.notTripWait && e.status == E.inbound))
-           ? ez.e2
-           : e;
+    if (isContinuing) {             // isLooping || isTripping
+        isContinuing = false;
+        if (e.status == E.waiting)
+            return e;
+        else {
+            console.log("eGet:", ez.e2, ez.e)
+            return ez.e2
+        }
+    }
+    else
+        return e;
 }
+// centralized callbacks that affect eGet() and easings/drawLine().
+const callbacks = {
+    onAutoTrip ()   { isContinuing = true;       },
+    onLoop     (ez) { loopIt(ez, "onLoop");      },
+    onLoopByElm(ez) { loopIt(ez, "onLoopByElm"); }
+}
+// loopIt does the work for the loop callbacks
+function loopIt(ez, txt) {      // loopFrames is easings only, for drawLine()
+    isContinuing = true;        // + 1 because it's prior to ++frameIndex
+    ns.loopFrames?.push(frameIndex + 1 + Number(ez.e.status == E.waiting));
+    console.log(txt, ns.loopFrames?.at(-1), ns.loopFrames?.length);
+}
+//==============================================================================
+// updateFrame() consolidates .peri() code: get t, increment frameIndex, set the
+//               current frame's value, and call updateCounters().
+//         NOTE: Chrome pre-v120 currentTime can be > first frame's timeStamp.
+function updateFrame(...args) {
+    const t = raf.elapsed;
+    if (t <= 0) //!!
+        console.log(`updateFrame(): ${t} <= 0`); //!!
+//!!if (t > 0 || ns.isInitZero?.()) {
+    const frm = ns.getFrame(t, ...args);
+    frames[++frameIndex] = frm;       // frames[0] isn't modified by animation
+    updateCounters(frameIndex, frm);
+//!!}
+//##updateCounters(
+//##  ++frameIndex,
+//##  frames[frameIndex] = ns.getFrame(raf.elapsed, ...args));
+}
+// pseudoFrame() is the pseudoAnimation version of updateFrame()
+function pseudoFrame(...args) {     // 0 is dummy time
+    frames[++frameIndex] = ns.getFrame(0, ...args);
+}
+//==============================================================================
+// pseudoAnimate() populates the frames array via the .peri() callbacks, does
+//                 not apply values or update counters, called by refresh().
+function pseudoAnimate() {
+    let i, l, t;
+    const ezs = g.easies;
+
+    changeStop(null);               // resets stuff if pausing or arrived
+    ns.initPseudo();                // page-specific init, calls newTargets()
+    ezs._zero();                    // zeros-out everything under ezs
+    frameIndex = 0;                 // frames[frameIndex] in updateFrame()
+    i = ns.isInitZero?.() ?  0 : MILLI;
+
+    for (l = lastFrame * MILLI; i <= l; i += MILLI) {
+        t = i / FPS;                // derive t and execute the next frame
+        ezs._next(t);
+        frames[frameIndex].t = t;   // EBase.proto.peri() doesn't have time
+    }
+    raf.init();                     // reset properties set by final frame
+}                                   //!!must it be E.original for jump:start??
+//==============================================================================
 // newEasies() helps all the initEasies(), encapsulates try/catch into boolean
 function newEasies(...args)  {
     try {
@@ -160,23 +207,4 @@ function newEasies(...args)  {
         return false;
     }
     return true;
-}
-//==============================================================================
-// pseudoAnimate() populates the frames array via the .peri() callbacks, does
-//                 not apply values or update counters, called by refresh().
-function pseudoAnimate() {
-    let i, l, t;
-    const ezs = g.easies;
-
-    ns.initPseudo();    // page-specific initialization, calls newTargets()
-    ezs._zero();        // zeros-out everything under ezs
-    changeStop();       // resets stuff if pausing or arrived
-
-    g.frameIndex = 0;   // incremented in .peri()
-    for (i = MILLI, l = frameCount * MILLI; i <= l; i += MILLI) {
-        t = i / FPS;    // more efficient to increment by MILLI/FPS, but I
-        ezs._next(t);   // prefer not to += floating point if I can avoid it.
-        frames[g.frameIndex].t = t; // EBase.proto.peri() doesn't have time
-    }
-    raf.init();         // init() is an alias for stop() //!!necessary here??
 }

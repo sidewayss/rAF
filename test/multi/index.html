@@ -88,6 +88,20 @@
         </div>
       </div>
     </div>
+    <!-- Error/Warning/Info Dialog -->
+    <dialog id="msgBox">
+      <div class="col">
+        <div class="row" style="height:unset; align-items:flex-start;">
+          <img id="icon"/>
+          <div class="col">
+            <p id="title" class="notMono"></p>
+            <p id="msg"   class="notMono"></p>
+          </div>
+        </div>
+        <button id="close">Close</button>
+      </div>
+    </dialog>
+    <!-- "Save Named" Dialog -->
     <dialog id="dialog">
       <input  id="name" type="text" minlength="1" maxlength="12" autocomplete="off"/>
       <button id="ok"    >OK</button>

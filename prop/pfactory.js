@@ -43,14 +43,14 @@ css   = ["flexFlow","alignItems","alignSelf","justifyContent", //!!any of these 
          "pointerEvents","vectorEffect","textAnchor"],
 css2  = ["left","right","top","bottom",  // r = <circle> radius, no abbreviations
          "cursor","display","flex","mask","overflow","position"], //!!not all of these animate
-cssUn = ["border","borderImage","clip-path","offset-path","shape-outside"],
+cssUn = ["border","borderImage","box-shadow","clip-path","offset-path","shape-outside"],
 cssC  = ["color","accentColor","backgroundColor","borderColor","borderLeftColor",
          "borderRightColor","borderTopColor","borderBottomColor"],
 cssLP = ["transformOrigin","maxHeight","maxWidth","minHeight","minWidth",
          "padding",    "margin",         // border is in cssUn, above
          "paddingTop", "paddingBottom","paddingLeft","paddingRight",
           "marginTop",  "marginBottom", "marginLeft", "marginRight",
-          "borderTop",  "borderBottom", "borderLeft", "borderRight",
+          "borderTop",  "borderBottom", "borderLeft", "borderRight", "borderRadius",
           "borderWidth","borderTopWidth","borderBottomWidth","borderLeftWidth","borderRightWidth"],
 bg    = ["backgroundAttachment","backgroundClip", "backgroundOrigin",
          "backgroundBlendMode", "backgroundRepeat"], //!!none of these animate, maybe repeat...
@@ -274,14 +274,14 @@ const PFactory = {
         // Popular arguments for Ez.toNumber() and Easy.legNumber():
         // Can't define these inside const Ez because ...Ez.foo not available
                            // arguments[2, 3, 4]:
-        Ez.undefGrThan0 = [undefined, ...Ez.grThan0];   // > 0, undefined ok
-        Ez.undefNotZero = [undefined, ...Ez.notZero];   // !=0, undefined ok
-                           // arguments[2, 3, 4, 5]:
-        Ez.defGrThan0   = [...Ez.undefGrThan0, true];   // > 0, !undefined
-        Ez.defNotNeg    = [null, ...Ez.notNeg, true];   // >=0, !undefined
-                           // arguments[   3, 4, 5, 6]:
-        Ez.intGrThan0   = [...Ez.grThan0, false, true]; // > 0, int or undefined
-        Ez.intNotNeg    = [...Ez.notNeg,  false, true]; // >=0, int or undefined
+        Ez.undefGrThan0 = [, ...Ez.grThan0];            // > 0, undefined ok
+        Ez.undefNotZero = [, ...Ez.notZero];            // !=0, undefined ok
+                           // arguments[2, 3, 4, 5, 6]:
+        Ez.defGrThan0   = [...Ez.undefGrThan0, , true]; // > 0, !undefined
+        Ez.defNotNeg    = [    , ...Ez.notNeg, , true]; // >=0, !undefined
+                           // arguments   [3, 4, 5]:
+        Ez.intGrThan0   = [...Ez.grThan0, true];        // > 0, int or undefined
+        Ez.intNotNeg    = [...Ez.notNeg,  true];        // >=0, int or undefined
 
         // Ease: a collection of preset easy.legs
         let inn, obj, out;              // "in" is a reserved word, thus "inn"

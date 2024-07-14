@@ -67,15 +67,14 @@ function copyFrameByKey(keys, f) {
 }
 //==============================================================================
 // copyCode() helpers
-function easyToText(name, obj, isSteps) {
+function easyToText(name, obj, isSteps, varName = nameToJS(name)) {
     let isMulti, isRecursion;
     const
-    newObj  = !obj,
-    isEasy  = Is.def(isSteps),
-    varName = nameToJS(name);
+    noObj  = !obj,
+    isEasy = Is.def(isSteps);  // easings page has extra features
 
-    if (newObj) {
-        // Leaves plays, roundTrip, etc, that are deleted by color page, intact
+    if (noObj) {
+    // Leaves plays, roundTrip, etc, that are deleted by color page, intact
         obj = getNamedObj(name, EASY_);
         delete obj.start;
         delete obj.end;
@@ -86,10 +85,7 @@ function easyToText(name, obj, isSteps) {
             leg[0].end   = mid;
             leg[1].start = mid;
         }
-        if (isEasy)
-            isRecursion = true;
-        else
-            isMulti     = true;
+        isMulti = !isEasy;
     }
     let str = jsonToText(obj);
     for (const p of [TYPE, IO, "jump"])           // replace numbers with E.name
@@ -110,11 +106,7 @@ function easyToText(name, obj, isSteps) {
                     txt = easyToText(val, null, false) + txt;
             }
     }
-    if (!newObj)
-        txt = IMPORT + txt;                       // easings outer, color
-    return isEasy && !isRecursion                 // easings outer
-         ? txt + `const raf = new AFrame(new Easies(${varName}));\n`
-         : txt;                                   // easings inner, multi, color
+    return noObj ? txt : IMPORT + txt;
 }
 function multiToText(obj, fromObj) {
     let   txt  = IMPORT;

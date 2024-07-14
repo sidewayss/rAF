@@ -2,15 +2,17 @@ export {loadChart};
 
 import {E, P} from "../../raf.js";
 
-import {msecs, timeFrames, updateTime}          from "../update.js";
-import {listenInputNumber, isInvalid}           from "../input-number.js";
-import {CHANGE, INPUT, elms, g, addEventsByElm} from "../common.js";
+import {msecs, timeFrames, updateTime} from "../update.js";
+import {listenInputNumber, isInvalid}  from "../input-number.js";
+import {CHANGE, INPUT, elms, g,
+        addEventsByElm, dummyEvent}    from "../common.js";
 
-import {refresh}                                 from "./_update.js";
+import {twoLegs}                                 from "./index.js";
+import {wasStp, refresh}                                 from "./_update.js";
 import {updateTypeIO, isBezierOrSteps}           from "./tio-pow.js";
 import {updateSplitGap, setSplitGap, isUnlocked} from "./msg.js";
-import {isSteps, maxTime, userValues}            from "./steps.js";
-import {twoLegs}                                 from "./index.js";
+import {isSteps, wasIsSteps, maxTime, isUserTV, infoZero}
+                                                 from "./steps.js";
 //==============================================================================
 function loadChart() { // called by loadTIOPow() so cloning is finished prior
     let elements = document.getElementsByClassName("chart");
@@ -23,7 +25,7 @@ function loadChart() { // called by loadTIOPow() so cloning is finished prior
     addEventsByElm(INPUT, [elms.time],  input);
 }
 //==============================================================================
-// Event handlers, all call refresh():
+// Event handlers, all call refresh() except input.time():
 // >> input event handlers
 const input = {
     bezier(evt) { // #bezier0-3
@@ -36,6 +38,7 @@ const input = {
         setSplitGap(prev);
     }
 };
+//==============================================================================
 // >> change event handlers
 const change = {
     time(evt) {
@@ -63,22 +66,21 @@ const change = {
         refresh(evt.target, 0, updateTypeIO(true));
     },
     type(evt) {   // #type, #type2
-        let has2, isBez, isBS, isStp, wasBS, wasStp;
-        const
+        let has2, wasBS, [isBez, isStp, isBS] = isBezierOrSteps();
+        const                   // isBS is #type only, #type2 excludes them
         tar  = evt.target,
         n    = Number(tar.value),
         not2 = (tar === elms.type);
 
-        [isBez, isStp, isBS] = isBezierOrSteps();
         if (not2 || elms.linkType.value) {
             g.type = n;         // user changed #type or type is linked
             if (not2) {         // user changed #type
-                wasStp = isStp;
                 wasBS  = isBS;
                 [isBez, isStp, isBS] = isBezierOrSteps();
-                if (wasStp || isStp) {
-                    userValues(...(isStp ? [] : [null, false]));
-                    P.visible(elms.drawAsSteps, wasStp);
+                if (wasStp || isStp) {        // null ignored because of false
+                    wasIsSteps(wasStp, isStp);
+                    infoZero  (isStp && isUserTV(elms.timing));
+                    elms.initZero.dispatchEvent(dummyEvent(CHANGE, "changeType"));
                 }
             }
         }

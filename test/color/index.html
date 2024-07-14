@@ -82,5 +82,18 @@
     <input id="startRgb" type="color" class="collapse"/> <!-- position:absolute -->
     <input id="endRgb"   type="color" class="collapse"/>
     <span  id="copied">Copied!</span>
+    <!-- Error/Warning/Info Dialog -->
+    <dialog id="msgBox">
+      <div class="col">
+        <div class="row" style="height:unset; align-items:flex-start;">
+          <img id="icon"/>
+          <div class="col">
+            <p id="title" class="notMono"></p>
+            <p id="msg"   class="notMono"></p>
+          </div>
+        </div>
+        <button id="close">Close</button>
+      </div>
+    </dialog>
   </body>
 </html>

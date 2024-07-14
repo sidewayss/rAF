@@ -1,16 +1,17 @@
 export {loadEvents, shallowClone, storeIt, setNoWaits};
 
-import {E, Ez, P} from "../../raf.js";
+import {Ez, P} from "../../raf.js";
 
 import {ezX, raf}                   from "../load.js";
 import {changeStop}                 from "../play.js";
 import {storeCurrent, setLocalBool} from "../local-storage.js";
-import {CHANGE, elms, g, addEventToElms, addEventsByElm, elseUndefined}
+import {CHANGE, elms, g, addEventToElms, addEventsByElm,}
                                     from "../common.js";
 
-import {chart, range, drawLine} from "./_update.js";
-import {objEz}                  from "./_named.js";
-import {ezY, updateTrip}        from "./index.js";
+import {chart, range, drawLine, refresh} from "./_update.js";
+import {objEz}                                   from "./_named.js";
+import {ezY, updateTrip}                         from "./index.js";
+
 //==============================================================================
 function loadEvents(checks) {
     addEventsByElm(CHANGE, [...checks, elms.plays], change);
@@ -19,11 +20,12 @@ function loadEvents(checks) {
 //==============================================================================
 // >> change event handlers
 const change = {
- // <select>
+//  <select>:
     plays(evt) {  // also called by updateAll().
         const plays = Number(elms.plays.value);
         const b     = plays > 1;
-        P.visible([elms.loopWait, elms.loopWait.labels[0]], b);
+        ezY.onLoop  = b ? onLoop : undefined;
+        change.showLoopWait(b);
         setNoWaits();
         if (!evt.isUpdateAll) {
             ezX.plays = plays;
@@ -47,7 +49,15 @@ const change = {
         changeStop();
         storeIt();
     },
- // <check-box> (requires evt.currentTarget)
+ // helper for plays(), loopByElm(): elms.wait visible if plays > 1 or loopByElm
+ // both share Easy.prototype.loopWait
+    showLoopWait(isLoop = Number(elms.plays.value) != 1,
+                 byElm  = elms.loopByElm.checked)
+    {
+        P.visible([elms.loopWait, elms.loopWait.labels[0]], isLoop || byElm);
+    },
+//------------------------------------------
+//  <check-box>:  requires evt.currentTarget
     loopByElm(evt) {  // also called by updateAll()
         const loopByElm = elms.loopByElm.checked;
         for (var cr of [chart, range])              // exclude one dot per cr
@@ -57,49 +67,62 @@ const change = {
             changeStop();
             storeIt();
         }
+        change.showLoopWait(undefined, loopByElm);
     },
-    reset(evt) {
-        const tar = evt.currentTarget;
-        raf.onArrival = elseUndefined(tar.checked, E.initial);
-        if (!evt.isInitEasies)
-            setLocalBool(tar);
-    },
-    zero(evt) {
-        const tar = evt.currentTarget;
-        raf.frameZero = tar.checked;
-        if (!evt.isInitEasies)
-            setLocalBool(tar);
-    },
-    drawAsSteps() {
-        drawLine();
-        setLocalBool(evt.currentTarget);
-    },
+ // ----------------
     roundTrip(evt) {
         updateTrip();
         change.trip(evt);
     },
-    autoTrip(evt) {
-        const tar = change.trip(evt);
-        P.visible(elms.tripWait.parentNode, tar.checked);
-    },
     flipTrip(evt) {
         change.trip(evt);
     },
- // trip() helps roundTrip(), autoTrip(), flipTrip()
+    autoTrip(evt) {
+        P.visible(elms.tripWait.parentNode, change.trip(evt).checked);
+    },
+ // trip() helps roundTrip(), flipTrip(), autoTrip()
     trip(evt) {
-        const tar = evt.currentTarget;
-        ezX[tar.id] = tar.checked;
-        if (ezY)
-            ezY[tar.id] = tar.checked;
-        else                  //!!
-            alert("No ezY!"); //!!
+        const
+        tar = evt.currentTarget,
+        ckd = tar.checked,
+        id  = tar.id;
+        [ezX, ezY, objEz].forEach(obj => obj[id] = ckd);
         setNoWaits();
         changeStop();
         storeIt();
         return tar;
+    },
+ // -------------
+    useNow(evt) {
+        change.rafBool(evt);
+    },
+    frameZero(evt) {
+        change.rafBool(evt);
+    },
+    initZero(evt) {
+        change.rafBool(evt);
+        if (!evt.isInitEasies && !evt.changeType)
+            refresh();
+    },
+ // rafBool() helps change.useNow(), frameZero(), initZero()
+    rafBool(evt) {
+        const
+        tar = evt.currentTarget,
+        ckd = tar.checked;
+        raf[tar.id] = ckd;
+        if (!evt.isInitEasies)
+            setLocalBool(tar, ckd);
+        return ckd;
+    },
+ // ------------------
+    drawAsSteps(evt) {
+        drawLine();
+        setLocalBool(evt.currentTarget);
     }
 }
 //==============================================================================
+// shallowClone() wraps Ez.shallowClone() for E.steps and eased values, timing;
+//                substitutes the names for the objects.
 function shallowClone(obj) {
     if (obj.easy || obj.timing?.isEasy) {
         obj = Ez.shallowClone(obj);
@@ -118,8 +141,9 @@ function storeIt(obj = objEz) {
 // setNoWaits() sets the g.not_Wait properties, which are used by eGet(),
 //              <= change.plays(), change.wait(), change.trip(), formFromObj()
 function setNoWaits() {
-    g.notLoopWait = Number(elms.plays.value) > 1
-                && !Number(elms.loopWait.value);
-    g.notTripWait = elms.roundTrip.checked && elms.autoTrip.checked
-                && !Number(elms.tripWait.value);
+//!!g.notTripWait = !Number(elms.tripWait.value)
+//!!             && elms.roundTrip.checked
+//!!             && elms.autoTrip.checked;
+//!!g.notLoopWait = !Number(elms.loopWait.value)
+//!!             && (elms.loopByElm.checked || Number(elms.plays.value) > 1);
 }

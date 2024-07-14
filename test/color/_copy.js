@@ -2,7 +2,7 @@ export {copyCode, copyData};
 
 import {U, Ez} from "../../raf.js";
 
-import {getFrames}        from "../update.js";
+import {frames}           from "../update.js";
 import {MEASER_, elms, g} from "../common.js";
 import {easyToText, multiToText, copyTime} from "../copy.js";
 
@@ -13,7 +13,7 @@ function copyData(txt) {
     moveCopied(elms.data.getBoundingClientRect());
     const TAB = '\t';
     txt += TAB + Object.keys(g.left.color.space.coords).join(TAB);
-    for (const f of getFrames())
+    for (const f of frames)
         txt += copyTime(f) + TAB + f.left.join(TAB);
 
     return txt;

@@ -36,7 +36,7 @@ export class ACues {
     }
 
 // this.cues is an array of cue objects
-    get cues()    { return this.#cues; }
+    get cues()    { return this.#cues; } // returns the source, not a copy
     set cues(val) {
         val = Ez.toArray(val, "cues", this.#validate, ...Ez.okEmptyUndef);
         if (Ez._mustAscendErr(val, "cues", false)) {
@@ -167,11 +167,10 @@ export class ACues {
     _resume(now) { // #now stays the same, that's the whole idea of pausing
         this.#zero = now - this.#now;
     }
-//  _reset(): helps AFrame.prototype.#cancel() reset this to the requested state
-    _reset(sts) {
+//  _runPost() helps AFrame.prototype.#stop() run .post() for unfinished ACues
+    _runPost() {
         if (!sts && this.#i < this.#last) // E.arrived only
             this._next(Infinity);         //!!include more statuses?? E.empty always excluded
+        this.#post?.(this);
     }
-//  _runPost() helps AFrame.prototype.#cancel() run .post() for unfinished ACues
-    _runPost() { this.#post?.(this); }
 }

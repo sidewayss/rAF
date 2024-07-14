@@ -1,6 +1,7 @@
 export {refresh, initPseudo, newTargets, newTar, getMsecs, getFrame, updateX,
         setCounters, formatDuration, oneCounter};
-export const formatFrames = true;
+//!!export let   initZero; // is raf.initZero applicable now? cached for animation
+export const formatFrames = true;   // see updateDuration()
 
 import {E, U, Is, F, Fn, P, Ez} from "../../raf.js";
 
@@ -168,6 +169,3 @@ function oneCounter(coords, span, range) {
 function formatDuration(val, d) { // duplicate of multi
     return val.toFixed(d) + U.seconds;
 }
-// no need for formatPlayback()
-// function formatPlayback(isPlaying, b = true) {
-// }

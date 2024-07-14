@@ -1,6 +1,5 @@
 // export everything but update
-export {initEzXY, newEzY, pointToString, updateTrip, twoLegs, isBezier,
-        bezierArray};
+export {initEzXY, newEzY, updateTrip, twoLegs, isBezier, bezierArray};
 
 export let ezY;
 export const
@@ -37,20 +36,18 @@ function newEzY(obj) {
     try {
         ezY = new Easy(obj);
     } catch (err) {
-        if (err.cause == "reverse time")    // maybe eventually a switch??
+        switch (err.cause) {
+        case "multiPlayTripNoAuto":
+        case "reverse time":
             alert(err.message);
-        else
+            break;
+        default:
             errorAlert(err);
+        }
         return;
     }
     g.easies.add(ezY);
     return obj;
-}
-//==============================================================================
-// pointToString() converts x and y to a comma-separated pair of coordinates,
-//                 called by drawEasing(), drawSteps().
-function pointToString(x, y) {
-    return `${x.toFixed(2)},${y.toFixed(2)}`;
 }
 //==============================================================================
 // updateTrip() updates roundTrip display, called by openNamed(), initEasies(),

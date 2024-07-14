@@ -3,11 +3,11 @@ export let clipDist, clipEnd, clipStart;
 
 import {U, Is} from "../../raf.js";
 
-import {DEFAULT_NAME} from "../named.js";
+import {DEFAULT_NAME}                               from "../named.js";
 import {newEasies, updateTime, updateCounters}      from "../update.js";
 import {getNamed, getNamedEasy, getLocal, setLocal} from "../local-storage.js";
-import {COUNT, CHANGE, EASY_, elms, g, is}          from"../common.js";
-
+import {COUNT, BUTTON, SELECT, LABEL, CHANGE, EASY_, elms, g, is}
+                                                    from"../common.js";
 import {loadEvents} from "./events.js";
 import {MASK_X, clip, easys, refresh, setClipPair, setClipPath}
                     from "./_update.js";
@@ -48,7 +48,7 @@ function changeColor(evt) { // not exported, helps loadIt()
 // getEasies() populates easy0 <select> and clones its <div>, <= loadJSON()
 function getEasies(hasVisited) {
     let clone, elm, i, id, j, tag;
-    const TAGS = ["select","button","span","check-tri"];
+    const TAGS = [SELECT, BUTTON,"span","check-tri"];
     const src = elms.template;          // source container element for cloning
     const sib = src.nextElementSibling; // second arg to insertBefore()
     const par = src.parentNode;         // for par.insertBefore(clone, sib)
@@ -75,7 +75,7 @@ function getEasies(hasVisited) {
                 elms[id][i] = elm;
             }
         }
-        for (elm of clone.getElementsByTagName("label"))
+        for (elm of clone.getElementsByTagName(LABEL))
             elm.htmlFor = elm.htmlFor.slice(0, -1) + i;
     }
     loadEvents();                    // must wait until after cloning

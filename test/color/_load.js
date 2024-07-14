@@ -22,7 +22,6 @@ import {refresh}                                  from "./_update.js";
 import {isMulti, loadEvents, timeFactor, getCase} from "./events.js";
 
 let collapsed, controlsWidth, expanded, padding;
-const LOADING   = "isLoading";
 const START_END = ["start","end"];
 //==============================================================================
 // loadIt() is called by loadCommon()
@@ -136,15 +135,13 @@ const format = {
                            : format.negativeThree(n); // should never happen...
     }
 }
-function isCSSSpace(val) {
-    return val in F;
-}
+function isCSSSpace(val) { return val in F; }
 //==============================================================================
 // getEasies() is called exclusively by loadJSON()
 function getEasies(hasVisited) {
     getNamed(                                 // populate the "other" <select>
         isMulti ? elms.easys : elms.multis,
-        elms.type.options[Ez.flip(elms.type.selectedIndex)].value
+        elms.type.options[Ez.comp(elms.type.selectedIndex)].value
     );
 
     const div = elms.controls;
@@ -166,9 +163,10 @@ function getEasies(hasVisited) {
 }
 //==============================================================================
 // initEasies() is called by loadFinally(), updateNamed
-function initEasies(obj, hasVisited) {
-    let lrse,                           // run the event handlers that populate
-    evt = dummyEvent(CHANGE, LOADING)   // g.left/right/start/end values:
+function initEasies(obj, hasVisited) {  // run the event handlers that populate
+    const LOADING = "isLoading";
+    let lrse, evt = dummyEvent(CHANGE, LOADING)
+                                        // events set g.left/right/start/end:
     for (lrse of g.leftRight)           // lr must precede se
         lrse.spaces.dispatchEvent(evt); // call change.space() for both
 
@@ -176,7 +174,7 @@ function initEasies(obj, hasVisited) {
     for (lrse of g.startEnd)            // dispatchEvent() avoids im/exports
         lrse.input.dispatchEvent(evt);  // call input.color() for both
 
-    const b = newEasies();              // instantiates a new, empty g.easies
+    const b = newEasies();              // instantiate a new, empty g.easies
     if (b) {                            // ezX added/deleted in newTargets()
         if (isMulti) {
             const json = obj.easy.map(name => getNamedObj(name));
@@ -227,7 +225,7 @@ function scaleOne(obj, key, isDown) {     // helps newEasy()
     if (Is.def(obj[key])) {
         obj[key] /= MILLI;
         if (isDown)                       // convert 1-0 to 0-1
-            obj[key] = Ez.flip(obj[key]);
+            obj[key] = Ez.comp(obj[key]);
     }
 }
 //==============================================================================

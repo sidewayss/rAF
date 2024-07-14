@@ -1,15 +1,16 @@
 export {loadIt, getEasies, initEasies, updateAll, resizeWindow};
 
+export const rafChecks = ["useNow","frameZero","initZero"];
+
 import {E, U, P, Pn, Ease, Ez, Easy} from "../../raf.js";
 
-import {ezX}                                        from "../load.js";
+import {ezX, raf}                                   from "../load.js";
 import {getLocal}                                   from "../local-storage.js";
 import {formatInputNumber}                          from "../input-number.js";
 import {pad, newEasies, updateTime, updateCounters} from "../update.js";
-import {COUNT, CHANGE, INPUT, elms, g, is, isTag, dummyEvent}
+import {COUNT, CHANGE, INPUT, elms, dlg, g, is, isTag, dummyEvent}
                                                     from "../common.js";
-
-import {chart, range, refresh}                          from "./_update.js";
+import {chart, range, refresh, syncZero}               from "./_update.js";
 import {initEzXY, updateTrip}                           from "./index.js";
 import {loadTIOPow, updateTypeIO}                       from "./tio-pow.js";
 import {loadMSG, updateMidSplit, updateSplitGap}        from "./msg.js";
@@ -29,7 +30,7 @@ let borderW, boxStyle, checkH, checkW, factorW, iSize, lefties, leftW, minW,
 //==============================================================================
 // loadIt() is called by loadCommon()
 function loadIt(byTag, hasVisited) {
-    let clone, cr, elm, i;
+    let clone, cr, div, elm, i, id;
     ++pad.unit;                         // an extra leading space for -0.123
     ++pad.comp;                         // ditto
 
@@ -50,17 +51,11 @@ function loadIt(byTag, hasVisited) {
 //!!Ez.readOnly(chart, "styles",        // all dot styles in one place
 //!!            [...chart.dots, ...range.dots].map(dot => dot.style));
 
-    Ez.readOnly(g, "sideElms", []);     // for sidebar formatting re: playback
-    Ez.readOnly(g, "sideLbls", []);
-    for (elm of document.getElementsByClassName(elms.sidebar.id))
-        (isTag(elm, "p") ? g.sideLbls : g.sideElms).push(elm);
-
     elm = elms.loopWait;                // I prefer to populate it here vs HTML
     for (i = 0; i <= 5; i++)
         elm.add(new Option((i / 10).toFixed(1) + U.seconds, i * 100));
 
-    const
-    id  = "tripWait",                   // tripWait is a clone of loopWait
+    id  = "tripWait";                   // tripWait is a clone of loopWait
     div = elms.autoTrip.nextElementSibling;
 
     clone = elm.labels[0].cloneNode(true);
@@ -93,7 +88,7 @@ function loadIt(byTag, hasVisited) {
     loadSteps();                	    // type == E.steps
     loadMSG();                  	    // mid, split, gap
     if (hasVisited)                     // return visitor to this page
-        for (elm of [elms.reset, elms.zero, elms.drawAsSteps])
+        for (elm of [elms.drawAsSteps, ...rafChecks.map(id => elms[id])])
             elm.checked = getLocal(elm);
     return is();
 }
@@ -135,7 +130,7 @@ function getEasies(_, json) {
     elm.insertBefore(lpar, elm.firstElementChild); // leading parenthesis
     divs[3].appendChild(rpar);                     // trailing parenthesis
 
-    loadTIOPow();   // type, io, pow, calls loadChart() for input handler order
+    loadTIOPow();   // type, io, pow: calls loadChart() for input handler order
     loadTV();       // steps.js
 }
 // initEasies() inits the Easies and sets set-once variables for resizeWindow(),
@@ -144,16 +139,18 @@ function initEasies(obj) {
     let b = newEasies(ezX);
     if (b) {
         const evt = dummyEvent(CHANGE, "isInitEasies");
-        for (const elm of [elms.reset, elms.zero])
-            elm.dispatchEvent(evt);
+        for (const id of rafChecks)
+            elms[id].dispatchEvent(evt);  // raf.properties
 
         initSteps(obj);
         updateTrip();
+        raf.syncZero = syncZero;
+        ezX.oneShot  = true;              // see _update.js/newTargets()
         b = initEzXY(obj);
-        if (b) {                                      // pseudo-constants:
+        if (b) {                          // pseudo-constants:
             const cw = chart.viewBox[E.w];
             factorW  = cw / (cw + range.viewBox[E.w]);
-            oobRatio = cw / 1403;                     // 1403 = E.elastic height
+            oobRatio = cw / 1403;         // 1403 = E.elastic height
             lefties  = document.getElementsByClassName("lefty");
             boxStyle = document.styleSheets[1].cssRules[0].style;
     	}
@@ -212,7 +209,7 @@ function resizeWindow() {
         if (isSteps())                      // remove E.steps's extra row height
                 subtraH -= elms.divValues.offsetHeight;
     }
-    let elm,
+    let elm, l, r,
     n = Ez.clamp(
         minW,                           // absolute minimum width
         factorW  * (innerW - subtraW),  // available width - range.svg width
@@ -224,19 +221,29 @@ function resizeWindow() {
     elm = lefties[0];                   // set diptych left's width for better
     P.w.set(elm, (n / 2) + leftW);      // vertical alignment with triptych.
 
-    const                               // size box-shadow background element
-    l = elm.getBoundingClientRect().left, // must follow P.w.set(elm, )
+    l = elm.getBoundingClientRect().left; // must follow P.w.set(elm, )
     r = innerW
       - Math.round(range.svg.getBoundingClientRect().right)
       - padLeft;
-    elm = elms.shadow.style;
+    elm = elms.shadow.style;            // size box-shadow background element
     elm.left   = l + U.px;
     elm.width  = innerW - r - l + U.px;
     elm.height = document.body.clientHeight - borderW + U.px;
+
+    r = elms.split.getBoundingClientRect().right + U.px;
+    for (elm of [elms.split, elms.gap])
+        elm.labels[1].style.left = `calc(${r} - 1rem)`;
 
     // Center the #copied notification element in the available space
     n  = elms.code.offsetLeft + elms.code.offsetWidth;
     n += ((chart.svg.parentNode.offsetLeft - n ) / 2)
        - (elms.copied.offsetWidth / 2);
     elms.copied.style.left = n + U.px;
+
+    // Prettify #msgBox: #msg sets the dialog width indirectly
+    const rect = chart.svg.getBoundingClientRect();
+    dlg.msg.style.width = rect.width / 2 + U.px;
+
+    // Move it towards the top of the chart
+    elms.msgBox.style.top = rect.top + (rect.height / 4) + U.px;
 }

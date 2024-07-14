@@ -10,17 +10,22 @@ body {
 
 .row { height:calc(1rem + var(--9-16ths)); }
 
+.slash { color:var(--pitch) }
+
 p.hi { font-weight:500; }
 
 #x {
   position:relative;
-  top:0.25rem;
+  top:var(--8th);
 }
 .symBtn {
   margin-left:var(--5-8ths);
 }
-#save, #data {
-  margin-left:var(--16th);
+#save {
+  margin-left:0;
+}
+#data {
+  margin-left:var(--8th);
 }
 #info {
   color:var(--medium-blue);
@@ -37,17 +42,24 @@ p.hi { font-weight:500; }
 #time {
   width:16ch;
 }
+#unit, #comp {
+  margin-left:calc(4ch + var(--5-16ths));
+}
+#unit {
+  margin-top: 0.25rem;
+  padding-top:var(--8th);
+}
 #v0, #v1, #v2 {
   width:calc(3ch + 1.5rem);
 }
 #mid {
   padding-top:0;
-  margin-left:var(--5-8ths);
+  margin-left:1ch;
   font-weight:500;
 }
 #split, #gap {
   width:4.25rem;
-  margin-right:var(--8th);
+  margin-left:var(--8th);
   font-weight:500;  /* matches sidebar */
 }
 @-moz-document url-prefix() {
@@ -58,12 +70,12 @@ p.hi { font-weight:500; }
   }
 }
 #split + label, #gap + label {
-  padding-right:var(--9-16ths);
-  color:var(--dark-blue);
+  padding:0;
   font-weight:500;
+  color:var(--dark-blue);
 }
-#split + label, .secs  + label,
-#gap   + label {
+#split + label, #gap + label,
+.secs  + label {
   position:absolute;
 }
 .secs + label {
@@ -139,6 +151,7 @@ circle {
 #triptych {
   display:grid;
   grid-template-columns:1fr 1fr 1fr;
+  padding-top:0.25rem;
 }
 #left  {
   display:flex;
@@ -163,15 +176,14 @@ circle {
   height:calc(1rem + var(--11-16ths)); /* .row height + 2px for borders?? */
 }
 #divCopy {
-  padding:0.75rem 0 0.5rem var(--8th);
-  margin-top:var(--9-16ths);
+  padding:var(--5-8ths) 0 0.5rem var(--8th);
 }
 #divSave {
-  padding:0.5rem 0 0.5rem calc(5ch + var(--3-8ths));
+  padding:0.5rem 0 0.5rem calc(5ch + var(--7-16ths));
 }
 .checklist, input.checklist {
   margin:0;
-  padding:var(--16th) 0;
+  padding-top:0.25rem;
 }
 
 /* <button> */
@@ -190,7 +202,7 @@ circle {
 }
 .clear {
   font-weight:bold;
-  margin-right:var(--16th);
+  margin-right:var(--8th);
   color:#700;
 }
 .lock {
@@ -236,6 +248,9 @@ circle {
 
 
 /* miscellaneous */
+.fixed {
+  color:var(--pitch);
+}
 .comma {
   padding-right:var(--8th);
 }
@@ -252,7 +267,7 @@ circle {
 .pl1-16 { padding-left:var(--16th); }
 
 .w3 { width:3rem; }
-.w4 { width:4rem; }
+.w4 { width:4.1rem; } /* .1 is for Firefox, doesn't hurt Chome */
 
 .lbl-paren {
   font-size: calc(1rem + var(--3-8ths));

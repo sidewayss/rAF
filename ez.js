@@ -30,7 +30,7 @@ export const Ez = {
     readOnly(obj, name, val) {
         Object.defineProperty(obj, name, {value:val});
     },
-//  shallowClone() creates a shallow clone of an object using Object.assign()
+//  shallowClone() creates a shallow clone of obj, preserves pre-existing clone
     shallowClone(obj, clone = {}) {
         return Object.assign(clone, obj);
     },
@@ -44,13 +44,13 @@ export const Ez = {
         return Math.max(min, Math.min(val, max));
     },
 // =============================================================================
-//  flip() flips a unit interval, a value between 0-1 inclusive
-    flip(unit) {
+//  comp() complements a unit (number 0-1), returning the complement: 1 - unit
+    comp(unit) {
         return 1 - unit;
     },
-//  flipIf() is a conditional version of flip()
-    flipIf(unit, b) {
-        return b ? this.flip(unit) : unit;
+//  compIf() is a conditional version of comp()
+    compIf(b, unit) {
+        return b ? this.comp(unit) : unit;
     },
 //  unitOutOfBounds() checks to see if any units in an array are out of bounds
     unitOutOfBounds(arr) {
@@ -106,15 +106,17 @@ export const Ez = {
         return sum + v;
     },
 //  toNumby() is soft numeric conversion for property/attribute string values
+//            like Johnny Cochran: "If it doesn't convert, you must revert."
+//            parseFloat() allows unit suffix and rejects, thus preserves, null
+//            color strings are a special case, as they always are
     toNumby(v, f, u) {
-        const n = parseFloat(v);    // To misquote Johnny Cochran:
-        return !Number.isNaN(n) ? n // "If it doesn't convert, you must revert."
-                   : f?.isCFunc ? fromColor(v, true, f, u)
-                                : v;
+        const n = parseFloat(v);
+        return !Number.isNaN(n) ? n : f?.isCFunc ? fromColor(v, true, f, u)
+                                                 : v;
     },
 //  toNumber() is numeric validation/conversion, too many options...
     toNumber(v, name, defaultValue,
-             notNeg, notZero, notUndef, notFloat, notNull = true) {
+             notNeg, notZero, notFloat, notUndef, notNull = true) {
         if (!Is.def(v)) {
             if (notUndef)
                 this._mustBeErr(name, "defined");
@@ -218,40 +220,50 @@ export const Ez = {
     _mustBe(name, so) { return `${name} must be ${so}.`; },
 
 //  _mustBeErr() throws an error using _mustBe() for the message
-    _mustBeErr(name, so) { throw new Error(this._mustBe(name, so)); },
+    _mustBeErr(name, so, options) {
+        throw new Error(this._mustBe(name, so), options);
+    },
 
 //  _cantBe() encapsulates the opposite template phrase
     _cantBe(name, so) { return `${name} cannot be ${so}.`; },
 
 //  _cantBeErr() throws an error using _cantBe() for the message
-    _cantBeErr(name, so) { throw new Error(this._cantBe(name, so)); },
+    _cantBeErr(name, so, options) {
+        throw new Error(this._cantBe(name, so), options);
+    },
 
 //  _cant() encapsulates a generalized phrase
     _cant(name, txt) { return `${name} cannot ${txt}.`; },
 
 //  _cantErr() throws an error using _cant() for the message
-    _cantErr(name, txt) { throw new Error(this._cant(name, txt)); },
+    _cantErr(name, txt, options) {
+        throw new Error(this._cant(name, txt), options);
+    },
 
 //  _only() encapsulates a generalized phrase
     _only(name, txt) { return `${name} can only be ${txt}.`; },
 
 //  _onlyErr() throws an error using _only() for the message
-    _onlyErr(name, txt) { throw new Error(this._only(name, txt)); },
+    _onlyErr(name, txt, options) {
+        throw new Error(this._only(name, txt), options);
+    },
 
 //  _mustAscendErr() throws an error if an array is not sorted ascending
-    _mustAscendErr(arr, name, isErr = true) {
+    _mustAscendErr(arr, name, isErr = true, options) {
         if (arr.some((v, i) => i > 0 && v <= arr[i - 1]))
             if (isErr)
-                this._mustBeErr(name, "sorted in ascending order: " + arr);
+                this._mustBeErr(name, `sorted in ascending order: ${arr}`, options);
             else
                 return true;
     },
 //  _invalidErr() throws an error for values declared invalid by the caller
-    _invalidErr(name, val, validList, it = "It") {
+    _invalidErr(name, val, validList, it = "It", options) {
         if (Is.A(validList))
             validList = validList.join(", ");
+
         this._mustBeErr(`Invalid ${name} value: ${val}. ${it}`,
-                        `one of these: ${validList}`);
+                        `one of: ${validList}`,
+                        options);
     },
 // =============================================================================
 //  _isElmy() returns true if v is an Element or convertible to one

@@ -1,7 +1,7 @@
 import {create} from "./efactory.js";
 import {MEBase} from "./measer.js";
 
-import {E, Ez, Easy} from "../raf.js";
+import {E, Ez, Is, Easy} from "../raf.js";
 
 export class Easies {
     #active; #byEasy; #byTarget; #easy2ME; #oneShot; #peri; #post;
@@ -11,15 +11,20 @@ export class Easies {
 //  Set.prototype properties and methods, so an Easies instance acts like a Set
 //  (except add() doesn't return a value because that value would be a reference
 //  to #easies, and I don't want users modifying it directly).
-    constructor(easies, onArrival, post) {
-        this.#easies = new Set(Ez.toArray(easies, "new Easies(arg1, ...): arg1",
-                                          Easy._validate, ...Ez.okEmptyUndef));
+    constructor(easies, post) {
+        const arr = Ez.toArray(
+                        easies,
+                        "new Easies(arg1, ...): arg1",
+                        Easy._validate,
+                     ...Ez.okEmptyUndef);
+
+        this.#easies = new Set(arr);
+        this.post    = post;
+
         this.#targets  = new Set; // Set(MEaser)
         this.#byEasy   = new Map; // Map(Easy,   Map(Easer, plays))
         this.#byTarget = new Map; // Map(MEaser, Map(Easy,  plays))
-        this.#easy2ME  = new Map; // Map(Easy,   MEaser)
-        this.post      = post;
-        this.onArrival = onArrival;
+        this.#easy2ME  = new Map; // Map(Easy,   Set(MEaser))
         Ez.is(this);
         Object.seal(this);
     }
@@ -68,7 +73,7 @@ export class Easies {
 
 //  newTarget() creates a MEaser or MEaserByElm instance and adds it to #targets
     newTarget(o) {
-        return create(o, this.#targets, Boolean(o.easies), "Single", Easy.name);
+        return create(o, this.#targets, Boolean(o.easies), "single", [Easy, Easies]);
     }
 //  addTarget() validates a MEaser instance, adds it to #targets. returns it
     addTarget(t) {
@@ -81,7 +86,7 @@ export class Easies {
     clearTargets() { this.#targets.clear(); }
 
 //  static createFromTargets() uses targets.easies to create a new Easies
-    static createFromTargets(targets, onArrival, post) {
+    static createFromTargets(targets, post) {
         targets = Ez.toArray(targets, "createFromTargets(arg): arg",
                              MEBase._validate);
         let easies, ez, t;
@@ -90,7 +95,7 @@ export class Easies {
             for (ez of t.easies)     // ez is Easy
                 easies.add(ez);
 
-        easies = new Easies(easies, onArrival, post);
+        easies = new Easies(easies, post);
         easies.#targets = targets;
         return easies;
     }
@@ -100,11 +105,11 @@ export class Easies {
     get peri()    { return this.#peri; }
     set peri(val) { this.#peri = Ez._validFunc(val, "peri"); }
 
-// this.post is an optional callback run after the last Easy has played
+// this.post is a callback that runs on arrival, after the last Easy has played
     get post()    { return this.#post; }
     set post(val) { this.#post = Ez._validFunc(val, "easies.post"); }
 
-// this.oneShot causes _reset() to call clearTargets()
+// this.oneShot runs clearTargets() on AFrame arrival
     get oneShot()    { return this.#oneShot; }
     set oneShot(val) { this.#oneShot = Boolean(val); }
 
@@ -113,7 +118,7 @@ export class Easies {
         for (const ez of this.#easies)
             ez.restore();
         for (const mezr of this.#targets)
-            mezr._restore();
+            mezr.restore();
     }
     init(applyIt) {
         for (const ez of this.#easies)
@@ -133,34 +138,31 @@ export class Easies {
 // "Protected" methods, called by AFrame instances:
 //  _zero() helps AFrame.prototype.play() zero out before first call to _next()
     _zero(now = 0) {
-        let e2M, easies, easy, map, plays, set, t, tplays;
-        this.#active = new Set(this.#easies); // init the "live" set
+        let e2M, easies, easy, map, plays, t, tplays;
+        this.#active = new Set(this.#easies); // the "live" set
 
-        this.#byEasy.clear();
+        this.#byEasy.clear();                 // Easies
         for (easy of this.#easies) {
-            easy._zero(now);       // cascade the zeroing-out process down
-            map = new Map;         // map target to plays
-            for (t of easy.targets)
-                map.set(t, t.plays || easy.plays);
+            easy._zero(now);                  // cascade the zeroing-out down
+            map = new Map;                    // map target to plays
+            for (t of easy.targets)           // fall back to easy.plays
+                map.set(t, t.plays ?? easy.plays);
             this.#byEasy.set(easy, map);
         }
-        this.#byTarget.clear();
-        e2M = this.#easy2ME;
+
+        this.#byTarget.clear();               // MEasers
+        e2M = this.#easy2ME;                  // Map(Easy, Set(MEaser))
         e2M.clear();
         for (t of this.#targets) {
-            easies = t.easies;     // getter returns a shallow copy
-            tplays = t.plays;      // ditto
+            easies = t.easies;                // getter returns a shallow copy
+            tplays = t.plays;                 // ditto
             plays  = new Array(easies.length);
-            easies.forEach((ez, i) => {
-                plays[i] = tplays[i] || ez.plays;
-                set = e2M.get(ez);
-                if (set)
-                    set.add(t);
-                else {
-                    set = new Set;
-                    set.add(t);
-                    e2M.set(ez, set);
-                }
+            easies.forEach((ez, i) => {       // fall back to ez.plays
+                plays[i] = tplays[i] ?? ez.plays;
+                if (e2M.has(ez))
+                    e2M.get(ez).add(t);
+                else
+                    e2M.set(ez, new Set([t]));
             });
             this.#byTarget.set(t, plays);
         }
@@ -170,11 +172,14 @@ export class Easies {
         for (const ez of this.#active)
             ez._resume(now);
     }
-//  _reset() helps AFrame.prototype.#cancel() reset this to the requested state.
-//           see ../../docs/onArrival.svg for flow.
-    _reset(sts, forceIt) {
+//  _runPost() helps AFrame.prototype.#stop() by conforming to ACues
+    _runPost() {
+        this.#post?.(this);
+    }
+//  _reset() helps AFrame.prototype.#stop() reset this to the requested state.
+    _reset(sts) {
         for (const ez of this.#easies)  // easys must go first because measers
-            ez._reset(sts, forceIt);    // use their values.
+            ez._reset(sts);             // use their values.
 
         let t;                          // #targets is Set(MEaser)
         if (sts == E.original)
@@ -190,26 +195,17 @@ export class Easies {
                 t._apply(vals);
             }
         }
-        // Easies.prototype has no on onArrival property, only oneShot
-        if ((forceIt && sts == E.empty) || this.#oneShot)
-            this.clearTargets();
-    }
-//  _runPost() helps AFrame.prototype.#cancel() run .post() for unfinished ACues
-    _runPost() {
-        for (const ez of this.#active)
-            ez.post?.(ez);
-        this.#post?.(this);
     }
 //==============================================================================
 //  _next() is the animation run-time. The name matches ACues.protytope._next().
-//   AFrame.prototype.#animate() runs it once per frame. It runs ez._easeMe() to
-//   get eased values, and t._apply() to apply those values to #targets.
+//   AFrame.prototype.#animate() runs it once per frame. It runs easy._easeMe()
+//   to get eased values, and t._apply() to apply those values to #targets.
 //   Returns true upon arrival, else false. No easies means no targets.
     _next(timeStamp) {
-        let byElm, e, e2, easers, easy, map, noWait, plays, set, sts, t,
-            val, val2;
+        let byElm, e, e2, easers, easy, map, nextElm, noWait, plays, set, sts,
+            t, val, val2;
 
-        // Execute each easy
+        // Execute every active easy
         for (easy of this.#active)
             easy._easeMe(timeStamp);
 
@@ -223,39 +219,53 @@ export class Easies {
             if (sts > E.waiting)          // apply it
                 for (t of easers)
                     t._apply(e);
-            else {                        // arrive, trip, or loop
+            else {                        // arrive, trip, loop
                 e2 = easy.e2;
-                noWait = !e.waitNow;
+                noWait = !e.waitNow;      // !tripWait, !loopWait
                 if (sts == E.tripped) {
                     for (t of easers) {   // delete non-autoTrippers
                         t._apply(t._autoTripping && noWait ? e2 : e);
                         if (!t._autoTripping)
-                            map.delete(t);
-                    }
+                            map.delete(t);// !autoTrip means plays = 1,
+                    }                     // and loopByElm = false.
+                    if (map.size)
+                        easy.onAutoTrip?.(easy, map);
                 }
                 else {                    // sts == E.arrived
                     for (t of easers) {
-                        byElm = t.loopByElm;
                         plays = map.get(t);
-                        t._apply(!byElm && noWait && plays > 1
-                                 ? e2     // loop w/o wait
-                                 : e);    // arrive, loop w/wait, loopByElm
-                        if (!byElm || !t._nextElm()) {
-                            plays--;
-                            plays ? map.set(t, plays)
-                                  : map.delete(t);
+                        byElm = t.loopByElm;
+                        if (!byElm && noWait && plays > 1) {
+                            t._apply(e2);
+                            console.log("t._apply(e2):", e2, e);
                         }
+                        else
+                            t._apply(e);
+
+                        //t._apply(!byElm && noWait && plays > 1
+                        //         ? e2     // loop w/o wait
+                        //         : e);    // arrive, loop w/wait, loopByElm
+                        //                  // _nextElm() increments/returns #iElm
+                        nextElm = byElm && t._nextElm();
+                        if (!nextElm)
+                            --plays ? map.set(t, plays) : map.delete(t);
                         else if (noWait)
-                            t._apply(e2); // loopByElm w/o wait
+                            t._apply(e2); // loopByElm w/o wait, next elm
+                        if (plays) {
+                            t.onLoop?.(easy, t);
+                            if (nextElm)
+                                t.onLoopByElm?.(easy, t);
+                        }
                     }
                 }
             }
             if (!map.size)
                 this.#byEasy.delete(easy);
         }
+
         // Process #targets, the MEasers
         for ([t, plays] of this.#byTarget) {
-            val = [];                     // val is sparse like t.#calcs
+            val = [];                       // val is sparse like t.#calcs
             if (!t.loopByElm) {
                 plays.forEach((p, i) => {
                     easy = t.easies[i];
@@ -263,9 +273,9 @@ export class Easies {
                     sts  = e.status;
                     if (sts != E.waiting) {
                         if (--p && !sts && !e.waitNow)
-                            e = easy.e2   //!!e2 for loopNoWait, not tripNoWait??
+                            e = easy.e2     //!!e2 for loopNoWait, not tripNoWait??
                         val[i] = t.eVal(e, i);
-
+                                            // arrived || tripped and done
                         if (!sts || (sts == E.tripped && !t._autoTripping[i])) {
                             if (!p) {            // no more plays, arriving
                                 delete plays[i]; // delete preserves order/indexes
@@ -307,8 +317,8 @@ export class Easies {
                     else if (sts > E.waiting)
                         val2[i] = t.eVal(e, i);
                 });
-                t._apply(val);                   // apply to current elm
-                if (!t._nextElm(true)) {         // go to next elm or arrive
+                t._apply(val);              // apply to current elm
+                if (!t._nextElm(true)) {    // go to next elm or arrive
                     plays.forEach((p, i) => p > 1 ? --plays[i]
                                                   : delete plays[i]);
                     if (!plays.some(v => v))
@@ -318,6 +328,7 @@ export class Easies {
                     t._apply(val2);
             }
         }
+
         // Clean up and return
         for (easy of this.#active) {
             if (!this.#byEasy.has(easy) && !this.#easy2ME.has(easy)) {
@@ -326,21 +337,18 @@ export class Easies {
             }
             else {
                 e = easy.e;
-                if (!e.status) {
-                    if (e.waitNow) {
-                        e.status  = E.waiting;
-                        e.waitNow = false;
-                    }
-                    else
-                        e.status = E.outbound;
-
-                    easy.loop?.(easy);
-                }
+                if (e.waitNow)              // similar to Easy.proto._zero():
+                    e.status = E.waiting;       //$$
                 else if (e.status == E.tripped)
-                    e.status = E.inbound;
+                    e.status = E.inbound;       //$$
+                else if (!e.status) {       // E.arrived
+                    e.status = E.outbound;      //$$
+                    easy.onLoop?.(easy);    // plays > 1 loop, not loopByElm
+                }
+                e.waitNow = false;
             }
         }
-        this.#peri?.(this);        // wait until everything is updated
-        return !this.#active.size;
+        this.#peri?.(this);                 // wait until everything is updated
+        return !this.#active.size;          // no active Easys returns true
     }
 }

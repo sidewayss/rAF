@@ -1,7 +1,7 @@
 // Not exported by raf.js
 export {steps, stepsToLegs};
 
-import {toNumberArray} from "./easy-construct.js"
+import {legUnit, toNumberArray} from "./easy-construct.js"
 
 import {E, Ez, Is, Easy} from "../raf.js";
 const s = "steps";  // inside this module they aren't "time" & "start"
@@ -14,18 +14,19 @@ const t = "timing";
 //         If leg.timing is Array-ish, leg.steps can be undefined, otherwise
 //         the legs.steps or leg.steps.length must match leg.timing.length.
 function steps(o, leg) {
-    let stepsIsN = Is.Number(leg[s]);
-    let stepsIsA = Is.def(leg[s]) && !stepsIsN;
-    let c, l;
-    if (stepsIsA) {                     // validate/convert leg[s]
+    let c, l, stepsIsA,
+    stepsIsN = Is.Number(leg[s]);
+
+    if (!stepsIsN && Is.def(leg[s])) {  // numeric string, array, or invalid
         const n = Is.A(leg[s]) ? NaN : parseFloat(leg[s]);
-        try {
-            if (Number.isNaN(n)) {      //    slice() preserves user array
+        try {                           // validate/convert leg[s]
+            if (Number.isNaN(n)) {      // ...slice() preserves user array
                 leg[s] = toNumberArray(leg[s].slice(), s);
-                leg.stepsReady = true;  // it's an array of numbers
+                leg.stepsReady = true;
+                stepsIsA = true;        // it's an array of numbers
             }
             else {
-                leg[s] = n;             // it was converted to a number
+                leg[s] = n;             // parseFloat() converted it to a number
                 stepsIsA = false;
                 stepsIsN = true;
             }
@@ -61,14 +62,16 @@ function steps(o, leg) {
                 console.warn("Your timing array extends past the total"
                            + "leg.time, and has overriden leg.time: "
                            + `${last} > ${leg.time}`);
-            leg.time = last;        // avoids spreadToEmpties() and errors
+            leg.time = last;        // avoids spreadToEmpties(), errors
         }
         leg.timingReady = true;
     }
     else {                          // auto-generate linear waits based
         const                       // on steps/ends and jump.
-        j    = "jump",              //  E.end is the CSS steps() default
-        jump = Number(leg[j] ?? o[j] ?? E.end);
+        j    = "jump",
+        jump = leg.easy             // eased values means start = 0, end = 1
+             ? E.end                //  E.end is the CSS steps() default
+             : Number(leg[j] ?? o[j] ?? E.end);
 
         if (!Easy.jump[jump])
             Ez._invalidErr(j, jump, Easy._listE(j));
@@ -91,13 +94,13 @@ function steps(o, leg) {
         leg.waits = Array.from({length:l}, (_, i) => (i + offset) / c);
     }
 }
-//  stepsToLegs() helps _finishlegs() turn 1 leg into >1 legs for _calc()
-function stepsToLegs(o, leg, ez, idx, last, lastLeg) {
+//  stepsToLegs() helps _finishLegs() turn 1 leg into >1 legs for _calc()
+function stepsToLegs(o, leg, dist, idx, last) {
     let ends, retval, waits;
     if (leg.timingReady)        // leg.timing is an array of wait times
         waits = leg[t];
     else if (leg[t])            // leg.timing is an Easy instance
-        waits = easeSteps(leg[t], leg.waits, 1, 0, leg.time, false, t);
+        waits = easeSteps(leg[t], leg.waits, 1, 0, leg.time, t);
     else                        // leg.timing is undefined
         waits = leg.waits.map(v => v * leg.time);
                                 // leg.waits is 0-1, portion of time
@@ -106,12 +109,10 @@ function stepsToLegs(o, leg, ez, idx, last, lastLeg) {
     if (leg.stepsReady)         // leg.steps is already an array of step values
         ends = leg[s];
     else if (leg.easy)          // generate eased steps
-        ends = easeSteps(leg.easy, waits, leg.time, leg.start, leg.dist,
-                         leg.down, "easy");
+        ends = easeSteps(leg.easy, waits, leg.time, leg.start, leg.dist, "easy");
     else {
      const j = leg.dist / l;    // generate linear steps
-        ends = leg.down ? Array.from(LENGTH, (_, i) => leg.start - ((i + 1) * j))
-                        : Array.from(LENGTH, (_, i) => (i + 1) * j + leg.start);
+        ends = Array.from(LENGTH, (_, i) => leg.start + (j * (i + 1)));
     }
                                 // transform the steps into legs:
     const legs = Array.from(LENGTH, () => new Object);
@@ -119,7 +120,7 @@ function stepsToLegs(o, leg, ez, idx, last, lastLeg) {
         obj.type = E[s];
         obj.io   = E.in;        // must be defined
         obj.end  = ends[i];     // the step value
-        obj.unit = ez._legUnit(obj, o.start, leg.down);
+        obj.unit = legUnit(obj, o.start, dist);
         obj.prev = legs[i - 1];
         obj.next = legs[i + 1];
         obj.time = 0;           // steps don't have a duration
@@ -140,8 +141,7 @@ function stepsToLegs(o, leg, ez, idx, last, lastLeg) {
     if (idx == last) {          // #lastLeg
         o.end   = legs[l].end;
         o.time -= leftover;
-        if (lastLeg)
-            retval = {leg:legs[l]};
+        retval  = {leg:legs[l]};
     }
     else {
         legs[l].next   = leg.next;
@@ -157,35 +157,33 @@ function stepsToLegs(o, leg, ez, idx, last, lastLeg) {
 //         fixed values, which is pointless.
 //         For eased values, jump:E.start has no effect because time=0 produces
 //         value=0. So E.start is the same as E.none, E.end same as E.both.
-function easeSteps(ez, nows, time, start, dist, isDown, name) {
-    Easy._validate(ez, name);               // phase one validation
-    if (ez.isIncremental)                   // phase two
+function easeSteps(ez, nows, time, start, dist, name) {
+    Easy._validate(ez, name);                   // phase 1 validation
+    if (ez.isIncremental)                       // phase 2: can't be E.increment
         Ez._cantBeErr(name, "class Incremental");
-    //--------------------------------------
+    //------------------------------------------
     const
     ezDown   = ez.end < ez.start,
     isTiming = (name[0] == "t");
     let  leg = ez._firstLeg;
-    do {
-        if (leg.type == E[s])               // phase three
+    do {                                        // for each leg:
+        if (leg.type == E[s])                   // phase 3: can't be E.steps
             Ez._cantBeErr(name, `type:E.${s}`);
-        if (isTiming                        // phase four
-         && (leg.down != ezDown
-          || (leg.type >= E.back   && leg.type <= E.bounce)
-          || (leg.type == E.bezier && Ez.unitOutOfBounds(leg.bezier.array)))) {
-            const
-            msg = Ez._cantBe(name, "an Easy that changes direction. "
-                                 + "Time only moves in one direction");
-            throw new Error(msg, {cause:"reverse time"}); //!!better *not* as string...
-        }
+        if (isTiming && (ezDown != leg.dist < 0 // phase 4: can't mix directions
+                      || (leg.type >= E.back && leg.type <= E.bounce)
+                      || (leg.type == E.bezier && Ez.unitOutOfBounds(leg.bezier.array))))
+            Ez._cantBeErr(
+                name,
+                "an Easy that changes direction. Time only moves in one direction",
+                {cause:"reverse time"}          // better *not* as string...
+            );
     } while ((leg = leg.next));
-    //---------------------------------------- validation complete
-    ez._zero(0);                            // prep for pseudo-animation
-    const d    = time / ez.time;            // d for divisor
-    const prop = ezDown ? E.comp : E.unit;  // nows always ascends
-    const sign = isDown ? -1 : 1;
+    //------------------------------------------// validation complete
+    ez._zero(0);                                // prep for pseudo-animation
+    const d    = time / ez.time;                // d for divisor
+    const prop = ezDown ? E.comp : E.unit;      // nows always ascends
     return nows.map(v => {
        ez._easeMe(v / d);
-       return start + (ez.e[prop] * dist * sign);
+       return start + (ez.e[prop] * dist);
     });
 }

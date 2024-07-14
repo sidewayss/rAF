@@ -6,81 +6,99 @@
 // be called for gradients, so you must set o.currentValue for HSL/HWB there.
 export {fromColor, rgbToHxx, rgbToHsl, rgbToHwb};
 
-import {C, U, E, Ez, Fn} from "../raf.js";
+import {C, U, E, Ez, F, Fn} from "../raf.js";
 
 import {CFunc} from "./func.js";
 //==============================================================================
-// fromColor() converts hex to rgb() and color names to rgb(), hsl(), or hwb().
-//             Returns an array of 3 or 4 function arguments, plus optionally
-//             the function name, and space for color(). There is no validation
-//             that the function names or color spaces for f vs v match.
-function fromColor(v, toNum, f, u = f?._u, includeFunc = false) {
-    if (f)
-        if (!f.isFunc)      // duplicate of error in EFactory.getFunc()
-            Ez._mustBeErr("func", "an instance of Func");
-        else if(!f.isCFunc)
-            Ez._invalidErr("color function", f.name, PFactory.funcC);
+// fromColor() parses a DOM value, converts hex to rgb() and color names to
+//             rgb(), hsl(), or hwb(), returns an array of 3 or 4 function
+//             arguments, plus optionally: the function name, and for color()
+//             the space. There is no validation that the function names or
+//             color spaces for f vs v match.
+//                 v == "func(p1 p2 p3 / alpha)" or "rgba(r, g, b, a)"
+function fromColor(v, toNum, f = F.rgb, u = f._u) {
+    if (!f.isFunc)          // duplicate of error in EFactory.getFunc()...
+        Ez._mustBeErr("func", "an instance of Func");
+    else if(!f.isCFunc)
+        Ez._invalidErr("color function", f.name, PFactory.funcC);
     //-------------------
-    let arr, name, space;
-    if (v.at(-1) == E.rp) { // v = "func(...arguments)"
+    let arr, canConvert;
+    const A = CFunc.A;
+
+    if (v.at(-1) == E.rp) {     // v == function string
         arr = v.split(E.sepfunc);
-        --arr.length;               // trailing "" array element
-        [name, space] = arr.splice(0, 1 + (arr[0] == Fn.color));
-        if (arr.length > CFunc.A + 1)
-            arr.splice(CFunc.A, 1); // remove "/" separator from array
+        arr.length--;           // trailing "" array element
+
+        let err;
+        const name = arr.splice(0, 1)[0];
+        canConvert = name.startsWith(Fn.rgb) && (f.isRGB || f.isHXX);
+        if (!canConvert && name != f.name)
+            err = [name, f.name];
+        else {
+            let space;
+            if (f.space)
+                space = arr.splice(0, 1)[0];
+            if (space != f.space)
+                err = [space, f.space];
+        }
+        if (err)
+            Ez._onlyErr(`${err[0]} to ${err[1]} conversion`,
+                        "done via Color.js objects");
+        //---------------------
+        if (arr.length > A + 1)
+            arr.splice(A, 1);   // remove "/" separator from array
         if (toNum)
-            arr = arr.map(num => parseFloat(num));
+            arr.forEach((v, i) => arr[i] = parseFloat(v));
+
+        if (canConvert && f.isHXX) { // convert rgb to hsl or hwb
+            arr = rgbToHxx(f, arr, o.u);
+            if (!toNum)
+                arr.forEach((v, i) => arr[i] = v + u[i]);
+        }
     }
-    else  {
-        if (v[0] == "#") {  // v == hex RGB, RGBA, RRGGBB, RRGGBBAA
-            if (f && !f.isRGB && !f.isHXX)
-                Ez._onlyErr("Hex colors", "used by rgb(), hsl(), and hwb()");
-            //----------------
-            const A = CFunc.A;
-            v = v.substring(1);
-            if (v.length <= A + 1)  // normalize "RGB(A)" to "RRGGBB(AA)"
+    else {                      // v == hex or name
+        const txt  = "used with rgb(), hsl(), or hwb()";
+        canConvert = f.isRGB || f.isHXX;
+        if (v[0] == "#") {      // v == hex RGB, RGBA, RRGGBB, RRGGBBAA
+            if (!canConvert)
+                Ez._onlyErr("Hex color values", txt);
+            //-------------
+            v = v.slice(1);     // normalize "RGB(A)" to "RRGGBB(AA)"
+            if (v.length <= A + 1)
                 v = v.replace(/./g, char => char + char);
 
             arr = v.match(/../g).map(hex => parseInt(hex, 16));
-            if (arr[A])             // convert alpha to 0-1 or %
+            if (arr[A])         // convert alpha to 0-1 or %
                 arr[A] /= (u[A] == U.pct) ? 2.55 : 255;
 
-            if (f.isHXX)            // replace the first three array elements
-                arr.splice(0, CFunc.A, ...rgbToHxx(f, arr, u));
-            else                    // convert RGB to % as specified by u
+            if (f.isRGB)        // convert RGB to % as specified by u
                 toPercent(arr, u, true);
-
-            if (includeFunc)
-                name = f?.name ?? Fn.rgb;
+            else                // replace the first three array elements
+                arr.splice(0, A, ...rgbToHxx(f, arr, u));
         }
-        else if (C[v]) {    // v == color name
-            name = !f || f.isRGB ? Fn.rgb
-                       : f.isHSL ? Fn.hsl
-                       : f.isHXX ? Fn.hwb
-                       : Ez._onlyErr("CSS named colors",
-                                     "used by rgb(), hsl(), and hwb()");
-            arr = C[v][name];
-            if (f) {
-                if (f.isRGB)
-                    toPercent(arr, u);
-                else {      // hue is in degrees
-                    const uHue = u[f.hueIndex];
-                    if (uHue && uHue != U.deg)
-                        arr[f.hueIndex] *= Ez[uHue];
-                }
+        else if (C[v]) {        // v == color name
+            if (!canConvert)
+                Ez._onlyErr("CSS named colors", txt);
+            //-----------------
+            arr = C[v][f.name]; // no alpha, always 3 args
+            if (f.isRGB)        // convert RGB to % as specified by u
+                toPercent(arr, u);
+            else {              // hue is in degrees
+                const uHue = u[f.hueIndex];
+                if (uHue && uHue != U.deg)
+                    arr[f.hueIndex] *= Ez[uHue];
             }
         }
-        else                // for o.currentValue, unlikely to be a DOM value
-            throw new Error(`Invalid color value: ${v}`);
+        else                    // v is probably a user value (vs. a DOM value)
+            Ez._invalidErr("color", v, ["a color function with arguments",
+                                        "a hex color #RRGGB(AA)",
+                                        "a CSS named color"]);
         //---------
         if (!toNum)
-            arr = arr.map((num, i) => num + u[i]);
+            arr.forEach((n, i) => arr[i] = n + u[i]);
     }
-    if (includeFunc) {
-        if (space)
-            arr.unshift(space);
-        arr.unshift(name);
-    }
+    if (arr.length == A)            //!!until there's a way to handle missing
+        arr.push(toNum ? 1 : "1");  //!!optional params that don't default to 0.
     return arr;
 }
 // toPercent() converts RGB to % units as specified by the u (units) argument
@@ -98,9 +116,11 @@ function rgbToHxx(f, rgb, u) {
 }
 // rgbToHsl() converts 3 RGB integer values to HSL
 function rgbToHsl(rgb, u) {
-    const obj = toHxx(rgb, u);
-    const sum = obj.min + obj.max;
-    const hsl = [obj.hue, , ];
+    const
+    obj = toHxx(rgb, u),
+    sum = obj.min + obj.max,
+    hsl = [obj.hue, , ];
+
     hsl[2] = sum / 2 * 100;       // L required to calculate S
     hsl[1] = obj.diff ? obj.diff / (hxx[2] < 50 ? sum : 2 - sum) * 100
                       : 0;        // S
@@ -108,16 +128,19 @@ function rgbToHsl(rgb, u) {
 }
 // rgbToHwb() converts 3 RGB integer values to HWB
 function rgbToHwb(rgb, u) {
-    const obj = toHxx(rgb, u);
-    const hwb = [obj.hue, , ];
+    const
+    obj = toHxx(rgb, u),
+    hwb = [obj.hue, , ];
+
     hwb[1] = 100 * obj.min;       // W
     hwb[2] = 100 * (1 - obj.max); // B
+
     return hwb;
 }
-// toHxx() consolidates code for rgbToHsl() and rgbToHwb()
-function toHxx(arr, u) { // converts the hue and max/min/diff
-    const R = 0, G = 1, B = 2,
-    rgb = arr.slice(0, CFunc.A)   // allow alpha or other garbage to be included
+// toHxx() helps rgbToHsl() and rgbToHwb() convert hue and max/min/diff
+function toHxx(arr, u) {
+    const R = 0, G = 1, B = 2,    // arr can contain numeric strings w/o units
+    rgb = arr.slice(0, CFunc.A)   // strip alpha
              .map(v => v / 255),  // convert 0-255 to 0-1
     obj = minMaxDiff(rgb);        // without arr.slice() this could be a problem
 

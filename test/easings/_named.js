@@ -6,26 +6,22 @@ import {E, Is, P} from "../../raf.js"
 import {msecs, formatNumber}                        from "../update.js";
 import {INPUT, elms, g, orUndefined, elseUndefined} from "../common.js";
 
+import {wasStp}                        from "./_update.js";
 import {shallowClone, setNoWaits}      from "./events.js";
-import {isBezierOrSteps}               from "./tio-pow.js";
 import {initEzXY, updateTrip}          from "./index.js";
 import {easingFromObj, easingFromForm} from "./not-steps.js";
-import {FORMAT_END, FORMAT_START, stepsFromObj, stepsFromForm, updateTV,
+import {FORMAT_END, FORMAT_START, stepsFromObj, stepsFromForm, wasIsSteps,
         isSteps}                       from "./steps.js";
-
 const
 funcFromObj  = [easingFromObj,  stepsFromObj],
 funcFromForm = [easingFromForm, stepsFromForm];
-
 //==============================================================================
 // formFromObj() populates the form, sets globals, <= loadFinally(), openNamed()
 function formFromObj(obj) {
-    let elm, end, start, val;
+    let elm, val;
     const
-    leg0 = obj.legs?.[0],
-    leg1 = obj.legs?.[1],
-    wasStp = isSteps();
-
+    leg0  = obj.legs?.[0],
+    leg1  = obj.legs?.[1];
     g.type = obj.type ?? leg0?.type ?? E.linear;
     if (Is.def(obj.io))
         g.io = obj.io;
@@ -37,20 +33,24 @@ function formFromObj(obj) {
 
     elms.io  .value = g.io;
     elms.type.value = g.type;
-    elms.time.value = obj.time
-                   ?? (leg0 ? leg0.time + leg1.time
-                            : elms.time.max / 2);
+    elms.time.value = obj.time ?? (leg0 ? leg0.time + leg1.time
+                                        : elms.time.max / 2);
     elms.time.dispatchEvent(new Event(INPUT));
 
-    const notA = !funcFromObj[Number(isSteps())](obj, leg0, leg1, wasStp);
-    P.visible(elms.direction.parentNode, notA);
-    if (notA) {                // if Is.A(obj.steps) stepsFromObj() returns true
-        start = obj.start ?? leg0?.start ?? 0;
-        end   = obj.end   ?? leg1?.end;
-        formatNumber(start, ...FORMAT_START);
-        formatNumber(end,   ...FORMAT_END);
-        elms.direction.selectedIndex = Number(start > end);
-    }
+    const                       // funcFromObj[n]() must follow input.time()
+    isStp = isSteps(),
+    end   = funcFromObj[Number(isStp)](obj, leg0, leg1)
+          ? elms.userValues.at(-1).valueAsNumber  // obj.steps is an array
+          : obj.end   ?? leg1?.end   ?? MILLI,    // never falls back to MILLI
+    start = obj.start ?? leg0?.start ?? 0;
+
+    formatNumber(start, ...FORMAT_START);
+    formatNumber(end,   ...FORMAT_END);
+    elms.direction.selectedIndex = start > end;
+
+    if (isStp !== wasStp)
+        wasIsSteps(wasStp, isStp);
+
     for (elm of g.trips) {     // roundTrip and related elements
         val = obj[elm.id];
         if (elm.isCheckBox)    // <check-box>
@@ -68,7 +68,7 @@ function formFromObj(obj) {
 }
 //==============================================================================
 // objFromForm() creates an object from form element values,
-//               called by loadFinally(), clickCode().
+//               called by loadFinally(), clickCode(), refresh().
 function objFromForm(hasVisited = true) {
     let autoTrip, flipTrip, loopWait, plays, tripWait;
     const end   = Number(elms.end.textContent);
@@ -88,18 +88,18 @@ function objFromForm(hasVisited = true) {
     else
         plays = undefined;
 
-    const [_, isStp, isBS] = isBezierOrSteps();
+    // type can only be changing when called by change.type()=>refresh()
+    // loadFinally() only calls if !hasVisited and g.type == E.linear
+    // so unless !hasVisited, g.type is already set previously
     if (!hasVisited) { // g.type, g.io referenced in easingFromForm()
         g.type = Number(elms.type.value);
-        g.io   = isBS ? E.in : Number(elms.io.value);
-        if (isStp)
-            updateTV();
-    }
+        g.io   = Number(elms.io.value);
+    }                  // obj.time deleted by stepsFromForm() if user timing
     const obj  = {time:msecs, type:orUndefined(g.type), io:orUndefined(g.io),
                   start, end, plays, loopWait, loopByElm,
                   roundTrip, autoTrip, flipTrip, tripWait};
 
-    objEz = funcFromForm[Number(isStp)](obj);
+    objEz = funcFromForm[Number(isSteps())](obj, hasVisited);
     return objEz;
 }
 //==============================================================================

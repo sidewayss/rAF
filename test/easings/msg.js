@@ -8,8 +8,8 @@ import {Ez, P, U} from "../../raf.js";
 import {msecs, secs} from "../update.js";
 import {listenInputNumber, formatInputNumber, isInvalid, invalidInput, maxMin}
                      from "../input-number.js";
-import {MILLI, CLICK, INPUT, CHANGE, elms, addEventToElms, addEventsByElm,
-        addEventByClass, toggleClass, isTag, boolToString}
+import {MILLI, BUTTON, DIV, LABEL, INPUT, CLICK, CHANGE, elms, addEventToElms,
+        addEventsByElm, addEventByClass, toggleClass, boolToString}
                      from "../common.js";
 
 import {chart, refresh}  from "./_update.js";
@@ -17,57 +17,58 @@ import {isSteps}         from "./steps.js";
 import {OTHER, isBezier} from "./index.js";
 
 let sgInputs;
-const LOCK   = "lock";
-const LOCKED = "locked"
-const locks  = ["lock_open", LOCK]; // boolean acts as index
+const
+LOCK   = "lock",
+LOCKED = "locked",
+locks  = ["lock_open", LOCK]; // boolean acts as index
 //==============================================================================
 // loadMSG() is called by easings.loadIt() once per session
 function loadMSG() {
-    let elm, id, key, obj, val;
-    const CLEAR = "clear";
+    let div, elm, id, key, obj, val;
+    const
+    CLEAR = "clear",
+    divSplit = elms.divSplit;
 
     elm = elms.clearMid;
     Ez.readOnly(elm, OTHER, elms.mid);
     Ez.readOnly(elms.mid, CLEAR, elm);
 
-    const div    = elms.divSplit;
-    const divGap = Ez.toCamel("div", MSG[2]);
-    div.id = "";
-    elms[divGap] = div.cloneNode(true);
+    divSplit.id = "";
+    elms.divGap = divSplit.cloneNode(true);
     elms.divGap.style.marginTop = "1" + U.px;
 
     for (id of MSG.slice(1)) {  // split, gap
         obj = {};
-        for (elm of elms[Ez.toCamel("div", id)].children) {
-            if (isTag(elm, INPUT)) {
-                elm.id   = id;
-                elms[id] = elm;
-                Ez.readOnly(obj[CLEAR], OTHER, elm);
-                for ([key, val] of Object.entries(obj))
-                    Ez.readOnly(elm, key, val);
-            }
-            else if (isTag(elm, "label")) {
-                elm.htmlFor = id;
-                if (!elm.textContent)                    // 5 = "split".length
-                    elm.innerHTML = Ez.initialCap(id).padStart(5) + ":";
-            }
-            else    // <button>s precede <input> in html, so they're saved here
-                obj[elm.className] = elm;
+        div = elms[Ez.toCamel(DIV, id)];
+        for (elm of div.getElementsByTagName(BUTTON))
+            obj[elm.className] = elm;
+        for (elm of div.getElementsByTagName(INPUT)) {
+            elm.id   = id;
+            elms[id] = elm;
+            Ez.readOnly(obj[CLEAR], OTHER, elm);
+            for ([key, val] of Object.entries(obj))
+                Ez.readOnly(elm, key, val);
+        }
+        for (elm of div.getElementsByTagName(LABEL)) {
+            elm.htmlFor = id;
+            if (!elm.textContent)             // 6 = "Split:".length
+                elm.innerHTML = (Ez.initialCap(id) + ":").padEnd(6);
         }
     }
     elms.gap.dataset.min = 0;
     formatInputNumber(elms.split, elms.time.valueAsNumber / 2);
     formatInputNumber(elms.gap, 0);
-    div.parentNode.insertBefore(elms[divGap], div.nextElementSibling);
+    divSplit.parentNode.appendChild(elms.divGap);
 
     elms.mid  .default = () => MILLI / 2;   // constant
     elms.split.default = () => secs  / 2;   // variable
     elms.gap  .default = () => 0;           // constant
 
-    const msg = MSG.map(v => elms[v]);
-    sgInputs  = msg.slice(1);
     addEventByClass(CLICK,  CLEAR, click);
     addEventByClass(CLICK,  LOCK,  click);
+
+    const msg = MSG.map(v => elms[v]);
+    sgInputs  = msg.slice(1);
     listenInputNumber(msg);                           // must go first
     addEventToElms (INPUT,  msg, input.MSG);          // must go second
     addEventToElms (CHANGE, msg, changeMSG);          // must go second too
@@ -155,7 +156,7 @@ function setSplitGap(time = msecs) {
                     }
                 }
                 else if (elm === elms.split) // split = 50% of time
-                    formatInputNumber(elms.split, secs / 2);
+                    formatInputNumber(elm, elm.default());
         }
     }
 }

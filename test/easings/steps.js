@@ -1,27 +1,25 @@
-export {loadSteps, loadTV, userValues, stepsFromObj, stepsFromForm, initSteps,
-        maxTime, updateTV, tvFromElm, drawSteps, postRefresh, setInfo, isSteps};
+export {loadSteps, loadTV, stepsFromObj, stepsFromForm, initSteps, maxTime,
+        updateTV, isUserTV, tvFromElm, setInfo, infoZero, isSteps, wasIsSteps};
 export const
-    FORMAT_END   = [pad.milli, 0, elms.end],
-    FORMAT_START = [pad.milli, 0, elms.start]
-;
+FORMAT_END   = [pad.milli, 0, elms.end],
+FORMAT_START = [pad.milli, 0, elms.start];
 
 import {E, Is, Ez, P, Easy} from "../../raf.js";
 
-import {D, pad, frames, secs, formatNumber} from "../update.js";
-import {getNamed, getNamedEasy}             from "../local-storage.js";
+import {D, pad, secs, formatNumber} from "../update.js";
+import {getNamed, getNamedEasy}     from "../local-storage.js";
 import {listenInputNumber, formatInputNumber,
-        isInvalid}                          from "../input-number.js";
-import {SELECT, MILLI, COUNT, CHANGE, INPUT,
-        elms, g, addEventByClass}           from "../common.js";
+        isInvalid}                  from "../input-number.js";
+import {MILLI, COUNT, SELECT, DIV, LABEL, INPUT, CHANGE,
+        elms, g, addEventByClass}   from "../common.js";
 
-import {chart, refresh}                     from "./_update.js";
-import {OTHER, TIMING, EASY, pointToString} from "./index.js";
+import {refresh}             from "./_update.js";
+import {OTHER, TIMING, EASY} from "./index.js";
 
-let STEPS;
+let STEPS, lastUserTime;
 const
     VALUES = "values",
     USER   = "user",
-    DIV    = "div",
     IDX_LINEAR = 0,
     IDX_EASY   = 1,
     IDX_USER   = 2
@@ -49,9 +47,9 @@ function loadSteps() {
         evt.stopImmediatePropagation();
         evt.stopPropagation();
         evt.preventDefault();
-        // none of those prevent the click, which prevents the hiding of the
-        // title/toolsip. Maybe I should pop up something like "Copied!". That
-        // would probably mean eliminating the title for hover.
+        //!!none of those prevent the click, which prevents the hiding of the
+        //!!title/toolsip. Maybe I should pop up something like "Copied!". That
+        //!!would probably mean eliminating the title for hover.
     }, false);
 }
 function loadTV() { // called exclusively by getEasies() during page load
@@ -61,7 +59,7 @@ function loadTV() { // called exclusively by getEasies() during page load
     for ([id, min, step, isT] of [[TIMING,  0,   ".001", true],
                                   [VALUES, -100, "1", ]]) {
         div = elms[Ez.toCamel(DIV, id)];      // divTiming, divValues
-        lbl = document.createElement("label");
+        lbl = document.createElement(LABEL);
         lbl.htmlFor     = id;
         lbl.textContent = `${Ez.initialCap(id)}:`;
 
@@ -109,11 +107,12 @@ function loadTV() { // called exclusively by getEasies() during page load
         elms[Ez.toCamel(USER, id)] = arr;
         divUser = divUser.nextElementSibling;
     }
+    lastUserTime = elms.userTiming.at(-1);
     elms.userValues.forEach(inp => inp.dataset.max = MILLI + 100);
     addEventByClass(CHANGE, STEPS, null, changeSteps);
-    elms.userTiming.at(-1).addEventListener(INPUT, inputLastTime);
+    lastUserTime.addEventListener(INPUT, inputLastTime);
 }
-// inputLastTime() is the input event handler for elms.userTiming.at(-1)
+// inputLastTime() is the input event handler for lastUserTime
 function inputLastTime(evt) {
     if (!isInvalid(evt.target))
         formatNumber(evt.target.valueAsNumber, ...FORMAT_END);
@@ -122,6 +121,15 @@ function inputLastTime(evt) {
 function initSteps(obj) {
     if (!Is.A(obj.steps)) // populate elms.userValues with default values
         defUserInputs([VALUES, MILLI / COUNT]);
+//!!if (isSteps())        // display the right stuff
+//!!    wasIsSteps(false, true);
+}
+// wasIsSteps() handles the switch to and from type:E.steps
+function wasIsSteps(was, is) {
+    if (was !== is) {
+        P.displayed(elms.drawAsSteps, was);
+        P.displayed(elms.initZero,     is);
+    }
 }
 // maxTime() sets the max attribute for the 3 userTiming inputs. It sets all
 //           3 the same, which is crude, but viable because it tests rAF's
@@ -141,16 +149,17 @@ function changeSteps(evt) { // #values/timing.other[0], elms.userValues/Timing.
     const tar = evt.target;
     switch (tar) {
     case elms.timing: // defaults for userTiming[] depend on variable secs
-        if (tar.value == TIMING && !elms.userTiming[0].value)
+        if (tar.value == TIMING && !elms.userTiming[0].value) {
             defUserInputs([TIMING, secs / COUNT]);
+            setInfo(lastUserTime.valueAsNumber);
+        }
     case elms.values:
-        userValues();
     case elms.jump:
         updateTV();
         break;
-    case elms.userTiming.at(-1):
+    case lastUserTime:
         setInfo(tar.valueAsNumber);
-        displayInfo(true);
+        infoZero(true, null, true);
         break;
     default:
         if (isInvalid(tar))
@@ -158,44 +167,22 @@ function changeSteps(evt) { // #values/timing.other[0], elms.userValues/Timing.
     }
     refresh(tar);
 }
-// userValues() helps changeSteps(), stepsFromObj(), change.type()
-function userValues(values, isUV = (elms.values.value == VALUES)) {
-    const elm = elms.direction;
-    if (isUV) {
-        const end = Is.def(values)
-                  ? values.at(-1)
-                  : Number(elms.userValues.at(-1).value);
-        formatNumber(0, ...FORMAT_START);
-        formatNumber(end, ...FORMAT_END);
-        if (elm.selectedIndex)                  // harsh, but straightforward
-            elm.selectedIndex = 0;              // the alternatives are messy
-        P.visible(elm.parentNode, false);
-    }
-    else {
-        P.visible(elm.parentNode, true);
-        formatNumber(elm.selectedIndex? 0 : MILLI, ...FORMAT_END);
-    }
-}
 //==============================================================================
 // stepsFromObj() called exclusively by formFromObj()
 function stepsFromObj(obj) {
-    let isAV, val, sel;
+    let i, val, sel;
     elms[STEPS].value = obj[STEPS];
 
     [[TIMING, TIMING, TIMING],
-     [STEPS,  VALUES, EASY]].forEach(([ts, tv, te], i) => {
+     [STEPS,  VALUES, EASY]].forEach(([ts, tv, te]) => {
         sel = elms[tv];
         val = obj[ts];
         if (Is.A(val)) {                     // user values or timing
             const inputs  = elms[Ez.toCamel(USER, sel.id)];
             const divisor = getDF(sel);
-            for (var i = 0; i < COUNT; i++)
+            for (i = 0; i < COUNT; i++)
                 formatInputNumber(inputs[i], val[i] / divisor);
             sel.selectedIndex = IDX_USER;
-            if (i) {                         // values not timing
-                userValues(val);
-                isAV = true;
-            }
         }
         else if (Is.def(obj[te])) {          // empty string is valid
             sel.selectedIndex   = IDX_EASY;
@@ -211,42 +198,51 @@ function stepsFromObj(obj) {
     updateTV();         // relies on sel.selectedIndex
     g.type = E.steps;
     g.io   = E.in;
-    return isAV;        // helps formFromObj() handle start, end, direction
+    return isUserTV(elms[VALUES]);
 }
 // stepsFromForm() called exclusively objFromForm()
-function stepsFromForm(obj) {
+function stepsFromForm(obj, hasVisited) {
     let easy, jump, steps;
-    const timing = tvFromElm(elms[TIMING]);
-    const values = tvFromElm(elms[VALUES]);
+    const
+    timing = tvFromElm(elms[TIMING]),
+    values = tvFromElm(elms[VALUES]),
+    isAT   = Is.A(timing);
+
     if (Is.A(values)) {                 // steps is an array of values
         steps = values;
-        delete obj.start;               // the steps array supercedes these
-        delete obj.end;
+        obj.start = 0;
+        obj.end   = values.at(-1);
     }
     else {                              //steps is a number
-        steps = Is.A(timing) ? COUNT : Number(elms.steps.value);
+        steps = isAT ? COUNT : Number(elms.steps.value);
         if (values)
             easy = values;
     }
-    if ((!timing || !Is.A(timing)) && elms.jump.value != E.end)
+    if (isAT)                           // avoid a console.info() in override()
+        obj.time = lastUserTime.valueAsNumber * MILLI;
+    else if (elms.jump.value != E.end)
         jump = Number(elms.jump.value); // E.end is the CSS default for jump
+
+    if (!hasVisited)
+        updateTV();
 
     return Object.assign(obj, {steps, jump, easy, timing});
 }
 //==============================================================================
-// updateTV() called by stepsFromObj(), refresh(), initEasies()
+// updateTV() called by stepsFromObj(), stepsFromForm(), changeSteps()
 function updateTV() {
     const
+    elmV  = elms[VALUES],
     isUT  = isUserTV(elms[TIMING]),
-    isUTV = isUT || isUserTV(elms[VALUES]);
+    isUTV = isUT || isUserTV(elmV),
+    isEV  = elmV.selectedIndex == IDX_EASY;
 
-    displayInfo(isUT);
-    P.displayed(elms.count,  isUTV);  // the disabled <select>, fixed at 3
+    infoZero(isUT, isEV);
+    P.displayed(elms.count,  isUTV);   // the disabled <select>, fixed at 3
     P.displayed(elms.steps, !isUTV);
-    P.displayed(elms.jump.parentNode, !isUT);
 
     if (!isUTV && !elms.steps.selectedIndex && !elms.jump.selectedIndex)
-        elms.steps.selectedIndex = 1; // {steps:1, jump:E.none} is not valid
+        elms.steps.selectedIndex = 1;  // {steps:1, jump:E.none} is not valid
 
     let id, idx, sel;
     for (id of [TIMING, VALUES]) {
@@ -259,60 +255,48 @@ function updateTV() {
 function isUserTV(sel) {
     return sel.selectedIndex == IDX_USER;
 }
-// tvFromElm() called by stepsFromForm(), isOutOfBounds()
+// tvFromElm() returns an array of COUNT numbers, a name, or an Easy, called by
+//             stepsFromForm(), isOutOfBounds()
 function tvFromElm(sel, useName) {
     let tv;
-    if (isUserTV(sel)) { // userValues or userTiming
+    if (isUserTV(sel)) {                      // userValues or userTiming
         const inputs = elms[Ez.toCamel(USER, sel.id)];
         const factor = getDF(sel);
         tv = new Array(COUNT);
-        for (let i = 0; i < COUNT; i++)
+        for (let i = 0; i < COUNT; i++)       // an array of numbers
             tv[i] = inputs[i].valueAsNumber * factor;
     }
     else if (sel.selectedIndex == IDX_EASY) { // easyValues or easyTiming
-        const name = sel[OTHER][0].value;
-//!!        if (name)        // in case .selectedIndex == -1
-        tv = useName ? name : getNamedEasy(name); // guaranteed not recursive!!//!!gNE can return undefined!!
-//!!        else
-//!!            ;            //!!
-    }
-    return tv;            // else linear: tv is undefined
+        const name = sel[OTHER][0].value;     // a string name or Easy instance
+        tv = useName ? name
+                     : getNamedEasy(name);    // can return undefined
+    }                                         // else linear: tv is undefined
+    return tv;
 }
 function getDF(sel) { // divisor or factor
     return (sel.id == VALUES) ? 1 : MILLI;
 }
 //==============================================================================
-// drawSteps() helps drawLine()
-function drawSteps() {
-    const str = new Array(frames.length);
-    const max = frames.length - 1;
-    frames.forEach((frm, i) => {
-        str[i] = `${pointToString(frm.x, frm.y)}`;
-        if (i < max && frm.y != frames[i + 1].y) {
-            str[i] += !i ? ` ${pointToString(frm.x, frames[i + 1].y)}`
-                         : ` ${pointToString(frames[i + 1].x, frm.y)}`;
-        }
-    });
-    P.points.set(chart.line, str.join(E.sp));
-}
-// postRefresh() cleans up E.steps after pseudoAnimate() runs
-function postRefresh(time) {
-    if (isSteps()) {
-        setInfo(time / MILLI);
-        if (elms.jump.value < E.end && elms.roundTrip.checked)
-            frames.at(-1).y = Number(elms.end.textContent);
-    }
-}
 // setInfo() sets the text for the info button, displayed when jump < E.end
 //           or last user time is less than ezY.time.
 function setInfo(lastStep) {
-    elms.info.dataset.lastStep = lastStep;
     elms.info.title = `Actual animation duration is ${lastStep.toFixed(D)}s, `
                     + "when the last step occurs.";
 }
-function displayInfo(isUT) {
-    P.displayed(elms.info, (isUT && elms.info.dataset.lastStep < secs)
-                       || (!isUT && elms.jump.value < E.end));
+// infoZero() displays elms.info, disables elms.initZero, which are steps-only
+function infoZero(isUT, isEV = elms[VALUES].selectedIndex == IDX_EASY, notZero) {
+    const
+    jump = Number(elms.jump.value),
+    not2 = !isUT && !isEV;
+
+    P.displayed(elms.info, (not2 && jump < E.end)
+                        || (isUT && lastUserTime.value < secs));
+
+    if (isEV !== null)     // parentNode is in elms.divSteps, see updateTypeIO()
+        P.displayed(elms.jump.parentNode.children, not2);
+
+    if (!notZero)
+        elms.initZero.disabled = isUT || !(jump & E.start);
 }
 // isSteps() works for modules in "../" because multi g.type is undefined
 function isSteps(val = g.type) { // val only defined by formFromObj()

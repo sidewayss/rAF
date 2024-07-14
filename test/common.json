@@ -1,11 +1,12 @@
 {
   "titles": {
     "plays":      "Number of times to play the animation",
-    "loopWait":   "Time to wait between each play",
-    "autoTrip":   "Automatic return trip",
+    "loopWait":   "Time to wait between each play and each loop by element",
+    "autoTrip":   "Automatic return trip, aka autoTrip",
     "flipTrip":   "Flip to mirror image for return trip",
     "tripWait":   "Time to wait before commencing return trip",
-    "reset":      "Automatically reset after each play",
+    "initZero":   "Apply values in the 0th frame, here it only matters for steps w/jump == E.start or E.both, otherwise it matters when current value != initial value",
+    "reset":      "Automatically reset after each play, e.g. {onArrival:E.initial}",
     "save":       "Save current settings as a named Easy",
     "revert":     "Revert to saved, discard changes",
     "preset":     "Revert to original preset, discarding all previous changes",
@@ -85,17 +86,35 @@
         "type": 2,
         "io": 3
       },
-      "elasticInIn": {
-        "time": 2000,
+      "elCircoInIn": {
         "end": 1000,
-        "type": 5,
-        "io": 2
+        "legs": [
+          {
+            "time": 1000,
+            "type": 5,
+            "end": 500
+          },
+          {
+            "time": 1000,
+            "type": 2
+          }
+        ]
       },
-      "bounceOutOut": {
-        "time": 2000,
+      "bouncExpOOut": {
         "end": 1000,
-        "type": 6,
-        "io": 5
+        "legs": [
+          {
+            "time": 1000,
+            "type": 6,
+            "io": 1,
+            "end": 500
+          },
+          {
+            "time": 1000,
+            "type": 3,
+            "io": 1
+          }
+        ]
       },
       "pow_0.5": {
         "time": 2000,
@@ -154,14 +173,15 @@
         "time": 2000,
         "type": 9,
         "end": 1000,
-        "steps": 15
+        "steps": 15,
+        "jump": 2
       },
       "steps_easeT": {
         "time": 2000,
         "type": 9,
         "end": 1000,
         "steps": 15,
-        "jump": 2,
+        "jump": 3,
         "timing": "sineOut"
       },
       "steps_easeV": {
@@ -169,7 +189,6 @@
         "type": 9,
         "end": 1000,
         "steps": 15,
-        "jump": 2,
         "easy": "sineOut"
       },
       "steps_easeTV": {
@@ -177,7 +196,6 @@
         "type": 9,
         "end": 1000,
         "steps": 15,
-        "jump": 2,
         "timing": "sineOut",
         "easy": "sineOut"
       },
@@ -194,7 +212,6 @@
         "type": 9,
         "end": 1000,
         "steps": 30,
-        "jump": 1,
         "easy": "",
         "timing": "pow_2.5o/5i"
       },
@@ -203,7 +220,6 @@
         "type": 9,
         "end": 1000,
         "steps": 30,
-        "jump": 2,
         "easy": "bezierB",
         "timing": "pow_2.5o/5i"
       },
@@ -229,9 +245,9 @@
         "time": 2000,
         "io": 4,
         "end": 1000,
-        "mid": 667,
-        "split": 667,
-        "gap": 250
+        "mid": 350,
+        "split": 1350,
+        "gap": 150
       }
     },
     "MEaser-": {

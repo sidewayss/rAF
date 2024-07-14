@@ -87,9 +87,9 @@ function setLink(btn, b = !btn.value) {
 //                called by change.io(), change.type(), updateAll()
 function updateTypeIO(isIO, [isBez, isStp, isBS] = isBezierOrSteps()) {
     if (!isIO) {
+        P.displayed(elms.divIo,    !isBS);
         P.displayed(elms.bezier,    isBez);
         P.displayed(elms.divsSteps, isStp); // an array of <div>s
-        P.displayed(elms.divIo,    !isBS);
     }
     const
     has2 = !isBS && twoLegs(),
@@ -99,8 +99,8 @@ function updateTypeIO(isIO, [isBez, isStp, isBS] = isBezierOrSteps()) {
     P.displayed(elms.placeholder, !has2);
     P.displayed([elms.divType2, elms.divMid, chart.dashX, chart.dashY], has2);
     P.visible  ([elms.divSplit, elms.divGap], has2);
-    if (has2)
-        setSplitGap();  // only necessary when showing #mid/#split/#gap...
+    if (has2)           // only matters when changing to/from 1 vs 2 legs,
+        setSplitGap();  // does extra work when preceded by formFromObj().
 
     P.displayed(elms.divPow,  isP || isP2);
     P.displayed(elms.pow,     isP);         // <label> always shows

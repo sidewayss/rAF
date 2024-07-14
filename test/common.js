@@ -1,26 +1,25 @@
 import {Ez} from "../raf.js";
 
-// export everything except errorMessage
-export const ZERO = "0", ONE = "1", TWO = "2";
-
-export const MILLI = 1000; // for milliseconds, and #chart is 1000 x 1000
-export const COUNT = 3;    // multi.js: easys.length, loopByElm: elms.length
-
-export const PLAYS   = "plays";
-export const CHANGE  = "change"; // event names
-export const CLICK   = "click";
-export const INPUT   = "input";
-export const SELECT  = "select";
-export const EASY_   = "Easy-";  // localStorage
-export const MEASER_ = "MEaser-";
-
-export const LITE   = ["lo","hi"];
-
-export const elms = {};  // the HTML elements of interest
-export const dlg  = {};  // <dialog> sub-elements
-export const g    = {    // g for global, these properties are read-write:
-    notLoopWait:null,    // notX = !isX, bools to help choose easy.e vs easy.e2
-    notTripWait:null     // in multi.js they are arrays of bools
+export const          // export everything:
+MILLI = 1000,         // for milliseconds, and #chart is 1000 x 1000
+COUNT = 3,            // multi.js: easys.length, loopByElm: elms.length
+ZERO  = "0", ONE = "1", TWO = "2",
+PLAYS   = "plays",
+CHANGE  = "change",   // event names
+CLICK   = "click",
+INPUT   = "input",    // event & tag name
+BUTTON  = "button",   // tag names
+SELECT  = "select",
+LABEL   = "label",
+DIV     = "div",
+EASY_   = "Easy-",    // localStorage
+MEASER_ = "MEaser-",
+LITE = ["lo","hi"],   // playback formatting
+elms = {},            // the HTML elements of interest
+dlg  = {},            // <dialog> sub-elements
+g = {                 // g for global, these properties are read-write:
+    notLoopWait:null, // notX = !isX, bools to help choose easy.e vs easy.e2
+    notTripWait:null  // in multi.js they are arrays of bools
 };
 //====== wrappers for addEventListener() =======================================
 export function addEventByClass(type, name, obj, func) {
@@ -50,22 +49,25 @@ export function boolToString(b) { // for localStorage and <button>.value
     return b ? "true" : "";
 }
 //====== error messaging =======================================================
-// errorAlert() normalizes alerts
-export function errorAlert(err, msg) {
-    alert(errorMessage(err, msg));
+// messageBox() configures and displays an error|warning|info dialog box
+export function messageBox(type, title, msg) {
+    dlg.icon.src = `/icons/${type}.svg`; // "error"|"warning"|"info"
+    dlg.title.textContent = title
+    dlg.msg  .innerHTML   = msg;
+    elms.msgBox.showModal();
+}
+// errorAlert() displays an error dialog, Error.proto.stack not 100% supported
+export function errorAlert(err, title) { // err = err.toString()
+    messageBox("error", title, err.stack ?? err);
 }
 // errorLog() normalizes console.error() usage
-export function errorLog(err, msg) {
-    console.error(errorMessage(err, msg));
-}
-// errorMessage() consolidates code for errorAlert(), errorLog(), not exported
-function errorMessage(err, msg) { // Error.prototype.stack not 100% supported
-    return `${msg ? msg + ":\n" : ""}${err.stack ?? err}`;
+export function errorLog(err, title) {
+    console.error(title, err.stack ?? err);
 }
 //====== miscellaneous =========================================================
 export function pairOfOthers(...pair) {
     for (var i = 0; i < 2; i++)
-        pair[i].other = pair[Ez.flip(i)];
+        pair[i].other = pair[Ez.comp(i)];
 }
 // toggleClass() adds or removes a class from classList, optionally toggling
 export function toggleClass(elm, className, b = !elm.classList.contains(className)) {

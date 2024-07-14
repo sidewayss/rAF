@@ -1,28 +1,84 @@
 // Not exported by raf.js
 // export everything
-export {override, spreadToEmpties, legText, legNumber, getType, legType, getIO,
-        splitIO, toBezier, toNumberArray};
+export {prepLegs, override, spreadToEmpties, legText, legNumber, legUnit,
+        getType, getIO, splitIO, toBezier, toNumberArray};
 
-import {E, Ez, Is, Easy} from "../raf.js";
+import {E, Is, Ez, Easy} from "../raf.js";
 
+import {steps}   from "./easy-steps.js"
 import {EBezier} from "./ebezier.js";
+//==============================================================================
+// prepLegs() collects legsTotal and o.emptyLegs for spreading #time or #count
+//            across legs, and sets #wait, #legsWait, and #time or #count.
+function prepLegs(o, type, s, e, w, tc, isInc) { // tc is "time" or "count"
+    let
+    legsTotal = 0,
+    legsWait  = 0;
+    o.emptyLegs = [];
+    o.legs.forEach((leg, i) => {
+        leg.prev = o.legs[i - 1];    // overwritten by stepsToLegs()
+        leg.next = o.legs[i + 1];    // ditto
+        legNumber(leg, s, i);        // all non-incremental legs define
+        legNumber(leg, e, i);        // start and end.
+        legNumber(leg, w, i, ...Ez.defZero);
+        legsWait += leg[w];
+                                     // time and count require extra effort
+        legNumber(leg, tc, i, ...Ez.undefGrThan0);
+        legType(o, leg, i, type, isInc);
+        if (leg.type == E.steps)
+            steps(o, leg);           // E.steps: leg.timing can set leg.time
+        if (leg[tc])
+            legsTotal += leg[tc];    // accumulate leg.time|count
+        else
+            o.emptyLegs.push(leg);   // will receive o.spread
+    });
+
+    o.cEmpties = o.emptyLegs.length; // process o[tc] and legsTotal:
+    if (!isInc)
+        legsTotal += legsWait;
+    if (o[tc]) {
+        o.leftover = o[tc] - legsTotal;
+        if (o.cEmpties) {            // calculate o.spread
+            if (o.leftover <= 0)
+                throw new Error(`${o.cEmpties} legs with ${tc} undefined `
+                              + "and nothing left over to assign to them.");
+            //---------------------------------
+            o.spread = o.leftover / o.cEmpties;
+        }
+        else                         // legsTotal overrides o[tc]
+            override(tc, undefined, o, "every", Ez.defGrThan0, legsTotal);
+    }
+    else if (!o.cEmpties)
+        o[tc] = legsTotal;           // o[tc] is previously undefined
+    else if (!isInc)
+        throw new Error("You must define a non-zero value for "
+                      + `obj.${tc} or for every leg.${tc}.`);
+    //--------------
+    return legsWait;
+}
 //==============================================================================
 // override() overrides o vs leg for start, end, wait, time|count
 //            prop is a string property name, not a Prop instance
-function override(prop, leg, o, name, legVal = leg[prop], oVal = o[prop]) {
-    if (Is.def(legVal)) {
-        if (Is.def(oVal)) {
-            name += " leg";
-            if (legVal != oVal)
-                console.log(
-                    `You defined obj.${prop} and ${name}.${prop}, and they `
-                  + `don't match.${leg ? "" : "The sum of"} `
-                  + `${name}.${prop} overrides obj.${prop}`);
+//            called by constructor(), #prepLegs()
+function override(prop, leg, o, txt, args, legVal = leg[prop]) {
+    let obj, val;
+    const oVal = o[prop];
+
+    if (Is.def(legVal)) {   // leg over o
+        if (Is.def(oVal) && legVal != oVal) {
+            txt += ` leg.${prop}`;
+            console.info(
+                `You defined obj.${prop} and ${txt}, and they don't match. `
+              + `${leg ? "" : "The sum of "}${txt} overrides obj.${prop}`);
         }
-        o[prop] = legVal;
+        [obj, val] = [o, legVal];
     }
-    else if (Is.def(oVal))
-        leg[prop] = oVal;
+    else if (Is.def(oVal))  // oVal over default value
+        [obj, val] = [leg, oVal];
+    else
+        obj = o;            // default: o[prop] = args[0], leg[prop] = undefined
+
+    obj[prop] = Ez.toNumber(val, prop, ...args);
 }
 function spreadToEmpties(leg, tc, v) {
     do { leg[tc] = v; } while((leg = leg.next));
@@ -34,6 +90,11 @@ function legNumber(leg, name, i, defVal, notNeg, notZero) {
     leg[name] = Ez.toNumber(leg[name], legText(i, name),
                             defVal, notNeg, notZero);
     return leg[name];
+}
+// legUnit() leg.unit = this._legUnit() = the e.unit end value for a leg,
+//           called by _finishLegs(), stepsToLegs().
+function legUnit(leg, start, dist) { // start is o.start, not leg.start
+    return (leg.end - start) / Math.abs(dist);
 }
 //==============================================================================
 // E.pow, E.bezier, E.steps, and E.increment require a value in a
@@ -76,7 +137,7 @@ function legType(o, leg, i, defaultType, isInc) {
         // For E.steps and E.increment additional validation occurs later
         const name = Easy.type[type];
         if (!Is.def(leg[name])) {
-            if (!Is.def(o[name])  && type < E.steps)
+            if (!Is.def(o[name]) && type < E.steps)
                 Ez._mustBeErr(`${legText(i, name)}`, "defined");
             //------------------
             leg[name] = o[name];
@@ -136,9 +197,10 @@ function toNumberArray(val, name, notNeg) {
     return Ez.toArray(val, name, notNeg ? validNotNeg
                                         : validNumber);
 }
-function validNumber(val, name) { // it can be any number, but not undefined
-    return Ez.toNumber(val, name, undefined, false, false, true);
-}
-function validNotNeg(val, name) { // it must be a positive number
+function validNumber(val, name) { // val can be any number, but not undefined
+    return Ez.toNumber(val, name, null, false, false, false, true);
+}                                 //     !neg, !zero,!float,!undef
+
+function validNotNeg(val, name) { // val must be a positive number
     return Ez.toNumber(val, name, ...Ez.defNotNeg);
 }
