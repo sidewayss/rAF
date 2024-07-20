@@ -60,15 +60,17 @@ function inputX(evt) {
     updateCounters(i, frm);
     ns.updateX(frm, !Is.def(evt)); // 2nd arg easings only
 }
-// timeFrames() helps input.time() for easings and color
-function timeFrames(evt) {
-    msecs = ns.getMsecs();  // milliseconds are primary
+// timeFrames() helps input.time() for easings and color, called without evt
+//              by loadFinally() as a fallback when elms.time is undefined.
+//              time arg defined by easings/steps.js/inputLastTime().
+function timeFrames(evt, time = ns.getMsecs()) {
+    msecs = time;           // milliseconds are primary
     secs  = msecs / MILLI;  // seconds are for display purposes only
     setFrames();
+
+    const txt = updateDuration(secs);
     if (evt)
-        evt.target.nextElementSibling.textContent = updateDuration();
-    else
-        updateDuration();
+        evt.target.labels[1].textContent = txt;
 }
 // prePlay() helps changePlay(), exports can't be set outside the module
 function prePlay() {

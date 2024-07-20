@@ -12,9 +12,9 @@ import {MILLI, BUTTON, DIV, LABEL, INPUT, CLICK, CHANGE, elms, addEventToElms,
         addEventsByElm, addEventByClass, toggleClass, boolToString}
                      from "../common.js";
 
-import {chart, refresh}  from "./_update.js";
-import {isSteps}         from "./steps.js";
-import {OTHER, isBezier} from "./index.js";
+import {chart, refresh}           from "./_update.js";
+import {isSteps}                  from "./steps.js";
+import {OTHER, twoLegs, isBezier} from "./index.js";
 
 let sgInputs;
 const
@@ -144,8 +144,9 @@ function updateSplitGap() {
 // setSplitGap() calculates and sets the automated values for #split and #gap,
 //               based on time and msecs, if necessary, called by input.time()
 //               and updateTypeIO().
-function setSplitGap(time = msecs) {
-    if (!isBezier() && !isSteps()) {
+function setSplitGap(time = msecs,
+                     has2 = twoLegs() && !isBezier() && !isSteps()) {
+    if (has2) {
         let elm, n
         for (elm of sgInputs) {
             if (isUnlocked(elm.lock))

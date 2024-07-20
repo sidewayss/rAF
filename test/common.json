@@ -14,7 +14,7 @@
     "data":       "Copy animation data as a tab-delimited table, for pasting into a spreadsheet",
     "code":       "Copy object(s) as plain text JavaScript code",
     "time":       "The duration of a one-way play",
-    "direction":  "Up or Down, from 0 to 1000 or from 1000 to 0",
+    "flip":       "Flip it upside-down: swap start & end",
     "type":       "The primary shaper of the timing curve(s)",
     "type2":      "Ease for the second leg",
     "io":         "IO: the permutations of in and out, here it determines if the animation has one or two legs",

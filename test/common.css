@@ -322,6 +322,9 @@ input.mt1px { margin-top: 1px; }
   margin:0 auto; /* javascript sets top */
   padding:var(--7-8ths);
 }
+#msgBox::backdrop {
+  background-color:#1113;
+}
 #title, #msg {
   white-space:pre-wrap;
   line-height:1.25rem;
@@ -343,4 +346,24 @@ input.mt1px { margin-top: 1px; }
 #dialog::backdrop {
   backdrop-filter:blur(var(--16th));
   background-color:#AAA7;
+}
+
+/*   Open state of a dialog  */
+dialog[open] {
+  opacity: 1;
+}
+
+/*   Closed state of a dialog   */
+dialog {
+  opacity: 0;
+  transition: opacity 1s;
+}
+
+/*   Before-open state  */
+/* Needs to be after the previous dialog[open] rule to take effect,
+    as the specificity is the same */
+@starting-style {
+  dialog[open] {
+    opacity: 0;
+  }
 }

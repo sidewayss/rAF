@@ -76,79 +76,77 @@ export class Easy {
                 o.legs.push({wait, time:o[t] - split - gap, type, io:ios[1]});
             }
         }
-        // _firstLeg and #lastLeg are starting points for two linked lists of
-        // leg objects. The outbound list starts with _firstLeg. The inbound
-        // list is made up of clones of the outbound list's legs, starting with
-        // a clone of #lastLeg, see #reverseMe(). stepsToLegs() overwrites both.
-        const last = o.legs.length - 1;
-        this._firstLeg = o.legs[0];
-        this.#lastLeg  = o.legs[last];
-
-        // o[e] is subject to further change in stepsToLegs() if no jump end
-        // _firstLeg shares .start with o, #lastLeg shares .end
-        if (type == E.steps && Is.A(o.steps))
-            this.#lastLeg[e] = o.steps.at(-1);
-
-        override(s, this._firstLeg, o, "the first", [0]);
-        override(e, this.#lastLeg,  o, "the last",  [isInc ? undefined : 1]);
-    //!!o[s] = Ez.toNumber(o[s], s, 0);
-    //!!o[e] = Ez.toNumber(o[e], e, isInc ? undefined : 1);
-        if (o[s] == o[e] && (o.legs.length == 1  // it goes nowhere
-                          || !o.legs.some(leg =>
-                                (Is.def(leg[s]) && leg[s] != o[s])
-                             || (Is.def(leg[e]) && leg[e] != o[e]))))
-            throw new Error(`start and end are the same: ${o[s]} = ${o[e]}`);
-        //-----------------
         if (isInc && !o[t])
             o[c] = Ez.toNumber(o[c], c, ...Ez.undefGrThan0)
 
         const isT = !o[c];
         let   tc  = isT ? t : c;          // "time" or "count"
         this.#legsWait = prepLegs(o, type, s, e, w, tc, isInc);
-        if (!Is.def(this._firstLeg[s]))  // normalize o[s] and o[e] with legs
-            this._firstLeg[s] = o[s];
+
+        // _firstLeg and #lastLeg are starting points for two linked lists of
+        // leg objects. The outbound list starts with _firstLeg. The inbound
+        // list is made up of clones of the outbound list's legs, starting with
+        // a clone of #lastLeg, see #reverseMe(). stepsToLegs() can modify both.
+        const last = o.legs.length - 1;
+        this._firstLeg = o.legs[0];
+        this.#lastLeg  = o.legs[last];
+
+        // _firstLeg shares .start with o, #lastLeg shares .end
+        // o[e] is subject to further change in stepsToLegs() if no jump end
+        override(s, this._firstLeg, o, "the first", [0]);
+        if (!this.#lastLeg.stepsReady)
+            override(e, this.#lastLeg,  o, "the last", [isInc ? undefined : 1]);
+        else {
+            if (Is.def(o[e]))
+                console.warn(o.end != this.#lastLeg.steps.at(-1));
+            o[e] = this.#lastLeg.steps.at(-1);
+            this.#lastLeg[e] = o[e];
+        }
+        if (!Is.def(this._firstLeg[s]))   // normalize o[s] and o[e] with
+            this._firstLeg[s] = o[s];     // legs prior to _finalizeLegs().
         if (!Is.def(this.#lastLeg[e]))
             this.#lastLeg[e] = o[e];
 
-        if (!o[t] && !o[c])
-            tc = "";                      // _finishLegs() in incremental.js too
-        this._finishLegs(o, s, e, t, ...(isInc ? [c,  tc] : [io, last]));
-        if (isT)
-            this.#time = o[t];
+        const
+        down = this._finishLegs(o, s, e, t, ...(isInc ? [c,  tc] : [io, last])),
+        unit = down ? 1 : 0,
+        comp = Ez.comp(unit);             // isInc ignores unit and comp
 
-        this.#start = o[s];
-        this.#end   = o[e];               // must follow stepsToLegs()
-        const down  = o[e] < o[s];
-        if (down)                         // see _calc() and #set_e()
-            this.#compUnit = Easy.#unitComp.reverse();
-
-        isInc ? this._value = this.#start // set initial, base animation values
-              : this.#base  = down ? this.#end : this.#start;
-
-        // Dummy _firstLeg.prev simplifies _calc(), must precede #reverseMe().
-        // #lastLeg's dummy .prev is set on the cloned leg in #reverseLeg().
-        // if (#isInc) unit is ignored.
-        const defUnit = down ? 1 : 0;     //!!does E.increment use e.unit or comp??
-        this._firstLeg.prev = {unit:defUnit, end:this.#start, wait:0};
+        // A dummy _firstLeg.prev simplifies _calc(), must precede #reverseMe()
+        // #lastLeg's dummy .prev is set on the cloned leg in #reverseLeg()
+        this._firstLeg.prev = {unit, comp, end:o[s], wait:0};
         if (this.#roundTrip)
             this.#reverseMe(isInc);       // requires _firstLeg.prev
 
-        // this.e stores the current state.
-        // e.status is the current status, range: E.arrived to E.original.
-        // e.value  is the current eased value.
-        // e.unit   is the unit interval for that value, range: 0-1 inclusive.
-        // e.comp   is the complement of unit: 1 - unit.
-        // e.value and e.unit are the same if start/end are 0/1 or vice-versa.
-        this.e  = { waitNow:undefined, status:undefined };
-        this.e2 = {};                    // for looping, tripping, no status
-        this.#e = { value:this.#start,   // initial state for #init_e()
-                    unit: defUnit,
-                    comp: Ez.comp(defUnit) };
+        this.#start = o[s];
+        this.#end   = o[e];               // must follow stepsToLegs()
+        if (isT)
+            this.#time = o[t];
 
-        this.#init_e();        // assign([e, e2], #e), status:undefined
-        Object.freeze(this.#e);
+        if (isInc)                        // initial, base animation values
+            this._value = o[s];
+        else
+            this.#base  = down ? o[e] : o[s];
+
+    //!!if (down)                         // see _calc() and #leg2e()
+    //!!    this.#compUnit = Easy.#unitComp.slice();
+
+        // this.e    stores the current state
+        // this.e2   is a secondary e w/o status, for loops/trips without waits
+        // this.#e   is the initial configuration for this.#init_e()
+        // e.value   is the current eased value
+        // e.unit    is the unit interval for that value, range: 0-1 inclusive
+        // e.comp    is the complement of unit: 1 - unit
+        // e.status  is the current status, range: E.arrived to E.original
+        // e.waitNow helps calc(), _nextLeg(), Easies.proto.next() at run-time
+        this.e  = {waitNow:undefined, status:undefined};
+        this.e2 = {};
+        this.#e = {unit, comp, value:o[s]};
+
+        this.#init_e();
         Object.seal(this.e);
         Object.seal(this.e2);
+        Object.freeze(this.#e);
 
         Ez.is(this);
         Object.seal(this);
@@ -163,22 +161,32 @@ export class Easy {
 //  _finishLegs() is the second iteration over legs by constructor(), overriden
 //                by Incremental. This version only does time, not count.
 //   If legs go up & down, this.#dist is less than the total distance traveled;
-//   leg.dist can be greater than this.#dist; and leg.start/leg.end can be
+//   legDist can be greater than this.#dist; and leg.start/leg.end can be
 //   outside the bounds of this.#start/this.#end, thus e.unit can be > 1 or < 0.
-//   leg.dist is only referenced here and stepsToLegs(), thus could be a local
-//   variable passed as argument to stepsToLegs()...
-//   E.steps does not use leg.part.
-//   The sum of all leg.parts = this.#dist.
-//   The sum of abs(leg.part) = total distance traveled.
+//   E.steps does not use leg.part
+//   The sum of all leg.parts = this.#dist
+//   The sum of abs(leg.part) = total distance traveled
     _finishLegs(o, s, e, t, io, last) {
-        const
-        dist    = o[e] - o[s],                  // leg default distance is:
-        defDist = dist / o.legs.length;         //     total / # of legs
-
-        for (const leg of o.emptyLegs)          // must precede stepsToLegs()
+        const start = o[s];
+        if (this.#lastLeg.stepsReady) {     // user steps can have start == end,
+            let i = 0;                      // distance is max distance traveled
+            this.#lastLeg.steps.forEach((step, j) => {
+                if (Math.abs(step - start) > i)
+                    i = j;                  // only matters for e.unit, e.comp
+            });
+            o[e] = this.#lastLeg.steps[i];
+        }
+        for (const leg of o.emptyLegs)      // must precede stepsToLegs()
             spreadToEmpties(leg, t, o.spread);
 
-        this.#dist = dist;                      // signed float
+        let legDist;                        // legDist, objDist are signed floats
+        const
+        objDist = o[e] - o[s],              // leg default distance is:
+        defDist = objDist / o.legs.length,  //   total / # of legs
+        isDown  = objDist < 0,
+        keys    = isDown ? Easy.#unitComp.slice().reverse()
+                         : Easy.#unitComp;  // unit and comp swap if dist < 0
+
         o.legs.forEach((leg, i) => {
             // Ensure that every leg.start and leg.end are defined. #prepLegs()
             // defaults _firstLeg.start and #lastLeg.end to o.start|end, which
@@ -188,82 +196,87 @@ export class Easy {
             if (!Is.def(leg[e]))
                 leg[e] = leg.next[s] ?? leg[s] + defDist;
 
-            leg.dist = leg[e] - leg[s];         // signed float
-            leg.unit = legUnit(leg, o[s], dist);
+            legDist = leg[e] - leg[s];
+            if (!legDist && !leg.stepsReady)
+                Ez._mustBeErr("Each leg's distance",
+                              `greater than zero.\nlegs[${i}] start:${leg[s]} == end:${leg[e]}`);
+            //------------------------
             if (leg.type == E.steps) {
-                const obj = stepsToLegs(o, leg, dist, i, last);
-                if (obj)
-                    obj.first ? this._firstLeg = obj.leg
-                              : this.#lastLeg  = obj.leg;
+                const obj = stepsToLegs(o, leg, legDist, objDist, i, last, keys);
+                if (obj.firstLeg)           // sTL() modifies o.legs
+                    this._firstLeg = obj.firstLeg;
+                if (obj.lastLeg)
+                    this.#lastLeg  = obj.lastLeg;
             }
             else {
-                leg.part = leg.dist / Math.abs(dist);
+                legUnit(leg, o[s], objDist, keys);
+                leg.part = legDist / Math.abs(objDist);
                 leg.io   = getIO(leg.io, io);
                 leg.ease = easings[leg.io][leg.type];
-                if (leg.type == E.bezier)       // must wait for leg.time
+                if (leg.type == E.bezier)   // must wait for leg.time
                     leg.bezier = toBezier(leg.bezier, leg.time);
             }
         });
-        this._leg = this._firstLeg;             // the current leg for animation
+        this.#dist = Math.abs(objDist);     // unsigned, see _calc()
+        this._leg  = this._firstLeg;        // the current leg for animation
+        return isDown;
     }
 //==============================================================================
 // Round trip methods, called by contructor and setters:
-//  #reverseMe() creates a new linked list of legs that starts with a reversed
+//  #reverseMe() creates a new, inbound linked list that starts with a reversed
 //               clone of #lastLeg and ends with a reversed clone of _firstLeg.
     #reverseMe(isInc = this.isIncremental) {
-        let leg, next, orig, prev;     // prev is a clone or a dummy
-        orig = this.#lastLeg;          // orig and next are outbound legs
-        next = orig.prev;
-        prev = {end:this.#end, unit:Number(!this._firstLeg.prev.unit)};
+        let
+        orig = this.#lastLeg,
+        next = orig.prev,
+        prev = {end:orig.end, unit:orig.unit};
 
-        this.#lastLeg = this.#reverseLeg(orig, prev, {wait:0}, isInc);
-        prev = this.#lastLeg;          // first clone in new inbound linked list
-        while (next && next.prev) {    // (&& next.prev) avoids _firstLeg.prev
-            leg = this.#reverseLeg(next, prev, orig, isInc);
-            prev.next = leg;
-            prev = leg;
+        this.#lastLeg = this.#reverseLeg(orig, prev, 0, isInc);
+        prev = this.#lastLeg;
+        while (next && next.prev) {     // (&& next.prev) avoids _firstLeg.prev
+            prev.next = this.#reverseLeg(next, prev, orig.wait, isInc);
+            prev = prev.next;
             orig = next;
             next = next.prev;
         }
-        this.#reversed = true;         // for set roundTrip() and other setters
+        this.#reversed = true;          // for set roundTrip() and other setters
     }
 //  #reverseLeg() helps #reverseMe() create a new inbound leg for round-trip.
-    #reverseLeg(leg, prev, orig, isInc) {   //??which properties don't change?? type, time, count...
+    #reverseLeg(leg, prev, wait, isInc) {   //??which properties don't change?? type, time, count...
         const clone = Ez.shallowClone(leg); //!!round-trip incremental w/undefined stuff!!
         if (isInc) {
-            if (clone.increment)       // not #isInc because .increment can
-                clone.increment *= -1; // be undefined, see #nextInc().
+            if (clone.increment)        // not #isInc because .increment can
+                clone.increment *= -1;  // be undefined, see #nextInc().
         }
-        else {                         // E.steps legs have no start
+        else {                          // E.steps legs have no start
             clone.end   = leg.start ?? leg.prev.end;
             clone.start = leg.end;
-            clone.dist = -leg.dist;
-            clone.part = -leg.part;
-            if (this.#flipTrip)        // defaults to true
+            clone.part  = -leg.part;
+            if (this.#flipTrip)         // defaults to true
                 Easy.#flipTripLeg(clone);
         }
         clone.unit = leg.prev.unit;
         clone.prev = prev;
         clone.next = undefined;
-        clone.wait = orig.wait + (leg.leftover ?? 0);
-        this.#legsWait += orig.wait;
+        clone.wait = wait + (leg.leftover ?? 0);
+        this.#legsWait += wait;
         return clone;
     }
 //  static #flipTripLeg() flips io for a leg's inbound trip
     static #flipTripLeg(leg) {
         if (leg.type < E.steps) {
-            leg.io = Number(!leg.io);  // doesn't apply to E.bezier, E.linear,
-            if (leg.type == E.bezier)  // but necessary if user changes type.
+            leg.io = Number(!leg.io);   // doesn't apply to E.bezier, E.linear,
+            if (leg.type == E.bezier)   // but necessary if user changes type.
                 leg.bezier = leg.bezier.reversed;
             else
                 leg.ease = easings[leg.io][leg.type];
         }
     }
 //==============================================================================
-// Getters and setters (are there too many setters?? flipTrip, others??):
+// Getters and setters:
     get start()    { return this.#start; }
     get end()      { return this.#end;   }
-    get distance() { return this.#dist;  }
+    get distance() { return this.#dist;  }  // unsigned
 
 // animation callbacks:
     get pre()     { return this.#pre;  }
@@ -449,7 +462,7 @@ export class Easy {
             apply = (e) => {    // fast-forward to the end
                 while (this._leg.next)
                     this._leg = this._leg.next;
-                this.#set_e(e, this._leg.unit, this._leg.end ?? this._value);
+                this.#leg2e(e, this._leg);
                 for (const t of this.#targets)
                     t._apply(e);
             };
@@ -479,8 +492,8 @@ export class Easy {
         let peri
         if (this.isIncremental)
             e.value = this._value;
-        else //!!for init() this could call #init_e(E.initial)...??
-            this.#set_e(e, this._leg.prev.unit, this._leg.prev.end);
+        else
+            this.#leg2e(e, this._leg.prev);
 
         for (const t of this.#targets) {
             if (t.elmCount) {       // no elms = nothing to apply
@@ -526,11 +539,11 @@ export class Easy {
         if (Is.def(status))             // option to leave status alone
             this.e.status = status;     // e2 doesn't have status //$$
     }
-//  #set_e() sets the three eKey properties of e: value, unit, comp
-    #set_e(e, unit, value) {
-        e.unit  = unit;
-        e.comp  = Ez.comp(unit);
-        e.value = value;
+//  #leg2e() sets the three eKey properties of e: value, unit, comp
+    #leg2e(e, leg) {
+        e.unit  = leg.unit;
+        e.comp  = leg.comp;
+        e.value = leg.end ?? this._value; // _value is for incremental
     }
 //==============================================================================
 // Animation methods:
@@ -560,7 +573,7 @@ export class Easy {
             if (!hasNext || waitNow || isSteps) {
                 if (hasNext)              // E.arrived, E.tripped, E.waiting
                     leg = leg.prev;       // i.e. e.status <= E.waiting (or isSteps)
-                this.#set_e(e, leg.unit, leg.end);
+                this.#leg2e(e, leg);
                 if (hasNext || (!e.status && isSteps)) //!!these comments need revisions!!
                     return;               // waiting or steps = E.arrived, or steps !e.waitNow...
                 //----------------------- //!!loopbyelm && steps must continue!!
@@ -568,22 +581,21 @@ export class Easy {
                 e = this.e2;              // for looping, autoTrip steps no wait
                 if (isSteps) {
                     if (!waitNow)
-                        this.#set_e(e, leg.unit, leg.end);
-                    return;               // steps = E.tripped
-                } //----------------------// steps is done, no calculations
+                        this.#leg2e(e, leg);
+                    return;
+                } //------------------------ steps is done, no calculations
                 leg = this._leg;
             }
             now = this._now;              // _nextLeg modified it
-        }
-        const
-        keys = this.#compUnit ?? Easy.#unitComp,
-        uc   = leg.ease(now / leg.time) * leg.part + leg.prev.unit;
-        e[keys[0]] = uc;                  // uc because it might be unit or comp
-        e[keys[1]] = Ez.comp(uc);
-    //!!if (this.#setValue)
-        e.value = uc * Math.abs(this.#dist) + this.#base;
-    //!!else
-    //!!    e.value = e.unit;
+        }                                 // ...leg.part is signed
+        const unit = leg.ease(now / leg.time) * leg.part + leg.prev.unit;
+    //!!keys = this.#compUnit ?? Easy.#unitComp,
+    //!!uc   = leg.ease(now / leg.time) * leg.part + leg.prev.unit;
+    //!!e[keys[0]] = uc;                  // uc because it might be unit or comp
+    //!!e[keys[1]] = Ez.comp(uc);
+        e.unit  = unit;
+        e.comp  = Ez.comp(unit);
+        e.value = unit * this.#dist + this.#base;
     }
 //  _nextLeg helps both _calc()s to get time-based next leg
     _nextLeg(leg, e) {
@@ -602,9 +614,7 @@ export class Easy {
                 if (next) {
                     this._leg = next;
                     wait = next.wait;
-                }
-            //!!else         //!!fully handled by if (!next) below
-            //!!    wait = 0;
+                }               // else handled by if (!next) below: wait =
             }
         }
         // The changes to wait below only apply if autoTrip or plays > 1, but
@@ -616,7 +626,7 @@ export class Easy {
             else                // E.arrived
                 wait = this.#loopWait;
         }
-        e.waitNow   = wait >= this._now //!! && !(!this._now && !wait);
+        e.waitNow   = wait && (wait >= this._now);
         this.#zero += wait + time;
         return this._leg;
     }

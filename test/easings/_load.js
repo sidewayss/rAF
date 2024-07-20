@@ -4,18 +4,18 @@ export const rafChecks = ["useNow","frameZero","initZero"];
 
 import {E, U, P, Pn, Ease, Ez, Easy} from "../../raf.js";
 
-import {ezX, raf}                                   from "../load.js";
-import {getLocal}                                   from "../local-storage.js";
-import {formatInputNumber}                          from "../input-number.js";
-import {pad, newEasies, updateTime, updateCounters} from "../update.js";
-import {COUNT, CHANGE, INPUT, elms, dlg, g, is, isTag, dummyEvent}
-                                                    from "../common.js";
-import {chart, range, refresh, syncZero}               from "./_update.js";
-import {initEzXY, updateTrip}                           from "./index.js";
-import {loadTIOPow, updateTypeIO}                       from "./tio-pow.js";
-import {loadMSG, updateMidSplit, updateSplitGap}        from "./msg.js";
-import {loadSteps, loadTV, initSteps, maxTime, isSteps} from "./steps.js";
-import {loadEvents}                                     from "./events.js";
+import {ezX, raf}          from "../load.js";
+import {getLocal}          from "../local-storage.js";
+import {formatInputNumber} from "../input-number.js";
+import {pad, newEasies, updateTime, updateCounters}         from "../update.js";
+import {COUNT, CHANGE, INPUT, elms, dlg, g, is, dummyEvent} from "../common.js";
+
+import {chart, range, refresh, syncZero}         from "./_update.js";
+import {initEzXY, updateTrip}                    from "./index.js";
+import {loadTIOPow, updateTypeIO}                from "./tio-pow.js";
+import {loadMSG, updateMidSplit, updateSplitGap} from "./msg.js";
+import {loadSteps, loadTV, initSteps, isSteps}   from "./steps.js";
+import {loadEvents}                              from "./events.js";
 
 // a constant, some pseudo-constants, and a variable for resizeWindow()
 const sizes = [
@@ -169,7 +169,6 @@ function updateAll() {  // called by loadFinally(), openNamed()
     updateTypeIO();
     refresh();
     updateCounters();   // must follow refresh()
-    maxTime();          // for E.steps
 }
 //==============================================================================
 // resizeWindow() handles resize events for window, here instead of events.js
@@ -240,10 +239,12 @@ function resizeWindow() {
        - (elms.copied.offsetWidth / 2);
     elms.copied.style.left = n + U.px;
 
-    // Prettify #msgBox: #msg sets the dialog width indirectly
+    // Move #msgBox towards the top of the chart
     const rect = chart.svg.getBoundingClientRect();
-    dlg.msg.style.width = rect.width / 2 + U.px;
-
-    // Move it towards the top of the chart
     elms.msgBox.style.top = rect.top + (rect.height / 4) + U.px;
+
+    // Prettify it for the one-time Welcome message:
+    // #msg sets the #msgBox width indirectly
+    // this forces errorAlert() to always reset dlg.msg.style.width
+    dlg.msg.style.width = rect.width / 2 + U.px;
 }

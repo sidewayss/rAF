@@ -42,15 +42,19 @@ p.hi { font-weight:500; }
 #time {
   width:16ch;
 }
+#steps {
+  text-align:right;
+  margin-left:var(--9-16ths);
+}
+#v0, #v1, #v2 {
+  width:calc(3ch + 1.75rem);
+}
 #unit, #comp {
   margin-left:calc(4ch + var(--5-16ths));
 }
 #unit {
   margin-top: 0.25rem;
   padding-top:var(--8th);
-}
-#v0, #v1, #v2 {
-  width:calc(3ch + 1.5rem);
 }
 #mid {
   padding-top:0;
@@ -82,7 +86,7 @@ p.hi { font-weight:500; }
   padding-right:var(--7-16ths);
 }
 input.secs { /* #t0, #t1, #t1 */
-  width:calc(5ch + 1rem);
+  width:calc(5ch + 1.25rem);
 }
 #split:hover + label, #gap:hover + label, .secs:hover + label,
 #split:focus + label, #gap:focus + label, .secs:focus + label  {
@@ -172,6 +176,10 @@ circle {
   border-radius:var(--5-16ths);
   background-color:var(--sidebar-white);
 }
+#divStartEnd {
+  display:grid;
+  grid-template-columns:1fr var(--btn-size);
+}
 #placeholder {
   height:calc(1rem + var(--11-16ths)); /* .row height + 2px for borders?? */
 }
@@ -180,6 +188,11 @@ circle {
 }
 #divSave {
   padding:0.5rem 0 0.5rem calc(5ch + var(--7-16ths));
+}
+#flip {
+  margin-left:0;
+  align-self:center;
+  transform: rotateX(180deg);
 }
 .checklist, input.checklist {
   margin:0;

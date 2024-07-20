@@ -8,7 +8,8 @@ import {getNamedObj, isNamedSteps} from "./local-storage.js";
 import {MILLI, CLICK, EASY_, elms, addEventsByElm, errorAlert, errorLog}
         from "./common.js";
 
-import {TYPE, IO, TIMING, EASY} from "./easings/index.js";
+import {TYPE, IO}     from "./easings/index.js";
+import {EASY, TIMING} from "./easings/steps.js";
 
 let ezCopy, ns, ns_named, rafCopy;
 const

@@ -7,7 +7,7 @@ import {COUNT, elms}  from "../common.js";
 import {initEasies}         from "./_load.js";
 import {OVERRIDES, setEasy} from "./events.js";
 
-import {EASY} from "../easings/index.js";
+import {EASY} from "../easings/steps.js";
 //==============================================================================
 // For multi, these 2 functions convert between localStorage JSON and the form,
 // but the JSON does not convert directly to Easy, Easies, or MEaser, it uses

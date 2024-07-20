@@ -49,6 +49,7 @@ function easingFromObj(obj, leg0, leg1) {
                 elms[id].value == elms[id + TWO].value
             );
     }
+    return [];  // could probably return undefined, but this is at least typed
 }
 // easingFromForm() creates an object from controls for localStorage or
 //                  new Easy(), called exclusively by objFromForm().

@@ -9,7 +9,7 @@ const t = "timing";
 //==============================================================================
 // steps() consolidates code in #prepLegs()
 //         Each step becomes a leg to make processing simpler during animation.
-//         leg.steps  is Number or Array-ish. leg.easy eases leg.steps.
+//         leg.steps  is Number, Array-ish, undefined. leg.easy eases leg.steps.
 //         leg.timing is Array-ish, Easy, or undefined.
 //         If leg.timing is Array-ish, leg.steps can be undefined, otherwise
 //         the legs.steps or leg.steps.length must match leg.timing.length.
@@ -19,15 +19,18 @@ function steps(o, leg) {
 
     if (!stepsIsN && Is.def(leg[s])) {  // numeric string, array, or invalid
         const n = Is.A(leg[s]) ? NaN : parseFloat(leg[s]);
-        try {                           // validate/convert leg[s]
-            if (Number.isNaN(n)) {      // ...slice() preserves user array
+        try {
+            if (Number.isNaN(n)) {      // it's an array of numbers
                 leg[s] = toNumberArray(leg[s].slice(), s);
+                stepsIsA = true;        // ...slice() preserves user array //!!how do you preserve it and set it at the same time??
                 leg.stepsReady = true;
-                stepsIsA = true;        // it's an array of numbers
+                if (Is.def(leg.start))
+                    console.info(leg.start != leg[s][0]); //!!leg.start is ignored anyway
+                if (Is.def(leg.end))
+                    console.info(leg.end != leg[s].at(-1)); //!!leg.end is ignored anyway
             }
-            else {
-                leg[s] = n;             // parseFloat() converted it to a number
-                stepsIsA = false;
+            else {                      // parseFloat() converted it to a number
+                leg[s] = n;
                 stepsIsN = true;
             }
         } catch {
@@ -95,8 +98,8 @@ function steps(o, leg) {
     }
 }
 //  stepsToLegs() helps _finishLegs() turn 1 leg into >1 legs for _calc()
-function stepsToLegs(o, leg, dist, idx, last) {
-    let ends, retval, waits;
+function stepsToLegs(o, leg, legDist, dist, idx, last, keys) {
+    let ends, waits;
     if (leg.timingReady)        // leg.timing is an array of wait times
         waits = leg[t];
     else if (leg[t])            // leg.timing is an Easy instance
@@ -109,29 +112,32 @@ function stepsToLegs(o, leg, dist, idx, last) {
     if (leg.stepsReady)         // leg.steps is already an array of step values
         ends = leg[s];
     else if (leg.easy)          // generate eased steps
-        ends = easeSteps(leg.easy, waits, leg.time, leg.start, leg.dist, "easy");
+        ends = easeSteps(leg.easy, waits, leg.time, leg.start, legDist, "easy");
     else {
-     const j = leg.dist / l;    // generate linear steps
-        ends = Array.from(LENGTH, (_, i) => leg.start + (j * (i + 1)));
+        const d = legDist / l;  // generate linear steps
+        ends = Array.from(LENGTH, (_, i) => leg.start + (d * (i + 1)));
     }
                                 // transform the steps into legs:
-    const legs = Array.from(LENGTH, () => new Object);
-    legs.forEach((obj, i) => {
-        obj.type = E[s];
-        obj.io   = E.in;        // must be defined
-        obj.end  = ends[i];     // the step value
-        obj.unit = legUnit(obj, o.start, dist);
-        obj.prev = legs[i - 1];
-        obj.next = legs[i + 1];
-        obj.time = 0;           // steps don't have a duration
-        obj.wait = waits[i] - (i ? waits[i - 1] : 0);
+    const
+    start = o.start,
+    legs  = Array.from(LENGTH, () => new Object);
+    legs.forEach((lg, i) => {
+        lg.type = E[s];
+        lg.io   = E.in;         // must be defined
+        lg.end  = ends[i];      // the step value
+        legUnit(lg, start, dist, keys);
+        lg.prev = legs[i - 1];
+        lg.next = legs[i + 1];
+        lg.time = 0;            // steps don't have a duration
+        lg.wait = waits[i] - (i ? waits[i - 1] : 0);
     });
     if (leg.wait)
         legs[0].wait += leg.wait;
 
-    if (idx == 0)               // #firstLeg
-        retval = {first:true, leg:legs[0]};
-    else {
+    const obj = {};
+    if (idx == 0)               // _firstLeg
+        obj.firstLeg = legs[0];
+    else {                      // replace leg in the linked list
         legs[0].prev  = leg.prev;
         leg.prev.next = legs[0];
     }
@@ -141,14 +147,14 @@ function stepsToLegs(o, leg, dist, idx, last) {
     if (idx == last) {          // #lastLeg
         o.end   = legs[l].end;
         o.time -= leftover;
-        retval  = {leg:legs[l]};
+        obj.lastLeg = legs[l];
     }
-    else {
+    else {                      // continue to replace leg in the list
         legs[l].next   = leg.next;
         leg.next.prev  = legs[l];
         leg.next.wait += leftover;
     }
-    return retval;
+    return obj;
 }
 //  static easeSteps() helps stepsToLegs() use an Easy to set the timing or
 //         values for E.steps. ez cannot be E.increment here because it has
@@ -169,10 +175,10 @@ function easeSteps(ez, nows, time, start, dist, name) {
     do {                                        // for each leg:
         if (leg.type == E[s])                   // phase 3: can't be E.steps
             Ez._cantBeErr(name, `type:E.${s}`);
-        if (isTiming && (ezDown != leg.dist < 0 // phase 4: can't mix directions
+        if (isTiming && (ezDown != leg.end < leg.start
                       || (leg.type >= E.back && leg.type <= E.bounce)
                       || (leg.type == E.bezier && Ez.unitOutOfBounds(leg.bezier.array))))
-            Ez._cantBeErr(
+            Ez._cantBeErr(                      // phase 4: can't mix directions
                 name,
                 "an Easy that changes direction. Time only moves in one direction",
                 {cause:"reverse time"}          // better *not* as string...

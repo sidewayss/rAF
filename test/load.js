@@ -3,7 +3,7 @@ FPS = 60,    // assumes 60hz, but adjusts to reality at run-time
 ezX, raf,    // Easy, AFrame
 preDoc;      // prefix for this document, see local-storage.js
 
-import {E, Ez, P, PFactory, Easy, Easies, AFrame} from "../raf.js";
+import {U, E, Ez, P, PFactory, Easy, Easies, AFrame} from "../raf.js";
 
 import {getNamed, getNamedBoth, setNamed}            from "./local-storage.js";
 import {msecs, loadUpdate, timeFrames, formatNumber} from "./update.js";
@@ -189,30 +189,45 @@ function loadFinally(is, name, hasVisited, id) {
         errorLog(err, "fpsBaseline() failed")
      ).finally(() => {       // fade document.body into view
         let
-        time = 1000,
+        time = 750,
         ez   = new Easy({time, type:E.expo}),
         ezs  = af.newEasies([ez]),
-        elm  = ns.easeFinally?.(af, ezs, ez, time, is)
+        elm  = ns.easeFinally?.(af, ezs, ez, time, is) // color page only
             ?? document.body;
-        ez.newTarget({elm, prop:P.o});    // opacity
-        af.oneShot = true;   // needs testing, see (!hasVisited) below
+        ez.newTarget({elm, prop:P.o});  // opacity
+        af.oneShot = true;   // needs testing, see if (showDialog) below
+
+        const showDialog = !hasVisited && is.easings;
+        if (showDialog) {
+            dlg.icon.src = "/icons/info.svg";
+            dlg.title.textContent = "Welcome to the rAF easings page."
+            dlg.msg.innerHTML =
+                "I suggest you begin by exploring the presets in the "
+                + "<span>Name</span> drop-down at the bottom, left."
+            ;                           // just for this one message:
+            elms.msgBox.style.transitionDelay = "750ms";
+            elms.msgBox.showModal();
+        }
         af.play()
           .catch(err => {    // don't alert the user, just display the page
             errorLog(err, "Fade-in animation failed");
             P.opacity.setIt(elm, ONE);
             P.filter .setIt(elm, "none"); // not all pages require this
           })
-          .finally(() => {  // only for first-time visitors to easings page
-            if (!hasVisited && is.easings) {//!!separate into two easys!!
+          .finally(() => {
+            if (showDialog) {
+                elms.msgBox.style.transitionDelay = "";
                 elm = elms.named;
                 obj = {time:750, roundTrip:true};
                 const
                 props = [P.color, P.borderColor, P.borderRadius, P.boxShadow],
                 boxSh = {elm, mask:[2], cV:"0 0 0rem red"},
                 cbCbR = {elm, start:E.cV},
-                //ez3 = new Easy({wait:1500, plays:3, ...obj}),
-                ez2 = new Easy({wait:2250, ...obj, plays:2});
-                ez  = new Easy({wait:1500, ...obj, tripWait:3000});
+
+                ez2 = new Easy({wait:3750, ...obj});
+                ez  = new Easy({wait:3000, ...obj, tripWait:1500,
+                                type:E.pow, pow:2, io:E.out});
+
                 ez .newTarget({prop:props[0], ...cbCbR, end:"red"});
                 ez .newTarget({prop:props[1], ...cbCbR, end:"red"});
                 ez2.newTarget({prop:props[2], ...cbCbR, distance:E.cV});
@@ -225,13 +240,6 @@ function loadFinally(is, name, hasVisited, id) {
                     for (const p of props)
                         p.cut(elm);
                 });
-                dlg.icon.src = "/icons/info.svg";
-                dlg.title.textContent = "Welcome to the rAF easings page."
-                dlg.msg.innerHTML =
-                    "I suggest you begin by exploring the presets in the "
-                  + "<span>Name</span> drop-down at the bottom, left."
-                ;
-                elms.msgBox.showModal();
             }
       //++})
       //++.finally(()  => {  // service worker manages caching

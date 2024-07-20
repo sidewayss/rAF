@@ -96,18 +96,17 @@ function updateTypeIO(isIO, [isBez, isStp, isBS] = isBezierOrSteps()) {
     isP  = isPow(),
     isP2 = has2 && isPow(Number(elms.type2.value));
 
-    P.displayed(elms.placeholder, !has2);
-    P.displayed([elms.divType2, elms.divMid, chart.dashX, chart.dashY], has2);
-    P.visible  ([elms.divSplit, elms.divGap], has2);
-    if (has2)           // only matters when changing to/from 1 vs 2 legs,
-        setSplitGap();  // does extra work when preceded by formFromObj().
-
     P.displayed(elms.divPow,  isP || isP2);
     P.displayed(elms.pow,     isP);         // <label> always shows
     P.displayed(elms.divPow2, isP2);
     P.displayed(elms.linkPow, isP && isP2); // <input> always shows
 
-    return has2;        // convenient for a couple of callers
+    setSplitGap(undefined, has2);
+    P.displayed(elms.placeholder, !has2);
+    P.displayed([elms.divType2, elms.divMid, chart.dashX, chart.dashY], has2);
+    P.visible  ([elms.divSplit, elms.divGap], has2);
+
+    return has2;  // convenient for a couple of callers
 }
 //==============================================================================
 // isPow() <= easingFromObj(), easingFromForm(), updateTypeIO(), refresh()

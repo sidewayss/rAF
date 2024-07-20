@@ -3,14 +3,14 @@ export {loadEvents, shallowClone, storeIt, setNoWaits};
 import {Ez, P} from "../../raf.js";
 
 import {ezX, raf}                   from "../load.js";
+import {callbacks}                  from "../update.js";
 import {changeStop}                 from "../play.js";
 import {storeCurrent, setLocalBool} from "../local-storage.js";
-import {CHANGE, elms, g, addEventToElms, addEventsByElm,}
-                                    from "../common.js";
+import {CHANGE, elms, addEventToElms, addEventsByElm,} from "../common.js";
 
 import {chart, range, drawLine, refresh} from "./_update.js";
-import {objEz}                                   from "./_named.js";
-import {ezY, updateTrip}                         from "./index.js";
+import {objEz}                           from "./_named.js";
+import {ezY, updateTrip}                 from "./index.js";
 
 //==============================================================================
 function loadEvents(checks) {
@@ -24,7 +24,7 @@ const change = {
     plays(evt) {  // also called by updateAll().
         const plays = Number(elms.plays.value);
         const b     = plays > 1;
-        ezY.onLoop  = b ? onLoop : undefined;
+        ezY.onLoop  = b ? callbacks.onLoop : undefined;
         change.showLoopWait(b);
         setNoWaits();
         if (!evt.isUpdateAll) {

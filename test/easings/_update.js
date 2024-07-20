@@ -1,11 +1,10 @@
-export {refresh, storeIt, initPseudo, newTargets, getMsecs, getFrame,
-        updateX, setCounters, formatDuration, drawLine, syncZero, isInitZero,
-        postPlay};
+export {refresh, storeIt, initPseudo, newTargets, getMsecs, getFrame, postPlay,
+        updateX, setCounters, formatDuration, drawLine, syncZero, isInitZero};
 
-export let wasStp;  // see wasOob below
+export let wasStp = false; // see wasOob below
 export const
-chart = {},         // SVG chart elements and viewBox array
-range = {},         // SVG vertical pseudo-range element
+chart = {},      // SVG chart elements and viewBox array
+range = {},      // SVG vertical pseudo-range element
 loopFrames = [];
 
 import {E, U, P, Pn, Is, Ez, Easy} from "../../raf.js";
@@ -246,18 +245,20 @@ function isInitZero() {
     return elm.checked && !elm.disabled;
 }
 //==============================================================================
+// getMsecs() is only called by timeFrames()
 function getMsecs() {
     return elms.time.valueAsNumber;
 }
-// getFrame() creates a frame object, <= update.js: update(), pseudoAnimate()
+// getFrame() converts arguments to a frame object, called by syncZero(),
+//            updateFrame(), pseudoFrame()
 function getFrame(t, x, e) {
-    const frm  = {t, x, y:e.value};  // frm.y = frm.value, for convenience
+    const frm  = {t, x, y:e.value};  // .y is a convenient alias for .value
     for (var key of ["status", ...Easy.eKey])
         frm[key] = e[key];
     return frm;
 }
 // vucFrame() creates a frame object based on value, unit, comp, called by
-//            initPseudo(), postPlay(), a convenience, for easings only.
+//            initPseudo(), postPlay(), it's a convenience, for easings only.
 function vucFrame(t, x, y, value, unit, comp) { // value, unit, comp versus e
     return {t, x, y, value, unit, comp};
 }
@@ -291,7 +292,7 @@ function postPlay() {
      && ezX.e.status != E.tripped) {     // && end of return trip
         const
         v = Number(elms.end.textContent) // E.steps can end at non-MILLI value
-          * Number(!elms.direction.selectedIndex),
+          * Number(!elms.flip.value),    // flipped means multiply by zero
         u = Math.ceil(v) / MILLI;        // unit is 0 or 1
         frames[0] = vucFrame(0, MILLI, v, v, u, Ez.comp(u));
     }

@@ -14,14 +14,18 @@ export class Incremental extends Easy {
 //   _calc() can compute these properties at run-time, which allows for mixing
 //   time-based and end-based incremental legs.
     _finishLegs(o, _, e, t, c, tc) {
+        if (!o[t] && !o[c])
+            tc = "";
+
         let err, hasCount, hasEnd, hasInc, hasTime;
-        const spreads = []
-        const isTime  = (tc == t);
-        const isCount = (tc == c);
-        const inc  = "increment";
-        const errT = " defines time but not increment.";
-        const errC = " defines count but not increment or end.";
-        const err2 = " must define two of three: increment, end, count.";
+        const
+        spreads = [],
+        isTime  = (tc == t),
+        isCount = (tc == c),
+        inc  = "increment",
+        errT = " defines time but not increment.",
+        errC = " defines count but not increment or end.",
+        err2 = " must define two of three: increment, end, count.";
 
         o[inc]  = Ez.toNumber(o[inc], inc, ...Ez.undefNotZero);
         o.legs.forEach((leg, i) => {

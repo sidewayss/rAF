@@ -12,7 +12,7 @@ import {initEasies}     from "./_load.js";
 import {easys, refresh} from "./_update.js";
 import {objFromForm}    from "./_named.js";
 
-import {EASY} from "../easings/index.js";
+import {EASY} from "../easings/steps.js";
 
 const EZ_ = "ez-";
 //==============================================================================

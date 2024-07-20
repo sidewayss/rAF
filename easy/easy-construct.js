@@ -1,7 +1,7 @@
 // Not exported by raf.js
 // export everything
 export {prepLegs, override, spreadToEmpties, legText, legNumber, legUnit,
-        getType, getIO, splitIO, toBezier, toNumberArray};
+        getType, getIO, splitIO, joinIO, toBezier, toNumberArray};
 
 import {E, Is, Ez, Easy} from "../raf.js";
 
@@ -18,8 +18,8 @@ function prepLegs(o, type, s, e, w, tc, isInc) { // tc is "time" or "count"
     o.legs.forEach((leg, i) => {
         leg.prev = o.legs[i - 1];    // overwritten by stepsToLegs()
         leg.next = o.legs[i + 1];    // ditto
-        legNumber(leg, s, i);        // all non-incremental legs define
-        legNumber(leg, e, i);        // start and end.
+        legNumber(leg, s, i);
+        legNumber(leg, e, i);
         legNumber(leg, w, i, ...Ez.defZero);
         legsWait += leg[w];
                                      // time and count require extra effort
@@ -27,6 +27,7 @@ function prepLegs(o, type, s, e, w, tc, isInc) { // tc is "time" or "count"
         legType(o, leg, i, type, isInc);
         if (leg.type == E.steps)
             steps(o, leg);           // E.steps: leg.timing can set leg.time
+
         if (leg[tc])
             legsTotal += leg[tc];    // accumulate leg.time|count
         else
@@ -48,18 +49,18 @@ function prepLegs(o, type, s, e, w, tc, isInc) { // tc is "time" or "count"
         else                         // legsTotal overrides o[tc]
             override(tc, undefined, o, "every", Ez.defGrThan0, legsTotal);
     }
-    else if (!o.cEmpties)
+    else if (legsTotal && !o.cEmpties)
         o[tc] = legsTotal;           // o[tc] is previously undefined
     else if (!isInc)
-        throw new Error("You must define a non-zero value for "
-                      + `obj.${tc} or for every leg.${tc}.`);
-    //--------------
+        Ez._mustErr("You", "define a non-zero value for obj.time or every leg.time.");
+    //--------------                 // !isInc is only time, no count
     return legsWait;
 }
 //==============================================================================
-// override() overrides o vs leg for start, end, wait, time|count
+// override() overrides o vs leg for start, end, time|count
 //            prop is a string property name, not a Prop instance
-//            called by constructor(), #prepLegs()
+//            called by constructor(start and end), #prepLegs(time|count)
+//            for #prepLegs(): leg is always undefined, legVal is always defined
 function override(prop, leg, o, txt, args, legVal = leg[prop]) {
     let obj, val;
     const oVal = o[prop];
@@ -91,10 +92,12 @@ function legNumber(leg, name, i, defVal, notNeg, notZero) {
                             defVal, notNeg, notZero);
     return leg[name];
 }
-// legUnit() leg.unit = this._legUnit() = the e.unit end value for a leg,
-//           called by _finishLegs(), stepsToLegs().
-function legUnit(leg, start, dist) { // start is o.start, not leg.start
-    return (leg.end - start) / Math.abs(dist);
+// legUnit() sets leg.unit, the e.unit end value for a leg, called by
+//           _finishLegs(), stepsToLegs(); start, dist are o.start, o.dist
+function legUnit(leg, start, dist, keys) {
+    const val = (leg.end - start) / dist;
+    leg[keys[0]] = val;
+    leg[keys[1]] = Ez.comp(val);
 }
 //==============================================================================
 // E.pow, E.bezier, E.steps, and E.increment require a value in a
@@ -173,8 +176,12 @@ function getIO(io, defaultEase = E.in) {
 //           first leg = in:0, out:1, second leg = _in:2, _out:4
 function splitIO(io, fillTwo) {
     return io > E.out ? [io % 2, (io & 4) / 4] // 4 = _out = 2nd leg E.out
-           : fillTwo  ? [io, io]
+         : fillTwo    ? [io, io]
                       : [io];
+}
+// joinIO() joins two one-legged io values into a two-legged io value
+function joinIO(io1, io2) {
+    return io1 + (io2 ? 4 : 2);
 }
 //==============================================================================
 function toBezier(val, time, name = Easy.type[E.bezier]) {

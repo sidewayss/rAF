@@ -58,6 +58,7 @@ export function messageBox(type, title, msg) {
 }
 // errorAlert() displays an error dialog, Error.proto.stack not 100% supported
 export function errorAlert(err, title) { // err = err.toString()
+    dlg.msg.style.width = ""; //!!for lack of a better place to do this!!see easings/resizeWindow()
     messageBox("error", title, err.stack ?? err);
 }
 // errorLog() normalizes console.error() usage
