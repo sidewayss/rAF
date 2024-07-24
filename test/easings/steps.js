@@ -55,8 +55,8 @@ function loadSteps() {
     }, false);
 }
 function loadTV() { // called exclusively by getEasies() during page load
-    let arr, clone, div, divUser, elm, i, id, isT, last, lbl, max, min, sel,
-        selNamed, step, userTV;
+    let arr, clone, div, divUser, elm, func, i, id, isT, last, lbl, max, min,
+        sel, selNamed, step, userTV;
 
     for ([id, min, max, step, isT] of
         [[TIMING,    0, elms.time.max, ".001", true],
@@ -87,10 +87,11 @@ function loadTV() { // called exclusively by getEasies() during page load
 
         userTV  = Ez.toCamel(USER, id);
         divUser = elms[Ez.toCamel(DIV, userTV)];
-        arr = [selNamed, divUser];
+        arr  = [selNamed, divUser];
+        func = tvShowHide(isT);
         Ez.readOnly(sel, OTHER, arr);
         for (elm of arr)                      // initial state is hidden
-            P.displayed(elm, false);
+            func(elm, false);
 
         elm = divUser.lastElementChild;       // userValues, userTiming
         arr = [elm];
@@ -122,11 +123,15 @@ function loadTV() { // called exclusively by getEasies() during page load
 
     elms.userValues.at(-1).addEventListener(INPUT, inputLastValue);
 }
+// tvShowHide() helps loadTV() and updateTV(). isT = isTiming vs Values
+function tvShowHide(isT) {
+    return isT ? P.visible : P.displayed;
+}
 //==============================================================================
 // inputLastTime() is the input event handler for lastUserTime
 function inputLastTime(evt) {
     if (!isInvalid(evt.target))
-        timeFrames(null, evt.target.valueAsNumber * MILLI);
+        timeFrames(evt.target.valueAsNumber * MILLI);
     //!!updateDuration(evt.target.valueAsNumber);
 }
 // inputLastValue() is the input event handler for elms.userValues.at(-1)
@@ -154,7 +159,7 @@ function isSteps(val = g.type) { // val only defined by formFromObj()
 }
 // wasIsSteps() handles the switch to and from type:E.steps, assumes was = !is
 function wasIsSteps(is, isU) {           // isU = [isUT, isUV], order critical
-    P.displayed(elms.drawAsSteps, !is);
+    P.visible  (elms.drawAsSteps, !is);
     P.displayed(elms.initZero,     is);
     [TIMING, VALUES].forEach((id, i) =>  // order critical for !i below
         toggleUser(elms[id], !i, wasStp && isU[i], is && isU[i])
@@ -175,12 +180,10 @@ function toggleUser(sel, isT, was = P.isDisplayed(sel[OTHER][1]),
                   : elms.flip.value ? 0 : MILLI; // VALUES: end
     else
         return false;
-    //--------
+    //-------------------------------------------
     if (isT) {
-        const elm = elms.time
-        P.visible(elm.parentNode, was);
-        timeFrames(...(is ? [, val * MILLI]
-                          : [{target:elm},]));
+        P.visible(elms.time, was);
+        timeFrames(is ? val * MILLI : undefined);
     }
     else
         formatNumber(val, ...FORMAT_END);
@@ -283,13 +286,13 @@ function stepsFromForm(obj) {
         delete obj.time;
     else if (elms.jump.value != E.end)  // E.end is the CSS default for jump
         jump = Number(elms.jump.value); // so leave jump undefined for E.end
-
-    return Object.assign(obj, {steps, timing, jump, easy});
+                                        // property order must match presets
+    return Object.assign(obj, {steps, jump, timing, easy});
 }
 //==============================================================================
 // updateTV() called by stepsFromObj(), changeSteps()
 function updateTV(isUT = isUserTV(elms[TIMING]), isUV = isUserTV(elms[VALUES])) {
-    let id, idx, sel;
+    let func, idx, sel;
     const isUTV = isUT || isUV;
 
     infoZero(isUT);
@@ -297,11 +300,12 @@ function updateTV(isUT = isUserTV(elms[TIMING]), isUV = isUserTV(elms[VALUES])) 
     if (!isUTV && !elms[STEPS].selectedIndex && !elms.jump.selectedIndex)
         elms[STEPS].selectedIndex = 1;  // {steps:1, jump:E.none} is not valid
 
-    for (id of [TIMING, VALUES]) {
-        sel = elms[id];
-        idx = sel.selectedIndex - 1;
-        sel[OTHER].forEach((elm, i) => P.displayed(elm, i == idx));
-    }
+    [TIMING, VALUES].forEach((id, i) => {
+        sel  = elms[id];
+        idx  = sel.selectedIndex - 1;
+        func = tvShowHide(!i);          // P.visible() or P.displayed()
+        sel[OTHER].forEach((elm, j) => func(elm, j == idx));
+    });
 }
 // isUserTV() returns true if sel has "timing" or "values" selected
 function isUserTV(sel) {

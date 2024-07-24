@@ -46,8 +46,11 @@ function prepLegs(o, type, s, e, w, tc, isInc) { // tc is "time" or "count"
             //---------------------------------
             o.spread = o.leftover / o.cEmpties;
         }
-        else                         // legsTotal overrides o[tc]
-            override(tc, undefined, o, "every", Ez.defGrThan0, legsTotal);
+        else {                       // legsTotal overrides o[tc], in most cases
+            const lastLeg = o.legs.at(-1);
+            if (lastLeg.type != E.steps || lastLeg.jump & E.end)
+                override(tc, undefined, o, "every", Ez.defGrThan0, legsTotal);
+        }
     }
     else if (legsTotal && !o.cEmpties)
         o[tc] = legsTotal;           // o[tc] is previously undefined
@@ -180,8 +183,9 @@ function splitIO(io, fillTwo) {
                       : [io];
 }
 // joinIO() joins two one-legged io values into a two-legged io value
+//          either or both arguments can be undefined
 function joinIO(io1, io2) {
-    return io1 + (io2 ? 4 : 2);
+    return (io1 ? 1 : 0) + (io2 ? 4 : 2);
 }
 //==============================================================================
 function toBezier(val, time, name = Easy.type[E.bezier]) {

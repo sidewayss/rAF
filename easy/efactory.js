@@ -13,9 +13,8 @@ import {ECalc}               from "./ecalc.js";
 import {Easer,  EaserByElm}  from "./easer.js";
 import {MEaser, MEaserByElm} from "./measer.js";
 
-import {CFunc}    from "../prop/func.js";
-import {PBase}    from "../prop/pbase.js";
-import {rgbToHxx} from "../prop/color-convert.js";
+import {CFunc} from "../prop/func.js";
+import {PBase} from "../prop/pbase.js";
 
 import {E, Ez, F, Fn, Is, Easy} from "../raf.js"
 
@@ -31,10 +30,12 @@ const
 //          MEaser. The q and cls args are purely for error messaging. b is set
 //          to true by default to allow external clients to call create with
 //          only the o and set args (or only o) and w/o the error check.
-function create(o, set, b = true, q, cls) {
-    if (!b)                         // q for quantity: "single" or "multi")
-        throw new Error(`For ${q}-ease targets, use ${cls[0]} not ${cls[1]}`);
-    //-----------------------------------------------------------------
+function create(o, set, isEasies) {
+    if (Is.def(set) && (isEasies ? !o.easies : Boolean(o.easies))) {
+        const arr = isEasies ? ["single", "Easy",   "Easies"]
+                             : ["multi",  "Easies", "Easy"  ];
+        throw new Error(`For ${arr[0]}-ease targets, use ${arr[1]} not ${arr[2]}`);
+    } //---------------------------------------------------------------
     o.elms = Ez.toElements(o.elms || o.elm || o.elements || o.element);
     o.l    = o.elms.length;
 
@@ -50,7 +51,7 @@ function create(o, set, b = true, q, cls) {
         o.isSet = (o.set == E.set); // both these might be set to true later
         o.isNet = (o.set == E.net) || o.prop?.isUn || o.func?.isUn;
 
-        cv = getCV(o);              // cv = o.restore or o.currentValue
+        cv = getCV(o);              // cv = o.original or o.currentValue
     }                               // gotta get o.cv early for arg count, etc.
     else {                          // !elms requires peri
         o.peri  = Ez._validFunc(o.peri, "peri", true);
@@ -78,15 +79,13 @@ function create(o, set, b = true, q, cls) {
         maskCV(o);                  // for o.configCV (config.param = E.cV)
     }
     endToDist(o);                   // convert end to distance = factor
-    plugCV(o, hasElms, is1Elm);     // build squeezed o.values and reset o.mask
+    plugCV(o, hasElms, is1Elm);     // build squeezed o.value and reset o.mask
                                     // calc functions are the final step:
     let tar;                        // tar for target = the [M]Easer
     const isME = Boolean(o.easies);
     if (o.calcByElm)                // single element or loopByElm
         tar = calcByElm(o, isME);
-    else if (!hasElms)              // no elements, just calcs and .peri()
-        tar = calcNoElms(o, isME);
-    else {                          // multi-element
+    else if (hasElms) {             // multi-element
         o.bAbE = true;              // default is bAbE, only one exception:
         o.l2   = o.lm || 1;         //  no 2D arrays and all 1D are byArg
         o.l1   = o.l;
@@ -106,6 +105,9 @@ function create(o, set, b = true, q, cls) {
         tar = isME ? calcMEaser(o, hasElms)
                    : calcEaser (o, hasElms);
     }
+    else                            // no elements, just calcs and .peri()
+        tar = calcNoElms(o, isME);
+
     set?.add(tar);
     return tar;
 }
@@ -113,12 +115,12 @@ function create(o, set, b = true, q, cls) {
 // Everything else is for portioning create() into manageable chunks
 function getCV(o) {
     let cv = o.currentValue ?? o.cV;
-    if (cv) {                               // initial parsing/validation of
-        cv = Ez.toArray(cv, "getCV");       // user values, current() does more.
+    if (cv) {                                // initial parsing/validation of
+        cv = Ez.toArray(cv, "getCV");        // user values, current() does more
         if (cv.length != o.l)
             Ez._mustBeErr("currentValue", "an array the same length as elms");
         //----------------------
-        o.userCV = Is.def(o.currentValue)   // see current() for usage
+        o.userCV = Is.def(o.currentValue)    // see current() for usage
                  ? "currentValue"
                  : "cV";
         o.cvDims = Ez._dims(cv);
@@ -131,7 +133,7 @@ function getCV(o) {
                   : `${pre}if currentValue is an array of Number,${suf}`
                 );
             }
-            else if (o.isNet)               // E.net requires full CSS values
+            else if (o.isNet)                // E.net requires full CSS values
                 Ez._mustBeErr("currentValue for {set:E.net}",
                               "an array of strings by element");
     }
@@ -139,10 +141,10 @@ function getCV(o) {
         Ez._cantErr("Unless you define {set:E.set}, you",
                     "leave elements and currentValue undefined");
     //---------------------------
-    if (!cv || (o.enableRestore ?? true)) { // enableRestore defaults to true
-        o.restore = o.prop.getMany(o.elms); // the DOM values
+    if (!cv || (o.enableRestore ?? true)) {  // enableRestore defaults to true
+        o.original = o.prop.getMany(o.elms); // the DOM values
         if (!cv)
-            cv = o.restore;
+            cv = o.original;
     }
     return cv;
 }
@@ -251,13 +253,16 @@ function urcfa(o, hasElms) {
     [key, val] = fa(o, ["f","factor","distance","dist","end"]);
     if (key) {
         o.f = val;
-        o.isTo  = (key[0] == "e"); //!!validate that start != end?? funky for different dims: a vs f...
-        o.isSDE = (key[0] != "f"); // SDE = start/distance/end vs addend/factor
+        o.isTo  = (key[0] == "e");  //!!validate that start != end?? funky for different dims: a vs f...
+        o.isSDE = (key[0] != "f");  // SDE = start/distance/end vs addend/factor
     }
     // o.a = addend: if it's zero, set it to undefined, adding 0 is pointless
     [key, val] = fa(o, ["a","addend","start"], true);
     if (key) {
         o.a = val;
+        if (val === E.cV)           // addend is 100% current values
+            o.initial = o.original; // only required for loopByElm && plays > 1
+
         const isS = (key == "start");
         if (!Is.def(o.isSDE))
             o.isSDE = isS;
@@ -522,7 +527,7 @@ function optional(o) { // not for o.isNet
         o.isSet = true;
 }
 //==============================================================================
-// current() processes cv (user-supplied currentValue or o.restore)
+// current() processes cv (user-supplied currentValue or o.original)
 //           it can adjust o.c (argument count) upwards
 //           not for o.isNet, shouldn't be for o.isSet...
 function current(o, cv) {
@@ -1217,33 +1222,33 @@ function calcMEaser(o) {
     return new MEaser(o);
 }
 // calcByElm() returns new EaserByElm or MEaserByElm
-function calcByElm(o, isME) {        // if (isME) setCalc() overwrites byElm[i]
-    const byElm = Ez.newArray2D(o.l);   // wasted initialization = simplest code
+function calcByElm(o, isME) {
+    const calcs = Ez.newArray2D(o.l); // if (isME) setCalc() overwrites calcs[i]
 
     o.oneD = new Array(o.lm);
-    if (o.config.length) {           // parse configs into calcs:
+    if (o.config.length) {            // parse configs into calcs:
         let cfg, i, isUp, notOrByArg, prm, src,
-        c_N,                            // c_N = output dim count, part of cNN
-        cN_ = 0;                        // cN_ = input  ditto
+        c_N,                          // c_N = output dim count, part of cNN
+        cN_ = 0;                      // cN_ = input  ditto
 
-        for (cfg of o.config) {         // configs: loop by f, a, max, min
+        for (cfg of o.config) {       // loop byConfig: f, a, max, min
             [c_N, src, isUp] = prepCalc(cfg, isME, cN_);
 
             notOrByArg = !cfg.dim || cfg.byArg;
-            if (notOrByArg)                // 0D or 1D byArg
+            if (notOrByArg)           // 0D or 1D byArg
                 prm = cfg.param;
-            for (i = 0; i < o.l; i++) {    // loop byElm
+            for (i = 0; i < o.l; i++) {     // loop byElm:
                 if (!notOrByArg) {
-                    if (!cfg.bAbE)            // 1D byElm or 2D byElmByArg
-                        prm = cfg.dim < 2     // prm might be undefined
+                    if (!cfg.bAbE)          // 1D byElm or 2D byElmByArg
+                        prm = cfg.dim < 2   // prm might be undefined
                             ? cfg.param
                             : cfg.param[i];
-                    else {                    // 2D byArgbyElm
+                    else {                  // 2D byArgbyElm
                         prm = new Array(cfg.param.length);
                         cfg.param.forEach((p, j) => {
-                            if (!Is.A(p))     // single value: fill it
+                            if (!Is.A(p))   // single value: fill it
                                 prm[j] = p;
-                            else {            // array: make a sparse copy
+                            else {          // array: make a sparse copy
                                 prm[j] = [];
                                 if (Is.def(p[i]))
                                     prm[j][i] = p[i];
@@ -1252,29 +1257,28 @@ function calcByElm(o, isME) {        // if (isME) setCalc() overwrites byElm[i]
                     }
                 }
                 // cfg.param is always defined, but if (!Is.def(prm)): cfg.param
-                // and byElm[] are sparse, and the calc object not created.
-                // For MEasers, byElm array is 3D: byElm, byEasy, byConfig.
+                // and calcs[] are sparse, and the calc object not created.
+                // For MEasers, calcs array is 3D: byElm, byEasy, byConfig.
                 if (Is.def(prm))
-                    setCalc(o, prm, Ez.shallowClone(src), byElm, isUp, isME, i);
-            } // end loop byElm
+                    setCalc(o, prm, Ez.shallowClone(src), calcs, isUp, isME, i);
+            }
             if (isUp)
                 cN_ = c_N;
-        } // end loop byConfig
-    }
-    else if (isME) {                 // no configs, yes easies
-        src = {cNN:"_c01", param:[]};
-        for (i = 0; i < o.l; i++) {     // loop byElm
-            byElm[i] = new Array(o.lz);
-            o.easies.forEach((ez, j) => // byEasy
-                byElm[i][j] = [Ez.shallowClone(src, {noop:o.easy2Mask.get(ez)})]
-            );                          // .noop only, .param is empty
         }
     }
+    else if (isME) {                  // no configs, yes easies
+        src = {cNN:"_c01", param:[]};
+        for (i = 0; i < o.l; i++) {      // loop byElm:
+            calcs[i] = new Array(o.lz);
+            o.easies.forEach((ez, j) =>  // byEasy
+                calcs[i][j] = [Ez.shallowClone(src, {noop:o.easy2Mask.get(ez)})]
+            );                           // .noop only, .param is empty
+        }
+    }
+    if (!isME)                        // maybe configs, no easies
+        calcNoDims(o, calcs, true);
 
-    if (!isME)                       // maybe configs, no easies
-        calcNoDims(o, byElm, true);
-
-    o.calcs = byElm;
+    o.calcs = calcs;
     return isME ? new MEaserByElm(o) : new EaserByElm(o);
 }
 // calcNoElms() returns new (M)Easer for pseudo-target, no elms|prop, yes peri()

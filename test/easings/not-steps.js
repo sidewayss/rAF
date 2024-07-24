@@ -81,13 +81,13 @@ function easingFromForm(obj) {
             delete obj[id];
 
         obj.legs = [
-            {time:split, type:orUndefined(g.type), io:ios[0], pow, end:mid},
+            {time:split, type:orUndefined(g.type), io:ios[0], end:mid, pow},
             {time:time2, type:type2,               io:ios[1], pow:pow2,
              wait:orUndefined(gap)}
         ];
         return obj;
     }
-    else
+    else                                    // property order must match presets
         return Object.assign(obj, {mid, split, gap, pow,
                                    bezier:elseUndefined(isBez, bezierArray())});
 }

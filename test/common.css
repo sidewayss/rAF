@@ -6,6 +6,7 @@
   --dark-blue:    #007;
   --medium-blue:  #019;
   --accent-blue:  #03B;
+  --green-blue:   rgb(0 56 112);
   --pitch:        #111;
   --charcoal:     #272727;
   --darker-gray:  #373737;
@@ -73,6 +74,7 @@ select, input {
 }
 input[type=range] {
   margin:0;
+  accent-color:var(--dark-blue);
 }
 button, input[type=color],
 select, input[type=number] {
@@ -203,8 +205,8 @@ check-box:active {
 state-button {
   opacity:0.9;
   stroke-width:3px;
-  fill   :var(--medium-blue);
-  stroke :var(--medium-blue);
+  fill   :var(--dark-blue);
+  stroke :var(--dark-blue);
   stroke-linejoin:round;
   stroke-linecap :round;
 }

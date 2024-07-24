@@ -18,15 +18,9 @@ export class Easy {
     static jump   = ["none","start","end","both"];
     static eKey   = ["value","unit","comp"];
 
-    static #unitComp = Easy.eKey.slice(1);
-   // Easy.#unitComp vs this.#compUnit ensures that unit always goes up, 0 to 1,
-   // and comp always goes down, 1 to 0. Otherwise it would be more difficult
-   // for EBase to assign an eKey, harder for users too.
-
-    #autoTrip; #base; #compUnit; #dist; #e; #end; #flipTrip; #lastLeg;
-    #legsWait; #loopWait; #onAutoTrip; #onLoop; #oneShot; #peri; #plays; #post;
-    #pre; #reversed; #roundTrip; #setValue; #start; #targets; #time; #tripWait;
-    #wait; #zero;
+    #autoTrip; #base; #dist; #e; #end; #flipTrip; #lastLeg; #legsWait; #loopWait;
+    #onAutoTrip; #onLoop; #oneShot; #peri; #plays; #post; #pre; #reversed;
+    #roundTrip; #start; #targets; #time; #tripWait; #wait; #zero;
 
     _leg; _now; _inbound; // shared with Incremental.prototype._calc()
     _value;               // for Incremental only, but used in shared code here
@@ -55,9 +49,10 @@ export class Easy {
         if (Is.def(o.legs))         // validate/pseudo-clone user-defined legs
             o.legs = Ez.toArray(o.legs, "legs", Ez._validObj)
                        .map(v => Object.assign({}, v));
+
         const
         type = isInc ? E.increment : getType(o),
-        io   = getIO(o.io);         // getType() requires o.legs to be defined
+        io   = getIO(o.io);
         o[t] = Ez.toNumber(o[t], t, ...Ez.undefGrThan0);
 
         if (!o.legs) {              // create default legs
@@ -184,8 +179,9 @@ export class Easy {
         objDist = o[e] - o[s],              // leg default distance is:
         defDist = objDist / o.legs.length,  //   total / # of legs
         isDown  = objDist < 0,
-        keys    = isDown ? Easy.#unitComp.slice().reverse()
-                         : Easy.#unitComp;  // unit and comp swap if dist < 0
+        keys    = Easy.eKey.slice(1);       // unit and comp only
+        if (isDown)
+            key.reverse();                  // if (dist < 0) swap unit and comp
 
         o.legs.forEach((leg, i) => {
             // Ensure that every leg.start and leg.end are defined. #prepLegs()
@@ -359,9 +355,10 @@ export class Easy {
     get firstTime() { return this.#playTime(this.#wait); }
     get loopTime()  { return this.#playTime(this.#loopWait); }
     #playTime(wait) { // the duration of one play
-        let val = wait + this.#time;
+        const extra = this.#lastLeg.leftover ?? 0; // E.steps && !(jump & E.end):
+        let   val   = wait + this.#time - extra;   //   actual duration < #time
         if (this.#roundTrip && this.#autoTrip)
-            val += this.#time + this.#tripWait;
+            val += this.#time + this.#tripWait - extra;
         return val;
     }
 // this.time: setter is simpler than I expected. It spreads the new value
@@ -396,10 +393,12 @@ export class Easy {
                 leg.wait *= f;    // leg.wait defaults to 0
         } while((leg = leg.next));
     }
-// this.setValue is a boolean used in _calc() for efficiency, called by
-//               Easies.proto._zero() prior to playing animation.
-    get setValue()  { return this.#setValue; }
-    set setValue(v) { this.#setValue = Boolean(v); }
+
+// this.initial_e returns this.#e, the initial state of this.e, required for
+//                new MEaserByElm w/loopByElm && plays > 1, used to get #initial
+    get initial_e() {
+        return this.#e;
+    }
 //==============================================================================
 // Target-related public properties and methods:
 // this.targets Returns a shallow copy and sets a clone to ensure users don't
@@ -412,8 +411,11 @@ export class Easy {
     }
 //  newTarget() creates an Easer or EaserByElm instance, ~ adds it to #targets
     newTarget(o, addIt = true) {
-        const set = addIt ? this.#targets : null;
-        return create(o, set, !o.easies, "multi", [Easies, Easy]);
+        if (o.loopByElm && !Is.def(o.initial))
+            o.e = this.#e; // for loopByElm && plays > 1, helps get #initial
+
+        const targets = addIt ? this.#targets : null;
+        return create(o, targets);
     }
 //  addTarget() validates t and adds it to #targets
     addTarget(t) {
@@ -470,15 +472,15 @@ export class Easy {
     }
 //  restore()
     restore() {
-        this.#setup(E.original, (e) => {
+        this.#setup(E.original, () => {
             this.#init_e();
             for (const t of this.#targets)
-                t.restore(e);
+                t.restore();
         });
     }
 //  init()
-    init(applyIt = true) {
-        this.#setup(E.initial, applyIt ? this.#initOrTrip : null);
+    init() {
+        this.#setup(E.initial, this.#initOrTrip);
     }
 //  initRoundTrip() sets up for starting the inbound trip
     initRoundTrip() {
@@ -488,24 +490,14 @@ export class Easy {
     }
 //  #initOrTrip() is the apply argument to #setup() for init() and
 //                initRoundTrip(), sets e.value and applies e.
-    #initOrTrip(e) {
-        let peri
+    #initOrTrip(e, isRT) {
         if (this.isIncremental)
             e.value = this._value;
         else
             this.#leg2e(e, this._leg.prev);
 
-        for (const t of this.#targets) {
-            if (t.elmCount) {       // no elms = nothing to apply
-                peri   = t.peri;    // don't run target.peri()
-                t.peri = undefined;
-                if (t.loopByElm)
-                    do {t._apply(e)} while (t._nextElm());
-                else
-                    t._apply(e);
-                t.peri = peri;
-            }
-        }
+        for (const t of this.#targets)
+            t.init(e, isRT);
     }
 //  #setup() does the work for arrive(), restore(), init(), and initRoundTrip()
     #setup(sts, apply, isRT) {
@@ -529,7 +521,7 @@ export class Easy {
                 this._value = this.#start;
         }
         e.status = sts;       // must follow ifs above and precede apply() below //$$
-        apply?.bind(this)(e);
+        apply?.bind(this)(e, isRT);
     }
 //==============================================================================
 //  setters for this.e and this.e2:

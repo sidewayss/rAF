@@ -6,6 +6,7 @@ import {ECalc} from "./ecalc.js";
 
 import {Ez}    from "../raf.js";
 
+// This would benefit from multiple inheritance: ByElm and ME
 class MEBase extends EBase { // M = multi E = Easer, the multi-ease base class
     #easies; #loopEasy;
     constructor(o) {
@@ -47,9 +48,9 @@ class MEBase extends EBase { // M = multi E = Easer, the multi-ease base class
     get easies()   { return this.#easies.slice(); }
     get loopEasy() { return this.#loopEasy; } // see Easies.prototype._next()
 
-//  restore() calls super.restore() with the ezs argument
-    restore() {
-        super.restore(null, this.#easies);
+//  init() calls super.init() with an array of ez.#e as the argument
+    init() {
+        super.init(this.#easies.map(ez => ez.initial_e));
     }
 //  _zero() resets stuff before playback
     _zero() {
@@ -70,10 +71,9 @@ class MEaser extends MEBase {        //\ Multi-ease Easer
                             new ECalc(o, o.calcs[i]));
         Object.seal(this);
     }
-    _apply(val) {
-      //console.log("val:", val);
-        val.forEach((v, i) => this.#calcs[i].calculate(v));
-        this._set(); //!!no easy.e or collection thereof
+    _apply(es) { // es = easies.map(ez => ez.e)
+        es.forEach((e, i) => this.#calcs[i].calculate(this._eVal(e, i)));
+        this._set(es);
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,11 +84,15 @@ class MEaserByElm extends MEBase {
         this.#calcs = Array.from({length:o.l}, (_, i) =>
                             Array.from({length:o.lz}, (_, j) =>
                                   new ECalc(o, o.calcs[i][j])));
+        this.setInitial(); //!!test!!
         Object.seal(this);
     }
-    _apply(val) {
-        const calcs = this.#calcs[this.elmIndex];
-        val.forEach((v, i) => calcs[i].calculate(v));
-        this._setElm();
+    _apply(es) { // es = easies.map(ez => ez.e)
+        this._calc(es, this.elmIndex);
+        this._setElm(es);
+    }
+    _calc(es, iElm) {
+        const calcs = this.#calcs[iElm];
+        es.forEach((e, i) => calcs[i].calculate(this._eVal(e, i)));
     }
 }

@@ -4,7 +4,7 @@ import {E} from "../../raf.js";
 
 import {msecs, timeFrames, updateTime} from "../update.js";
 import {listenInputNumber, isInvalid}  from "../input-number.js";
-import {CHANGE, INPUT, CLICK, elms, g, boolToString,
+import {CHANGE, INPUT, CLICK, MILLI, elms, g, boolToString,
         addEventsByElm, dummyEvent}    from "../common.js";
 
 import {twoLegs}                                 from "./index.js";
@@ -47,9 +47,9 @@ const input = {
         if (!isInvalid(evt.target))
             refresh(evt.target);
     },
-    time(evt) { // called indirectly by formFromObj(), evt always defined
+    time() {      // called indirectly by formFromObj(), evt always defined
         const prev = msecs;
-        timeFrames(evt);
+        timeFrames();
         setSplitGap(prev);
     }
 };

@@ -81,7 +81,9 @@ class Bute extends PBase {
         return elm.getAttribute(this.name)?.trim() ?? "";
     }
 //  setIt() and setEm() override PBase
-    setIt(elm,  str) { elm.setAttribute(this.name, str); }
+    setIt(elm,  str) {
+        elm.setAttribute(this.name, str);
+    }
     setEm(elms, arr, l = elms.length) {
         for (var i = 0, name = this.name; i < l; i++)
             elms[i].setAttribute(name, arr[i]);

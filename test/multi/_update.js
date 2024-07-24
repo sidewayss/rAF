@@ -60,16 +60,16 @@ function getMsecs() {
 //            updateFrame():  t = raf.elapsed, oneD = oneD
 //            pseudoUpdate(): t = 0,           oneD = oneD
 function getFrame(t, oneD, isMask) {
-    let e, i, value;
-    const frm = {t, x:new Array(COUNT)};
+    let i, value;
+    const
+    e   = eGet(easys),
+    frm = {t, x:new Array(COUNT)};
 
     for (i = 0; i < COUNT; i++) {
-        e = eGet(easys[i], g.notLoopWait[i], g.notTripWait[i]);
         value = oneD[i * 2];
         if (isMask)
             value = clip[value];
-
-        frm.x[i] = {value, unit:e.unit, comp:e.comp};
+        frm.x[i] = {value, unit:e[i].unit, comp:e[i].comp};
     }
     return frm;
 }

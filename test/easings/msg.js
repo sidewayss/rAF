@@ -35,7 +35,7 @@ function loadMSG() {
 
     divSplit.id = "";
     elms.divGap = divSplit.cloneNode(true);
-    elms.divGap.style.marginTop = "1" + U.px;
+    elms.divGap.style.margin = "var(--16th) 0 var(--8th)";
 
     for (id of MSG.slice(1)) {  // split, gap
         obj = {};

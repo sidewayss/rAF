@@ -9,7 +9,7 @@ import {INPUT, elms, g, orUndefined, elseUndefined} from "../common.js";
 
 import {wasStp}                        from "./_update.js";
 import {flipIt}                        from "./chart.js";
-import {shallowClone, setNoWaits}      from "./events.js";
+import {shallowClone}                  from "./events.js";
 import {initEzXY, updateTrip}          from "./index.js";
 import {easingFromObj, easingFromForm} from "./not-steps.js";
 import {FORMAT_END, stepsFromObj, stepsFromForm, wasIsSteps, isSteps, toggleUser}
@@ -23,7 +23,7 @@ function formFromObj(obj) {
     leg1 = obj.legs?.[1];
 
     g.type = obj.type ?? leg0?.type ?? E.linear;
-    g.io   = obj.io   ?? leg0 ? joinIO(leg0.io, leg1.io) : E.in;
+    g.io   = obj.io   ?? (leg0 ? joinIO(leg0.io, leg1.io) : E.in);
 
     elms.type.value = g.type;
     elms.io  .value = g.io;
@@ -61,7 +61,6 @@ function formFromObj(obj) {
     elms.plays   .value    = obj.plays    ?? 1;
     elms.loopWait.value    = obj.loopWait ?? 0;
     elms.loopByElm.checked = obj.loopByElm;
-    setNoWaits();
     objEz = obj;
 }
 //==============================================================================
@@ -89,15 +88,15 @@ function objFromForm(hasVisited = true) {
     // type can only be changing when called by change.type()=>refresh()
     // loadFinally() only calls if !hasVisited and g.type == E.linear
     // so unless !hasVisited, g.type is already set previously
-    if (!hasVisited) { // g.type, g.io referenced in easingFromForm()
+    if (!hasVisited) {  // g.type, g.io referenced in easingFromForm()
         g.type = Number(elms.type.value);
         g.io   = Number(elms.io.value);
-    }                  // obj.time deleted by stepsFromForm() if user timing
+    }                   // obj.time deleted by stepsFromForm() if user timing
     const func = isSteps() ? stepsFromForm : easingFromForm;
     const obj  = {time:msecs, type:orUndefined(g.type), io:orUndefined(g.io),
                   start, end, plays, loopWait, loopByElm,
                   roundTrip, autoTrip, flipTrip, tripWait};
-
+                        // object property order significant relative to presets
     objEz = func(obj, hasVisited);
     return objEz;
 }

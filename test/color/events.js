@@ -65,8 +65,8 @@ const input = {
             refresh();
     },
  // time() splits the work with change.time(), handles only the immediate tasks
-    time(evt) {
-        timeFrames(evt);
+    time() {
+        timeFrames();
     }
 };
 //==============================================================================

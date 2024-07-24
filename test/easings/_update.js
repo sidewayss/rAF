@@ -1,5 +1,5 @@
-export {refresh, storeIt, initPseudo, newTargets, getMsecs, getFrame, postPlay,
-        updateX, setCounters, formatDuration, drawLine, syncZero, isInitZero};
+export {refresh, initPseudo, newTargets, getMsecs, getFrame, postPlay, updateX,
+        setCounters, formatDuration, drawLine, syncZero, isInitZero};
 
 export let wasStp = false; // see wasOob below
 export const
@@ -18,7 +18,7 @@ import {frames, playZero, targetInputX, inputX, eGet, callbacks, updateFrame,
         pseudoFrame, pseudoAnimate, formatNumber} from "../update.js";
 import {MILLI, COUNT, elms, g} from "../common.js";
 
-import {objFromForm}                       from "./_named.js";
+import {objEz, objFromForm}                from "./_named.js";
 import {storeIt}                           from "./events.js";
 import {ezY, newEzY, twoLegs, bezierArray} from "./index.js";
 import {tvFromElm, setInfo, isSteps}       from "./steps.js";
@@ -32,8 +32,10 @@ function refresh(tar, n, has2 = twoLegs()) {
         ezY.init();              // reuse existing ezY, for multi-leg, E.steps
     else {
         let obj;
-        if (n)
-            ezY.time = n;        // the one property that doesn't use newEzY()
+        if (n) {
+            objEz.time = n;
+            ezY  .time = n;      // the one property that doesn't use newEzY()
+        }
         else {
             obj = objFromForm(); // less code to read the whole form here than
             newEzY(obj);         // to change each property in every event.
@@ -175,13 +177,12 @@ function initPseudo() {
 //              and .elms, called by changePlay(), initPseudo(true).
 function newTargets(isPseudo) {
     let cb;
-    const CBs = ["onAutoTrip","onLoop"];
     if (isPseudo) {
         ezY.targets = targetPseudoY;    // ezY is always a new instance
         if (!ezX.targets.size) {        // ezX.oneShot is true = only non-pseudo
-            ezX.targets  = targetPseudoX;// test set targets()
+            ezX.targets = targetPseudoX;// test set targets()
             g.easies.peri = undefined;
-            for (cb of CBs)
+            for (cb of ["onAutoTrip","onLoop"])
                 ezY[cb] = undefined;
         }
     }
@@ -189,10 +190,9 @@ function newTargets(isPseudo) {
         let arr, cr, ez, prop;          // cr for chart|range
         const loopByElm = elms.loopByElm.checked;
 
-        g.easies.peri = update;         // test Easies.proto.peri()
-        ezY.post      = postY;          // test Easy.proto.post()
-        for (cb of CBs)
-            ezY[cb] = callbacks[cb];
+        g.easies.peri  = update;        // test Easies.proto.peri()
+        ezY.post       = postY;         // test Easy.proto.post()
+        ezY.onAutoTrip = callbacks.onAutoTrip;
 
         ezY.clearTargets();             // sometimes unnecessary
         ezX.clearTargets();             // not always  necessary
@@ -204,10 +204,14 @@ function newTargets(isPseudo) {
                    [ezY, P.cy, range]];
             for ([ez, prop, cr] of arr)
                 tar = ez.newTarget({prop, loopByElm, elms:cr.dots});
-                                        // callback for one target only
+                                        // callbacks for one target only
             tar.onLoopByElm = callbacks.onLoopByElm;
+            tar.onLoop      = callbacks.onLoop;
+            ezY.onLoop      = undefined;
         }
         else {                          // test single and multi-element targets
+            ezY.onLoop      = callbacks.onLoop;
+
             arr = [[ezX, P.cx, [chart]],
                    [ezY, P.cy, [chart, range]]];
             for ([ez, prop, cr] of arr)
@@ -222,13 +226,28 @@ function postY() {
 }
 // update() is the g.easies.peri() callback
 function update() {
-    updateFrame(eGet(ezX).value, eGet(ezY));
+    updateFrame(...eGet([ezX, ezY]));
 }
 // pseudoUpdate() is the pseudo-animation callback, ezX.target.peri() only. For
 //                E.steps w/jump:E.start|E.none, ezY ends before ezX, but ezY.e
 //                remains intact for drawing the rest of the line.
-function pseudoUpdate(_, e) {
-    pseudoFrame(e.value, ezY.e); //!!does this ever need eGet()?? test it!!
+function pseudoUpdate() {
+    pseudoFrame(ezX.e, ezY.e);  // avoids eGet() and always uses e, not e2
+}
+// getFrame() converts arguments to a frame object, called by syncZero(),
+//            updateFrame(), pseudoFrame()
+function getFrame(t, ex, ey) {
+    const frm = {t, x:ex.value, y:ey.value};  // .y is an alias for .value
+
+    for (var key of ["status", ...Easy.eKey])
+        frm[key] = ey[key];
+
+    return frm;
+}
+// vucFrame() creates a frame object based on value, unit, comp, called by
+//            initPseudo(), postPlay(), it's a convenience, for easings only.
+function vucFrame(t, x, y, value, unit, comp) { // value, unit, comp versus e
+    return {t, x, y, value, unit, comp};
 }
 //==============================================================================
 // syncZero() is the raf.syncZero callback, not called by pseudo, initPseudo()
@@ -248,19 +267,6 @@ function isInitZero() {
 // getMsecs() is only called by timeFrames()
 function getMsecs() {
     return elms.time.valueAsNumber;
-}
-// getFrame() converts arguments to a frame object, called by syncZero(),
-//            updateFrame(), pseudoFrame()
-function getFrame(t, x, e) {
-    const frm  = {t, x, y:e.value};  // .y is a convenient alias for .value
-    for (var key of ["status", ...Easy.eKey])
-        frm[key] = e[key];
-    return frm;
-}
-// vucFrame() creates a frame object based on value, unit, comp, called by
-//            initPseudo(), postPlay(), it's a convenience, for easings only.
-function vucFrame(t, x, y, value, unit, comp) { // value, unit, comp versus e
-    return {t, x, y, value, unit, comp};
 }
 //==============================================================================
 // updateX() called exclusively by inputX(), isReset = refresh(), not #x.oninput

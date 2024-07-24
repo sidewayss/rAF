@@ -50,11 +50,9 @@ const change = {
     },
  // pt() helps plays(), trip()
     pt(evt) {
-        const tar = evt.currentTarget; //!!or evt.target??
-        const [i, id] = i_id(tar);
-        multiNoWaits(i, easys[i]);
         storeCurrent(objFromForm());
-        return [tar, i, id];
+        const tar = evt.currentTarget; //!!or evt.target??
+        return [tar, ...i_id(tar)];
     }
 };
 //==============================================================================
@@ -98,7 +96,6 @@ function setEasy(i, name, obj) { // formFromObj() defines obj
     if (ez.roundTrip)
         setHref(toElm(EZ_, "trip",  i), ez.autoTrip);
 
-    multiNoWaits(i, ez);
     easys[i] = ez;
 }
 //====== local helpers =========================================================
@@ -122,15 +119,6 @@ function setHref(elm, val, isInd) {
     elm.setAttribute(Pn.href, isInd ? "#ind"
                               : val ? "#chk"
                                     : "#box");
-}
-// multiNoWaits() sets the g.not_Wait properties, which are used by eGet(),
-//                <= change.plays(), change.trip(), setEasy()
-function multiNoWaits(i, ez) {      // ez = easys[i]
-    g.notLoopWait[i] = !ez.loopWait
-                    && (Number(elms.plays[i].value) || ez.plays) > 1;
-
-    g.notTripWait[i] = !ez.tripWait && ez.roundTrip
-                    && (elms.trip[i].value || ez.autoTrip);
 }
 // i_id() splits a numbered id, e.g. "id0", into number and string
 function i_id(elm) {

@@ -27,6 +27,12 @@ p.hi { font-weight:500; }
 #data {
   margin-left:var(--8th);
 }
+#frames, #duration {
+  color:var(--green-blue);
+}
+#frames:hover, #info:hover {
+  color:blue;
+}
 #info {
   color:var(--medium-blue);
   font-size:1.75rem;
@@ -34,20 +40,18 @@ p.hi { font-weight:500; }
   background-color:transparent;
   margin-left:var(--16th);
 }
-#info:hover {
-  color:blue;
-}
 
 /* for this page only */
-#time {
-  width:16ch;
-}
 #steps {
   text-align:right;
   margin-left:var(--9-16ths);
 }
 #v0, #v1, #v2 {
   width:calc(3ch + 1.75rem);
+}
+#time {
+  width:100%;
+  accent-color:var(--green-blue);
 }
 #unit, #comp {
   margin-left:calc(4ch + var(--5-16ths));
@@ -121,7 +125,6 @@ line { /* #dashX, #dashY */
 }
 #line {
   fill:none;
-  stroke:var(--dark-blue);
   stroke-width:4px;
   stroke-linejoin:round;
 }
@@ -166,22 +169,19 @@ circle {
   padding-left:0.5rem;
 }
 #right {
-  border-left:1px solid;
+  border-left:1px solid var(--medium-gray);
   padding-bottom:0;
 }
-#sidebar {
+#sidebar {  /* display:block; flex adds height for unknown reason */
+  cursor:default;      /* everything the same, no I-Beam for text */
   padding:0.25rem 0.5rem;
   margin:0.5rem 0;
   border:1px solid #BBB;
-  border-radius:var(--5-16ths);
   background-color:var(--sidebar-white);
 }
 #divStartEnd {
   display:grid;
   grid-template-columns:1fr var(--btn-size);
-}
-#placeholder {
-  height:calc(1rem + var(--11-16ths)); /* .row height + 2px for borders?? */
 }
 #divCopy {
   padding:var(--5-8ths) 0 0.5rem var(--8th);
@@ -272,8 +272,10 @@ circle {
   font-weight:500;
 }
 
-.mr0 { margin-right: 0 }
-.pr0 { padding-right:0 }
+.mr0   { margin-right: 0 }
+.ml3-4 { margin-left:  0.75rem; }
+
+.pr1-16 { padding-right:var(--16th); }
 
 .pl1-2  { padding-left:0.5rem;      }
 .pl1-8  { padding-left:var(--8th);  }

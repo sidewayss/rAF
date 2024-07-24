@@ -60,7 +60,7 @@ function loadIt(byTag, hasVisited) {
 
     clone = elm.labels[0].cloneNode(true);
     clone.htmlFor = id;
-    clone.textContent = "|" + clone.textContent;
+    clone.textContent = ":";
     div.appendChild(clone);             // <label>
 
     clone = elm.cloneNode(true);
@@ -135,10 +135,10 @@ function getEasies(_, json) {
 }
 // initEasies() inits the Easies and sets set-once variables for resizeWindow(),
 //              called once per session by loadFinally().
-function initEasies(obj) {
+function initEasies(obj, hasVisited) {
     let b = newEasies(ezX);
     if (b) {
-        const evt = dummyEvent(CHANGE, "isInitEasies");
+        const evt = dummyEvent(CHANGE, hasVisited ? "isInitEasies" : undefined);
         for (const id of rafChecks)
             elms[id].dispatchEvent(evt);  // raf.properties
 
@@ -186,12 +186,12 @@ function resizeWindow() {
     let i = sizes.findIndex(obj => innerW >= obj.w && innerH >= obj.h);
     if (i < 0)
         i = sizes.length - 1;
-    if (i != iSize) {                   // change root font-size and friends
+    if (i != iSize) {                       // change root font-size and friends
         const sz = sizes[i];
         boxStyle.width  = (checkW * sz.factor) + U.px;
         boxStyle.height = (checkH * sz.factor) + U.px;
         document.documentElement.style.fontSize = sz.size;
-        iSize   = i;                    // pseudo-consts for resizeWindow():
+        iSize   = i;                        // pseudo-consts for resizeWindow():
         padLeft = P.pL.getn(lefties[0]);
         leftW   = elms.sidebar.getBoundingClientRect().width
                 - P.mR.getn(elms.left);     // lefties[0] width
@@ -210,30 +210,34 @@ function resizeWindow() {
     }
     let elm, l, r,
     n = Ez.clamp(
-        minW,                           // absolute minimum width
-        factorW  * (innerW - subtraW),  // available width - range.svg width
-        oobRatio * (innerH - subtraH)   // width of available height for oob
+        minW,                               // absolute minimum width
+        factorW  * (innerW - subtraW),      // available width - range.svg width
+        oobRatio * (innerH - subtraH)       // width of available height for oob
     );
-    P.w.set(chart.svg, n);              // set chart width, range height
+    P.w.set(chart.svg, n);                  // set chart width, range height
     P.h.set(range.svg, P.h.get(chart.svg));
 
-    elm = lefties[0];                   // set diptych left's width for better
-    P.w.set(elm, (n / 2) + leftW);      // vertical alignment with triptych.
+    elm = lefties[0];                       // set diptych left's width for
+    P.w.set(elm, (n / 2) + leftW);          // vertical alignment with triptych.
 
-    l = elm.getBoundingClientRect().left; // must follow P.w.set(elm, )
+    l = elm.getBoundingClientRect().left;   // must follow P.w.set(elm, )
     r = innerW
       - Math.round(range.svg.getBoundingClientRect().right)
       - padLeft;
-    elm = elms.shadow.style;            // size box-shadow background element
+    elm = elms.shadow.style;                // size box-shadow background
     elm.left   = l + U.px;
     elm.width  = innerW - r - l + U.px;
     elm.height = document.body.clientHeight - borderW + U.px;
 
+                                            // align autoTrip, loopByElm checks
+    l = elms.autoTrip .getBoundingClientRect().left;
+    r = elms.loopByElm.getBoundingClientRect().left;
+    elms.loopByElm.style.marginRight = r - l + U.px
+                                            // align "s" suffix for #split, #gap
     r = elms.split.getBoundingClientRect().right + U.px;
     for (elm of [elms.split, elms.gap])
         elm.labels[1].style.left = `calc(${r} - 1rem)`;
-
-    // Center the #copied notification element in the available space
+                	                        // center #copied notification
     n  = elms.code.offsetLeft + elms.code.offsetWidth;
     n += ((chart.svg.parentNode.offsetLeft - n ) / 2)
        - (elms.copied.offsetWidth / 2);

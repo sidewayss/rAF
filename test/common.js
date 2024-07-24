@@ -18,8 +18,8 @@ LITE = ["lo","hi"],   // playback formatting
 elms = {},            // the HTML elements of interest
 dlg  = {},            // <dialog> sub-elements
 g = {                 // g for global, these properties are read-write:
-    notLoopWait:null, // notX = !isX, bools to help choose easy.e vs easy.e2
-    notTripWait:null  // in multi.js they are arrays of bools
+//!!notLoopWait:null, // notX = !isX, bools to help choose easy.e vs easy.e2
+//!!notTripWait:null  // in multi.js they are arrays of bools
 };
 //====== wrappers for addEventListener() =======================================
 export function addEventByClass(type, name, obj, func) {

@@ -181,10 +181,12 @@ function loadFinally(is, name, hasVisited, id) {
     af.fpsBaseline()         // discover the device's screen refresh rate
       .then(fps => {
         const rounded = AFrame.fpsRound(fps.value);
-        if (elms.fps)        // multi only
-            elms.fps.textContent = `${rounded}fps`;
         FPS = rounded;
         logBaseline(fps, rounded);
+        if (elms.fps)        // multi and color
+            elms.fps.textContent = `${rounded}fps`;
+        else                 // easings
+            elms.frames.title = `@${rounded}fps - for more detail see the Developer Tools console`;
     }).catch(err =>          // .catch = fpsBaseLine() only, the show can go on
         errorLog(err, "fpsBaseline() failed")
      ).finally(() => {       // fade document.body into view

@@ -319,7 +319,9 @@ export class PBase { // the base class for Prop, Bute, PrAtt, HtmlBute
         elms.forEach((elm, i) => this.setOne(elm, v[i], f, u));
     }
 //  setIt() and setEm() are for when you need no validation or conversion
-    setIt(elm,  val) { elm.style[this.name] = val; }
+    setIt(elm,  val) {
+        elm.style[this.name] = val;
+    }
     setEm(elms, arr, l = elms.length) {
         for (var i = 0, name = this.name; i < l; i++)
             elms[i].style[name] = arr[i];

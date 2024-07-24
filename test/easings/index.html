@@ -20,19 +20,19 @@
           <!-- diptych left side row 1 ---------------------------->
           <div class="flex between pb3-8 pl1-8">
             <div class="row">
-              <label for="plays">Plays:</label>
-              <select id="plays" class="mr1-2"></select>
-              <label for="loopWait" class="pr0">wait:</label>
-              <select id="loopWait" class="mr1-2"></select>
+              <check-box id="roundTrip" data-label="Round trip " class="row pr1-16"></check-box>
+              <check-box id="flipTrip"  data-label="flip"        class="row ml1-2" checked></check-box>
+              <check-box id="autoTrip"  data-label="auto"        class="row ml3-4" checked></check-box>
+              <div class="row"></div> <!-- tripWait cloned from loopWait -->
             </div>
             <div class="row">
-              <label for="time">Time:</label>
-              <input  id="time" class="chart" type="range" step="1" min="100" max="4000" value="2000"/>
-              <label for="time" class="lbl-right">2.000s</label>
+              <label for="plays">Plays:</label>
+              <select id="plays"></select>
             </div>
           </div>
           <!-- diptych left side row 2a for E.steps ---------------->
-          <div class="div-steps row end pb3-8 pl1-8">
+          <div class="div-steps row between pb3-8 pl1-8">
+            <check-box id="initZero" class="row" data-label="Init zero" disabled style="display:none"></check-box>
             <div id="divUserTiming" class="row">
               <pre>timing:</pre>
               <div class="row end">
@@ -43,13 +43,13 @@
           </div>
           <!-- diptych left side row 2 (row 3 for steps) ---------->
           <div class="flex between pl1-8">
+            <check-box id="frameZero" class="row" data-label="Frame zero" checked></check-box>
             <div class="row">
-              <check-box id="roundTrip" data-label="Round trip" class="row"></check-box>
-              <check-box id="flipTrip"  data-label="flip"       class="row pl3-16 pr3-16" checked></check-box>
-              <check-box id="autoTrip"  data-label="auto"       class="row pl3-8" checked></check-box>
-              <div class="row"></div> <!-- tripWait cloned from loopWait -->
-            </div>
-            <div class="row">
+              <check-box id="loopByElm" class="row" data-label="Loop 3 elements"></check-box>
+              <div class="row" style="margin-left:39px">
+                <label for="loopWait" class="pr1-16">wait:</label>
+                <select id="loopWait"></select>
+              </div>
             </div>
           </div>
         </div>
@@ -118,11 +118,8 @@
               <state-button id="stop" class="row" data-states='[[0,"stop"], [1,"reset"]]' disabled></state-button>
             </div>
           </div>
-          <check-box id="frameZero"   class="row checklist pl1-8" data-label="Frame zero" checked></check-box>
-          <check-box id="initZero"    class="row checklist pl1-8" data-label="Init zero" disabled style="display:none"></check-box>
-          <check-box id="loopByElm"   class="row checklist pl1-8" data-label="Loop &#xD7; 3 elements"></check-box>
-          <check-box id="drawAsSteps" class="row checklist pl1-8" data-label="Draw line as steps"></check-box>
           <div id="sidebar">
+            <input  id="time" class="row chart" type="range" step="1" min="100" max="4000" value="2000"/>
             <p                   >time:<span   id="elapsed" class="ml5-16"></span><span class="slash">/</span><span id="duration"></span></p>
             <p class="mb3-8"     >frame:<span  id="frame"   class="ml5-16"></span><span class="slash">/</span><span id="frames"></span></p>
             <p class="bt"        >value: <span id="value"   class="ml5-16"></span></p>
@@ -151,6 +148,7 @@
               <button class="lock">lock_open</button>
             </div>
           </div>
+          <check-box id="drawAsSteps" class="row checklist pl1-8" data-label="Draw line as steps"></check-box>
           <div class="col" style="border-left:var(--border-hidden)">
             <div id="divCopy" class="row bt mt1-2">
               <pre>Copy:</pre>

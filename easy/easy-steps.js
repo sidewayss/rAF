@@ -95,7 +95,8 @@ function steps(o, leg) {
         } //----------------------------------
         const offset = jump & E.start ? 0 : 1;
         leg.waits = Array.from({length:l}, (_, i) => (i + offset) / c);
-    }
+        leg.jump  = jump;   // validated/converted, see prepLegs(): lastLeg.jump
+    }                       // only matters for #lastLeg...
 }
 //  stepsToLegs() helps _finishLegs() turn 1 leg into >1 legs for _calc()
 function stepsToLegs(o, leg, legDist, dist, idx, last, keys) {
@@ -146,7 +147,7 @@ function stepsToLegs(o, leg, legDist, dist, idx, last, keys) {
     legs[l].leftover = leftover;
     if (idx == last) {          // #lastLeg
         o.end   = legs[l].end;
-        o.time -= leftover;
+    //!!o.time -= leftover;
         obj.lastLeg = legs[l];
     }
     else {                      // continue to replace leg in the list

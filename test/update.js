@@ -63,14 +63,11 @@ function inputX(evt) {
 // timeFrames() helps input.time() for easings and color, called without evt
 //              by loadFinally() as a fallback when elms.time is undefined.
 //              time arg defined by easings/steps.js/inputLastTime().
-function timeFrames(evt, time = ns.getMsecs()) {
+function timeFrames(time = ns.getMsecs()) {
     msecs = time;           // milliseconds are primary
     secs  = msecs / MILLI;  // seconds are for display purposes only
     setFrames();
-
-    const txt = updateDuration(secs);
-    if (evt)
-        evt.target.labels[1].textContent = txt;
+    updateDuration(secs);
 }
 // prePlay() helps changePlay(), exports can't be set outside the module
 function prePlay() {
@@ -131,25 +128,34 @@ function setFrames(val = Math.ceil(secs * FPS)) {
 // eGet() chooses ez.e or ez.e2, called by multi.getFrame(), easings.update();
 //        multi defines notLW, notTW args; returns e2 when:
 //          unit is a whole number && (looping w/o wait || tripping w/o wait)
-function eGet(ez) {
-    const e = ez.e;
+function eGet(ezs) {
     if (isContinuing) {             // isLooping || isTripping
         isContinuing = false;
-        if (e.status == E.waiting)
-            return e;
-        else {
-            console.log("eGet:", ez.e2, ez.e)
-            return ez.e2
-        }
+        return ezs.map(ez => ez.e.status == E.waiting ? ez.e : ez.e2);
+//!!    return ezs.map(ez => {
+//!!        e = ez.e;
+//!!        if (e.status == E.waiting) {
+//!!            console.log("eGet e:", ez.e2, ez.e)
+//!!            return e;
+//!!        }
+//!!        else {
+//!!            console.log("eGet e2:", ez.e2, ez.e)
+//!!            return ez.e2
+//!!        }
+//!!    });
     }
     else
-        return e;
+        return ezs.map(ez => ez.e);
 }
 // centralized callbacks that affect eGet() and easings/drawLine().
 const callbacks = {
     onAutoTrip ()   { isContinuing = true;       },
-    onLoop     (ez) { loopIt(ez, "onLoop");      },
-    onLoopByElm(ez) { loopIt(ez, "onLoopByElm"); }
+    onLoopByElm(ez) { loopIt(ez, "onLoopByElm"); },
+    onLoop(ez) {
+        loopIt(ez, "onLoop");
+        if (elms.loopByElm?.checked)
+            ez
+    }
 }
 // loopIt does the work for the loop callbacks
 function loopIt(ez, txt) {      // loopFrames is easings only, for drawLine()

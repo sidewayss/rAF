@@ -114,7 +114,7 @@ function storeCurrent(key, obj = ns.objEz) {
         localStorage.setItem(key, str); // DEFAULT_NAME = "", making it the
         disableSave(true);              // only read-only preset.
     }
-    else
+    else             // == means same property order: presets == xxxFromForm()
         disableSave(str == getNamedString(elms.named.value)
                         ?? JSON.stringify(presets[elms.named.value]));
     return str;

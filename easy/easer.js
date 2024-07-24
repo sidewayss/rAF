@@ -6,29 +6,37 @@ import {ECalc} from "./ecalc.js";
 import {E, Ez, Is, Easy} from "../raf.js";
 import {CFunc}           from "../prop/func.js"
 
+// A whole lot of crap ends up in this base class because javascript has no
+// multiple inheritance and there are two forks: ME and ByElm.
 class EBase {
-    #assign; #autoTrip; #cElms; #cjs; #eKey; #elms; #evaluate; #hasF;
-    #iElm; #isSDE; #loopByElm; #mask; #oneD; #onLoop; #onLoopByElm; #peri;
-    #plays; #prop; #restore; #setOne; #space; #twoD; #value;
+    #assign; #autoTrip; #cElms; #cjs; #eKey; #elms; #evaluate; #hasF; #iElm;
+    #initByElm; #initial; #isLooping; #isSDE; #loopByElm; #loopElms; #mask;
+    #oneD; #onLoop; #onLoopByElm; #original; #peri; #plays; #prop; #setOne;
+    #space; #twoD; #value;
 
     _autoTripping;  // the active autoTrip value during an animation
+    _eVal;          // run-time evaluate function
 
     constructor(o) {
+        this.#mask = o.mask;        this.#cElms = o.l;
+        this.#twoD = o.twoD;        this.#value = o.value;
+        this.#peri = o.peri;        this.#isSDE = o.isSDE;
+        this.#hasF = Boolean(o.f);  this.#initial = o.initial;
+                                    this.#original = o.original;
         if (o.l) {
+            this.#elms = o.elms;
+            this.#prop = o.prop;
             if (o.calcByElm) {
                 this.#oneD = o.oneD;
                 this.#iElm = 0;     // EaserByElm.proto.apply() calls _setElm()
-                this.#loopByElm = o.loopByElm;
-                if (o.loopByElm)
-                    this.onLoopByElm = o.onLoopByElm;
+                this.#loopByElm  = o.loopByElm;
+                this.onLoopByElm = o.onLoopByElm;
             }
             else {                  // Easer.proto.apply() calls _set()
                 this._set = this.#setElms;
                 this.#assign = o.bAbE ? EBase.#assignByArgByElm
                                       : EBase.#assignByElmByArg;
             }
-            this.#elms = o.elms;
-            this.#prop = o.prop;
         }
         else {                      // no elements, no property, just #peri()
             this._set  = this.#runPeri;
@@ -47,14 +55,9 @@ class EBase {
             this.#plays    = new Array(o.lz);
             this.#autoTrip = new Array(o.lz);
             Ez.is(this, "MEaser");  // do it here so setters can use it below
-        }
-                                    // use setters for values not yet validated
-        this.#mask  = o.mask;     this.#cElms   = o.l;
-        this.#twoD  = o.twoD;     this.#value   = o.value;
-        this.#peri  = o.peri;     this.#restore = o.restore;
-        this.#isSDE = o.isSDE;    this.#hasF    = Boolean(o.f);
-        this.plays  = o.plays;    this.evaluate = o.evaluate;
-        this.eKey   = o.eKey;     this.autoTrip = o.autoTrip;
+        }                           // use setters for values not yet validated
+        this.plays = o.plays;       this.evaluate = o.evaluate;
+        this.eKey  = o.eKey;        this.autoTrip = o.autoTrip;
         Ez.is(this, "Easer");
     }
 //  static _validate() validates that obj is an instance an Easer class
@@ -62,54 +65,6 @@ class EBase {
         if (!obj?.isEaser || obj.isMEaser)
             Ez._mustBeErr(err, "an instance of an Easer class");
         return obj;
-    }
-//==============================================================================
-// The two set functions set the property value on one or more elements.
-// forEach() is nice here because of the multiple callback arguments. If
-// performance becomes an issue, you can switch to the versions in alt/ebase.js.
-//  #setElms() is the basic (set all the elms) set function
-    #setElms(e) {
-        const prop = this.#prop
-        const val  = this.#value;
-        this.#assign(this.#twoD, this.#mask, this.#value);
-        this.#elms.forEach((elm, i) => this.#setOne(prop, elm, val[i]));
-        this.#peri?.(this.#twoD, e);
-    }
-//  #runPeri() does not apply values to an element property, no elms, no prop
-    #runPeri(e) {
-        this.#peri(this.#oneD, e);
-    }
-//  _setElm() is the byElm set function, for single-elm and loopByElm
-    _setElm(e) { // e is undefined for MEaser
-        const elm  = this.#elms [this.#iElm];
-        const val  = this.#value[this.#iElm]; //++for non-isUn, this.#value could be 1D, all plugs the same
-        const oneD = this.#oneD;
-        this.#mask.forEach((m, i) => val[m] = oneD[i]);
-        this.#setOne(this.#prop, elm, val);
-        this.#peri?.(oneD, e, elm);
-    }
-//==============================================================================
-// The two #setOne functions:
-    #setIt(prop, elm, arr) {  // could be static
-        prop.setIt(elm, arr.join(""));
-    }
-    #setCjs(prop, elm, arr) { // could be static if this.#cjs passed as argument
-        this.#cjs.coords = arr; // .slice(0, CFunc.A) appears to be unnecessary
-        if (arr[CFunc.A])       // color.js ignores but preserves extra elements
-            this.#cjs.alpha = arr[CFunc.A];
-        prop.setIt(elm, this.#cjs.display(this.#space));
-    }
-//==============================================================================
-// The static assign methods used by #setElms(). ditto forEach().
-    static #assignByArgByElm(twoD, mask, val) {
-        mask.forEach((m, i) =>
-            twoD[i].forEach((v, j) => val[j][m] = v)
-        );
-    }
-    static #assignByElmByArg(twoD, mask, val) {
-        twoD.forEach((arr, i) =>
-            mask.forEach((m, j) => val[i][m] = arr[j])
-        );
     }
 //==============================================================================
 // Callbacks, getters, setters, and some related methods:
@@ -123,7 +78,11 @@ class EBase {
     set onLoopByElm(val) { this.#onLoopByElm = Ez._validFunc(val, "onLoopByElm"); }
 
     get loopByElm()    { return this.#loopByElm; }
-    set loopByElm(val) { this.#loopByElm = Boolean(val); }
+    set loopByElm(val) {
+        this.#loopByElm = Boolean(val);
+        if (!this.isMEaser)
+            this.setInitial(); // only for MEaserByElm, else no way to get easy.e
+    }
 
 // this.elmIndex is for loopByElm
     get elmIndex()  { return this.#iElm;  }
@@ -131,17 +90,9 @@ class EBase {
 // this.elmCount is for loopByElm, and for identifying targets w/o elements
     get elmCount()  { return this.#cElms; } // loopByElm + everything else too
 
-//  eval functions return the correct e.property's value at run-time
-    #Eval (e)    { return e[this.#eKey];    }
-    #MEval(e, i) { return e[this.#eKey[i]]; }
-
-// this.evaluate allows the user to do their own evaluation
-    get evaluate()    { return this.#evaluate; }
-    set evaluate(val) {
-        this.#evaluate = Ez._validFunc(val,  "evaluate");
-     // this.eVal is the public property used at run-time
-        this.eVal = this.#evaluate
-                ?? (this.isMEaser ? this.#MEval : this.#Eval);
+// this._isLooping is true when loopByElm loops by play, see Easies.proto._next()
+    set _isLooping(b) {
+        this.#isLooping = Boolean(b);
     }
 
 // this.eKey, this.autoTrip, this.plays are byEasy arrays for MEBase
@@ -156,9 +107,10 @@ class EBase {
         else if (!Is.Arrayish(val))
             this.#eKey.fill(this.#validEKey(val, name));
         else {
-            const eKey = Ez.toArray(val, name, this.#validEKey);
-            const lNew = eKey.length;
-            const lOld = this.#eKey.length;
+            const
+            eKey = Ez.toArray(val, name, this.#validEKey),
+            lNew = eKey.length,
+            lOld = this.#eKey.length;
             if (lNew != lOld)
                 Ez._mustBeErr("eKey.length", "the same as easies.length: "
                                            + `${lNew} != ${lOld}`);
@@ -170,8 +122,9 @@ class EBase {
         const isDef = Is.def(val);
         if (this.#isSDE) {
             if (isDef) {
-                const eKey = "The eKey property";
-                const SDE  = "because you created it using start-distance-end style"
+                const
+                eKey = "The eKey property",
+                SDE  = "because you created it using start-distance-end style"
                 if (val != E.unit)
                     Ez._mustBeErr(`${eKey} for this ${this.constructor.name}`,
                                 `E.unit ${SDE}`);
@@ -213,6 +166,20 @@ class EBase {
     static #validPlays(val) {           // default, !neg,!zero,!float,!undef,!null
         return Ez.toNumber(val, "plays", undefined, true, true, true, false, false);
     }
+
+// this.evaluate allows the user to do their own evaluation
+    get evaluate()    { return this.#evaluate; }
+    set evaluate(val) {
+        this.#evaluate = Ez._validFunc(val,  "evaluate");
+     // this._eVal is the public property used at run-time
+        this._eVal = this.#evaluate
+                ?? (this.isMEaser ? this.#MEval : this.#Eval);
+    }
+
+//  eval functions return the correct e.property's value at run-time
+    #Eval (e)    { return e[this.#eKey];    }
+    #MEval(e, i) { return e[this.#eKey[i]]; }
+
 //  MEaser only:
     #tripPlays(val, name, currentVal, validate) {
         const arr = Ez.toArray(val, name, validate, ...Ez.okEmptyUndef);
@@ -249,17 +216,33 @@ class EBase {
             this.#iElm = 0;
     }
 //  restore() reverts to the elms' values from when this instance was created,
-//            or the initial values if {enableRestore:false}. If called directly
-//            and !this.#restore, each e/ez.e must be initialized beforehand.
-    restore(e, ezs) {
-        if (this.#restore)
-            this.#prop.setEm(this.#elms, this.#restore);
-        else if (e)         // Easer
-            this.apply(e);
-        else if (ezs)       // MEaser
-            ezs.forEach(ez => this.apply(ez.e));
-    //!!else
-    //!!    Ez._cantErr("You", "restore values with {enableRestore:false}");
+//            or the initial values if {enableRestore:false}.
+    restore() {
+        if (this.#original)
+            this.#prop.setEm(this.#elms, this.#original);
+        else
+            Ez._cantErr("You", "restore values with {enableRestore:false}");
+    }
+//  init() is public, but designed only to be called by Easy.proto.init() and
+//         Easies.proto.init=>MEBase.proto.init(), no validation whatsoever
+    init(e, isRT) {                  // e is easy.e/[easy.e] for Easer/MEaser
+        if (!this.#cElms) return;    // no elms = nothing to apply
+        //------------------
+        if (this.#loopByElm)
+            this.#iElm = 0;
+
+        if (!isRT && this.#initial)
+            this.#prop.setEm(this.#elms, this.#initial);
+        else {
+            const peri = this.#peri; // don't want apply() to run target.peri()
+            this.#peri = undefined;
+            if (this.#loopByElm)
+                do    {this._apply(e)}
+                while (this._nextElm());
+            else
+                this.apply(e);
+            this.#peri = peri;
+        }
     }
 //  _nextElm() moves to the next element for loopByElm, cycles back to zero
     _nextElm(plugCV = this.isMEaser) { // plugCV for MEaser w/loopByElm
@@ -267,9 +250,92 @@ class EBase {
             this.#twoD[this.#iElm] = this.#oneD.slice();
         if (++this.#iElm == this.#cElms)
             this.#iElm = 0;
-        if (plugCV)
+        if (plugCV)      //!!needs serious review/testing for MEaser!!
             this.#twoD[this.#iElm].forEach((v, i) => this.#oneD[i] = v);
         return this.#iElm;
+    }
+//==============================================================================
+//  #runPeri() does not apply values to an element property, no elms, no prop
+    #runPeri(e) {
+        this.#peri(this.#oneD, e);
+    }
+// The two set functions set the property value on one or more elements.
+// forEach() is nice here because of the multiple callback arguments. If
+// performance becomes an issue, you can switch to the versions in alt/ebase.js.
+//  #setElms() is the basic (set all the elms) set function
+    #setElms(e) {
+        const
+        prop = this.#prop,
+        val  = this.#value;
+        this.#assign(this.#twoD, this.#mask, this.#value);
+        this.#elms.forEach((elm, i) => this.#setOne(prop, elm, val[i]));
+        this.#peri?.(this.#twoD, e);
+    }
+//  _setElm() is the byElm set function, for single-elm and loopByElm
+    _setElm(e) {
+        const
+        i   = this.#iElm,
+        elm = this.#elms[i];
+        this.#setOne(this.#prop, elm, this._parseElm(i));
+        if (this.#isLooping) {  // loopByElm is looping by plays
+            this._initByElm();  // initialize the rest of the elements
+            this.#isLooping = false;
+        }
+        this.#peri?.(this.#oneD, e, elm);
+    }
+    _parseElm(iElm) {
+        const  //++for non-isUn, this.#value could be 1D, all plugs the same
+        val  = this.#value[iElm],
+        oneD = this.#oneD;
+        this.#mask.forEach((m, i) => val[m] = oneD[i]);
+        return val;
+    }
+//  _initByElm() initializes all but the first element, for loopByElm
+    _initByElm() { // called by setElm(), Easies.proto._next()
+        this.#prop.setEm(this.#loopElms, this.#initByElm);
+    }
+//==============================================================================
+// The two #setOne functions:
+    #setIt(prop, elm, arr) {  // could be static
+        prop.setIt(elm, arr.join(""));
+    }
+    #setCjs(prop, elm, arr) { // could be static if this.#cjs passed as argument
+        this.#cjs.coords = arr; // .slice(0, CFunc.A) appears to be unnecessary
+        if (arr[CFunc.A])       // color.js ignores but preserves extra elements
+            this.#cjs.alpha = arr[CFunc.A];
+        prop.setIt(elm, this.#cjs.display(this.#space));
+    }
+//==============================================================================
+// The static assign methods used by #setElms(). ditto forEach().
+    static #assignByArgByElm(twoD, mask, val) {
+        mask.forEach((m, i) =>
+            twoD[i].forEach((v, j) => val[j][m] = v)
+        );
+    }
+    static #assignByElmByArg(twoD, mask, val) {
+        twoD.forEach((arr, i) =>
+            mask.forEach((m, j) => val[i][m] = arr[j])
+        );
+    }
+//==============================================================================
+//  setInitial() ensures #initial and friends are populated
+//               called by new [M]EaserByElm and set loopByElm()
+//               o is only defined by new EaserByElm, and only for o.e
+    setInitial(o) {
+        if (!this.#loopByElm) return;
+        //---------------------------
+        if (!Is.def(this.#initial)) {
+            const
+            e   = this.easies?.map(ez => ez.e) ?? o.e,
+            val = new Array(this.#cElms);
+            for (let i = 0, l = this.#cElms; i < l; i++) {
+                this._calc(e, i);
+                val[i] = this._parseElm(i).join("");
+            }
+            this.#initial = val;
+        }
+        this.#initByElm = this.#initial.slice(1); // see _initByElm()
+        this.#loopElms  = this.#elms   .slice(1); // ditto
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -281,7 +347,7 @@ class Easer extends EBase {      // basic Easer
         Object.seal(this);
     }
     _apply(e) {
-        this.#calc.calculate(this.eVal(e));
+        this.#calc.calculate(this._eVal(e));
         this._set(e);
     }
 }
@@ -292,10 +358,14 @@ class EaserByElm extends EBase { // Easer by Element, single-elm or loopByElm
         super(o);
         this.#calcs = Array.from({length:o.l},
                                  (_, i) => new ECalc(o, o.calcs[i]));
+        this.setInitial(o); // must follow super() and this.#calcs assignment
         Object.seal(this);
     }
     _apply(e) {
-        this.#calcs[this.elmIndex].calculate(this.eVal(e));
+        this.#calcs[this.elmIndex].calculate(this._eVal(e));
         this._setElm(e);
+    }
+    _calc(e, i) {
+        this.#calcs[i].calculate(this._eVal(e));
     }
 }

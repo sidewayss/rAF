@@ -1,9 +1,8 @@
-export {loadEvents, shallowClone, storeIt, setNoWaits};
+export {loadEvents, shallowClone, storeIt};
 
 import {Ez, P} from "../../raf.js";
 
 import {ezX, raf}                   from "../load.js";
-import {callbacks}                  from "../update.js";
 import {changeStop}                 from "../play.js";
 import {storeCurrent, setLocalBool} from "../local-storage.js";
 import {CHANGE, elms, addEventToElms, addEventsByElm,} from "../common.js";
@@ -18,47 +17,43 @@ function loadEvents(checks) {
     addEventToElms(CHANGE, [elms.loopWait, elms.tripWait], change.wait);
 }
 //==============================================================================
+// helpers for change.plays(), wait(), loopByElm():
+// showLoopWait() sets elms.wait visibility: if (plays > 1 || loopByElm)
+//                plays and loopByElm share Easy.prototype.loopWait because it's
+//                an Easy property, not a [M]Easer property, and Easy doesn't
+//                know why it's looping, only Easies and [M]Easer know that.
+function showLoopWait(
+    isLoop = Number(elms.plays.value) != 1,
+    byElm  = elms.loopByElm.checked)
+{
+    P.visible(elms.loopWait.parentNode, isLoop || byElm);
+}
+// setLoopWait() sets the plays, loopByElm, loopWait, tripWait properties on...
+function setLoopWait(prop, val) {
+    for (var obj of [ezX, ezY, objEz])  // ...the three relevant objects
+        obj[prop] = val;
+}
+//==============================================================================
 // >> change event handlers
 const change = {
-//  <select>:
+//  <select>: plays, wait only affect playback & storage, not pseudo-animation
     plays(evt) {  // also called by updateAll().
         const plays = Number(elms.plays.value);
-        const b     = plays > 1;
-        ezY.onLoop  = b ? callbacks.onLoop : undefined;
-        change.showLoopWait(b);
-        setNoWaits();
+        showLoopWait(plays > 1);
         if (!evt.isUpdateAll) {
-            ezX.plays = plays;
-            if (ezY)
-                ezY.plays = plays;
-            else                  //!!
-                alert("No ezY!"); //!!
-            changeStop();       // in case we're pausing or we've arrrived
+            setLoopWait("plays", plays);
+            changeStop();  // in case we're pausing or we've arrrived
             storeIt();
         }
     },
     wait(evt) {   // #loopWait and #tripWait
-        const tar  = evt.target;
-        const wait = Number(tar.value);
-        ezX[tar.id] = wait;
-        if (ezY)
-            ezY[tar.id] = wait;
-        else                  //!!
-            alert("No ezY!"); //!!
-        setNoWaits();
+        const tar = evt.target;
+        setLoopWait(tar.id, Number(tar.value));
         changeStop();
         storeIt();
     },
- // helper for plays(), loopByElm(): elms.wait visible if plays > 1 or loopByElm
- // both share Easy.prototype.loopWait
-    showLoopWait(isLoop = Number(elms.plays.value) != 1,
-                 byElm  = elms.loopByElm.checked)
-    {
-        P.visible([elms.loopWait, elms.loopWait.labels[0]], isLoop || byElm);
-    },
-//------------------------------------------
-//  <check-box>:  requires evt.currentTarget
-    loopByElm(evt) {  // also called by updateAll()
+ //  <check-box>: requires evt.currentTarget
+    loopByElm(evt) {  // also called by updateAll(), also no pseudo-animation
         const loopByElm = elms.loopByElm.checked;
         for (var cr of [chart, range])              // exclude one dot per cr
             P.visible(cr.dots.slice(1), loopByElm);
@@ -67,7 +62,7 @@ const change = {
             changeStop();
             storeIt();
         }
-        change.showLoopWait(undefined, loopByElm);
+        showLoopWait(undefined, loopByElm);
     },
  // ----------------
     roundTrip(evt) {
@@ -87,7 +82,6 @@ const change = {
         ckd = tar.checked,
         id  = tar.id;
         [ezX, ezY, objEz].forEach(obj => obj[id] = ckd);
-        setNoWaits();
         changeStop();
         storeIt();
         return tar;
@@ -133,17 +127,7 @@ function shallowClone(obj) {
     }
     return obj;
 }
-// storeIt() wraps storeCurrent() to use name instead of Easy
+// storeIt() wraps storeCurrent() with a clone, refresh() defines obj
 function storeIt(obj = objEz) {
     storeCurrent("", shallowClone(obj));
-}
-//==============================================================================
-// setNoWaits() sets the g.not_Wait properties, which are used by eGet(),
-//              <= change.plays(), change.wait(), change.trip(), formFromObj()
-function setNoWaits() {
-//!!g.notTripWait = !Number(elms.tripWait.value)
-//!!             && elms.roundTrip.checked
-//!!             && elms.autoTrip.checked;
-//!!g.notLoopWait = !Number(elms.loopWait.value)
-//!!             && (elms.loopByElm.checked || Number(elms.plays.value) > 1);
 }

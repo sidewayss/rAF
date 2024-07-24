@@ -15,11 +15,11 @@ import {MASK_X, clip, easys, refresh, setClipPair, setClipPath}
 // loadIt() is called by loadCommon()
 function loadIt() {
     let elm, opt, val;
-    g.notLoopWait = new Array(COUNT);
-    g.notTripWait = new Array(COUNT);
+//!!g.notLoopWait = new Array(COUNT);
+//!!g.notTripWait = new Array(COUNT);
 
     opt = new Option(DEFAULT_NAME, DEFAULT_NAME, true, true);
-    opt.innerHTML = "&mdash;";   // must be set this way
+    opt.innerHTML = "&mdash;";  // must be set this way
     elms.plays0.add(opt, elms.plays0.firstElementChild);
 
     for (elm of [elms.color0, elms.color1]) {
@@ -32,8 +32,8 @@ function loadIt() {
     g.clipOpacity = [getComputedStyle(elms.clip).opacity, 1];
     changeColor();
 
-    for (const m of [0, 30, 1, 3])  // x-axis = even, y-axis = odd
-        clip[m] = 0;                // the zero values in clip never change
+    for (val of [0, 30, 1, 3])  // x-axis = even, y-axis = odd
+        clip[val] = 0;          // the zero values in clip never change
 
     return is();
 }

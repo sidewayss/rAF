@@ -195,7 +195,7 @@ export class AFrame {
         for (const t of this.#targets) {
             t._zero(now);
             if (this.#initZero)
-                t.init(t);
+                t.init?.();     // ACues doesn't have init(), Easies does
         }
         this.#syncZero?.(now);
     }

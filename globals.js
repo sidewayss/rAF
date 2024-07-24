@@ -45,7 +45,7 @@ const F  = {           // Func, CFunc, ColorFunc, SRFunc instances by name
     joinCSSpolygon(arr, fillRule, u = U.px) {
         let i, l, str;
         const seps = [E.sp, E.comma]
-        str = this.polygon.prefix + (fillRule ? fillRule + E.comma: "");
+        str = F.polygon.prefix + (fillRule ? fillRule + E.comma: "");
         for (i = 0, l = arr.length - 1; i < l; i++)
             str += arr[i] + u + seps[i % 2];
         return str + arr[i] + u + E.rp;     // no trailing separator
@@ -57,7 +57,7 @@ const P  = {           // Prop, Bute, PrAtt, HtmlBute instances by name
         const val = b ? "visible" : "hidden";
         elms = Ez.toElements(elms);
         for (const elm of elms)
-            this.visibility.setOne(elm, val);
+            P.visibility.setOne(elm, val);
     },
     isVisible(elm) { // one element at a time
         return elm.style.visibility == "visible";

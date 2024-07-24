@@ -73,7 +73,7 @@ export class Easies {
 
 //  newTarget() creates a MEaser or MEaserByElm instance and adds it to #targets
     newTarget(o) {
-        return create(o, this.#targets, Boolean(o.easies), "single", [Easy, Easies]);
+        return create(o, this.#targets, true);
     }
 //  addTarget() validates a MEaser instance, adds it to #targets. returns it
     addTarget(t) {
@@ -115,15 +115,18 @@ export class Easies {
 
 //  restore() and init()
     restore() {
-        for (const ez of this.#easies)
-            ez.restore();
-        for (const mezr of this.#targets)
-            mezr.restore();
+        let obj;
+        for (obj of this.#easies)
+            obj.restore();
+        for (obj of this.#targets)
+            obj.restore();
     }
-    init(applyIt) {
-        for (const ez of this.#easies)
-            ez.init(applyIt);
-        //!!how to init #targets?? might need MEBase.init()!!
+    init() {
+        let obj;
+        for (obj of this.#easies)
+            obj.init();
+        for (obj of this.#targets)
+            obj.init();
     }
 //!!last() returns the Easy that finishes last.
 //!!Useful when RAF.post is defined for the session and you need to run
@@ -185,16 +188,9 @@ export class Easies {
         if (sts == E.original)
             for (t of this.#targets)
                 t._restore();
-        else {
-            let vals;
-            for (t of this.#targets) {  // apply each easy's value
-                vals = [];
-                t.easies.forEach((ez, i) => {
-                    vals[i] = t.eVal(ez.e, i);
-                });
-                t._apply(vals);
-            }
-        }
+        else
+            for (t of this.#targets)    // apply each easy's value
+                t._apply(t.easies.map(ez => ez.e));
     }
 //==============================================================================
 //  _next() is the animation run-time. The name matches ACues.protytope._next().
@@ -235,27 +231,29 @@ export class Easies {
                     for (t of easers) {
                         plays = map.get(t);
                         byElm = t.loopByElm;
-                        if (!byElm && noWait && plays > 1) {
-                            t._apply(e2);
-                            console.log("t._apply(e2):", e2, e);
-                        }
+                        if (!byElm && noWait && plays > 1)
+                            t._apply(e2); // loop w/o wait
                         else
-                            t._apply(e);
-
-                        //t._apply(!byElm && noWait && plays > 1
-                        //         ? e2     // loop w/o wait
-                        //         : e);    // arrive, loop w/wait, loopByElm
-                        //                  // _nextElm() increments/returns #iElm
+                            t._apply(e);  // arrive, loop w/wait, loopByElm
+                                          // _nextElm() increments/returns #iElm
                         nextElm = byElm && t._nextElm();
-                        if (!nextElm)
-                            --plays ? map.set(t, plays) : map.delete(t);
-                        else if (noWait)
-                            t._apply(e2); // loopByElm w/o wait, next elm
-                        if (plays) {
-                            t.onLoop?.(easy, t);
+                        if (!nextElm) {   // loop byPlay or arrive
+                            --plays ? map.set(t, plays)
+                                    : map.delete(t);
+                            if (byElm && plays)    // init the rest of the elms:
+                                if (noWait)        // do it now
+                                    t._initByElm();
+                                else               // post-wait, next apply()
+                                    t._isLooping = true;
+                        }
+                        else if (noWait)  // loopByElm w/o wait, next elm
+                            t._apply(e2);
+
+                        if (plays)        // run loop callbacks
                             if (nextElm)
                                 t.onLoopByElm?.(easy, t);
-                        }
+                            else
+                                t.onLoop?.(easy, t);
                     }
                 }
             }
@@ -274,7 +272,7 @@ export class Easies {
                     if (sts != E.waiting) {
                         if (--p && !sts && !e.waitNow)
                             e = easy.e2     //!!e2 for loopNoWait, not tripNoWait??
-                        val[i] = t.eVal(e, i);
+                        val[i] = e;
                                             // arrived || tripped and done
                         if (!sts || (sts == E.tripped && !t._autoTripping[i])) {
                             if (!p) {            // no more plays, arriving
@@ -298,24 +296,24 @@ export class Easies {
                 plays.forEach((_, i) => {
                     e = t.easies[i].e;
                     if (e.status != E.waiting)
-                        val[i] = t.eVal(e, i);
+                        val[i] = e;         // val is sparse
                 });
                 if (val.length)
                     t._apply(val);
             }
-            else {                          // looping by element
-                val2 = [];
+            else {                          // looping by elm, maybe by plays
+                val2 = [];                  //!!_initByElm and _isLooping!!
                 plays.forEach((_, i) => {
                     easy = t.easies[i];
                     e    = easy.e;
                     sts  = e.status;
                     if (!sts) {
-                        val[i] = t.eVal(e, i);
+                        val[i] = e;
                         if (!e.waitNow)
-                            val2[i] = t.eVal(easy.e2, i);
+                            val2[i] = easy.e2;
                     }
                     else if (sts > E.waiting)
-                        val2[i] = t.eVal(e, i);
+                        val2[i] = e;
                 });
                 t._apply(val);              // apply to current elm
                 if (!t._nextElm(true)) {    // go to next elm or arrive
@@ -337,15 +335,16 @@ export class Easies {
             }
             else {
                 e = easy.e;
-                if (e.waitNow)              // similar to Easy.proto._zero():
-                    e.status = E.waiting;       //$$
-                else if (e.status == E.tripped)
-                    e.status = E.inbound;       //$$
-                else if (!e.status) {       // E.arrived
-                    e.status = E.outbound;      //$$
-                    easy.onLoop?.(easy);    // plays > 1 loop, not loopByElm
+                if (e.waitNow) {            // similar to Easy.proto._zero():
+                    e.status = E.waiting;   //$$
+                    e.waitNow = false;
                 }
-                e.waitNow = false;
+                else if (!e.status) {       // E.arrived
+                    e.status = E.outbound;  //$$
+                    easy.onLoop?.(easy);    // plays > 1 loop for Easy
+                }
+                else if (e.status == E.tripped)
+                    e.status = E.inbound;   //$$
             }
         }
         this.#peri?.(this);                 // wait until everything is updated

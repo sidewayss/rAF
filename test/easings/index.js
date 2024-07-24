@@ -52,7 +52,7 @@ function newEzY(obj) {
 //              change.roundTrip()
 function updateTrip(isTrip = elms.roundTrip.checked) {
     const isAuto = isTrip && elms.autoTrip.checked;
-    elms.roundTrip.label = "Round trip" + (isTrip ? ":" : "");
+    elms.roundTrip.label = "Round trip" + (isTrip ? ":" : " ");
 
     P.visible([elms.flipTrip, elms.autoTrip], isTrip);
     P.visible(elms.tripWait.parentNode,       isAuto);
