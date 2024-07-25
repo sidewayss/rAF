@@ -58,7 +58,7 @@ function inputX(evt) {
     const i   = elms.x.valueAsNumber;
     const frm = frames[i];
     updateCounters(i, frm);
-    ns.updateX(frm, !Is.def(evt)); // 2nd arg easings only
+    ns.updateX(frm, i); // 2nd arg easings only
 }
 // timeFrames() helps input.time() for easings and color, called without evt
 //              by loadFinally() as a fallback when elms.time is undefined.
@@ -151,11 +151,7 @@ function eGet(ezs) {
 const callbacks = {
     onAutoTrip ()   { isContinuing = true;       },
     onLoopByElm(ez) { loopIt(ez, "onLoopByElm"); },
-    onLoop(ez) {
-        loopIt(ez, "onLoop");
-        if (elms.loopByElm?.checked)
-            ez
-    }
+    onLoop(ez)      { loopIt(ez, "onLoop");      }
 }
 // loopIt does the work for the loop callbacks
 function loopIt(ez, txt) {      // loopFrames is easings only, for drawLine()

@@ -7,7 +7,7 @@ import {joinIO} from "../../easy/easy-construct.js";
 import {msecs, pad, formatNumber}                   from "../update.js";
 import {INPUT, elms, g, orUndefined, elseUndefined} from "../common.js";
 
-import {wasStp}                        from "./_update.js";
+import {wasStp, theEnd}                from "./_update.js";
 import {flipIt}                        from "./chart.js";
 import {shallowClone}                  from "./events.js";
 import {initEzXY, updateTrip}          from "./index.js";
@@ -68,7 +68,7 @@ function formFromObj(obj) {
 //               called by loadFinally(), clickCode(), refresh().
 function objFromForm(hasVisited = true) {
     let autoTrip, flipTrip, loopWait, plays, tripWait;
-    const end       = Number(elms.end.textContent);
+    const end       = theEnd();
     const start     = orUndefined(Number(elms.start.textContent));
     const loopByElm = orUndefined(elms.loopByElm.checked);
     const roundTrip = orUndefined(elms.roundTrip.checked);

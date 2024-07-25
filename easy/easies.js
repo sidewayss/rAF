@@ -334,17 +334,19 @@ export class Easies {
                 this.#active.delete(easy);
             }
             else {
-                e = easy.e;
+                e   = easy.e;
+                sts = e.status;
                 if (e.waitNow) {            // similar to Easy.proto._zero():
-                    e.status = E.waiting;   //$$
+                    e.status  = E.waiting;  //$$
                     e.waitNow = false;
                 }
-                else if (!e.status) {       // E.arrived
+                else if (!sts)              // E.arrived
                     e.status = E.outbound;  //$$
-                    easy.onLoop?.(easy);    // plays > 1 loop for Easy
-                }
-                else if (e.status == E.tripped)
+                else if (sts == E.tripped)
                     e.status = E.inbound;   //$$
+                                            // else no change
+                if (!sts)
+                    easy.onLoop?.(easy);    // plays > 1 loop for Easy
             }
         }
         this.#peri?.(this);                 // wait until everything is updated

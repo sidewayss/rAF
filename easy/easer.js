@@ -28,11 +28,11 @@ class EBase {
             this.#prop = o.prop;
             if (o.calcByElm) {
                 this.#oneD = o.oneD;
-                this.#iElm = 0;     // EaserByElm.proto.apply() calls _setElm()
+                this.#iElm = 0;     // EaserByElm.proto._apply() calls _setElm()
                 this.#loopByElm  = o.loopByElm;
                 this.onLoopByElm = o.onLoopByElm;
             }
-            else {                  // Easer.proto.apply() calls _set()
+            else {                  // Easer.proto._apply() calls _set()
                 this._set = this.#setElms;
                 this.#assign = o.bAbE ? EBase.#assignByArgByElm
                                       : EBase.#assignByElmByArg;
@@ -240,7 +240,7 @@ class EBase {
                 do    {this._apply(e)}
                 while (this._nextElm());
             else
-                this.apply(e);
+                this._apply(e);
             this.#peri = peri;
         }
     }
@@ -293,6 +293,7 @@ class EBase {
 //  _initByElm() initializes all but the first element, for loopByElm
     _initByElm() { // called by setElm(), Easies.proto._next()
         this.#prop.setEm(this.#loopElms, this.#initByElm);
+    //++this.#onLoop?.(this); //++run callback after wait, not on arrival
     }
 //==============================================================================
 // The two #setOne functions:

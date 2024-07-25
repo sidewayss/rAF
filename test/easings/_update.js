@@ -1,5 +1,5 @@
 export {refresh, initPseudo, newTargets, getMsecs, getFrame, postPlay, updateX,
-        setCounters, formatDuration, drawLine, syncZero, isInitZero};
+        setCounters, formatDuration, drawLine, syncZero, isInitZero, theEnd};
 
 export let wasStp = false; // see wasOob below
 export const
@@ -61,7 +61,7 @@ function refresh(tar, n, has2 = twoLegs()) {
     if (isStp) {                 // E.steps needs cleanup post-pseudo-animation
         setInfo(ezY.firstTime / MILLI);
         if (elms.jump.value < E.end && elms.roundTrip.checked)
-            frames.at(-1).y = Number(elms.end.textContent);
+            frames.at(-1).y = theEnd();
     }
 
     const   // Handle out-of-bounds y coordinates in chart and range:
@@ -120,43 +120,40 @@ function isOutOfBounds(val = g.type) {
 //==============================================================================
 // drawLine() called by refresh(), postPlay(), change.drawAsSteps()
 function drawLine(isStp = isSteps()) {
-    let   frame, i, index, l, map, slice;
+    let   i, index, l, map, slice;
     const str   = [],
     loopIndexes = [0],
     drawAsLine  = !isStp && !elms.drawAsSteps.checked,
     hasWaiting  =  isStp || ezY.loopWait || ezY.tripWait;
-//!!           || (Number(elms.tripWait.value) &&  elms.roundTrip.checked)
-//!!           || (Number(elms.loopWait.value) && (elms.loopByElm.checked
-//!!                                            || Number(elms.plays.value) > 1));
-
     if (loopFrames.length)
         loopIndexes.push(...loopFrames);
 
     // loopIndexes.length maxes out at 9, so looped ifs are no big deal
-    for (i = 0, l = loopIndexes.length; i < l;) {
-        index = loopIndexes[i];
-        frame = frames[index];
-        str.push(`M${pointToString(frame.x, frame.y)}L`);
-                                        // slice off this iteration's frames
-        slice = frames.slice(index + Number(Boolean(i)), loopIndexes[++i]);
-        if (hasWaiting)                 // remove duplicate, consecutive frames
-            slice = slice.filter((frm, j) => frm.value != slice[j - 1]?.value);
-
+    for (i = 0, l = loopIndexes.length; i < l; i++) {
+        index = loopIndexes[i];         // slice off this iteration's frames
+        slice = frames.slice(index + Number(Boolean(i)), loopIndexes[i + 1])
+                      .filter((frm, j, arr) => frm.value != arr[j - 1]?.value);
+                                        // remove duplicate, consecutive frames
+        if (hasWaiting && i)
+            slice = slice.slice(1);     // first frame duplicates previous
+                                        // iteration's final frame.
+        str.push(`M${frameToString(slice[0])}L`);
         if (drawAsLine)
-            map = slice.map(frm => pointToString(frm.x, frm.y));
+            map = slice.map(frm => frameToString(frm));
         else {                          // j is offset by -1 relative to slice
             map = slice.slice(1).map((frm, j) =>
                       pointToString(frm.x, slice[j].y)
-                    + pointToString(frm.x, frm.y));
-            if (isStp) {
-                frame = slice[0];
-                str.push(pointToString(frame.x, frame.y));
-            }
+                    + frameToString(frm));
+            if (isStp)
+                str.push(frameToString(slice[0]));
         }
         str.push(...map);
-        //if (isStp  && )
     }
     P.d.set(chart.line, str.join("").trimEnd());
+}
+// frameToString() helps drawLine() encapsulate a common call to pointToString()
+function frameToString(frm) {
+    return pointToString(frm.x, frm.y);
 }
 // pointToString() helps drawLine() convert x and y to comma-separated pair
 function pointToString(x, y) {
@@ -269,16 +266,30 @@ function getMsecs() {
     return elms.time.valueAsNumber;
 }
 //==============================================================================
-// updateX() called exclusively by inputX(), isReset = refresh(), not #x.oninput
-function updateX(frm, isReset) {
-    const l = isReset ? COUNT : 1;
-    const x = frm.x + U.px;
-    const y = frm.y + U.px;
-    for (var i = 0; i < l; i++) {   // loopByElm should separate them...
-        chart.dots[i].style.cx = x;
-        chart.dots[i].style.cy = y;
-        range.dots[i].style.cy = y;
+// updateX() is called exclusively by inputX(), the user can click anywhere on
+//           #x, so for loopByElm set all 3 dots every time.
+function updateX(frm, i) {
+    const
+    x = frm.x + U.px,
+    y = frm.y + U.px;
+    if (elms.loopByElm.checked && loopFrames.length) {
+        const iElm = (loopFrames.findLastIndex(n => n < i) + 1) % COUNT;
+        for (let j = 0; j < COUNT; j++)
+            if (j == iElm)
+                setDot(j, x, y);
+            else if (j > iElm)
+                setDot(j, 0, 0);
+            else
+                setDot(j, MILLI, theEnd());
     }
+    else
+        setDot(0, x, y);
+}
+// setDot() helps updateX() set the position of one dot in both chart and range
+function setDot(i, x, y) {
+    chart.dots[i].style.cx = x;
+    chart.dots[i].style.cy = y;
+    range.dots[i].style.cy = y; // y only, it's a vertical line, 1D
 }
 //==============================================================================
 // setCounters() is called exclusively by updateCounters()
@@ -293,13 +304,12 @@ function formatDuration(val, d) {
 //==============================================================================
 // postPlay() flips frames[0] after non-autoTrip return trip, easings only
 function postPlay() {
-    if (elms.roundTrip.checked           // roundTrip
-     && !elms.autoTrip.checked           // && !autoTrip
-     && ezX.e.status != E.tripped) {     // && end of return trip
+    if (elms.roundTrip.checked                    // roundTrip
+     && !elms.autoTrip.checked                    // && !autoTrip
+     && ezX.e.status != E.tripped) {              // && end of return trip
         const
-        v = Number(elms.end.textContent) // E.steps can end at non-MILLI value
-          * Number(!elms.flip.value),    // flipped means multiply by zero
-        u = Math.ceil(v) / MILLI;        // unit is 0 or 1
+        v = theEnd() * Number(!elms.flip.value),  // E.steps can end anywhere
+        u = Math.ceil(v) / MILLI;                 // unit is 0 or 1
         frames[0] = vucFrame(0, MILLI, v, v, u, Ez.comp(u));
     }
     drawLine();
@@ -312,4 +322,7 @@ function postPlay() {
 //!!y = MILLI * Number(u != elms.direction.selectedIndex);  // y = ditto
 //!!
 //!!frames[0] = vucFrame(0, x, y, y, u, 1 - u);
+}
+function theEnd() {
+    return Number(elms.end.textContent);
 }
