@@ -3,8 +3,8 @@ export {loadPlay, changeStop};
 import {E, P} from "../raf.js";
 
 import {ezX, raf} from "./load.js";
-import {frameIndex, updateCounters, updateTime, updateDuration, setFrames,
-        prePlay}  from "./update.js";
+import {frameIndex, updateCounters, updateTime, setDuration, prePlay}
+                  from "./update.js";
 import {MILLI, ZERO, ONE, TWO, LITE, CHANGE, elms, g, toggleClass, errorAlert}
                   from "./common.js";
 
@@ -46,12 +46,10 @@ function changePlay() {
         raf.play()
           .then(sts => {                // if (!pausing and !#stop.onclick)
             if (!resetPlay(sts == E.pausing) || ezX.e.status <= E.tripped) {
-                if (!ezX.e.status)      // E.arrived or E.tripped
+                if (!ezX.e.status)      // E.arrived, not E.tripped
                     elms.play.disabled = true;
                 elms.stop.value = RESET;
-                                        // don't call updateTime(), timeFrames()
-                updateDuration(raf.elapsed / MILLI);
-                setFrames(frameIndex);
+                setDuration(raf.elapsed / MILLI, frameIndex, true);
                 elms.x.value = frameIndex;
                 ns.postPlay?.();        // color doesn't need it //!!multi does
             }
@@ -68,7 +66,6 @@ function changeStop(evt) {
     elms.x.value = 0;
     elms.stop.value = STOP;
     elms.stop.disabled = true;      // must precede ns.refresh() below!!
-    elms.play.disabled = false;
     switch (elms.play.value) {
     case RESUME:                    // stop = STOP,  e.status == E.pausing
         resetPlay();                // was pausing, promise resolved previously
@@ -76,9 +73,9 @@ function changeStop(evt) {
         raf.stop(true);             // was playing, resolves promise, cancelAF()
         break;                      // sets e.everything to E.original
     case PLAY:                      // stop = RESET, e.status <= E.tripped
-        setFrames();                // play.disabled = true, except
-        updateTime();               // when E.tripped && !autoTrip.
-        updateDuration();
+        elms.play.disabled = false; // play.disabled = true, except
+        setDuration();              // when E.tripped && !autoTrip.
+        updateTime();
     }                               // only easings refresh() uses target arg:
     if (evt !== null)               // null = called by pseudoAnimate()
         ns.refresh(evt?.target);    // calls pseudoAnimate()=>changeStop(null)!!

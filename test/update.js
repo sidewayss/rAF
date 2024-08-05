@@ -1,26 +1,26 @@
 export {loadUpdate, inputX, timeFrames, prePlay, updateTime, updateCounters,
-        formatNumber, updateDuration, setFrames, eGet, callbacks, updateFrame,
-        pseudoFrame, pseudoAnimate, newEasies};
-export let
-    msecs, secs,  // alternate versions of time, both integers
-    targetInputX, // only imported by easings/_update.js
-    frameIndex,   // the current frame
-    playZero      // for measuring time between changePlay() and first frame
-;
-export const
-    D = 3,        // D for decimals: .toFixed(D) = milliseconds, etc.
-    frames = [],  // time, x, y, and eKey values by frame
-    pad    = {    // string.pad() values for formatting numbers
-        frame:5,
-        milli:MILLI.toString().length,
-        secs: D + 3,
-        value:D + 5,  // overriden in loadUpdate() if (isMulti)
-        unit: D + 2,
-        comp: D + 2
-    }
-;
+        formatNumber, setDuration, eGet, callbacks, updateFrame, pseudoFrame,
+        pseudoAnimate, newEasies};
 
-import {E, Is, P, Easies} from "../raf.js";
+export let
+msecs, secs,    // alternate versions of time, both integers
+targetInputX,   // only imported by easings/_update.js
+frameIndex,     // the current frame
+playZero;       // for measuring time between changePlay() and first frame
+
+export const
+D = 3,          // D for decimals: .toFixed(D) = milliseconds, etc.
+frames = [],    // time, x, y, and eKey values by frame
+pad    = {      // string.pad() values for formatting numbers
+    frame:5,
+    milli:MILLI.toString().length,
+    secs: D + 3,
+    value:D + 5,  // overriden in loadUpdate() if (isMulti)
+    unit: D + 2,
+    comp: D + 2
+};
+
+import {E, P, Easies} from "../raf.js";
 
 import {FPS, ezX, raf}        from "./load.js";
 import {loadPlay, changeStop} from "./play.js";
@@ -54,20 +54,37 @@ async function loadUpdate(isMulti, dir) {
 }
 //==============================================================================
 // inputX() handles input events for #x, called by easings refresh() w/o evt
-function inputX(evt) {
+function inputX() {
     const i   = elms.x.valueAsNumber;
     const frm = frames[i];
     updateCounters(i, frm);
     ns.updateX(frm, i); // 2nd arg easings only
 }
-// timeFrames() helps input.time() for easings and color, called without evt
-//              by loadFinally() as a fallback when elms.time is undefined.
-//              time arg defined by easings/steps.js/inputLastTime().
+//==============================================================================
+// timeFrames() helps input.time() for color and easings (and thus indirectly
+//              formFromObj() for easings); input.roundTrip/autoTrip and steps
+//              user timing for easings; and loadFinally(), fromFromObj(), and
+//              change.easy() for multi. time arg defined by steps.js/setTime().
 function timeFrames(time = ns.getMsecs()) {
     msecs = time;           // milliseconds are primary
     secs  = msecs / MILLI;  // seconds are for display purposes only
-    setFrames();
-    updateDuration(secs);
+    setDuration(secs);
+    return time;
+}
+// setDuration() is where the duration and frames separate from msecs/secs/time,
+//               called by timeFrames(t), changePlay(t, last), changeStop().
+function setDuration(t = secs, last) {
+    let dur = t
+    if (!last) {
+        if (ns.calcDuration)
+            dur = ns.calcDuration(t);
+        last = Math.ceil(dur * FPS);
+    }
+    elms.duration.textContent = ns.formatDuration(dur, D);
+    elms.x.max    = last;
+    lastFrame     = last;
+    frames.length = last + 1; //!!necessary??
+    elms.frames.textContent = last.toString() + (ns.formatFrames ? "f" : "");
 }
 // prePlay() helps changePlay(), exports can't be set outside the module
 function prePlay() {
@@ -111,19 +128,6 @@ function formatNumber(n, digits, decimals, elm) {
     else
         return txt;
 }
-//------------------------------------------------------------------------------
-// setFrames() and updateDuration() are called in combination
-// updateDuration() is called by timeFrames(), changePlay(), changeStop()
-function updateDuration(val = secs) {
-    return (elms.duration.textContent = ns.formatDuration(val, D));
-}
-// setFrames() is called by timeFrames(), changePlay()
-function setFrames(val = Math.ceil(secs * FPS)) {
-    elms.x.max    = val;
-    lastFrame     = val;
-    frames.length = val + 1;
-    elms.frames.textContent = val.toString() + (ns.formatFrames ? "f" : "");
-}
 //==============================================================================
 // eGet() chooses ez.e or ez.e2, called by multi.getFrame(), easings.update();
 //        multi defines notLW, notTW args; returns e2 when:
@@ -149,7 +153,7 @@ function eGet(ezs) {
 }
 // centralized callbacks that affect eGet() and easings/drawLine().
 const callbacks = {
-    onAutoTrip ()   { isContinuing = true;       },
+    onAutoTrip ()   { isContinuing = true; },
     onLoopByElm(ez) { loopIt(ez, "onLoopByElm"); },
     onLoop(ez)      { loopIt(ez, "onLoop");      }
 }
@@ -165,8 +169,8 @@ function loopIt(ez, txt) {      // loopFrames is easings only, for drawLine()
 //         NOTE: Chrome pre-v120 currentTime can be > first frame's timeStamp.
 function updateFrame(...args) {
     const t = raf.elapsed;
-    if (t <= 0) //!!
-        console.log(`updateFrame(): ${t} <= 0`); //!!
+    if (t < 0)                                  //!!
+        console.log(`updateFrame(): ${t} < 0`); //!!
 //!!if (t > 0 || ns.isInitZero?.()) {
     const frm = ns.getFrame(t, ...args);
     frames[++frameIndex] = frm;       // frames[0] isn't modified by animation
@@ -183,23 +187,32 @@ function pseudoFrame(...args) {     // 0 is dummy time
 //==============================================================================
 // pseudoAnimate() populates the frames array via the .peri() callbacks, does
 //                 not apply values or update counters, called by refresh().
-function pseudoAnimate() {
+function pseudoAnimate(isEasies) {    // Easies.proto.#pseudo = isEasies
     let i, l, t;
     const ezs = g.easies;
 
-    changeStop(null);               // resets stuff if pausing or arrived
-    ns.initPseudo();                // page-specific init, calls newTargets()
-    ezs._zero();                    // zeros-out everything under ezs
-    frameIndex = 0;                 // frames[frameIndex] in updateFrame()
-    i = ns.isInitZero?.() ?  0 : MILLI;
-
-    for (l = lastFrame * MILLI; i <= l; i += MILLI) {
-        t = i / FPS;                // derive t and execute the next frame
-        ezs._next(t);
-        frames[frameIndex].t = t;   // EBase.proto.peri() doesn't have time
+    changeStop(null);                 // resets stuff if pausing or arrived
+    ns.initPseudo();                  // page-specific init, calls newTargets()
+    ezs._zero(0, isEasies);           // pre-play initialization
+    frameIndex = 0;                   // see frames[++frameIndex] above
+    i = MILLI;
+//!!i = ns.isInitZero?.() ?  0 : MILLI;
+    if (isEasies) {
+        do {
+            t = i / FPS;
+            l = ezs._next(t);         // returns #active.size()
+            frames[frameIndex].t = t; // _next(timeStamp) != t
+            i += MILLI;
+        } while(l);
     }
-    raf.init();                     // reset properties set by final frame
-}                                   //!!must it be E.original for jump:start??
+    else
+        for (l = lastFrame * MILLI; i <= l; i += MILLI) {
+            t = i / FPS;              // derive t and execute the next frame
+            ezs._next(t);
+            frames[frameIndex].t = t; // EBase.proto.peri() doesn't have time
+        }
+    raf.init();                       // reset properties set by final frame
+}                                     //!!must it be E.original for jump:start??
 //==============================================================================
 // newEasies() helps all the initEasies(), encapsulates try/catch into boolean
 function newEasies(...args)  {

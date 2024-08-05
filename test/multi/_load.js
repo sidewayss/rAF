@@ -84,8 +84,8 @@ function getEasies(hasVisited) {
         for (i = 0; i < COUNT; i++) {// order, better than all three the same.
             elm = elms.easy[i];
             elm.selectedIndex = i;
-            easys[i] = getNamedEasy(elm.value); // default easys not recursive!!returns undefined if failure
-        }
+            easys[i] = getNamedEasy(elm.value); // returns undefined if failure
+        }                                       // not recursive!!
 }
 //==============================================================================
 // initEasies() is called by loadFinally(), updateNamed(), changeEasy()

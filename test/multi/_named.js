@@ -21,7 +21,7 @@ function formFromObj(obj) {
     timeFrames();  // no #time, no input event
     objEz = obj;
 }
-// objFromForm() called exclusively by loadFinally()
+// objFromForm() called loadFinally(), change.plays/eKey/trip/easy()
 function objFromForm(hasVisited = true) {
     let elm, i, id, obj;
     const ids = [EASY, ...OVERRIDES];

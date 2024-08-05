@@ -184,7 +184,7 @@ function easeSteps(ez, nows, time, start, dist, name) {
                 "an Easy that changes direction. Time only moves in one direction",
                 {cause:"reverse time"}          // better *not* as string...
             );
-    } while ((leg = leg.next));
+    } while((leg = leg.next));
     //------------------------------------------// validation complete
     ez._zero(0);                                // prep for pseudo-animation
     const d    = time / ez.time;                // d for divisor

@@ -26,7 +26,7 @@ class EBase {
         if (o.l) {
             this.#elms = o.elms;
             this.#prop = o.prop;
-            if (o.calcByElm) {
+            if (o.calcByElm) {      // uses this._setElm(), not this._set
                 this.#oneD = o.oneD;
                 this.#iElm = 0;     // EaserByElm.proto._apply() calls _setElm()
                 this.#loopByElm  = o.loopByElm;
@@ -42,7 +42,8 @@ class EBase {
             this._set  = this.#runPeri;
             this.#oneD = o.oneD;
         }
-        if (o.cjs) {                // Color.js settings (or not)
+
+        if (o.cjs) {                // Color.js settings
             this.#cjs    = o.cjs;
             this.#space  = o.displaySpace;
             this.#setOne = this.#setCjs;
@@ -189,7 +190,8 @@ class EBase {
         }
         return arr;
     }
-//  Some MEaser methods are here to accommodate shared private members:
+//  Some MEaser methods are here to accommodate shared private members.
+//  Getters all return a slice(), so these allow setting values by index.
     meEKey(i, val) {
         this.#eKey[i]     = this.#meOne(val, "meEKey",  this.#validEKey);
     }
@@ -206,31 +208,36 @@ class EBase {
 //==============================================================================
 // "Protected" methods:
 //  _autoTrippy() returns run-time autoTrip, falls back to ez.autoTrip or false
-    _autoTrippy(ez, autoTrip) { return autoTrip ?? ez.autoTrip ?? false; }
-
+    _autoTrippy(ez, autoTrip) {
+        return autoTrip ?? ez.autoTrip ?? false;
+    }
 //  _zero() resets stuff before playback
-    _zero(ez, dontSetIt) { // dontSetIt is used by MEBase().prototype._zero()
-        if (!dontSetIt)
+    _zero(ez) { // !ez <= MEBase().prototype._zero() <= Easies.proto._zero()
+        if (ez)
             this._autoTripping = this._autoTrippy(ez, this.#autoTrip);
         if (this.#loopByElm)
             this.#iElm = 0;
     }
-//  restore() reverts to the elms' values from when this instance was created,
-//            or the initial values if {enableRestore:false}.
+//  restore() reverts to the elms' values from when this instance was created
     restore() {
         if (this.#original)
             this.#prop.setEm(this.#elms, this.#original);
-        else
-            Ez._cantErr("You", "restore values with {enableRestore:false}");
+        else {
+            const reason = this.#cElms ? "you set {dontGetValues:true}"
+                                       : "your target has no elements";
+            Ez._cantErr("You", `restore values because ${reason}.`);
+        }
     }
-//  init() is public, but designed only to be called by Easy.proto.init() and
-//         Easies.proto.init=>MEBase.proto.init(), no validation whatsoever
+//  init() sets the elements to their initial property values. It's public,
+//         but has no validation, and is designed only to be called by
+//         Easy.proto.init() and Easies.proto.init=>MEBase.proto.init().
     init(e, isRT) {                  // e is easy.e/[easy.e] for Easer/MEaser
-        if (!this.#cElms) return;    // no elms = nothing to apply
-        //------------------
+        if (!this.#cElms) {          // no elms = nothing to apply
+            console.info(Ez._cant("You", "init the target: it has no elements."));
+            return;
+        } //----------------
         if (this.#loopByElm)
             this.#iElm = 0;
-
         if (!isRT && this.#initial)
             this.#prop.setEm(this.#elms, this.#initial);
         else {
@@ -255,7 +262,7 @@ class EBase {
         return this.#iElm;
     }
 //==============================================================================
-//  #runPeri() does not apply values to an element property, no elms, no prop
+//  #runPeri() does not apply values: no elms, no prop, no mask
     #runPeri(e) {
         this.#peri(this.#oneD, e);
     }

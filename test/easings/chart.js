@@ -1,17 +1,18 @@
 export {loadChart, flipIt};
+export let FORMAT_START;
 
 import {E} from "../../raf.js";
 
-import {msecs, timeFrames, updateTime} from "../update.js";
-import {listenInputNumber, isInvalid}  from "../input-number.js";
+import {msecs, pad, formatNumber, timeFrames, updateTime} from "../update.js";
+import {listenInputNumber, isInvalid} from "../input-number.js";
 import {CHANGE, INPUT, CLICK, MILLI, elms, g, boolToString,
-        addEventsByElm, dummyEvent}    from "../common.js";
+        addEventsByElm, dummyEvent}   from "../common.js";
 
 import {twoLegs}                                 from "./index.js";
-import {wasStp, refresh}                                 from "./_update.js";
+import {wasStp, refresh}                         from "./_update.js";
 import {updateTypeIO, isBezierOrSteps}           from "./tio-pow.js";
 import {updateSplitGap, setSplitGap, isUnlocked} from "./msg.js";
-import {isSteps, wasIsSteps, isUserTV, infoZero} from "./steps.js";
+import {FORMAT_END, isSteps, wasIsSteps, isUserTV, infoZero} from "./steps.js";
 //==============================================================================
 function loadChart() { // called by loadTIOPow() so cloning is finished prior
     let elements = document.getElementsByClassName("chart");
@@ -22,6 +23,7 @@ function loadChart() { // called by loadTIOPow() so cloning is finished prior
     addEventsByElm(INPUT, [elms.time, ...elms.beziers], input, true);
 
     elms.flip.addEventListener(CLICK, clickFlip);
+    FORMAT_START = [pad.milli, 0, elms.start];
 }
 //==============================================================================
 // Event handlers, all call refresh() except input.time():
@@ -30,9 +32,9 @@ function clickFlip(evt) {
     isFlipped = !tar.value;     // it's a toggle
 
     flipIt(isFlipped)
-    elms.start.textContent = isFlipped ? MILLI : 0;
-    if (!isUserTV(elms.values))
-        elms.end.textContent = isFlipped ? 0 : MILLI;
+    formatNumber(isFlipped ? MILLI : 0, ...FORMAT_START);
+    if (!isSteps() || !isUserTV(elms.values))
+        formatNumber(isFlipped ? 0 : MILLI, ...FORMAT_END);
 
     refresh(tar);
 }

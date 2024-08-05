@@ -75,7 +75,7 @@ const click = {
             return;
         } //--------------- storeCurrent() calls disableSave()
         disablePreset(name, storeCurrent(preClass + name, ns.ok?.(name)));
-        disableDelete(name);    // cloned objEz = easings/ns.ok()
+        disableDelete(name);                           // ns.ok() = easings only
         if (presets[name] && elms.preset.disabled)
             localStorage.removeItem(preClass + elm.value);
 

@@ -4,11 +4,11 @@ export let objEz;
 import {E, Is}  from "../../raf.js"
 import {joinIO} from "../../easy/easy-construct.js";
 
-import {msecs, pad, formatNumber}                   from "../update.js";
+import {formatNumber} from "../update.js";
 import {INPUT, elms, g, orUndefined, elseUndefined} from "../common.js";
 
-import {wasStp, theEnd}                from "./_update.js";
-import {flipIt}                        from "./chart.js";
+import {wasStp, theStart, theEnd}      from "./_update.js";
+import {FORMAT_START, flipIt}          from "./chart.js";
 import {shallowClone}                  from "./events.js";
 import {initEzXY, updateTrip}          from "./index.js";
 import {easingFromObj, easingFromForm} from "./not-steps.js";
@@ -18,37 +18,6 @@ import {FORMAT_END, stepsFromObj, stepsFromForm, wasIsSteps, isSteps, toggleUser
 // formFromObj() populates the form, sets globals, <= loadFinally(), openNamed()
 function formFromObj(obj) {
     let elm, val;
-    const
-    leg0 = obj.legs?.[0],
-    leg1 = obj.legs?.[1];
-
-    g.type = obj.type ?? leg0?.type ?? E.linear;
-    g.io   = obj.io   ?? (leg0 ? joinIO(leg0.io, leg1.io) : E.in);
-
-    elms.type.value = g.type;
-    elms.io  .value = g.io;
-    elms.time.value = obj.time || obj.timing?.at(-1) || (leg0.time + leg1.time);
-    elms.time.dispatchEvent(new Event(INPUT)); // input.time()=>timeFrames()
-
-    const
-    isStp = isSteps(),
-    start = obj.start ?? leg0?.start ?? 0,
-    func  = isStp ? stepsFromObj : easingFromObj,
-    [isUT, isUV, wasUT, wasUV] = func(obj, leg0, leg1);
-
-    flipIt(Boolean(start));
-    formatNumber(start, pad.milli, 0, elms.start);
-    if (isStp != wasStp)
-        wasIsSteps(isStp, [isUT, isUV]);       // if (isUT) 2nd timeFrames()
-    else if (isStp) {
-        if (isUT != wasUT)
-            toggleUser(elms.timing, true,  wasUT, isUT); // 2nd timeFrames()
-        // else is simpler w/o if (isUV != wasUV)
-        toggleUser(elms.values, false, wasUV, isUV);
-    }
-    else // timeFrames() already ran, so only end here
-        formatNumber(obj.end ?? leg1.end, ...FORMAT_END);
-
     for (elm of g.trips) {     // roundTrip and related elements
         val = obj[elm.id];
         if (elm.isCheckBox)    // <check-box>
@@ -61,6 +30,39 @@ function formFromObj(obj) {
     elms.plays   .value    = obj.plays    ?? 1;
     elms.loopWait.value    = obj.loopWait ?? 0;
     elms.loopByElm.checked = obj.loopByElm;
+
+    const
+    leg0 = obj.legs?.[0],
+    leg1 = obj.legs?.[1];
+    g.type = obj.type ?? leg0?.type ?? E.linear;
+    g.io   = obj.io   ?? (leg0 ? joinIO(leg0.io, leg1.io) : E.in);
+    elms.type.value = g.type;
+    elms.io  .value = g.io;
+
+    val = obj.time || (leg0?.time + leg1?.time);
+    if (val)                   // steps: user time doesn't use obj.time
+        elms.time.value = val;
+    elms.time.dispatchEvent(new Event(INPUT)); // input.time()=>timeFrames()
+
+    const
+    isStp = isSteps(),
+    start = obj.start ?? leg0?.start ?? 0,
+    func  = isStp ? stepsFromObj : easingFromObj,
+    [isUT, isUV, wasUT, wasUV] = func(obj, leg0, leg1);
+
+    flipIt(Boolean(start));
+    formatNumber(start, ...FORMAT_START);
+    if (isStp != wasStp)
+        wasIsSteps(isStp, [isUT, isUV]);       // if (isUT) 2nd timeFrames()
+    else if (isStp) {
+        if (isUT != wasUT)
+            toggleUser(elms.timing, true,  wasUT, isUT); // 2nd timeFrames()
+        // else is simpler w/o if (isUV != wasUV)
+        toggleUser(elms.values, false, wasUV, isUV);
+    }
+    else // timeFrames() already ran, so only end here
+        formatNumber(obj.end ?? leg1.end, ...FORMAT_END);
+
     objEz = obj;
 }
 //==============================================================================
@@ -68,17 +70,17 @@ function formFromObj(obj) {
 //               called by loadFinally(), clickCode(), refresh().
 function objFromForm(hasVisited = true) {
     let autoTrip, flipTrip, loopWait, plays, tripWait;
-    const end       = theEnd();
-    const start     = orUndefined(Number(elms.start.textContent));
-    const loopByElm = orUndefined(elms.loopByElm.checked);
-    const roundTrip = orUndefined(elms.roundTrip.checked);
+    const
+    end       = theEnd(),
+    start     = orUndefined(theStart()),
+    loopByElm = orUndefined(elms.loopByElm.checked),
+    roundTrip = orUndefined(elms.roundTrip.checked);
 
     if (roundTrip) {   // autoTrip and flipTrip default to true
         autoTrip = elseUndefined(!elms.autoTrip.checked, false);
         flipTrip = elseUndefined(!elms.flipTrip.checked, false);
         tripWait = orUndefined(Number(elms.tripWait.value));
     }
-
     plays = Number(elms.plays.value);
     if (plays > 1)
         loopWait = orUndefined(Number(elms.loopWait.value));
@@ -92,12 +94,14 @@ function objFromForm(hasVisited = true) {
         g.type = Number(elms.type.value);
         g.io   = Number(elms.io.value);
     }                   // obj.time deleted by stepsFromForm() if user timing
-    const func = isSteps() ? stepsFromForm : easingFromForm;
-    const obj  = {time:msecs, type:orUndefined(g.type), io:orUndefined(g.io),
-                  start, end, plays, loopWait, loopByElm,
-                  roundTrip, autoTrip, flipTrip, tripWait};
-                        // object property order significant relative to presets
-    objEz = func(obj, hasVisited);
+    const obj  = {      // object property order significant relative to presets
+        time:elms.time.valueAsNumber, // stepsFromForm() can delete obj.time
+        type:orUndefined(g.type),
+        io  :orUndefined(g.io),
+        start, end, plays, loopWait, loopByElm,
+        roundTrip, autoTrip, flipTrip, tripWait
+    };
+    objEz = (isSteps() ? stepsFromForm : easingFromForm)(obj, hasVisited);
     return objEz;
 }
 //==============================================================================

@@ -51,11 +51,8 @@ function newEzY(obj) {
 // updateTrip() updates roundTrip display, called by openNamed(), initEasies(),
 //              change.roundTrip()
 function updateTrip(isTrip = elms.roundTrip.checked) {
-    const isAuto = isTrip && elms.autoTrip.checked;
     elms.roundTrip.label = "Round trip" + (isTrip ? ":" : " ");
-
-    P.visible([elms.flipTrip, elms.autoTrip], isTrip);
-    P.visible(elms.tripWait.parentNode,       isAuto);
+    P.visible([elms.flipTrip, elms.autoTrip, elms.tripWait], isTrip);
 }
 //==============================================================================
 // Boolean functions:

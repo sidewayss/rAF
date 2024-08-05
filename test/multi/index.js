@@ -9,15 +9,17 @@ import {clipEnd, clipStart} from "./_load.js";
 import {MASK_X}             from "./_update.js";
 import {objEz}              from "./_named.js";
 //==============================================================================
-// multiFromObj() reduces 3 pairs of Easys to 3 Easys for easies.newTarget(),
-//             MEBase.#easies is an Array: [Easy]. Illustrates an obscure
-//             inefficiency: every masked value is calculated even if it's the
-//             same as another one. Called by newTargets() and clickCode(),
-//             which passes in an array of string Easy names as arr.
-function multiFromObj(arr, isPseudo) {
+// multiFromObj() creates/returns the object passed to Easies.proto.newTarget().
+//                Converts 3 Easys to 3 pairs of Easys for the masked args:
+//                    [0, 1, 2] becomes [0, 0, 1, 1, 2, 2]
+//                MEBase.#easies is an Array of Easy. Illustrates an obscure
+//                inefficiency: every masked value is calculated even if it's
+//                the same as another one. Called by newTargets(), clickCode(),
+//                which passes an array of strings (local storage keys) as ezs.
+function multiFromObj(ezs, isPseudo) {
     const me = {start:clipStart, end:clipEnd, mask:MASK_X, eKey:objEz.eKey,
-               easies:Array.from({length:COUNT * 2}, // [0, 0, 1, 1, 2, 2]
-                                 (_, i) => arr[Math.floor(i / 2)])};
+               easies:Array.from({length:COUNT * 2},
+                                 (_, i) => ezs[Math.floor(i / 2)])};
     if (isPseudo)
         me.peri = pseudoUpdate;                              // pseudoAnimate()
     else {
@@ -27,7 +29,7 @@ function multiFromObj(arr, isPseudo) {
         );
         if (objEz.plays.some(v => v)) // convert "" to undefined
             me.plays    = objEz.plays.map(v => orUndefined(v));
-        if (objEz.trip .some(v => v)) // ...and convert "n" to n
+        if (objEz.trip .some(v => v)) //convert "number" to number
             me.autoTrip = objEz.trip .map(v => elseUndefined(v, Number(v)));
     }
     return me;

@@ -1,10 +1,10 @@
 import {create} from "./efactory.js";
 import {MEBase} from "./measer.js";
 
-import {E, Ez, Is, Easy} from "../raf.js";
+import {E, Ez, Easy} from "../raf.js";
 
 export class Easies {
-    #active; #byEasy; #byTarget; #easy2ME; #oneShot; #peri; #post;
+    #active; #byEasy; #byTarget; #easy2ME; #oneShot; #peri; #post; #pseudo;
     #easies; #targets;
 //  #easies, #targets are sets. It prevents duplicates and makes removing items
 //  easier. Easies implements iteration protocol for #easies and a few other
@@ -113,7 +113,7 @@ export class Easies {
     get oneShot()    { return this.#oneShot; }
     set oneShot(val) { this.#oneShot = Boolean(val); }
 
-//  restore() and init()
+//  restore() and init() are pass-throughs to Easy=>Easer and MEaser
     restore() {
         let obj;
         for (obj of this.#easies)
@@ -140,20 +140,25 @@ export class Easies {
 //==============================================================================
 // "Protected" methods, called by AFrame instances:
 //  _zero() helps AFrame.prototype.play() zero out before first call to _next()
-    _zero(now = 0) {
-        let e2M, easies, easy, map, plays, t, tplays;
+    _zero(now = 0, isPseudo = false) {
+        let easy;
         this.#active = new Set(this.#easies); // the "live" set
-
-        this.#byEasy.clear();                 // Easies
-        for (easy of this.#easies) {
+        this.#pseudo = isPseudo;              // pseudo-animation
+        this.#byEasy  .clear();               // Easies
+        this.#byTarget.clear();               // MEasers
+        for (easy of this.#easies)
             easy._zero(now);                  // cascade the zeroing-out down
+
+        if (isPseudo) return;                 // pseudo-animation = no targets
+        //-------------------------------------- but there is target-pseudo too
+        let e2M, easies, map, plays, t, tplays;
+        for (easy of this.#easies) {
             map = new Map;                    // map target to plays
             for (t of easy.targets)           // fall back to easy.plays
                 map.set(t, t.plays ?? easy.plays);
             this.#byEasy.set(easy, map);
         }
 
-        this.#byTarget.clear();               // MEasers
         e2M = this.#easy2ME;                  // Map(Easy, Set(MEaser))
         e2M.clear();
         for (t of this.#targets) {
@@ -196,6 +201,7 @@ export class Easies {
 //  _next() is the animation run-time. The name matches ACues.protytope._next().
 //   AFrame.prototype.#animate() runs it once per frame. It runs easy._easeMe()
 //   to get eased values, and t._apply() to apply those values to #targets.
+//   #pseudo does not apply values: #byEasy, #byTarget are empty, see _zero().
 //   Returns true upon arrival, else false. No easies means no targets.
     _next(timeStamp) {
         let byElm, e, e2, easers, easy, map, nextElm, noWait, plays, set, sts,
@@ -204,7 +210,7 @@ export class Easies {
         // Execute every active easy
         for (easy of this.#active)
             easy._easeMe(timeStamp);
-
+        //============================
         // Process the easies' targets
         for ([easy, map] of this.#byEasy) {
             e   = easy.e;
@@ -260,7 +266,7 @@ export class Easies {
             if (!map.size)
                 this.#byEasy.delete(easy);
         }
-
+        //==============================
         // Process #targets, the MEasers
         for ([t, plays] of this.#byTarget) {
             val = [];                       // val is sparse like t.#calcs
@@ -326,15 +332,19 @@ export class Easies {
                     t._apply(val2);
             }
         }
-
+        //====================
         // Clean up and return
         for (easy of this.#active) {
-            if (!this.#byEasy.has(easy) && !this.#easy2ME.has(easy)) {
+            e = easy.e;
+            const b = this.#pseudo ? !e.status
+                                  || (e.status == E.tripped && !easy.autoTrip)
+                                   : !this.#byEasy .has(easy)
+                                  && !this.#easy2ME.has(easy);
+            if (b) {
                 easy.post?.(easy);
                 this.#active.delete(easy);
             }
             else {
-                e   = easy.e;
                 sts = e.status;
                 if (e.waitNow) {            // similar to Easy.proto._zero():
                     e.status  = E.waiting;  //$$
@@ -350,6 +360,6 @@ export class Easies {
             }
         }
         this.#peri?.(this);                 // wait until everything is updated
-        return !this.#active.size;          // no active Easys returns true
+        return this.#active.size;           // 0 active Easys = falsy = finished
     }
 }

@@ -116,7 +116,7 @@ input[type=color]:hover {
   background-color:#CCCCD7;
   border-color:var(--medium-gray);
 }
-select:hover {
+select:hover:not(:disabled) {
   background-color:white;
   border-color:var(--line-gray);
 }
@@ -186,10 +186,6 @@ check-box[checked] {
   stroke:var(--dark-blue);
   color: var(--dark-blue);
 }
-check-box[disabled] {
-  stroke:var(--medium-gray);
-  color: var(--medium-gray);
-}
 check-box:hover {
   fill-opacity:0.05;
   fill:  var(--accent-blue);
@@ -199,6 +195,12 @@ check-box:active {
   fill:white;
   stroke:var(--medium-blue);
   color: var(--medium-blue);
+}
+check-box[disabled],
+label[disabled],
+select:disabled {
+  stroke:var(--medium-gray);
+  color: var(--medium-gray);
 }
 
 /* <state-button> - #play, #stop */

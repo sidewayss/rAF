@@ -1,5 +1,6 @@
 export {loadSteps, loadTV, stepsFromObj, stepsFromForm, initSteps, isSteps,
         wasIsSteps, toggleUser, isUserTV, tvFromElm, setInfo, infoZero};
+
 export let FORMAT_END;
 export const
 EASY   = "easy",
@@ -45,14 +46,14 @@ function loadSteps() {
 
     sel.value = E.end;  // the CSS default jump value
 
-    elms.info.addEventListener("click", (evt) => {
-        evt.stopImmediatePropagation();
-        evt.stopPropagation();
-        evt.preventDefault();
-        //!!none of those prevent the click, which prevents the hiding of the
-        //!!title/toolsip. Maybe I should pop up something like "Copied!". That
-        //!!would probably mean eliminating the title for hover.
-    }, false);
+//!!elms.info.addEventListener("click", (evt) => {
+//!!    evt.stopImmediatePropagation();
+//!!    evt.stopPropagation();
+//!!    evt.preventDefault();
+//!!    // none of those prevent the click, which prevents the hiding of the
+//!!    // title/toolsip. Maybe I should pop up something like "Copied!". That
+//!!    // would probably mean eliminating the title for hover.
+//!!}, false);
 }
 function loadTV() { // called exclusively by getEasies() during page load
     let arr, clone, div, divUser, elm, func, i, id, isT, last, lbl, max, min,
@@ -128,11 +129,15 @@ function tvShowHide(isT) {
     return isT ? P.visible : P.displayed;
 }
 //==============================================================================
+// getTime()
+function setTime(t) {
+    t *= MILLI;
+    return timeFrames(t);
+}
 // inputLastTime() is the input event handler for lastUserTime
 function inputLastTime(evt) {
     if (!isInvalid(evt.target))
-        timeFrames(evt.target.valueAsNumber * MILLI);
-    //!!updateDuration(evt.target.valueAsNumber);
+        setTime(evt.target.valueAsNumber);
 }
 // inputLastValue() is the input event handler for elms.userValues.at(-1)
 function inputLastValue(evt) {
@@ -169,23 +174,33 @@ function wasIsSteps(is, isU) {           // isU = [isUT, isUV], order critical
 //              timing, values in one place.
 //              was argument is wasSteps or wasUser, depending on the caller.
 //              If you enter an invalid value then switch to not userValues and
-//              back again, val = the invalid value, and it will be displayed.
+//              back again, the invalid valid will not be displayed.
 function toggleUser(sel, isT, was = P.isDisplayed(sel[OTHER][1]),
                               is  = isUserTV(sel)) {
-    let val;
-    if (is)
-        val = elms[Ez.toCamel(USER, sel.id)].at(-1).valueAsNumber;
-    else if (was)
-        val = isT ? secs                         // TIMING: duration
-                  : elms.flip.value ? 0 : MILLI; // VALUES: end
-    else
-        return false;
-    //-------------------------------------------
-    if (isT) {
-        P.visible(elms.time, was);
-        timeFrames(is ? val * MILLI : undefined);
+    let invalid, val;
+    if (is) {
+        const elm = elms[Ez.toCamel(USER, sel.id)].at(-1);
+        invalid = isInvalid(elm);
+        if (!invalid)
+            val = elm.valueAsNumber;
+    }
+    else if (was) {
+        if (!isT)                              // TIMING: getMsecs()
+            val = elms.flip.value ? 0 : MILLI; // VALUES: end
     }
     else
+        return false;
+    //--------
+    if (isT) {
+        P.visible(elms.time, was);
+        if (is) {
+            if (!invalid)
+                setTime(val);
+        }
+        else
+            timeFrames();
+    }
+    else if (!invalid)
         formatNumber(val, ...FORMAT_END);
 
     return is;
@@ -316,8 +331,10 @@ function isUserTV(sel) {
 function tvFromElm(sel, useName) {
     let tv;
     if (isUserTV(sel)) {                      // userValues or userTiming:
-        const inputs = elms[Ez.toCamel(USER, sel.id)];
-        const factor = getDF(sel);
+        const
+        inputs = elms[Ez.toCamel(USER, sel.id)],
+        factor = getDF(sel);
+
         tv = new Array(COUNT);                // an array of numbers
         for (let i = 0; i < COUNT; i++)
             tv[i] = inputs[i].valueAsNumber * factor;

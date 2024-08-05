@@ -157,8 +157,8 @@ export class AFrame {
                 this.#status = E.playing;
                 if (isZero && this.#frameZero)
                     this.#frame = requestAnimationFrame(t => this.#animateZero(t));
-                else { console.log("animate()")
-                    this.#frame = requestAnimationFrame(t => this.#callback(t));}
+                else
+                    this.#frame = requestAnimationFrame(t => this.#callback(t));
             }
         }
         return this.#promise;
@@ -167,7 +167,7 @@ export class AFrame {
     #animate(timeStamp) {
         this.#now = timeStamp;           // set it first so callbacks can use it
         for (const t of this.#targets) { // execute this frame
-            if (t._next(timeStamp)) {    // true = arrived, finished
+            if (!t._next(timeStamp)) {   // 0 = arrived, finished
                 t.post?.(t);             // ACues or Easies.proto.post()
                 this.#targets.delete(t);
             }
@@ -185,7 +185,6 @@ export class AFrame {
         if (this.#useNow)
             timeStamp = performance.now();
         this.#setZero (timeStamp);
-        console.log("animateZero()")
         this.#callback(timeStamp);    // timeStamp is always less than now
     }
 //  #setZero() helps play() and #animateZero()

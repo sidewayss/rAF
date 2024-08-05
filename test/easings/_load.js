@@ -30,7 +30,7 @@ let borderW, boxStyle, checkH, checkW, factorW, iSize, lefties, leftW, minW,
 //==============================================================================
 // loadIt() is called by loadCommon()
 function loadIt(byTag, hasVisited) {
-    let clone, cr, div, elm, i, id;
+    let cr, elm, i;
     ++pad.unit;                         // an extra leading space for -0.123
     ++pad.comp;                         // ditto
 
@@ -48,26 +48,17 @@ function loadIt(byTag, hasVisited) {
     Ez.readOnly(range, "dots", Array.from(LENGTH, (_, i) => range["dotY" + i]));
     Ez.readOnly(chart, "active", []);   // visible dots determined by loopByElm
     Ez.readOnly(range, "active", []);   // ditto
-//!!Ez.readOnly(chart, "styles",        // all dot styles in one place
-//!!            [...chart.dots, ...range.dots].map(dot => dot.style));
 
     elm = elms.loopWait;                // I prefer to populate it here vs HTML
     for (i = 0; i <= 5; i++)
         elm.add(new Option((i / 10).toFixed(1) + U.seconds, i * 100));
 
-    id  = "tripWait";                   // tripWait is a clone of loopWait
-    div = elms.autoTrip.nextElementSibling;
-
-    clone = elm.labels[0].cloneNode(true);
-    clone.htmlFor = id;
-    clone.textContent = ":";
-    div.appendChild(clone);             // <label>
-
+    const
+    id    = "tripWait",                 // tripWait is a clone of loopWait
     clone = elm.cloneNode(true);
     clone.id = id;
-    clone.className = "";
-    div.appendChild(clone);             // <select>
     elms[id] = clone;                   // elms.tripWait
+    elms.autoTrip.parentNode.appendChild(clone);
 
     const checks = byTag.at(-1);        // <check-box>s
     Ez.readOnly(g, "trips", checks.filter(e => e.id.endsWith("Trip")));
@@ -138,7 +129,8 @@ function getEasies(_, json) {
 function initEasies(obj, hasVisited) {
     let b = newEasies(ezX);
     if (b) {
-        const evt = dummyEvent(CHANGE, hasVisited ? "isInitEasies" : undefined);
+        const evt = dummyEvent(CHANGE, hasVisited ? "isInitEasies"
+                                                  : "hasNotVisited");
         for (const id of rafChecks)
             elms[id].dispatchEvent(evt);  // raf.properties
 
@@ -160,7 +152,7 @@ function initEasies(obj, hasVisited) {
 //==============================================================================
 function updateAll() {  // called by loadFinally(), openNamed()
     const evt = dummyEvent(CHANGE, "isUpdateAll");
-    for (const elm of [elms.loopByElm, elms.plays])
+    for (const elm of [elms.loopByElm, elms.plays, elms.autoTrip])
         elm.dispatchEvent(evt);
 
     updateTime();       // creates targetInputX, does not assign it to ezX
@@ -228,11 +220,10 @@ function resizeWindow() {
     elm.left   = l + U.px;
     elm.width  = innerW - r - l + U.px;
     elm.height = document.body.clientHeight - borderW + U.px;
-
-                                            // align autoTrip, loopByElm checks
-    l = elms.autoTrip .getBoundingClientRect().left;
-    r = elms.loopByElm.getBoundingClientRect().left;
-    elms.loopByElm.style.marginRight = r - l + U.px
+                                            // align flipTrip, loopByElm checks
+    //l = elms.flipTrip .getBoundingClientRect().left;
+    //r = elms.frameZero.getBoundingClientRect().right;
+    //elms.loopByElm.style.marginLeft = l - r + U.px
                                             // align "s" suffix for #split, #gap
     r = elms.split.getBoundingClientRect().right + U.px;
     for (elm of [elms.split, elms.gap])

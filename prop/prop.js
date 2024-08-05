@@ -25,8 +25,9 @@ class Prop extends PBase {
         }
     }
 //  required() returns required arg count
-    required(f = this.func) { return f?.required ?? 1; }
-
+    required(f = this.func) {
+        return this.isUn ? 0 : (f?.required ?? 1);
+    }
 //  cut() aka remove() removes this property from one or more elements.
 //  removeProperty() requires a kebab-case name.
     cut(elms) {

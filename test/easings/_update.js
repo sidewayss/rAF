@@ -1,5 +1,6 @@
-export {refresh, initPseudo, newTargets, getMsecs, getFrame, postPlay, updateX,
-        setCounters, formatDuration, drawLine, syncZero, isInitZero, theEnd};
+export {refresh, drawLine, newTargets, initPseudo, getFrame, syncZero,
+        isInitZero, getMsecs, calcDuration, formatDuration, setCounters,
+        updateX, postPlay, theStart, theEnd};
 
 export let wasStp = false; // see wasOob below
 export const
@@ -9,23 +10,24 @@ loopFrames = [];
 
 import {E, U, P, Pn, Is, Ez, Easy} from "../../raf.js";
 
-import {create} from "../../easy/efactory.js";
-const targetPseudoX = create({peri:pseudoUpdate});
-const targetPseudoY = create({peri:()=>{}});    // noop, requires a function...
+//!!import {create} from "../../easy/efactory.js";
+//!!const targetPseudoX = create({peri:pseudoUpdate});
+//!!const targetPseudoY = create({peri:()=>{}});    // noop, requires a function...
 
-import {ezX, raf} from "../load.js";
+import {ezX, raf}              from "../load.js";
+import {MILLI, COUNT, elms, g} from "../common.js";
 import {frames, playZero, targetInputX, inputX, eGet, callbacks, updateFrame,
         pseudoFrame, pseudoAnimate, formatNumber} from "../update.js";
-import {MILLI, COUNT, elms, g} from "../common.js";
 
-import {objEz, objFromForm}                from "./_named.js";
-import {storeIt}                           from "./events.js";
-import {ezY, newEzY, twoLegs, bezierArray} from "./index.js";
-import {tvFromElm, setInfo, isSteps}       from "./steps.js";
+import {objEz, objFromForm}                  from "./_named.js";
+import {storeIt}                             from "./events.js";
+import {ezY, initEzXY, twoLegs, bezierArray} from "./index.js";
+import {tvFromElm, setInfo, isSteps}         from "./steps.js";
 
-let wasOob; // persistent variable for refresh()
+let
+wasOob; // persistent variable for refresh()
 //==============================================================================
-// refresh() <= updateAll(), change.initZero(), changeStop(), inputTypePow(evt),
+// refresh() <= updateAll(), change.initZero(), changeStop(), inputTypePow(),
 //              event handlers in chart.js, msg.js, steps.js, tio-pow.js.
 function refresh(tar, n, has2 = twoLegs()) {
     if (!tar)                    // updateAll(), change.initZero(), changeStop()
@@ -33,15 +35,14 @@ function refresh(tar, n, has2 = twoLegs()) {
     else {
         let obj;
         if (n) {
-            objEz.time = n;
-            ezY  .time = n;      // the one property that doesn't use newEzY()
+            objEz.time = n;      // the one property that doesn't use newEzY()
+            ezY  .time = n;
         }
         else {
             obj = objFromForm(); // less code to read the whole form here than
-            newEzY(obj);         // to change each property in every event.
+            initEzXY(obj);       // to change each property in every event.
             if (!obj) {
                 switch (tar) {   // newEzY() failed, try to recover the form:
-                case elms.values: case elms.values.other[0]:
                 case elms.timing: case elms.timing.other[0]:
                     elms.easyTiming.selectedIndex = 0; // time only goes up
                     break;
@@ -50,16 +51,18 @@ function refresh(tar, n, has2 = twoLegs()) {
                 default:
                 }
                 return;
-            } //-------
+            } //-------------
+            if (ezX.e.status)    // not E.arrived
+                ezX.init();      // required for Easy.proto._zero()
         }
         storeIt(obj);            // save obj to localStorage
     }
     const isStp = isSteps();
-    pseudoAnimate();             // update frames
+    pseudoAnimate(true);         // update frames
     drawLine(isStp);             // draw the line
     inputX();                    // move the dot(s), uses updated frames
     if (isStp) {                 // E.steps needs cleanup post-pseudo-animation
-        setInfo(ezY.firstTime / MILLI);
+        setInfo(ezY.duration / MILLI);
         if (elms.jump.value < E.end && elms.roundTrip.checked)
             frames.at(-1).y = theEnd();
     }
@@ -160,25 +163,14 @@ function pointToString(x, y) {
     return `${x.toFixed(2)},${y.toFixed(2)} `;
 }
 //==============================================================================
-// initPseudo() sets frames[0], calls newTargets(true)
-function initPseudo() {
-    const
-    y = Number(elms.start.textContent), // y = 0 or 1000
-    u = y ? 1 : 0;                      // u for e.unit
-    frames[0] = vucFrame(0, 0, y, y, u, 1 - u);
-    loopFrames.length = 0;              // for loopByElm post-play pre-stop
-    newTargets(true);
-}
-//==============================================================================
 // newTargets() calls Easy.proto.newTarget() as needed, with and without .prop
 //              and .elms, called by changePlay(), initPseudo(true).
 function newTargets(isPseudo) {
     let cb;
     if (isPseudo) {
-        ezY.targets = targetPseudoY;    // ezY is always a new instance
-        if (!ezX.targets.size) {        // ezX.oneShot is true = only non-pseudo
-            ezX.targets = targetPseudoX;// test set targets()
-            g.easies.peri = undefined;
+        g.easies.peri = pseudoUpdate;   // outside if(.size) for page load
+        if (ezY.targets.size) {         // ezX.oneShot = true, see initEasies()
+            ezY.clearTargets();
             for (cb of ["onAutoTrip","onLoop"])
                 ezY[cb] = undefined;
         }
@@ -191,8 +183,8 @@ function newTargets(isPseudo) {
         ezY.post       = postY;         // test Easy.proto.post()
         ezY.onAutoTrip = callbacks.onAutoTrip;
 
-        ezY.clearTargets();             // sometimes unnecessary
-        ezX.clearTargets();             // not always  necessary
+        ezY.clearTargets();             // not always necessary
+        ezX.clearTargets();             // ditto
         ezX.addTarget(targetInputX);    // test Easy.proto.addTarget()
         if (loopByElm) {                // test single-element targets
             let tar;
@@ -207,14 +199,23 @@ function newTargets(isPseudo) {
             ezY.onLoop      = undefined;
         }
         else {                          // test single and multi-element targets
-            ezY.onLoop      = callbacks.onLoop;
-
+            ezY.onLoop = callbacks.onLoop;
             arr = [[ezX, P.cx, [chart]],
                    [ezY, P.cy, [chart, range]]];
             for ([ez, prop, cr] of arr)
                 ez.newTarget({prop, elms:cr.map(v => v.dots[0])});
         }
     }
+}
+//==============================================================================
+// initPseudo() sets frames[0], calls newTargets(true)
+function initPseudo() {
+    const
+    y = theStart(),         // y = 0 or 1000
+    u = y ? 1 : 0;          // u for e.unit
+    frames[0] = vucFrame(0, 0, y, y, u, 1 - u);
+    loopFrames.length = 0;  // for loopByElm post-play pre-stop
+    newTargets(true);
 }
 //==============================================================================
 // postY() is the ezY.post() callback
@@ -247,8 +248,8 @@ function vucFrame(t, x, y, value, unit, comp) { // value, unit, comp versus e
     return {t, x, y, value, unit, comp};
 }
 //==============================================================================
-// syncZero() is the raf.syncZero callback, not called by pseudo, initPseudo()
-//            resets frames[0] between every playback.
+// syncZero() is the raf.syncZero callback, not called by pseudo,
+//            initPseudo() resets frames[0] between every playback.
 function syncZero() {
     if (isInitZero())
         frames[0] = getFrame(0, 0, ezY.e);
@@ -257,39 +258,24 @@ function syncZero() {
 // isInitZero() determines if raf.initZero should apply to playback frames, it
 //              doesn't apply to pseudo frames.
 function isInitZero() {
-    const elm = elms.initZero;
+    const  elm = elms.initZero;
     return elm.checked && !elm.disabled;
 }
 //==============================================================================
-// getMsecs() is only called by timeFrames()
+// getMsecs() returns the duration of 1 play, including steps leftovers
+//            called only by timeFrames(), ezY and objEz not updated yet.
 function getMsecs() {
-    return elms.time.valueAsNumber;
+    return elms.time.valueAsNumber; // never called when steps has user timing
 }
-//==============================================================================
-// updateX() is called exclusively by inputX(), the user can click anywhere on
-//           #x, so for loopByElm set all 3 dots every time.
-function updateX(frm, i) {
-    const
-    x = frm.x + U.px,
-    y = frm.y + U.px;
-    if (elms.loopByElm.checked && loopFrames.length) {
-        const iElm = (loopFrames.findLastIndex(n => n < i) + 1) % COUNT;
-        for (let j = 0; j < COUNT; j++)
-            if (j == iElm)
-                setDot(j, x, y);
-            else if (j > iElm)
-                setDot(j, 0, 0);
-            else
-                setDot(j, MILLI, theEnd());
-    }
-    else
-        setDot(0, x, y);
+// calcDuration() is called exclusively by setDuration()
+function calcDuration(t) {
+    if (elms.roundTrip.checked && elms.autoTrip.checked)
+        t += t + (Number(elms.tripWait.value) / MILLI);
+    return t;
 }
-// setDot() helps updateX() set the position of one dot in both chart and range
-function setDot(i, x, y) {
-    chart.dots[i].style.cx = x;
-    chart.dots[i].style.cy = y;
-    range.dots[i].style.cy = y; // y only, it's a vertical line, 1D
+// formatDuration() is called exclusively by setDuration()
+function formatDuration(val, d) {
+    return val.toFixed(d) + (val < 10 ? U.seconds : "");
 }
 //==============================================================================
 // setCounters() is called exclusively by updateCounters()
@@ -297,9 +283,31 @@ function setCounters(frm, d, pad) {
     for (var key of Easy.eKey)
         formatNumber(frm[key], pad[key], d, elms[key]);
 }
-// formatDuration() is called exclusively by updateDuration()
-function formatDuration(val, d) {
-    return val.toFixed(d) + (val < 10 ? U.seconds : "");
+//==============================================================================
+// updateX() is called exclusively by inputX(), the user can click anywhere on
+//           #x, so for loopByElm set all 3 dots every time.
+function updateX(frm, i) {
+    const
+    x = frm.x + U.px,
+    y = frm.y + U.px;           // !loopFrames == isPseudo
+    if (!elms.loopByElm.checked || !loopFrames.length)
+        setDot(0, x, y);
+    else  {                     // loopByElm && !isPseudo
+        const iElm = (loopFrames.findLastIndex(n => n < i) + 1) % COUNT;
+        for (let j = 0; j < COUNT; j++)
+            if (j == iElm)
+                setDot(j, x, y);
+            else if (j > iElm || elms.roundTrip.checked)
+                setDot(j, 0, theStart());
+            else
+                setDot(j, MILLI, theEnd());
+    }
+}
+// setDot() helps updateX() set the position of one dot in both chart and range
+function setDot(i, x, y) {
+    chart.dots[i].style.cx = x;
+    chart.dots[i].style.cy = y;
+    range.dots[i].style.cy = y; // y only, it's a vertical line, 1D
 }
 //==============================================================================
 // postPlay() flips frames[0] after non-autoTrip return trip, easings only
@@ -322,6 +330,9 @@ function postPlay() {
 //!!y = MILLI * Number(u != elms.direction.selectedIndex);  // y = ditto
 //!!
 //!!frames[0] = vucFrame(0, x, y, y, u, 1 - u);
+}
+function theStart() {
+    return Number(elms.start.textContent);
 }
 function theEnd() {
     return Number(elms.end.textContent);

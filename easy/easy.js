@@ -5,10 +5,10 @@ import {stepsToLegs}        from "./easy-steps.js"
 import {prepLegs, override, legUnit, spreadToEmpties, getType, getIO, splitIO,
         toBezier}           from "./easy-construct.js"
 
-import {E, Ez, Is, Easies} from "../raf.js";
+import {E, Ez, Is} from "../raf.js";
 
 export class Easy {
-//  Public string arrays for enums and <select><option> or other list display
+//  Public string arrays for enums and <select><option> or other displayed list
     static status = ["arrived","tripped","waiting","inbound","outbound",
                      "initial","original","pausing","playing","empty"];
     static type   = ["linear","sine","circ","expo","back","elastic","bounce",
@@ -18,9 +18,9 @@ export class Easy {
     static jump   = ["none","start","end","both"];
     static eKey   = ["value","unit","comp"];
 
-    #autoTrip; #base; #dist; #e; #end; #flipTrip; #lastLeg; #legsWait; #loopWait;
-    #onAutoTrip; #onLoop; #oneShot; #peri; #plays; #post; #pre; #reversed;
-    #roundTrip; #start; #targets; #time; #tripWait; #wait; #zero;
+    #autoTrip; #base; #dist; #e; #end; #flipTrip; #lastLeg; #legsWait;
+    #loopWait; #onAutoTrip; #onLoop; #oneShot; #peri; #plays; #post; #pre;
+    #reversed; #roundTrip; #start; #targets; #time; #tripWait; #wait; #zero;
 
     _leg; _now; _inbound; // shared with Incremental.prototype._calc()
     _value;               // for Incremental only, but used in shared code here
@@ -28,23 +28,23 @@ export class Easy {
 //==============================================================================
     constructor(obj, isInc = false) {
         Ez._validObj(obj, "Easy constructor's only argument");
-        const
-        c = "count", e = "end", s = "start", t = "time", w = "wait",
-        o = Ez.shallowClone(obj),
 
-        props = ["pre","peri","post","onLoop","oneShot","targets","tripWait"];
-        for (const prop of props)   // use setters for validation, defaults
-            this[prop] = o[prop]
+        let p;                      // p for property
+        const c = "count", e = "end", s = "start", t = "time", w = "wait",
+              o = Ez.shallowClone(obj);
 
-        //  #plays is only used as a default for targets that don't define it
-        this.plays = o.plays || o.repeats + 1 || undefined;
+        for (p of [w,"flipTrip","targets","onLoop","oneShot","pre","peri","post"])
+            this[p] = o[p]          // use setters for validation, defaults
 
-        // Don't use setters for these initial settings
-        this.#wait      = Ez.toNumber(o[w], w, ...Ez.defZero);
-        this.#loopWait  = Ez.toNumber(o.loopWait, "loopWait", ...Ez.defZero);
+        // Can't use setters for these initial settings due to dependencies
+        this.#loopWait  = this.#setWait(o.loopWait, "loopWait");
+        this.#tripWait  = this.#setWait(o.tripWait, "tripWait");
         this.#roundTrip = Boolean(o.roundTrip);
         this.#autoTrip  = Ez.defaultToTrue(o.autoTrip);
-        this.#flipTrip  = Ez.defaultToTrue(o.flipTrip);
+
+        //  #plays is only used as a default for targets that don't define it
+        //  setter runs #multiPlayTripNoAuto() after autoTrip and roundTrip set
+        this.plays = o.plays || o.repeats + 1 || undefined;
 
         if (Is.def(o.legs))         // validate/pseudo-clone user-defined legs
             o.legs = Ez.toArray(o.legs, "legs", Ez._validObj)
@@ -56,26 +56,30 @@ export class Easy {
         o[t] = Ez.toNumber(o[t], t, ...Ez.undefGrThan0);
 
         if (!o.legs) {              // create default legs
-            const ios = splitIO(io, Is.def(o.split) || Is.def(o.gap));
-            const leg = {type, io:ios[0], bezier:o.bezier};
+            const
+            ios = splitIO(io, Is.def(o.split) || Is.def(o.gap)),
+            leg = {type, io:ios[0], bezier:o.bezier};
+
             o.legs = [leg];
             if (ios.length == 2) {
                 if (!Is.def(o[t]))  // assignment above allows undefined for now
                     Ez._mustErr("You", `define obj.${t} or each leg.${t}`);
-                //-------------------------------------------------------------------
-                const split = Ez.toNumber(o.split, "split", o[t] / 2, ...Ez.grThan0);
-                const gap   = Ez.toNumber(o.gap,   "gap", ...Ez.defZero);
-                const wait  = gap || undefined; // merely a preference
+                //-------------------------------------------------------------
+                const
+                split = Ez.toNumber(o.split, "split", o[t] / 2, ...Ez.grThan0),
+                wait  = this.#setWait(o.gap, "gap");
+
                 leg.time = split;
                 leg.end  = Ez.toNumber(o.mid, "mid");
-                o.legs.push({wait, time:o[t] - split - gap, type, io:ios[1]});
+                o.legs.push({type, wait, time:o[t] - split - wait, io:ios[1]});
             }
         }
         if (isInc && !o[t])
             o[c] = Ez.toNumber(o[c], c, ...Ez.undefGrThan0)
 
-        const isT = !o[c];
-        let   tc  = isT ? t : c;          // "time" or "count"
+        const
+        isTime = !o[c],
+        tc = isTime ? t : c;        // "time" or "count"
         this.#legsWait = prepLegs(o, type, s, e, w, tc, isInc);
 
         // _firstLeg and #lastLeg are starting points for two linked lists of
@@ -92,8 +96,8 @@ export class Easy {
         if (!this.#lastLeg.stepsReady)
             override(e, this.#lastLeg,  o, "the last", [isInc ? undefined : 1]);
         else {
-            if (Is.def(o[e]))
-                console.warn(o.end != this.#lastLeg.steps.at(-1));
+            if (Is.def(o[e]) && o[e] != this.#lastLeg.steps.at(-1))
+                console.warn(`o.${e} != last step: ${o[e]} != ${this.#lastLeg.steps.at(-1)}, last step wins.`);
             o[e] = this.#lastLeg.steps.at(-1);
             this.#lastLeg[e] = o[e];
         }
@@ -115,16 +119,12 @@ export class Easy {
 
         this.#start = o[s];
         this.#end   = o[e];               // must follow stepsToLegs()
-        if (isT)
+        if (isTime)
             this.#time = o[t];
-
         if (isInc)                        // initial, base animation values
             this._value = o[s];
         else
             this.#base  = down ? o[e] : o[s];
-
-    //!!if (down)                         // see _calc() and #leg2e()
-    //!!    this.#compUnit = Easy.#unitComp.slice();
 
         // this.e    stores the current state
         // this.e2   is a secondary e w/o status, for loops/trips without waits
@@ -181,7 +181,7 @@ export class Easy {
         isDown  = objDist < 0,
         keys    = Easy.eKey.slice(1);       // unit and comp only
         if (isDown)
-            key.reverse();                  // if (dist < 0) swap unit and comp
+            keys.reverse();                 // if (dist < 0) swap unit and comp
 
         o.legs.forEach((leg, i) => {
             // Ensure that every leg.start and leg.end are defined. #prepLegs()
@@ -199,10 +199,14 @@ export class Easy {
             //------------------------
             if (leg.type == E.steps) {
                 const obj = stepsToLegs(o, leg, legDist, objDist, i, last, keys);
-                if (obj.firstLeg)           // sTL() modifies o.legs
+                if (obj.firstLeg) {         // sTL() modifies o.legs
                     this._firstLeg = obj.firstLeg;
-                if (obj.lastLeg)
-                    this.#lastLeg  = obj.lastLeg;
+                    this.loopWait  = this.#loopWait; // setter adds _firstLeg.wait
+                }
+                if (obj.lastLeg) {
+                    this.#lastLeg = obj.lastLeg;
+                    this.tripWait = this.#tripWait;  // ditto #lastLeg.wait|leftover
+                }
             }
             else {
                 legUnit(leg, o[s], objDist, keys);
@@ -340,27 +344,60 @@ export class Easy {
             if (arg) return arg;    // one arg per caller
     }
 // time-related properties:
-    get wait()           { return this.#wait; }
-    set wait(val)        { this.#wait = this.#setWait(val, "wait"); }
+    get wait()        { return this.#wait; }
+    set wait(val)     { this.#wait = this.#setWait(val, "wait"); }
+    #setWait(val, name) {
+        return Ez.toNumber(val, name, ...Ez.defZero);
+    }
 
-    get loopWait()       { return this.#loopWait; }
-    set loopWait(val)    { this.#loopWait = this.#setWait(val, "loopWait"); }
+    get loopWait()    {
+        return this.#loopWait - this.#stepsLoopWait();
+    }
+    set loopWait(val) {
+        this.#loopWait = this.#setWait(val, "loopWait") + this.#stepsLoopWait();
+    }
+    #stepsLoopWait() {
+        return this._firstLeg.type == E.steps ? this._firstLeg.wait : 0;
+    }
 
-    get tripWait()       { return this.#tripWait; }
-    set tripWait(val)    { this.#tripWait = this.#setWait(val, "tripWait"); }
+    get tripWait()    {
+        return this.#tripWait - this.#stepsTripWait();
+    }
+    set tripWait(val) {
+        this.#tripWait = this.#setWait(val, "tripWait") + this.#stepsTripWait();
+    }
+    #stepsTripWait() {
+        return this.#lastLeg.type == E.steps
+             ? this.#lastLeg[this.#reversed ? "wait" : "leftover"]
+             : 0;
+    }
 
-    #setWait(val, name)  { return Ez.toNumber(val, name, ...Ez.defZero); }
-
-// this.firsTime and this.loopTime are used by new MEaser
-    get firstTime() { return this.#playTime(this.#wait); }
+// this.firsTime and this.loopTime return the duration of a single play within
+//               the context of plays > 1, including steps leftovers.
+    get firstTime() { return this.#playTime(this.#wait);     }
     get loopTime()  { return this.#playTime(this.#loopWait); }
     #playTime(wait) { // the duration of one play
-        const extra = this.#lastLeg.leftover ?? 0; // E.steps && !(jump & E.end):
-        let   val   = wait + this.#time - extra;   //   actual duration < #time
+        let val = wait + this.#time;
         if (this.#roundTrip && this.#autoTrip)
-            val += this.#time + this.#tripWait - extra;
+            val += this.#time + this.#tripWait;
         return val;
     }
+// this.tripTime is the return trip time for roundTrip && !autotrip
+    get tripTime() {
+        return this.#time + this.#tripWait;
+    }
+// this.duration is for E.steps && (plays == 1 || the last play during playback)
+//               duration <= this.#time, only less than if:
+//                  E.steps && (roundTrip ? !(jump & E.start) : !(jump & E.end))
+    get duration()  { //!!this.lastTime alias??
+        return this.firstTime
+            - (this.#reversed ? this._firstLeg.wait
+                              : (this.#lastLeg.leftover ?? 0));
+    }
+//->total time = (plays == 1 ? 0 : firstTime + (loopTime * (plays - 2)))
+//->           + duration;
+//->but plays are determined by targets, including MEasers, so...
+
 // this.time: setter is simpler than I expected. It spreads the new value
 //            proportionally across all the leg.time and leg.wait values.
 //            #wait, #loopWait, #tripWait are not included or affected.
@@ -430,13 +467,13 @@ export class Easy {
 //  _zero() and _resume() help AFrame.prototype.play() via Easies
     _zero(now = 0) {
         const        // these two blocks similar to end of Easies.proto._next()
-        isT  = (this.e.status == E.tripped),
-        wait = isT ? this.#tripWait
-                   : this._firstLeg.wait + this.#wait;
+        isTr = (this.e.status == E.tripped),
+        wait = isTr ? this.#lastLeg .wait + this.#tripWait
+                    : this._firstLeg.wait + this.#wait;
 
         this.#zero    = now + wait;
         this.e.status = wait ? E.waiting
-                      : isT  ? E.inbound : E.outbound; //$$
+                      : isTr ? E.inbound : E.outbound; //$$
 
         for (const t of this.#targets)
             t._zero(this);
@@ -581,10 +618,6 @@ export class Easy {
             now = this._now;              // _nextLeg modified it
         }                                 // ...leg.part is signed
         const unit = leg.ease(now / leg.time) * leg.part + leg.prev.unit;
-    //!!keys = this.#compUnit ?? Easy.#unitComp,
-    //!!uc   = leg.ease(now / leg.time) * leg.part + leg.prev.unit;
-    //!!e[keys[0]] = uc;                  // uc because it might be unit or comp
-    //!!e[keys[1]] = Ez.comp(uc);
         e.unit  = unit;
         e.comp  = Ez.comp(unit);
         e.value = unit * this.#dist + this.#base;

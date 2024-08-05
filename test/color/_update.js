@@ -1,7 +1,7 @@
 export {refresh, initPseudo, newTargets, newTar, getMsecs, getFrame, updateX,
         setCounters, formatDuration, oneCounter};
 //!!export let   initZero; // is raf.initZero applicable now? cached for animation
-export const formatFrames = true;   // see updateDuration()
+export const formatFrames = true;   // see setDuration()
 
 import {E, U, Is, F, Fn, P, Ez} from "../../raf.js";
 
@@ -116,7 +116,7 @@ updaters = {
     }
 };
 //==============================================================================
-// getMsecs() is the same as easings getMsecs()
+// getMsecs() is as simple as it gets, elms.time overrides everything else
 function getMsecs() {
     return elms.time.valueAsNumber;
 }
@@ -165,7 +165,7 @@ function oneCounter(coords, span, range) {
     span.textContent = coords.map((n, i) => range[i](n).padStart(5, E.sp))
                              .join(E.sp);
 }
-// formatDuration() is called exclusively by updateDuration()
+// formatDuration() is called exclusively by setDuration()
 function formatDuration(val, d) { // duplicate of multi
     return val.toFixed(d) + U.seconds;
 }

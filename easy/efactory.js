@@ -36,36 +36,35 @@ function create(o, set, isEasies) {
                              : ["multi",  "Easies", "Easy"  ];
         throw new Error(`For ${arr[0]}-ease targets, use ${arr[1]} not ${arr[2]}`);
     } //---------------------------------------------------------------
-    o.elms = Ez.toElements(o.elms || o.elm || o.elements || o.element);
+    o.elms = Ez.toElements(o.elms ?? o.elm ?? o.elements ?? o.element);
     o.l    = o.elms.length;
 
     let cv, is1Elm;
-    const hasElms = Boolean(o.l);
+    const
+    hasElms  = Boolean(o.l),
+    isPseudo = Boolean(o.pseudo);   // pseudo-target for pseudo-animation
+    if (!hasElms && !isPseudo)      // !isPseudo requires elms requires prop
+        ; //!!err                   // isPseudo requires peri
+    //-------------------------------------------------
+    o.prop  = PBase._validate(o.prop, "prop", hasElms);
+    o.peri  = Ez._validFunc  (o.peri, "peri", isPseudo);
+    o.isNet = (o.set == E.net) || o.prop?.isUn || o.func?.isUn;
+    o.isSet = (o.set == E.set);     // constant
+    o.maskAll = o.isSet;            // isNet, maskAll might be set to true later
     if (hasElms) {
-        is1Elm = (o.l == 1);        // elms requires prop
-        o.prop = PBase._validate(o.prop, "prop", true);
-
+        is1Elm  = (o.l == 1);
         o.loopByElm = !is1Elm && (o.loopByElm ?? o.loopByElement);
         o.calcByElm =  is1Elm || o.loopByElm;
-
-        o.isSet = (o.set == E.set); // both these might be set to true later
-        o.isNet = (o.set == E.net) || o.prop?.isUn || o.func?.isUn;
-
-        cv = getCV(o);              // cv = o.original or o.currentValue
-    }                               // gotta get o.cv early for arg count, etc.
-    else {                          // !elms requires peri
-        o.peri  = Ez._validFunc(o.peri, "peri", true);
-        o.isSet = true;
     }
-
     if (o.byElm || o.byElement)     // 1D arrays are by element
         o.byElm = true;
     if (o.bAbE  || o.byArgbyElm)    // 2D arrays are [arg[elm]]
         o.bAbE  = true;
 
-    color  (o, hasElms);            // o.cjs defined = ignore o.func
-    getFunc(o, hasElms, cv);        // getFunc() can set o.func
-    urcfa  (o, hasElms);            // addend, factor, count, required, units
+    cv = getCV(o, hasElms);         // gotta get o.cv early for arg count, etc.
+    color  (o);                     // o.cjs defined = ignore o.func
+    getFunc(o, cv);                 // getFunc() can set o.func
+    urcfa  (o);                     // addend, factor, count, required, units
     config (o, hasElms);            // configure addend, factor, max, min
     mask   (o, hasElms);            // parse|create mask, o.c for isNet, !hasElms
     easies (o, hasElms);            // process o.easies for MEaser, o.c is ready
@@ -113,44 +112,38 @@ function create(o, set, isEasies) {
 }
 //==============================================================================
 // Everything else is for portioning create() into manageable chunks
-function getCV(o) {
+function getCV(o, hasElms) {
     let cv = o.currentValue ?? o.cV;
-    if (cv) {                                // initial parsing/validation of
-        cv = Ez.toArray(cv, "getCV");        // user values, current() does more
+    if (cv) {                             // initial validation/parsing of user
+        cv = Ez.toArray(cv, "getCV");     // values, see current() for the rest
         if (cv.length != o.l)
             Ez._mustBeErr("currentValue", "an array the same length as elms");
         //----------------------
-        o.userCV = Is.def(o.currentValue)    // see current() for usage
+        o.cvDims = Ez._dims(cv);
+        o.userCV = Is.def(o.currentValue) // acts as boolean and error text
                  ? "currentValue"
                  : "cV";
-        o.cvDims = Ez._dims(cv);
         if (o.cvDims == 2 || Is.Number(cv[0]))
-            if (o.prop.needsFunc && !o.func && !o.cjs) {
-                const pre = `${o.prop.name} requires a function, and `;
-                const suf = " you must set the func property, e.g {func:F.rgb}";
-                throw new Error(o.cvDims == 2
-                  ? `${pre}currentValue 2D arrays can't include functions;${suf}`
-                  : `${pre}if currentValue is an array of Number,${suf}`
-                );
-            }
-            else if (o.isNet)                // E.net requires full CSS values
+            if (o.isNet)
                 Ez._mustBeErr("currentValue for {set:E.net}",
                               "an array of strings by element");
-    }
-    else if (!o.l && !o.isSet)
-        Ez._cantErr("Unless you define {set:E.set}, you",
-                    "leave elements and currentValue undefined");
-    //---------------------------
-    if (!cv || (o.enableRestore ?? true)) {  // enableRestore defaults to true
-        o.original = o.prop.getMany(o.elms); // the DOM values
-        if (!cv)
-            cv = o.original;
-    }
+            else if (o.prop.needsFunc && !o.func && !o.cjs) {
+                const txt = (o.cvDims == 2)
+                          ? "currentValue 2D arrays can't include functions;"
+                          : "if currentValue is an array of Number,";
+                throw new Error(`${o.prop.name} requires a function, and ${txt}`
+                              + " you must set the func property, e.g {func:F.rgb}");
+            }
+    } //---------------------------------
+    else if (hasElms && !o.dontGetValues) // dGV = obscure efficiency option
+        cv = o.prop.getMany(o.elms);      // get the DOM values
+
+    o.original = cv;
     return cv;
 }
 //==============================================================================
-function getFunc(o, hasElms, cv) {
-    if (!hasElms || o.cjs)
+function getFunc(o, cv) {
+    if (!o.prop || o.cjs)
         return;
     if (o.func && !o.func.isFunc)
         Ez._mustBeErr("func", "an instance of Func");
@@ -168,10 +161,11 @@ function getFunc(o, hasElms, cv) {
             if (o.prop.needsFunc)               // defaults should prevent this
                 throw new Error(`${o.prop.name} requires a func!`);
         }
-        else if (!o.isSet && !o.func.isCFunc    // CFuncs validated in current()
-            && (idx = names.findIndex(v => v && v != o.func.name)) >= 0)
-            throw new Error(`elms[${idx}]'s value's function, "${names[idx]}", `
-                        + `does not match {func:F.${o.func.name}}`);
+        else if (!o.isSet
+              && !o.func.isCFunc                  // CFuncs validated in current()
+              && (idx = names.findIndex(v => v && v != o.func.name)) >= 0)
+            throw new Error(`elms[${idx}]'s value's function, "${names[idx]}", does not `
+                          + `match {func:F.${o.func.name}}. To override use {set:E.set}.`);
         o.isNet |= o.func?.isUn;
     }
     if (o.isNet)                // gotta get o.cv early for arg count, etc.
@@ -190,8 +184,8 @@ function isCjsSpace(obj) {  // `in` throws when obj is Number, String
     catch { return false; }
 }
 // color() sets o.cjs, the primary Color instance
-function color(o, hasElms) {
-    if (hasElms && o.func && o.func.isCFunc != o.prop.isColor)
+function color(o) {
+    if (o.prop && o.func && o.func.isCFunc != o.prop.isColor)
         Ez._cantErr("You", `use ${o.func.name} with ${o.prop.name}`);
     //-------------
     if (!o.cjs)
@@ -199,7 +193,7 @@ function color(o, hasElms) {
     if (o.cjs) {
         if (!isCjs(o.cjs))
             Ez._mustBeErr("colorjs", "an instance of Color");
-        else if (hasElms && !o.prop.isColor) //!!until .isNet and gradients/color-mix
+        else if (o.prop && !o.prop.isColor) //!!until .isNet and gradients/color-mix
             Ez._cantErr("You", `use colorjs with ${o.prop.name}`);
         else if (o.func && (o.func.space ?? o.func.name) != o.cjs.cssId)
             Ez._mustBeErr(`The colorjs space (${o.cjs.cssId})` // rgb !=srgb, but why use colorjs for rgb??
@@ -225,23 +219,23 @@ function color(o, hasElms) {
 }
 //==============================================================================
 // urcfa() processes units, required, count, addend, factor
-function urcfa(o, hasElms) {
+function urcfa(o) {
     let key, val;
     // o.u is user-optional w/default, o.r and o.c are not user-defined
+    // o.prop is optional for pseudo-animation
     // o.isNet has no units or required, mask() sets o.c = last mask index
-    // !hasElms has no prop, so it only defines o.c, in create(), after urcfa()
-    if (hasElms && !o.isNet) {
+    if (o.prop && !o.isNet) {
         o.u = o.units               // o.u = units, prop provides default
            ?? o.prop._unitz(o.func);
         o.r = o.cjs ? CFunc.A       // o.r = required arg count, constant
                     : o.prop.required(o.func);
-        o.c = o.cjs ? CFunc.A + 1   // o.c = total arg count, varies down to o.r
+        o.c = o.cjs ? CFunc.A + 1   // o.c = total arg count, variable
                     : o.prop.count(o.func);
-        o.maxArgs = o.c;            // o.c might change later
+        o.maxArgs = o.c;            // in case o.c changes
     }
     // factor and addend can be undefined (unused), or null (E.currentValue), or
     // a number, or an array of numbers.
-    // At run time, factor calculate first, then addend, then max, min.
+    // At run time, factor calculates first, then addend, then max, min.
     // start    is an alias for addend
     // distance is an alias for factor,
     // end - start = distance, see endToDist().
@@ -415,51 +409,52 @@ function paramLength(o, l, key, byElm) {
 function mask(o, hasElms) {
     const count = o.isNet ? Math.min(...o.cv.map(arr => arr.length))
                           : o.c;
-    if (o.mask)                        // user mask: validate/format it
-        o.mask = o.prop._mask(o.mask, o.func, count);
+    if (o.mask) {                   // user mask: validate/format it
+        if (o.prop)
+            o.mask = o.prop._mask(o.mask, o.func, count);
+        else                        // prop optional for pseudo-animation
+            throw new Error("mask requires prop.");
+    } //-----------------------------------
     else if (o.dims.some(dim => dim > 0)) {
-        const l = [];               // the longest cfg.param array is mask:
-        o.config.forEach((cfg, i) => { // treats array contents as dense &
-            switch (cfg.dim) {         // sequential from 0 to length - 1.
-            case 2:                    // empty array slots are noops for
-                l[i] = cfg.bAbE        // for calcs, not unmasked args.
-                        ? cfg.param.length
-                        : Math.max(...cfg.param.map(arr => arr.length));
-                break;
-            case 1:
-                l[i] = cfg.byElm ? 0 : cfg.param.length;
-                break;
-            case 0:
-                l[i] = 0;
+        const l = [];               // the longest cfg.param array is the mask
+        o.config.forEach((cfg, i) => {
+            switch (cfg.dim) {      // treats array contents as dense &
+            case 0:                 // sequential from 0 to length - 1.
+                l[i] = 0; break;    // empty array slots are noops for
+            case 1:                 // for calcs, not unmasked args.
+                l[i] = cfg.byElm ? 0
+                                 : cfg.param.length; break;
+            case 2:
+                l[i] = cfg.bAbE  ? cfg.param.length
+                                 : Math.max(...cfg.param.map(arr => arr.length));
             }
         });
         o.mask = PBase._maskAll(Ez.clamp(o.r, Math.max(...l), count));
     }
     else if (o.isNet)               // undefined: mask all required args
         o.mask = PBase._maskAll(count);
-    else {
+    else {                          // ditto
+        if (!o.r)                   // pseudo-animation, no prop, see urcfa()
+            o.r = 1;
         o.mask = PBase._maskAll(o.r);
-        if (hasElms)
-            o.c = o.r;
+        o.c = o.r;
     }
 
-    if (!hasElms)                   // pseudo-animation doesn't use mask
-        o.c  = o.mask?.length || 1;
-    else {
-        o.lm = o.mask.length;
-        if (o.isNet)
-            o.c = o.mask.at(-1) + 1;
-        else if (o.lm == o.c)
-            o.isSet = true;
-        else if (o.isSet && o.lm < o.r)
-            throw new Error("{set:E.set} requires that all arguments be masked. "
-                        + o.func?.name ?? o.cjs?.space ?? o.prop.name
-                        + ` requires ${o.r} arguments.`)
+    o.lm = o.mask.length;
+    if (!o.isNet && !o.r) {         // pseudo-animation, user or cfg.param mask
+        o.r = o.lm;
+        o.c = o.r;
     }
-    //------------------------------------------------
+    else if (o.isNet)
+        o.c = o.mask.at(-1) + 1;
+    else if (o.c == o.lm)
+        o.maskAll = true;
+    else if (o.isSet && o.lm < o.r)
+        throw new Error("{set:E.set} requires that all arguments be masked. "
+        + `${o.func?.name ?? o.cjs?.space ?? o.prop.name} requires ${o.r} arguments.`)
+    //-------------
     if (o.configCV)
         o.oneArg = (o.c == 1);       // see maskCV()
-
 }
 //==============================================================================
 // easies() processes o.easies for MEasers.
@@ -524,14 +519,14 @@ function optional(o) { // not for o.isNet
     //-------------------------------------
     o.c = Math.max(o.r, o.mask.at(-1) + 1);
     if (o.c == o.lm)
-        o.isSet = true;
+        o.maskAll = true;
 }
 //==============================================================================
 // current() processes cv (user-supplied currentValue or o.original)
 //           it can adjust o.c (argument count) upwards
-//           not for o.isNet, shouldn't be for o.isSet...
+//           not for o.isNet, shouldn't be for o.maskAll...
 function current(o, cv) {
-    if (o.userCV) { //========= o.userCV: o.cv = user-supplied
+    if (o.userCV) { //--------- o.userCV: o.cv = user-supplied
         // Up-front validation makes the o.currentValue loops more efficient,
         // and is enabled by forcing all values to be of the same type. Mixing
         // types would be unusual, so it's not much of a loss. Values are not
@@ -555,7 +550,7 @@ function current(o, cv) {
         }
         else if (flat.some(v => typeof v != type))
             Ez._mustBeErr(`${name} array elements`,
-                          `all the same type. You are mixing ${type} and {typeof v}`);
+                          `all the same type. You are mixing ${type} and ${typeof v}`);
         //------------------
         if (o.cvDims == 2) { // convert numbers, assume strings = number + units
             o.c = Math.max(o.c, ...validCount(cv, o.r, o.maxArgs, name));
@@ -587,7 +582,7 @@ function current(o, cv) {
         else                 // o.cjs is current value, o.space = snake_case
             o.cv = cv.map(v => [...v[o.space], v.alpha]);
     }
-    //======================== !o.userCV: o.cv = DOM values as strings
+    //------------------------ !o.userCV: o.cv = DOM values as strings
     else if (o.cjs) {        // o.cjs is a Color.js instance
         o.cv = cv;
         cjsTo(o, o.cv);      // convert current values to o.cjs's color space
@@ -1066,20 +1061,20 @@ function defaultToZero(val, i1, i2, useI2) {
 //          the length of o.value's inner dimension is as short as possible.
 function plugCV(o, hasElms, is1Elm) {
     if (!hasElms) return;
-    //----------
+    //-------------------
     let i;
-    if (o.cjs) {        // colorjs is all numbers, no units or separators
-        const l = o.c   // add CFunc.A as a plug if it varies across elements
-                + (!o.isSet && !is1Elm && o.c == o.r
-                   && o.cv.some(arr => arr[CFunc.A] != o.cv[0][CFunc.A]));
+    if (o.cjs) {             // colorjs is all numbers, no units or separators
+        const                // add alpha as a plug if it varies across elements
+        a0 = o.cv[0][CFunc.A],
+        l  = o.c + (!is1Elm && o.mask.at(-1) != CFunc.A
+                            && o.cv.some(arr => arr[CFunc.A] != a0));
 
         o.value = Ez.newArray2D(o.l, l);
-        if (!o.isSet) {     // plug o.value
-            let   start = 0;
+        if (!o.maskAll) {
+            let   start = 0; // plug o.value
             const plugs = [];
             for (i = 0; i < l; i++)
-                (o.mask[start] == i) ? start++
-                                     : plugs.push(i);
+                (o.mask[start] == i) ? ++start : plugs.push(i);
             o.value.forEach((arr, j) => {
                 for (i of plugs)
                     arr[i] = o.cv[j][i];
@@ -1090,11 +1085,11 @@ function plugCV(o, hasElms, is1Elm) {
     if (!o.seps && !PBase._seps(o)) {
         o.value = Ez.newArray2D(o.l, 1);
         return;
-    } //-------------------------------------------------------------------
+    } //------------------------------------------------------------------
     // nb and ne indicate that o.value[n] starts or ends with a calculated
     // number, not a plugged number as string.
-    const nb = o.isSet ? o.numBeg : o.numBeg && (o.mask[0] == 0);
-    const ne = o.isSet ? o.numEnd : o.numEnd && (o.mask.at(-1) == o.c - 1);
+    const nb = o.maskAll ? o.numBeg : o.numBeg && (o.mask[0] == 0);
+    const ne = o.maskAll ? o.numEnd : o.numEnd && (o.mask.at(-1) == o.c - 1);
     const lv = o.lm * 2 - (nb && ne) + !(nb || ne);
 
     // i, m, mi, and p are array indexes (mask values are array indexes)
@@ -1104,8 +1099,8 @@ function plugCV(o, hasElms, is1Elm) {
     //   mi = mask index: o.mask[mi]
     let p;
     const izero = Number(nb);        // start for (i) at 0 or 1
-    const pzero = Number(o.numBeg);  // ditto for (p) if (!o.isSet)
-    if (o.isSet) {
+    const pzero = Number(o.numBeg);  // ditto for (p) if (!o.maskAll)
+    if (o.maskAll) {
         o.value = Ez.newArray2D(o.l, lv);
         for (const arr of o.value)
             for (i = izero, p = 0; i < lv; i += 2, p++)
@@ -1113,8 +1108,6 @@ function plugCV(o, hasElms, is1Elm) {
     }
     else {
         let m, mi, seps, vals;
-        const prop = o.prop.name;
-
         if (!o.isNet && o.numEnd && !ne)         // pad the end of o.seps to
             o.seps.forEach(arr => arr.push("")); // simplify the inner for loop
 
@@ -1124,7 +1117,7 @@ function plugCV(o, hasElms, is1Elm) {
             seps = o.isNet ? o.seps[j] : o.seps;
             vals = o.cv[j];
             if (!vals)
-                throw new Error(`elms[${j}] has no value for ${prop}`);
+                throw new Error(`elms[${j}] has no value for ${o.prop.name}`);
             //------------------
             if (o.numBeg && !nb)
                 arr[0] = vals[0];

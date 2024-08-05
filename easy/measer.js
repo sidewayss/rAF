@@ -11,22 +11,23 @@ class MEBase extends EBase { // M = multi E = Easer, the multi-ease base class
     #easies; #loopEasy;
     constructor(o) {
         super(o);
-        this.#easies = o.easies;        // [Easy] validated in EFactory.easies()
+        this.#easies = o.easies;       // [Easy] validated in EFactory.easies()
         this._autoTripping = new Array(o.lz);
-        if (this.loopByElm) {
-            const easies = o.easies;
-            let   time   = easies[0].loopTime;
+        if (this.loopByElm) {          // loopByElm requires easies to sync time
+            const
+            MUST_BE  = "MEaser loopByElm: easy.",
+            THE_SAME = "the same for all easies",
+            easies   = o.easies;
+            let time = easies[0].loopTime;
             if (easies.some(ez => ez.loopTime != time))
-                Ez._mustBeErr("MEaser loopByElm: easy.loopTime",
-                              "the same for all easies");
-            //-------
-            let p, v;
-            const plays = this.plays;   // #plays is not available here
-            p = 0;
+                Ez._mustBeErr(`${MUST_BE}loopTime`, THE_SAME);
+            //-----------------------
+            const plays = this.plays;
+            let v, p = 0;
             time = Math.max(...easies.map(ez => ez.firstTime));
             easies.forEach((ez, i) => {
                 if (time - ez.firstTime - ez.loopWait > 0) //!!needs testing!!
-                    Ez._cantErr("MEaser loopByElm:", "align easies' loops");
+                    Ez._mustBeErr(`${MUST_BE}firstTime`, THE_SAME);
                 //-------------------------
                 if (ez.firstTime == time) {
                     v = plays[i] || ez.plays;
@@ -54,12 +55,11 @@ class MEBase extends EBase { // M = multi E = Easer, the multi-ease base class
     }
 //  _zero() resets stuff before playback
     _zero() {
-        let i, l;
-        const aT = this.autoTrip; // #autoTrip not available here
-        super._zero(null, true);  // resets #iElm
-        for (i = 0, l = this.#easies.length; i < l; i++) {
-            this._autoTripping[i] = this._autoTrippy(this.#easies[i], aT[i]);
-        }
+        super._zero();              // resets #iElm
+        const auto = this.autoTrip; // #autoTrip not available here, use getter
+        this.#easies.forEach((ez, i) =>
+            this._autoTripping[i] = this._autoTrippy(ez, auto[i])
+        );
     }
 }
 ////////////////////////////////////////////////////////////////////////////////

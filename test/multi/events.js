@@ -86,17 +86,15 @@ const change = {
     }        //!!called exclusively by setEasy()...
 }
 // setEasy() is called by change.easy(), fromFromObj()
-function setEasy(i, name, obj) { // formFromObj() defines obj
-    for (const id of OVERRIDES)  // call set.plays(), set.eKey(), set.trip()
+function setEasy(i, name, obj) {     // formFromObj() defines obj
+    for (const id of OVERRIDES)      // call set.plays(), set.eKey(), set.trip()
         set[id](i, id, obj?.[id][i]);
 
-    const ez = getNamedEasy(name, true); //!!returns undefined if it fails!!
-    toElm(EZ_, PLAYS, i).textContent = ez.plays;
-    P.visible(elms.trip[i].parentNode, ez.roundTrip);
-    if (ez.roundTrip)
-        setHref(toElm(EZ_, "trip",  i), ez.autoTrip);
-
+    const ez = getNamedEasy(name, true); // returns undefined if it fails!!
     easys[i] = ez;
+    toElm(EZ_, PLAYS, i).textContent = ez.plays;
+    setCheck(toElm(EZ_, "trip",  i),
+             ez.roundTrip ?  ez.autoTrip : null);
 }
 //====== local helpers =========================================================
 // swapClasses() is the same as classList.replace(), except it doesn't require
@@ -115,10 +113,10 @@ function swapFrom(elm, b) {
 function toElm(prefix, id, i) {
     return elms[prefix + id]?.[i];
 }
-function setHref(elm, val, isInd) {
-    elm.setAttribute(Pn.href, isInd ? "#ind"
-                              : val ? "#chk"
-                                    : "#box");
+function setCheck(elm, val) {
+    elm.setAttribute(Pn.href, val === null ? "#ind"   // indeterminate
+                            : val === true ? "#chk"   // checked
+                                           : "#box"); // unchecked
 }
 // i_id() splits a numbered id, e.g. "id0", into number and string
 function i_id(elm) {

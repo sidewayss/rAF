@@ -49,9 +49,15 @@ function newTargets(isPseudo = false) { // multiFromObj() relies on false vs und
 //==============================================================================
 // getMsecs() returns the current duration in milliseconds
 function getMsecs() {
-    return Math.max(...easys.map(ez =>
-                        ez.firstTime + (ez.loopTime * (ez.plays - 1))
-                   ));
+    const me = g.easies?.targets[0];
+    if (me)
+        return Math.max(...easys.map((ez, i) =>
+                            (me.autoTrip[i] ? ez.firstTime : ez.duration)
+                          + (ez.loopTime * (me.plays[i] - 1))));
+    else
+        return Math.max(...easys.map((ez, i) =>
+                            (elms.trip[i].checked ? ez.firstTime : ez.duration)
+                          + (ez.loopTime * ((elms.plays[i].value || 1) - 1))));
 }
 // getFrame() <= update() and pseudoAnimate(), which can't use easies._next()
 //            because it applies values, but _easeMe() doesn't have the
@@ -101,7 +107,7 @@ function setCounters(frm, defD) {
             }
     }
 }
-// formatDuration() is called exclusively by updateDuration()
+// formatDuration() is called exclusively by setDuration()
 function formatDuration(val, d) {
     return val.toFixed(d) + U.seconds;
 }

@@ -42,6 +42,8 @@ p.hi { font-weight:500; }
 }
 
 /* for this page only */
+#autoTrip  { margin-right:0.5rem }
+#loopByElm { margin-right:0.75rem }
 #steps {
   text-align:right;
   margin-left:var(--9-16ths);
