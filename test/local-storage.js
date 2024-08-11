@@ -1,7 +1,7 @@
 // export everything
 export {getNamed, getNamedEasy, getNamedObj, getNamedString, getNamedBoth,
-        getLocalNamed, getLocal, setLocal, setNamed, storeCurrent, setLocalBool,
-        isNamedSteps};
+        getLocalNamed, getLocalByElm, getLocal, setLocal, setNamed,
+        storeCurrent, setLocalBool, isNamedSteps};
 
 import {E, Is, Ez, Easy} from "../raf.js";
 
@@ -15,7 +15,8 @@ import {EASY_, elms, g, boolToString, errorAlert} from "./common.js";
 //            The list of named objects contains both presets and user items
 //            from localStorage. Those names can overlap, in which case the
 //            user item overrides the preset.
-function getNamed(sel = elms.named, prefix = preClass, getAll = true) {
+function getNamed(sel = elms.named, prefix = preClass, defText = DEFAULT,
+                  getAll = true) {
     let i, key, opt, val;
     const                                       // !getAll = exclude E.steps
     keys   = getAll ? Object.keys(g.presets[prefix])
@@ -40,7 +41,7 @@ function getNamed(sel = elms.named, prefix = preClass, getAll = true) {
     opt = sel[0];
     if (opt.value == DEFAULT_NAME) {            // value implied from text
         opt.value = DEFAULT_NAME;               // must be set explicitly
-        opt.text  = DEFAULT;
+        opt.text  = defText;                    // DEFAULT or LINEAR
     }
     return sel;
 }
@@ -49,13 +50,14 @@ function isNamedSteps(str, isCopy) {
     return str.includes(isCopy ? "type: 9" : '"type":9');
 }
 //==============================================================================
-// getNamedEasy() returns an Easy instance for a named item
-function getNamedEasy(name, recurseIt) {
+// getNamedEasy() returns an Easy instance for a named item. Multi page gets
+//                Easys for the timing and easy properties, thus recursion.
+function getNamedEasy(name, isMulti) {
     const obj = getNamedObj(name, EASY_);
-    if (recurseIt) {
+    if (isMulti) {
         for (const prop of ["timing","easy"])        // for E.steps only
             if (Is.String(obj[prop]))                // can be array, undefined
-                obj[prop] = getNamedEasy(obj[prop]); // recurse only one level
+                obj[prop] = getNamedEasy(obj[prop]); // one level of recursion
     }
     try         { return new Easy(obj); }
     catch (err) { errorAlert(err); }
@@ -90,6 +92,15 @@ function getLocalNamed(name, pre = preClass) {
 function getLocal(elm) {
     return localStorage.getItem(preDoc + elm.id);
 }
+// getLocalByElm() wraps getLocal() by element
+function getLocalByElm(elms) {
+    let elm, val;
+    for (elm of elms) {
+        val = getLocal(elm)
+        if (val !== null)
+            elm.value = val;
+    }
+}
 //==============================================================================
 // setLocal() called by setLocalBool(), multi changeColor()
 function setLocal(elm, val = elm.value) {
@@ -98,7 +109,7 @@ function setLocal(elm, val = elm.value) {
 // setNamed() called by loadFinally(), openNamed()
 function setNamed(name, item) {
     localStorage.setItem(g.keyName, name);
-    if (elms.save)
+    if (item)
         localStorage.setItem(g.restore, item);
 }
 // setLocalBool() is for checkboxes and boolean buttons

@@ -65,7 +65,7 @@ label, pre { /* I use <pre> instead of labels w/o "for" attribute */
   padding:0 var(--3-16ths) 0 0;
   color:var(--charcoal);
 }
-label, pre, button, check-box {
+label, pre, button, check-box, check-tri {
   user-select:none;
 }
 /* <button>, <select>, <input> */
@@ -175,28 +175,29 @@ p.hi { /* checked, true/indeterminate - ON */
 }
 
 /* <check-box> */
-check-box {
+check-box, check-tri {
   cursor:default;
   fill:none;
   stroke:var(--charcoal);
   color: var(--charcoal);
 }
-check-box[checked] {
-  fill:  var(--sidebar-white);
-  stroke:var(--dark-blue);
-  color: var(--dark-blue);
-}
-check-box:hover {
+check-box:hover, check-tri:hover {
   fill-opacity:0.05;
   fill:  var(--accent-blue);
   color: var(--medium-blue);
 }
-check-box:active {
+check-box:active, check-tri:active {
   fill:white;
   stroke:var(--medium-blue);
   color: var(--medium-blue);
 }
+check-box[checked], check-tri[checked] {
+  fill:  var(--sidebar-white);
+  stroke:var(--dark-blue);
+  color: var(--dark-blue);
+}
 check-box[disabled],
+check-tri[disabled],
 label[disabled],
 select:disabled {
   stroke:var(--medium-gray);
@@ -289,6 +290,9 @@ input.mt1px { margin-top: 1px; }
 .pl3-16 { padding-left:  var(--3-16ths); }
 .pr3-16 { padding-right: var(--3-16ths); }
 
+.black, span.black {
+  color:black;
+}
 .bt {
   border-top:1px solid var(--line-gray);
   padding-top:0.25rem;
@@ -302,6 +306,9 @@ input.mt1px { margin-top: 1px; }
 .slash {
   font-family:sans-serif;
   margin:0 0.25rem;
+}
+.z-1 {
+  z-index:1;
 }
 .notMono {
   font-family:"Roboto", sans-serif;
@@ -332,7 +339,7 @@ input.mt1px { margin-top: 1px; }
 #title, #msg {
   white-space:pre-wrap;
   line-height:1.25rem;
-  margin-left:0.5rem;
+  margin:var(--8th) 0 var(--8th) 0.5rem;
   color:black;
 }
 #title{

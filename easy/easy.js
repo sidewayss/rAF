@@ -9,6 +9,7 @@ import {E, Ez, Is} from "../raf.js";
 
 export class Easy {
 //  Public string arrays for enums and <select><option> or other displayed list
+    static eKey   = ["value","unit","comp"];
     static status = ["arrived","tripped","waiting","inbound","outbound",
                      "initial","original","pausing","playing","empty"];
     static type   = ["linear","sine","circ","expo","back","elastic","bounce",
@@ -16,7 +17,6 @@ export class Easy {
     static io     = ["in","out","inIn","outIn","inOut","outOut"];
     static set    = ["let","set","net"];
     static jump   = ["none","start","end","both"];
-    static eKey   = ["value","unit","comp"];
 
     #autoTrip; #base; #dist; #e; #end; #flipTrip; #lastLeg; #legsWait;
     #loopWait; #onAutoTrip; #onLoop; #oneShot; #peri; #plays; #post; #pre;
@@ -264,8 +264,8 @@ export class Easy {
     }
 //  static #flipTripLeg() flips io for a leg's inbound trip
     static #flipTripLeg(leg) {
-        if (leg.type < E.steps) {
-            leg.io = Number(!leg.io);   // doesn't apply to E.bezier, E.linear,
+        if (leg.type < E.steps) {       // flip doesn't apply to steps
+            leg.io = Number(!leg.io);   // io don't apply to E.bezier, E.linear,
             if (leg.type == E.bezier)   // but necessary if user changes type.
                 leg.bezier = leg.bezier.reversed;
             else

@@ -44,10 +44,10 @@ function create(o, set, isEasies) {
     hasElms  = Boolean(o.l),
     isPseudo = Boolean(o.pseudo);   // pseudo-target for pseudo-animation
     if (!hasElms && !isPseudo)      // !isPseudo requires elms requires prop
-        ; //!!err                   // isPseudo requires peri
-    //-------------------------------------------------
-    o.prop  = PBase._validate(o.prop, "prop", hasElms);
+        throw new Error("Targets without elements must set {pseudo:true}.");
+    //------------------------------// isPseudo requires peri
     o.peri  = Ez._validFunc  (o.peri, "peri", isPseudo);
+    o.prop  = PBase._validate(o.prop, "prop", hasElms);
     o.isNet = (o.set == E.net) || o.prop?.isUn || o.func?.isUn;
     o.isSet = (o.set == E.set);     // constant
     o.maskAll = o.isSet;            // isNet, maskAll might be set to true later
@@ -58,7 +58,7 @@ function create(o, set, isEasies) {
     }
     if (o.byElm || o.byElement)     // 1D arrays are by element
         o.byElm = true;
-    if (o.bAbE  || o.byArgbyElm)    // 2D arrays are [arg[elm]]
+    if (o.bAbE  || o.byArgByElm)    // 2D arrays are [arg[elm]]
         o.bAbE  = true;
 
     cv = getCV(o, hasElms);         // gotta get o.cv early for arg count, etc.
@@ -66,8 +66,7 @@ function create(o, set, isEasies) {
     getFunc(o, cv);                 // getFunc() can set o.func
     urcfa  (o);                     // addend, factor, count, required, units
     config (o, hasElms);            // configure addend, factor, max, min
-    mask   (o, hasElms);            // parse|create mask, o.c for isNet, !hasElms
-    easies (o, hasElms);            // process o.easies for MEaser, o.c is ready
+    mask   (o);                     // parse|create mask, o.c for isNet, isPseudo
     if (hasElms) {
         if (o.isNet)
             parseUn(o);             // normalize stuff across elements
@@ -338,7 +337,7 @@ function config(o, hasElms) {
     keys.forEach((key, i) => {
         prm = o[key];
         if (Is.def(prm)) {
-            cfg = {                // configure cfg:
+            cfg = {
                 param: prm,
                 calc:  calcs[i],
                 dim:   Ez._dims(prm)
@@ -378,7 +377,7 @@ function config(o, hasElms) {
             else if (cfg.dims > 1)     // no elms: cfg.param can't be >1D array
                 Ez._cantErr(`The ${key} array`, "have more than 1 dimension");
             //---------------------
-            o.config.push(cfg);    // spread cfg back around to o:
+            o.config.push(cfg);        // spread cfg back around to o:
             o.dims  .push(cfg.dim);
             if (hasCV) {
                 if (o.configCV)
@@ -399,14 +398,16 @@ function paramLength(o, l, key, byElm) {
 }
 //==============================================================================
 // mask() sets o.mask to a dense array of sorted argument indexes.
+//        Also processes o.easies, which must align with o.mask.
+//        For all user mask types except dense array, o.mask is code-generated.
 //        Valid user mask types are:
 //         - dense array:  user-generated, validated by PBase.prototype._mask())
 //         - bitmask int:  Ez defines them for specific func/prop arguments
 //         - sparse array: non-empty slots = masked indexes
 //         - o.config:     sequential indexes 0 to array.length - 1
 //         - undefined:    sequential indexes 0 to o.r - 1
-//        For all mask types except dense array, o.mask is code-generated.
-function mask(o, hasElms) {
+function mask(o) {
+    let n;
     const count = o.isNet ? Math.min(...o.cv.map(arr => arr.length))
                           : o.c;
     if (o.mask) {                   // user mask: validate/format it
@@ -416,36 +417,43 @@ function mask(o, hasElms) {
             throw new Error("mask requires prop.");
     } //-----------------------------------
     else if (o.dims.some(dim => dim > 0)) {
-        const l = [];               // the longest cfg.param array is the mask
+        const l = [];               // base the mask on longest cfg.param array
         o.config.forEach((cfg, i) => {
             switch (cfg.dim) {      // treats array contents as dense &
             case 0:                 // sequential from 0 to length - 1.
-                l[i] = 0; break;    // empty array slots are noops for
+                l[i] = 1; break;    // empty array slots are noops for
             case 1:                 // for calcs, not unmasked args.
-                l[i] = cfg.byElm ? 0
+                l[i] = cfg.byElm ? 1
                                  : cfg.param.length; break;
             case 2:
                 l[i] = cfg.bAbE  ? cfg.param.length
                                  : Math.max(...cfg.param.map(arr => arr.length));
             }
         });
-        o.mask = PBase._maskAll(Ez.clamp(o.r, Math.max(...l), count));
+        n = Math.max(...l);
+        if (o.r || o.isNet)
+            o.mask = PBase._maskAll(Ez.clamp(o.r || 1, n, count));
     }
-    else if (o.isNet)               // undefined: mask all required args
+    else if (o.isNet)               // undefined = mask all required args
         o.mask = PBase._maskAll(count);
-    else {                          // ditto
-        if (!o.r)                   // pseudo-animation, no prop, see urcfa()
-            o.r = 1;
-        o.mask = PBase._maskAll(o.r);
-        o.c = o.r;
-    }
 
-    o.lm = o.mask.length;
-    if (!o.isNet && !o.r) {         // pseudo-animation, user or cfg.param mask
-        o.r = o.lm;
-        o.c = o.r;
+    const easies = "easies";        // o.easies cannot be sparse and must be
+    if (o[easies])                  // the same length as o.mask.
+        o[easies] = Ez.toArray(o[easies], easies, Easy._validate)
+    //------------
+    if (!o.mask) {                  // undefined and/or pseudo without prop
+        if (!o.r) {
+            if (!n)
+                n = 1;
+            if (n == 1 && o.easies)
+                n = o.easies.length;
+            o.r = n;
+            o.c = n;
+        }
+        o.mask = PBase._maskAll(o.r);
     }
-    else if (o.isNet)
+    o.lm = o.mask.length;
+    if (o.isNet)
         o.c = o.mask.at(-1) + 1;
     else if (o.c == o.lm)
         o.maskAll = true;
@@ -454,33 +462,21 @@ function mask(o, hasElms) {
         + `${o.func?.name ?? o.cjs?.space ?? o.prop.name} requires ${o.r} arguments.`)
     //-------------
     if (o.configCV)
-        o.oneArg = (o.c == 1);       // see maskCV()
-}
-//==============================================================================
-// easies() processes o.easies for MEasers.
-//          Consolidates array of easies into a Map: easy => mask indexes.
-//          These are indexes into cfg.param/o.mask, not into prop/func args.
-//          o.easies cannot be sparse and must be the same length as o.mask.
-function easies(o, hasElms) {
-    const easies = "easies";
+        o.oneArg = (o.c == 1);      // see maskCV()
+
     if (o[easies]) {
-        o[easies] = Ez.toArray(o[easies], easies, Easy._validate)
-        if (hasElms && o[easies].length != o.lm)
+        if (o[easies].length != o.lm)
             Ez._mustBeErr(easies, "the same length as mask");
+        //--------------------      // consolidate [Easy] into Map(Easy => [i]):
+        o.easy2Mask = new Map;      // i = mask index, index into o.mask
+        o[easies].forEach((ez, i) =>
+            o.easy2Mask.has(ez)
+              ? o.easy2Mask.get(ez).push(i)
+              : o.easy2Mask.set(ez, [i])
+        );                          // reduce o.easies to unique values:
+        o[easies] = Array.from(o.easy2Mask.keys());
+        o.lz = o[easies].length;
     }
-    else
-        return;
-    //----------------------------
-    o.easy2Mask = new Map;
-    o[easies].forEach((ez, i) => {
-        if (o.easy2Mask.has(ez))
-            o.easy2Mask.get(ez).push(i);
-        else
-            o.easy2Mask.set(ez, [i]);
-    });
-    // Reduce o.easies to unique values
-    o[easies] = Array.from(o.easy2Mask.keys());
-    o.lz = o[easies].length;
 }
 //==============================================================================
 function parseUn(o) {       // o.isNet only
@@ -1236,7 +1232,7 @@ function calcByElm(o, isME) {
                         prm = cfg.dim < 2   // prm might be undefined
                             ? cfg.param
                             : cfg.param[i];
-                    else {                  // 2D byArgbyElm
+                    else {                  // 2D byArgByElm
                         prm = new Array(cfg.param.length);
                         cfg.param.forEach((p, j) => {
                             if (!Is.A(p))   // single value: fill it

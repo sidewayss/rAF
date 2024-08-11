@@ -55,7 +55,7 @@ function prepLegs(o, type, s, e, w, tc, isInc) { // tc is "time" or "count"
     else if (legsTotal && !o.cEmpties)
         o[tc] = legsTotal;           // o[tc] is previously undefined
     else if (!isInc)
-        Ez._mustErr("You", "define a non-zero value for obj.time or every leg.time.");
+        throw new Error("You must define a non-zero value for obj.time or every leg.time.");
     //--------------                 // !isInc is only time, no count
     return legsWait;
 }

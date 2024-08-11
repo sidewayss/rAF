@@ -3,12 +3,12 @@ FPS = 60,    // assumes 60hz, but adjusts to reality at run-time
 ezX, raf,    // Easy, AFrame
 preDoc;      // prefix for this document, see local-storage.js
 
-import {U, E, Ez, P, PFactory, Easy, Easies, AFrame} from "../raf.js";
+import {E, Ez, P, PFactory, Easy, Easies, AFrame} from "../raf.js";
 
-import {getNamed, getNamedBoth, setNamed}            from "./local-storage.js";
-import {msecs, loadUpdate, timeFrames, formatNumber} from "./update.js";
+import {getNamed, getNamedObj, getNamedBoth, setNamed} from "./local-storage.js";
+import {msecs, loadUpdate, timeFrames, formatNumber}   from "./update.js";
 import {DEFAULT_NAME, loadNamed, disableSave, disablePreset, disableDelete}
-                                                     from "./named.js";
+                                                       from "./named.js";
 
 import {MILLI, COUNT, ONE, INPUT, SELECT, BUTTON, DIV, LABEL, dlg, elms, g,
         dummyEvent, errorAlert, errorLog} from "./common.js";
@@ -36,21 +36,24 @@ awaitFonts.forEach(f => document.fonts.add(f));
 //==============================================================================
 document.addEventListener("DOMContentLoaded", loadCommon, false);
 async function loadCommon() {
-    let elm, i;                      // collect HTMLElements by tag, then by id
     PFactory.init();                 // raf.js infrastructure init
 
-    const tags = [INPUT, SELECT, BUTTON, "dialog", DIV, LABEL,"span",
-                  "state-button","check-box"];
+    let elm, i, id;                  // collect HTMLElements by tag, then by id
+    const
+    tags  = [INPUT, SELECT, BUTTON, "dialog", DIV, LABEL,"span",
+                   "state-button","check-box"],
+    byTag = tags.map(tag => [...document.body.getElementsByTagName(tag)]),
 
-    const byTag = tags.map(tag => [...document.body.getElementsByTagName(tag)]);
+    arr = byTag[0].at(-1) == "name"  // break out <dialog> sub-elements by id
+        ? [...byTag[0].splice(-1, 1),
+           ...byTag[2].splice(-3, 3)]
+        : byTag[2].splice(-1, 1);    // color page only has msgBox
 
-    if (byTag[3].length)             // break out <dialog> sub-elements by id:
-        for (elm of [...byTag[0].splice(-1, 1),         // last <input>
-                     ...byTag[2].splice(-3, 3),         // last 3 <button>s
-                     document.getElementById("icon"),   // <img>
-                     document.getElementById("title"),  // <p>
-                     document.getElementById("msg")])   // <p>
-            dlg[elm.id] = elm;
+    for (id of ["icon","title","msg"])
+        arr.push(document.getElementById(id));
+
+    for (elm of arr)
+        dlg[elm.id] = elm;
 
     for (elm of byTag.flat())        // populate elms by id
         if (elm.id)                  // most <div>, <label>, <span>s have no id
@@ -70,7 +73,7 @@ async function loadCommon() {
             elm.add(new Option(i));
 
     const msg = "Error fetching common.json: presets & tooltips are unavailable";
-    const id  = document.documentElement.id;
+    id  = document.documentElement.id;
     const dir = `./${id}/`;         // directory path relative to this module
     preDoc    = `${id}-`;           // prefix by document, see local-storage.js
 
@@ -124,9 +127,9 @@ function loadJSON(response, isMulti, dir, ns, hasVisited, msg) {
                         elm.labels[0].title = title;
                 }
             }
-        }).catch(err => alert(`${msg}\n${err.stack ?? err}`));
+        }).catch(err => errorAlert(err, msg));
     else
-        alert(`${msg}\nHTTP error ${response.status} ${response.statusText}`);
+        errorAlert(`HTTP error ${response.status} ${response.statusText}`, msg);
 }
 //==============================================================================
 // loadFinally() executes on Promise.all().then(), could be inlined & indented:)
@@ -135,10 +138,10 @@ function loadFinally(is, name, hasVisited, id) {
     if (elms.save)
         Ez.readOnly(g, "restore", `${preDoc}restore`);
 
-    if (hasVisited) {        // user has previously visited this page
+    if (hasVisited) {   // user has previously visited this page
         let item;
         [item, obj] = getNamedBoth(name);
-        if (elms.save){      // exclude color page
+        if (elms.save){ // exclude color page
             const
             restore = localStorage.getItem(g.restore),
             isSame  = (item == restore);
@@ -148,23 +151,24 @@ function loadFinally(is, name, hasVisited, id) {
             if (!isSame)
                 obj = JSON.parse(restore);
         }
-        ns_named.formFromObj(obj);
-        elms.x.value = 0;    // re-opening the page might use previous value
         elms.named.value = name;
     }
-    else {                   // user has never visited this page
-        elms.time?.dispatchEvent(dummyEvent(INPUT, "isLoading")) ?? timeFrames();
-        obj = ns_named.objFromForm(hasVisited);
-        setNamed(DEFAULT_NAME, JSON.stringify(obj));
+    else {              // user has never visited this page
+//!!    elms.time?.dispatchEvent(dummyEvent(INPUT, "isLoading")) ?? timeFrames();
+//!!    obj = ns_named.objFromForm(hasVisited);
+        obj = getNamedObj(DEFAULT_NAME);
+        setNamed(DEFAULT_NAME, elms.save ? JSON.stringify(obj) : undefined);
     }
+    elms.x.value = 0;   // re-opening page uses previous value, default = center
+    ns_named.formFromObj(obj);  // !hasVisited: Easy .html settings ignored
     if (is.multi)
         window.dispatchEvent(new Event(RESIZE));
 
-    // msecs and secs are now set, by formFromObj() or time.dispatchEvent().
+    // msecs and secs are now set, see timeFrames().
     // ezX animates elms.x in all pages, and the x-axis of the chart in the
-    // easings page. end:MILLI is for easings only; it allows easings chart.x to
-    // have no factor at all, while testing Easy end values and burdening elms.x
-    // with a divisor in its factor calculation - see updateTime().
+    // easings page. {end:MILLI} is for easings only; it allows easings chart.x
+    // to have no factor at all, while testing Easy end values and burdening
+    // elms.x with a divisor in its factor calculation - see updateTime().
     ezX = new Easy({time:msecs, end:MILLI}); //*05
     raf = new AFrame;
     if (!ns.initEasies(obj, hasVisited))
@@ -237,8 +241,14 @@ function loadFinally(is, name, hasVisited, id) {
                 ez2.newTarget({prop:props[3], ...boxSh, start:1, end:0.25});
 
                 af.addTarget(new Easies([ez, ez2])); // af.oneShot == true
-                af.play().catch(err => {             // must precede showModal()
+                af.play()
+                  .catch(err => {
                     errorLog(err, "elms.named animation failed");
+                }).finally(() => {
+                    // finally required for error and switching away from the
+                    // browser (or browser tab) during animation, which stops
+                    // because it's in the background behind the modal dialog.
+                    // Or so it seems...
                     for (const p of props)
                         p.cut(elm);
                 });
@@ -260,6 +270,7 @@ function loadFinally(is, name, hasVisited, id) {
           });
     });
 }
+//==============================================================================
 // logBaseline is not strictly necessary, but I think it's still useful
 function logBaseline(fps, rounded) {
     const rounding = rounded - fps.value;

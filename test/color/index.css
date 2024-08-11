@@ -2,9 +2,6 @@
 button, select, span, input[type=text], label, .lbl-right {
   color:var(--pitch);
 }
-.black, span.black {
-  color:black;
-}
 .symSpan, .display, .number {
   color:var(--darker-gray);
 }

@@ -8,9 +8,9 @@ import {E, Ez, F, Fn, Is, P} from "../raf.js";
 const listOfValues = ["auto","inherit","initial","revert","revert-layer","unset"];
 const listOfFuncs  = [Fn.calc,"var","attr","max","min","clamp"];
 
-export class PBase { // the base class for Prop, Bute, PrAtt, HtmlBute
-    static #separator = E.sp;   // only font-family separates w/comma, and
-    #func; #units;              // it's non-numeric, so no value arrays.
+export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
+    static #separator = E.sp;  // only font-family separates w/comma, and
+    #func; #units;             // it's non-numeric, so no value arrays.
 
     // utype = isUn | _noU | _noUPct | _len | _lenPct | _lenPctN | _ang | _pct
     constructor(name, units, utype, func, multiFunc) {
@@ -40,7 +40,8 @@ export class PBase { // the base class for Prop, Bute, PrAtt, HtmlBute
             else
                 return val;
         }
-        Ez._mustBeErr(name, "a String or an instance of Prop: " + val);
+        Ez._mustBeErr(`Invalid value: ${val}. ${name}`,
+                      "a String or an instance of one of the PBase subclasses");
     }
 //==============================================================================
 // this.func

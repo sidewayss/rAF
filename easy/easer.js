@@ -109,7 +109,7 @@ class EBase {
             this.#eKey.fill(this.#validEKey(val, name));
         else {
             const
-            eKey = Ez.toArray(val, name, this.#validEKey),
+            eKey = Ez.toArray(val, name, this.#validEKey.bind(this)),
             lNew = eKey.length,
             lOld = this.#eKey.length;
             if (lNew != lOld)

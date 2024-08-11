@@ -3,7 +3,7 @@ export {loadMSG, updateMidSplit, disableClear, updateSplitGap, setSplitGap,
         isUnlocked};
 export const MSG = ["mid","split","gap"];
 
-import {Ez, P, U} from "../../raf.js";
+import {Ez, P} from "../../raf.js";
 
 import {msecs, secs} from "../update.js";
 import {listenInputNumber, formatInputNumber, isInvalid, invalidInput, maxMin}
@@ -71,7 +71,7 @@ function loadMSG() {
     sgInputs  = msg.slice(1);
     listenInputNumber(msg);                           // must go first
     addEventToElms (INPUT,  msg, input.MSG);          // must go second
-    addEventToElms (CHANGE, msg, changeMSG);          // must go second too
+    addEventToElms (CHANGE, msg, changeMSG);          // ditto
     addEventsByElm (INPUT,  msg.slice(0, -1), input); // mid, split only
 }
 //==============================================================================

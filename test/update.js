@@ -171,14 +171,9 @@ function updateFrame(...args) {
     const t = raf.elapsed;
     if (t < 0)                                  //!!
         console.log(`updateFrame(): ${t} < 0`); //!!
-//!!if (t > 0 || ns.isInitZero?.()) {
     const frm = ns.getFrame(t, ...args);
     frames[++frameIndex] = frm;       // frames[0] isn't modified by animation
     updateCounters(frameIndex, frm);
-//!!}
-//##updateCounters(
-//##  ++frameIndex,
-//##  frames[frameIndex] = ns.getFrame(raf.elapsed, ...args));
 }
 // pseudoFrame() is the pseudoAnimation version of updateFrame()
 function pseudoFrame(...args) {     // 0 is dummy time
@@ -195,16 +190,16 @@ function pseudoAnimate(isEasies) {    // Easies.proto.#pseudo = isEasies
     ns.initPseudo();                  // page-specific init, calls newTargets()
     ezs._zero(0, isEasies);           // pre-play initialization
     frameIndex = 0;                   // see frames[++frameIndex] above
-    i = MILLI;
-//!!i = ns.isInitZero?.() ?  0 : MILLI;
-    if (isEasies) {
+
+    i = ns.isInitZero?.() ? 0         // steps && (jump & E.start)
+                          : MILLI;    // everything else
+    if (isEasies)
         do {
             t = i / FPS;
             l = ezs._next(t);         // returns #active.size()
             frames[frameIndex].t = t; // _next(timeStamp) != t
             i += MILLI;
         } while(l);
-    }
     else
         for (l = lastFrame * MILLI; i <= l; i += MILLI) {
             t = i / FPS;              // derive t and execute the next frame

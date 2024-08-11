@@ -17,7 +17,7 @@ import {loadMSG, updateMidSplit, updateSplitGap} from "./msg.js";
 import {loadSteps, loadTV, initSteps, isSteps}   from "./steps.js";
 import {loadEvents}                              from "./events.js";
 
-// a constant, some pseudo-constants, and a variable for resizeWindow()
+// a constant, some pseudo-constants, and some variables, all for resizeWindow()
 const sizes = [
     {w:855, h:941, factor:1, size:"100%"  },  // 16px
     {w:806, h:896, factor:1, size:"93.75%"},  // 15px
@@ -139,16 +139,16 @@ function initEasies(obj, hasVisited) {
         raf.syncZero = syncZero;
         ezX.oneShot  = true;              // see _update.js/newTargets()
         b = initEzXY(obj);
-        if (b) {                          // pseudo-constants:
+        if (b) {                          // resizeWindow() pseudo-constants:
             const cw = chart.viewBox[E.w];
             factorW  = cw / (cw + range.viewBox[E.w]);
-            oobRatio = cw / 1403;         // 1403 = E.elastic height
+            oobRatio = cw / 1403;         // 1403 = E.elastic viewBox[E.height]*
             lefties  = document.getElementsByClassName("lefty");
             boxStyle = document.styleSheets[1].cssRules[0].style;
     	}
     }
     return b;
-}
+} // *height w/o (roundTrip && !flipTrip), which is the one case that scrolls
 //==============================================================================
 function updateAll() {  // called by loadFinally(), openNamed()
     const evt = dummyEvent(CHANGE, "isUpdateAll");
@@ -196,6 +196,7 @@ function resizeWindow() {
         subtraH = topBott                   // height subtrahend
                 + borderW
                 + elms.diptych.offsetHeight
+                + P.pT.getn(elms.triptych)
                 + elms.x.offsetHeight;
         if (isSteps())                      // remove E.steps's extra row height
                 subtraH -= elms.divValues.offsetHeight;
@@ -220,10 +221,6 @@ function resizeWindow() {
     elm.left   = l + U.px;
     elm.width  = innerW - r - l + U.px;
     elm.height = document.body.clientHeight - borderW + U.px;
-                                            // align flipTrip, loopByElm checks
-    //l = elms.flipTrip .getBoundingClientRect().left;
-    //r = elms.frameZero.getBoundingClientRect().right;
-    //elms.loopByElm.style.marginLeft = l - r + U.px
                                             // align "s" suffix for #split, #gap
     r = elms.split.getBoundingClientRect().right + U.px;
     for (elm of [elms.split, elms.gap])
@@ -234,12 +231,9 @@ function resizeWindow() {
        - (elms.copied.offsetWidth / 2);
     elms.copied.style.left = n + U.px;
 
-    // Move #msgBox towards the top of the chart
+    // Move #msgBox towards the top of the chart and limit its width
     const rect = chart.svg.getBoundingClientRect();
-    elms.msgBox.style.top = rect.top + (rect.height / 4) + U.px;
-
-    // Prettify it for the one-time Welcome message:
-    // #msg sets the #msgBox width indirectly
-    // this forces errorAlert() to always reset dlg.msg.style.width
-    dlg.msg.style.width = rect.width / 2 + U.px;
+    elm = elms.msgBox.style;
+    elm.top = rect.top + (rect.height / 4) + U.px;
+    elm.width = rect.width / 2 + U.px;
 }

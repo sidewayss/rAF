@@ -24,7 +24,9 @@ class Prop extends PBase {
             return this.isUn ? 0 : 1;
         }
     }
-//  required() returns required arg count
+//  required() returns required arg count. Obviously more than 0 args are
+//             required for any property, but there's no count, so how can
+//             there be a required? 0 keeps it an integer.
     required(f = this.func) {
         return this.isUn ? 0 : (f?.required ?? 1);
     }

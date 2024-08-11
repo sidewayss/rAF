@@ -56,9 +56,9 @@ function formFromObj(obj) {
         wasIsSteps(isStp, [isUT, isUV]);       // if (isUT) 2nd timeFrames()
     else if (isStp) {
         if (isUT != wasUT)
-            toggleUser(elms.timing, true,  wasUT, isUT); // 2nd timeFrames()
+            toggleUser(elms.timing, true, isUT, wasUT); // 2nd timeFrames()
         // else is simpler w/o if (isUV != wasUV)
-        toggleUser(elms.values, false, wasUV, isUV);
+        toggleUser(elms.values, false, isUV, wasUV);
     }
     else // timeFrames() already ran, so only end here
         formatNumber(obj.end ?? leg1.end, ...FORMAT_END);
@@ -68,7 +68,7 @@ function formFromObj(obj) {
 //==============================================================================
 // objFromForm() creates an object from form element values,
 //               called by loadFinally(), clickCode(), refresh().
-function objFromForm(hasVisited = true) {
+function objFromForm() {
     let autoTrip, flipTrip, loopWait, plays, tripWait;
     const
     end       = theEnd(),
@@ -86,14 +86,7 @@ function objFromForm(hasVisited = true) {
         loopWait = orUndefined(Number(elms.loopWait.value));
     else
         plays = undefined;
-
-    // type can only be changing when called by change.type()=>refresh()
-    // loadFinally() only calls if !hasVisited and g.type == E.linear
-    // so unless !hasVisited, g.type is already set previously
-    if (!hasVisited) {  // g.type, g.io referenced in easingFromForm()
-        g.type = Number(elms.type.value);
-        g.io   = Number(elms.io.value);
-    }                   // obj.time deleted by stepsFromForm() if user timing
+                        // obj.time deleted by stepsFromForm() if user timing
     const obj  = {      // object property order significant relative to presets
         time:elms.time.valueAsNumber, // stepsFromForm() can delete obj.time
         type:orUndefined(g.type),
@@ -101,7 +94,7 @@ function objFromForm(hasVisited = true) {
         start, end, plays, loopWait, loopByElm,
         roundTrip, autoTrip, flipTrip, tripWait
     };
-    objEz = (isSteps() ? stepsFromForm : easingFromForm)(obj, hasVisited);
+    objEz = (isSteps() ? stepsFromForm : easingFromForm)(obj);
     return objEz;
 }
 //==============================================================================

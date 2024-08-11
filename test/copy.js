@@ -1,7 +1,6 @@
 export {loadCopy, easyToText, multiToText, copyTime, copyByKey, copyFrameByKey,
         rgxPropertyValue};
 
-
 import {E, Is, P, Easy, Easies, AFrame} from "../raf.js";
 
 import {getNamedObj, isNamedSteps} from "./local-storage.js";

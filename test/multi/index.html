@@ -32,34 +32,34 @@
         <div id="bgWhite" class="col mt1-2">
           <div id="template" class="col">
             <div class="flex spacer"></div> <!-- template = spacer + row -->
-            <div class="row ml1 mr1-2 easy">
-              <div class="col grow">
+            <div class="easy row ml1 mr1-2">
+              <div class="col grow z-1">
                 <div class="row between easies-plays">
                   <div class="row">
                     <label   for="easy0">Easy:</label>
-                    <select   id="easy0" class="named"></select>
+                    <select   id="easy0" class="named black"></select>
                   </div>
                   <div class="row ml3-4">
                     <label  for="plays0">Plays:</label>
-                    <span id="ez-plays0">1</span>
-                    <select  id="plays0" class="plays"></select>
+                    <span id="ez-plays0" class="black">1</span>
+                    <select  id="plays0" class="plays black"></select>
                   </div>
                 </div>
                 <div class="row between easies-plays" style="margin-top:var(--3-16ths)">
                   <check-tri id="trip0" data-label="Auto trip" data-show-default="1" class="row trip"></check-tri>
                   <div class="row">
                     <label for="eKey0">Key:</label>
-                    <select id="eKey0" class="eKey">
+                    <select id="eKey0" class="eKey black">
                       <option>unit</option>
                       <option>comp</option>
                     </select>
                   </div>
                 </div>
               </div>
-              <div class="col ucv">
-                <p class="mr0">value:<span   id="value0" class="ml3-16"> 150</span></p>
-                <p class="mr0">unit:<span    id="unit0"  class="ml3-16"   >0.000</span></p>
-                <p class="mr0 lo">comp:<span id="comp0"  class="ml3-16 lo">1.000</span></p>
+              <div class="ucv col z-1">
+                <p class="mr0">value:<span   id="value0" class="ml3-16 black"> 150</span></p>
+                <p class="mr0">unit:<span    id="unit0"  class="ml3-16 black"   >0.000</span></p>
+                <p class="mr0 lo">comp:<span id="comp0"  class="ml3-16 black lo">1.000</span></p>
               </div>
             </div>
           </div> <!-- end template -->
@@ -76,7 +76,7 @@
           <state-button id="play" class="row" data-states='[[0,"play"], [1,"pause"], [2,"resume"]]'></state-button>
           <state-button id="stop" class="row" data-states='[[0,"stop"], [1,"reset"]]' disabled></state-button>
           <div class="row counter">
-            <span id="elapsed"> 0.000</span
+             <span id="elapsed"> 0.000</span
             ><span class="slash">/</span
             ><span id="duration">12.000s</span
             ><span id="frame">    0</span

@@ -1,21 +1,21 @@
 export {loadNamed, setPrefix, disableSave, disablePreset, disableDelete};
 export let   ns, preClass, presets; // ns exported for storeCurrent()
 export const
-DEFAULT_NAME = "",   // default value for elms.named[0]
-DEFAULT = "default"; // default text  ditto
+DEFAULT_NAME = "",             // default value for elms.named[0]
+DEFAULT = "default",           // default text  ditto
+LINEAR  = Easy.type[E.linear]; // double ditto and see click.ok()
 
 import {E, Easy} from "../raf.js";   // all for a reserved name...
 
 import {loadCopy}                             from "./copy.js";
 import {getNamedBoth, setNamed, storeCurrent} from "./local-storage.js";
 import {CHANGE, CLICK, EASY_, MEASER_, dlg, elms, g, addEventsByElm,
-        boolToString}                         from "./common.js";
+        boolToString, messageBox}             from "./common.js";
 /*
 import(_named.js): formFromObj, updateNamed - objFromForm unused
 import(_load.js) : updateAll via loadNamed(..., _load) { ns_load = _load; }
 */
 let ns_load;                        // for openNamed()
-const LINEAR = Easy.type[E.linear]; // for click.ok()
 //==============================================================================
 // loadNamed() called by loadCommon()
 async function loadNamed(isMulti, dir, _load) {
@@ -67,11 +67,15 @@ const click = {
         // <option> trims .textContent, so I trim .value to avoid confusion
         const name = dlg.name.value.trim();
         if (!name) { // checkValidity() is useless here: it requires user input
-            alert("You must enter a name, and it cannot be 100% whitespace.");
+            messageBox("warning",
+                       "You must enter a name, and it cannot be 100% whitespace.",
+                       "Please try again.");
             return;
         }
         else if (name == DEFAULT || name == LINEAR) { // avoid confusion
-            alert(`"${DEFAULT}" and "${LINEAR}" are reserved names.`);
+            messageBox("info",
+                       `"${DEFAULT}" and "${LINEAR}" are reserved names.`,
+                       "Please choose another name.");
             return;
         } //--------------- storeCurrent() calls disableSave()
         disablePreset(name, storeCurrent(preClass + name, ns.ok?.(name)));

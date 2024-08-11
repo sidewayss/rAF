@@ -17,7 +17,10 @@ body {
 p {
   margin:0 var(--3-8ths);
   font-weight:400;
-  color:var(--darkest-blue);
+  color:black;
+}
+p.lo, span.lo {
+  color:var(--charcoal);
 }
 @media (height < 298px) {
   p { line-height:1rem }
@@ -86,7 +89,7 @@ input[type=color] {
   position:absolute;
   pointer-events:none;
   background:linear-gradient(to bottom right, var(--bg-white), var(--bg-white));
-  opacity:0.1;
+  opacity:0.15;
 /*clip-path:polygon(
 /*  0px    0px, 16px   0px,                         /*  0, 1, 2, 3 */
 /*  16px   9px, 17px   9px, 17px  71px, 16px  71px, /*  4, 5, 6, 7, 8, 9,10,11 */

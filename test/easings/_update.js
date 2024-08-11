@@ -10,10 +10,6 @@ loopFrames = [];
 
 import {E, U, P, Pn, Is, Ez, Easy} from "../../raf.js";
 
-//!!import {create} from "../../easy/efactory.js";
-//!!const targetPseudoX = create({peri:pseudoUpdate});
-//!!const targetPseudoY = create({peri:()=>{}});    // noop, requires a function...
-
 import {ezX, raf}              from "../load.js";
 import {MILLI, COUNT, elms, g} from "../common.js";
 import {frames, playZero, targetInputX, inputX, eGet, callbacks, updateFrame,
@@ -41,17 +37,8 @@ function refresh(tar, n, has2 = twoLegs()) {
         else {
             obj = objFromForm(); // less code to read the whole form here than
             initEzXY(obj);       // to change each property in every event.
-            if (!obj) {
-                switch (tar) {   // newEzY() failed, try to recover the form:
-                case elms.timing: case elms.timing.other[0]:
-                    elms.easyTiming.selectedIndex = 0; // time only goes up
-                    break;
-                case elms.steps: case elms.jump:       // {steps:1, jump:E.none}
-                    tar.selectedIndex = 1;             // results in zero steps
-                default:
-                }
-                return;
-            } //-------------
+            if (!obj) return;
+            //---------------
             if (ezX.e.status)    // not E.arrived
                 ezX.init();      // required for Easy.proto._zero()
         }
@@ -61,27 +48,30 @@ function refresh(tar, n, has2 = twoLegs()) {
     pseudoAnimate(true);         // update frames
     drawLine(isStp);             // draw the line
     inputX();                    // move the dot(s), uses updated frames
+
     if (isStp) {                 // E.steps needs cleanup post-pseudo-animation
         setInfo(ezY.duration / MILLI);
         if (elms.jump.value < E.end && elms.roundTrip.checked)
             frames.at(-1).y = theEnd();
     }
 
-    const   // Handle out-of-bounds y coordinates in chart and range:
-    isOob = isOutOfBounds() || (has2 ? isOutOfBounds(Number(elms.type2.value))
-                                     : false),
+    let isOob = isOutOfBounds(); // handle out-of-bounds y coordinates and
+    if (!isOob && has2)          // changing to/from E.steps, which add height.
+        isOob = isOutOfBounds(Number(elms.type2.value));
+
+    const
     oobChanged = isOob || wasOob,
     stpChanged = isStp !== wasStp;
     if (oobChanged || stpChanged) {
-        if (oobChanged) {            // adjust the vertical size of chart, range
+        if (oobChanged) {        // adjust the vertical size of chart, range
             let cr, maxY, minY;
             const x = chart.viewBox[E.x];
-            if (isOob) {             // set new boundaries
+            if (isOob) {         // set new boundaries
                 const y = frames.map(frm => frm.y);
                 minY = Math.min(...y, 0);
                 maxY = Math.max(...y, MILLI);
             }
-            else {                   // restore standard boundaries
+            else {               // restore standard boundaries
                 minY = 0;
                 maxY = MILLI;
             }
@@ -95,7 +85,7 @@ function refresh(tar, n, has2 = twoLegs()) {
             range.trackY.setAttribute(Pn.y2, maxY);
             wasOob = isOob;
         }
-        if (stpChanged)              // changed to|from E.steps
+        if (stpChanged)          // changed to|from E.steps
             wasStp = isStp;
 
         elms.shadow.style.height = document.body.clientHeight + U.px;
@@ -167,7 +157,7 @@ function pointToString(x, y) {
 //              and .elms, called by changePlay(), initPseudo(true).
 function newTargets(isPseudo) {
     let cb;
-    if (isPseudo) {
+    if (isPseudo) {                     // pseudo has no targets
         g.easies.peri = pseudoUpdate;   // outside if(.size) for page load
         if (ezY.targets.size) {         // ezX.oneShot = true, see initEasies()
             ezY.clearTargets();
@@ -248,15 +238,19 @@ function vucFrame(t, x, y, value, unit, comp) { // value, unit, comp versus e
     return {t, x, y, value, unit, comp};
 }
 //==============================================================================
-// syncZero() is the raf.syncZero callback, not called by pseudo,
+// syncZero() is the raf.syncZero callback, not called by pseudo.
 //            initPseudo() resets frames[0] between every playback.
+//            frames[0] is a hypothetical frame, the pre-animation start point.
+//            t is the moment raf.play() is called.
+//            if (raf.initZero) frames[0].t <= 0, frames[1].t == 0.
 function syncZero() {
+    const t = Math.round(playZero - performance.now());
     if (isInitZero())
-        frames[0] = getFrame(0, 0, ezY.e);
-    frames[0].t = Math.round(playZero - performance.now());
+        frames[0] = getFrame(t, ezX.e, ezY.e);
+    else
+        frames[0].t = t;
 }
-// isInitZero() determines if raf.initZero should apply to playback frames, it
-//              doesn't apply to pseudo frames.
+// isInitZero() because elms.initZero.checked isn't enough
 function isInitZero() {
     const  elm = elms.initZero;
     return elm.checked && !elm.disabled;
@@ -331,9 +325,6 @@ function postPlay() {
 //!!
 //!!frames[0] = vucFrame(0, x, y, y, u, 1 - u);
 }
-function theStart() {
-    return Number(elms.start.textContent);
-}
-function theEnd() {
-    return Number(elms.end.textContent);
-}
+//==============================================================================
+function theStart() { return Number(elms.start.textContent); }
+function theEnd()   { return Number(elms.end  .textContent); }

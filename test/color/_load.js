@@ -3,9 +3,8 @@ export {loadIt, getEasies, initEasies, updateAll, easeFinally, resizeWindow,
 
 export let ezColor;
 export const
-    easys    = new Array(COUNT),
-    refRange = {}
-;
+easys    = new Array(COUNT),
+refRange = {};
 
 import Color    from "https://colorjs.io/dist/color.js";
 import {spaces} from "https://colorjs.io/src/spaces/index.js";
@@ -13,8 +12,9 @@ import {spaces} from "https://colorjs.io/src/spaces/index.js";
 import {C, U, E, Fn, F, P, Is, Ez, Easy} from "../../raf.js";
 import {CFunc} from "../../prop/func.js"; //!!need better way to access CFunc.A!!
 
+import {LINEAR} from "../named.js";
 import {msecs, pad, newEasies, updateTime, updateCounters} from "../update.js";
-import {getLocal, getNamed, getNamedObj}            from "../local-storage.js";
+import {getLocalByElm, getNamed, getNamedObj}              from "../local-storage.js";
 import {MILLI, COUNT, CHANGE, CLICK, INPUT, EASY_, MEASER_, elms, g,
         pairOfOthers, orUndefined, dummyEvent, errorAlert} from "../common.js";
 
@@ -82,15 +82,9 @@ function loadIt(_, hasVisited) {
     elms.collapsible = byClass("collapse");
     g.boolBtns       = byClass("boolBtn");
 
-    if (hasVisited) {
-        const restore = [elms.type, elms.time, elms.startInput, elms.endInput,
-                         elm, clone, ...g.boolBtns];
-        for (elm of restore) {
-            txt = getLocal(elm)
-            if (txt !== null)
-                elm.value = txt;
-        }
-    }
+    if (hasVisited)
+        getLocalByElm([elm, clone, ...g.boolBtns, elms.type, elms.startInput,
+                                                  elms.time, elms.endInput]);
     else {
         elm.selectedIndex = 0;
         clone.value       = "jzczhz";
@@ -139,12 +133,20 @@ function isCSSSpace(val) { return val in F; }
 //==============================================================================
 // getEasies() is called exclusively by loadJSON()
 function getEasies(hasVisited) {
-    getNamed(                                 // populate the "other" <select>
-        isMulti ? elms.easys : elms.multis,
-        elms.type.options[Ez.comp(elms.type.selectedIndex)].value
-    );
+    let defText, sel;
+    if (isMulti) {
+        sel = elms.easys;
+        defText = LINEAR;
+    }
+    else {
+        sel = elms.multis;
+        elms.easys[0].text = LINEAR;          // correct it to LINEAR
+    }
+    const
+    div = elms.controls,
+    pre = elms.type.options[Ez.comp(elms.type.selectedIndex)].value;
+    getNamed(sel, pre, defText);              // populate the "other" <select>
 
-    const div = elms.controls;
     padding   = P.paddingTop.getn(div);       // 0.5rem, same for all four sides
     expanded  = elms.collapsible.reduce(      // expanded height
         (sum, elm) => sum + elm.offsetHeight + P.mT.getn(elm) + P.mB.getn(elm),
@@ -238,7 +240,6 @@ function updateAll() { // identical to multi updateAll()
 //==============================================================================
 //!!E.cV overlap (in)efficiency?? Maybe not "fix" it, but at least document it.
 //!!units based on current value?? Good idea. Somewhat "unstructured"-like.
-
 function easeFinally(af, ezs, ez, wait, is) {
     let end, ez2, ez3, mask, prop, start, time,
     elm = elms.controls;
@@ -308,8 +309,7 @@ function easeFinally(af, ezs, ez, wait, is) {
     ez.newTarget({prop, elm, mask});        // start:0, end:1
     ezs.add(ez);
     ezs.add(ez2);
-                                            // "linear", not "default" here:
-    elms.easys[0].text = Easy.type[E.linear];
+
     return elms.canvas;
 }
 //==============================================================================

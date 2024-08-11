@@ -21,11 +21,11 @@ import {multiFromObj}       from "./index.js";
 //           play.js gets it via dynamic import by update.js.
 function refresh() {
     let down, flip, i, j, l, val;
-    for (i = 0, j = 0, l = MASK_X.length; i < l; j++) {
+    for (i = 0, j = 0, l = COUNT; j < l; j++) {
         down = easys[j].start > easys[j].end;
         flip = (elms.eKey[j].value == E.comp);
         val  = (down == flip) ? clipStart : clipEnd;
-        i = setClipPair(val, i);
+        i = setClipPair(val, i);  // i += 2
         formatNumber(val, pad.value, 0, elms.value[j]);
     }
     setClipPath();
@@ -36,14 +36,15 @@ function refresh() {
 // initPseudo() sets frames[0], creates targets w/o elements, assumes that
 //              clip-path is set at elapsed = 0, called by pseudoAnimate().
 function initPseudo() {
-    frames[0] = getFrame(0, MASK_X, true);
+    frames[0] = getFrame(0, MASK_X, true, true);
     newTargets(true);
 }
 // newTargets() calls Easies.proto.newTarget(), with and w/o .prop and .elms,
 //              always calls g.easies.newTarget() 'cuz g.easies.oneShot = true,
 //              called by changePlay(), initPseudo(true).
-function newTargets(isPseudo = false) { // multiFromObj() relies on false vs undef
+function newTargets(isPseudo = false) { // multiFromObj() checks false vs undef
     g.easies[isPseudo ? "delete" : "add"](ezX);
+    g.easies.clearTargets();
     g.easies.newTarget(multiFromObj(easys, isPseudo));
 }
 //==============================================================================
@@ -53,37 +54,38 @@ function getMsecs() {
     if (me)
         return Math.max(...easys.map((ez, i) =>
                             (me.autoTrip[i] ? ez.firstTime : ez.duration)
-                          + (ez.loopTime * (me.plays[i] - 1))));
-    else
+                          + (ez.loopTime * ((me.plays[i] ?? ez.plays) - 1))));
+    else {
+        console.log("multi getMsecs(): no g.easies or g.easies has no targets.");
         return Math.max(...easys.map((ez, i) =>
                             (elms.trip[i].checked ? ez.firstTime : ez.duration)
-                          + (ez.loopTime * ((elms.plays[i].value || 1) - 1))));
+                          + (ez.loopTime * ((elms.plays[i].value || elms["ez-plays"][i].textContent) - 1))));
+    }
 }
-// getFrame() <= update() and pseudoAnimate(), which can't use easies._next()
-//            because it applies values, but _easeMe() doesn't have the
-//            factor/addend/max/min calcs, so that's extra work here.
-//            initPseudo():   t = 0,           oneD = MASK_X, isMask = true
-//            updateFrame():  t = raf.elapsed, oneD = oneD
-//            pseudoUpdate(): t = 0,           oneD = oneD
-function getFrame(t, oneD, isMask) {
-    let i, value;
+// getFrame() is called by these three functions:
+//            initPseudo()   t = 0,           oneD = MASK_X, isMask = true
+//            pseudoUpdate() t = 0,           oneD = oneD
+//            updateFrame()  t = raf.elapsed, oneD = oneD
+function getFrame(t, oneD, everyOther = true, isMask = false) {
     const
     e   = eGet(easys),
     frm = {t, x:new Array(COUNT)};
 
-    for (i = 0; i < COUNT; i++) {
-        value = oneD[i * 2];
-        if (isMask)
-            value = clip[value];
-        frm.x[i] = {value, unit:e[i].unit, comp:e[i].comp};
-    }
+    if (everyOther)
+        oneD = oneD.filter((_, j) => j % 2);
+    if (isMask)
+        oneD = oneD.map(v => clip[v]);
+
+    for (var i = 0; i < COUNT; i++) // ?? 0 for steps && !(jump & E.start)
+        frm.x[i] = {value:oneD[i] ?? 0, unit:e[i].unit, comp:e[i].comp};
+
     return frm;
 }
 //==============================================================================
 // updateX() is called exclusively by inputX()
 function updateX(frm) {
-    for (var i = 0, j = 0, l = MASK_X.length; i < l; j++)
-        i = setClipPair(frm.x[j].value, i);
+    for (var i = 0, j = 0, l = COUNT; j < l; j++)
+        i = setClipPair(frm.x[j].value, i); // i += 2
     setClipPath();
 }
 // setCounters() is called exclusively by updateCounters()

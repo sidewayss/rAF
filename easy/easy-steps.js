@@ -14,28 +14,28 @@ const t = "timing";
 //         If leg.timing is Array-ish, leg.steps can be undefined, otherwise
 //         the legs.steps or leg.steps.length must match leg.timing.length.
 function steps(o, leg) {
-    let c, l, stepsIsA,
+    let l, stepsIsA,
     stepsIsN = Is.Number(leg[s]);
 
     if (!stepsIsN && Is.def(leg[s])) {  // numeric string, array, or invalid
         const n = Is.A(leg[s]) ? NaN : parseFloat(leg[s]);
-        try {
-            if (Number.isNaN(n)) {      // it's an array of numbers
+        if (Number.isNaN(n)) {      // it's an array of numbers or an error
+            try {
                 leg[s] = toNumberArray(leg[s].slice(), s);
-                stepsIsA = true;        // ...slice() preserves user array //!!how do you preserve it and set it at the same time??
-                leg.stepsReady = true;
-                if (Is.def(leg.start))
-                    console.info(leg.start != leg[s][0]); //!!leg.start is ignored anyway
-                if (Is.def(leg.end))
-                    console.info(leg.end != leg[s].at(-1)); //!!leg.end is ignored anyway
+            } catch {
+                Ez._mustBeErr(s, "a Number, an Array [Number], or convertible "
+                               + "to Number or Array [Number]")
             }
-            else {                      // parseFloat() converted it to a number
-                leg[s] = n;
-                stepsIsN = true;
-            }
-        } catch {
-            Ez._mustBeErr(s, "a Number, an Array [Number], or convertible "
-                           + "to Number or Array [Number]")
+            stepsIsA = true;        // ...slice() preserves user array //!!how do you preserve it and set it at the same time??
+            leg.stepsReady = true;
+            if (Is.def(leg.start))
+                console.info(leg.start != leg[s][0]); //!!leg.start is ignored anyway
+            if (Is.def(leg.end))
+                console.info(leg.end != leg[s].at(-1)); //!!leg.end is ignored anyway
+        }
+        else {                      // parseFloat() converted it to a number
+            leg[s] = n;
+            stepsIsN = true;
         }
     }
     else if (!Is.def(leg.easy))
@@ -62,7 +62,7 @@ function steps(o, leg) {
         const last = leg[t].at(-1);
         if (!Is.def(leg.time) || last > leg.time) {
             if (last > leg.time)
-                console.warn("Your timing array extends past the total"
+                console.warn("Your timing array extends past the total "
                            + "leg.time, and has overriden leg.time: "
                            + `${last} > ${leg.time}`);
             leg.time = last;        // avoids spreadToEmpties(), errors
@@ -79,19 +79,21 @@ function steps(o, leg) {
         if (!Easy.jump[jump])
             Ez._invalidErr(j, jump, Easy._listE(j));
         //-------------
+        let c;                      // the number of segments, the divisor
         if (stepsIsA) {
-            l = leg[s].length;      // formula for c/l is the opposite here
+            l = leg[s].length;      // formulas for c/l are backwards here
             c = l + Number(jump == E.none)
                   - Number(jump == E.both);
             if (!c)
-                throw new Error(`${s}.length = 1, ${j}:E.both = zero ${s}.`);
+                throw new Error(`E.both requires 2 ${s} minimum.`);
         }
         else {
             c = Ez.toNumber(leg[s], s, 1, ...Ez.intGrThan0);
             l = c + Number(jump == E.both)
                   - Number(jump == E.none);
             if (!l)
-                throw new Error(`{${s}:1, ${j}:E.none} = zero ${s}.`);
+                throw new Error(`{${s}:1, ${j}:E.none} = zero ${s}.`,
+                                {cause:"zero steps"});
         } //----------------------------------
         const offset = jump & E.start ? 0 : 1;
         leg.waits = Array.from({length:l}, (_, i) => (i + offset) / c);

@@ -10,9 +10,9 @@ import {E, Is, Ez, P, Easy} from "../../raf.js";
 
 import {D, pad, secs, formatNumber, timeFrames, updateTime} from "../update.js";
 import {listenInputNumber, formatInputNumber, isInvalid}    from "../input-number.js";
-import {getNamed, getNamedEasy}   from "../local-storage.js";
+import {getNamed, getNamedEasy}                             from "../local-storage.js";
 import {MILLI, COUNT, SELECT, DIV, LABEL, INPUT, CHANGE,
-        elms, g, addEventByClass} from "../common.js";
+        elms, g, addEventByClass}                           from "../common.js";
 
 import {wasStp, refresh} from "./_update.js";
 import {changeTime}      from "./chart.js"
@@ -71,16 +71,16 @@ function loadTV() { // called exclusively by getEasies() during page load
         sel.className = STEPS;
         sel.id   = id;
         elms[id] = sel;
-        for (id of ["linear", "easing", id])  // id retains its value after loop
+        for (id of ["linear", "easing", id])   // id retains its value post-loop
             sel.add(new Option(id));
 
-        selNamed = selNamed?.cloneNode(true)  // only non-steps Easys: false
-                ?? getNamed(document.createElement(SELECT), undefined, false);
+        selNamed = selNamed?.cloneNode(true)   // only non-steps Easys: false
+                ?? getNamed(document.createElement(SELECT), undefined, false, false);
 
         selNamed.className = `${STEPS} named`;
-        elms[Ez.toCamel(EASY, id)] = selNamed;//elms.easyTiming never referenced...
+        elms[Ez.toCamel(EASY, id)] = selNamed; // easyTiming, easyValues
 
-        div  = elms[Ez.toCamel(DIV, id)];     // divTiming, divValues
+        div  = elms[Ez.toCamel(DIV, id)];      // divTiming, divValues
         last = div.lastElementChild;
         div.insertBefore(lbl,      last);
         div.insertBefore(sel,      last);
@@ -91,30 +91,30 @@ function loadTV() { // called exclusively by getEasies() during page load
         arr  = [selNamed, divUser];
         func = tvShowHide(isT);
         Ez.readOnly(sel, OTHER, arr);
-        for (elm of arr)                      // initial state is hidden
+        for (elm of arr)                       // initial state is hidden
             func(elm, false);
 
-        elm = divUser.lastElementChild;       // userValues, userTiming
+        elm = divUser.lastElementChild;        // userValues, userTiming
         arr = [elm];
         for (i = 1; i < COUNT; i++) {
             clone = elm.cloneNode(true);
             divUser.appendChild(clone);
             arr.push(clone);
         }
-        if (isT)    	                      // switch from <div> to <input>
+        if (isT)    	                       // switch from <div> to <input>
             arr = arr.map(e => e.firstElementChild);
 
-        for (i = 0; i < COUNT; i++) {         // arr = [<input type="number">]
+        for (i = 0; i < COUNT; i++) {          // arr = [<input type="number">]
             elm      = arr[i];
-            elm.id   = id[0] + i;             // "v0-2" or "t0-2"
-            elm.min  = min;                   // listenInputNumber() converts
-            elm.max  = max;                   // .min/max to .dataset.min/max
+            elm.id   = id[0] + i;              // "v0-2" or "t0-2"
+            elm.min  = min;                    // listenInputNumber() converts
+            elm.max  = max;                    // .min/max to .dataset.min/max
             elm.step = step;
             if (isT)
                 elm.nextElementSibling.htmlFor = elm.id;
         }
         listenInputNumber(arr);
-        elms[userTV] = arr;                   // elms.userTiming, .userValues
+        elms[userTV] = arr;                    // elms.userTiming, .userValues
     }
     addEventByClass(CHANGE, STEPS, null, changeSteps);
 
@@ -125,19 +125,12 @@ function loadTV() { // called exclusively by getEasies() during page load
     elms.userValues.at(-1).addEventListener(INPUT, inputLastValue);
 }
 // tvShowHide() helps loadTV() and updateTV(). isT = isTiming vs Values
-function tvShowHide(isT) {
-    return isT ? P.visible : P.displayed;
-}
+function tvShowHide(isT) { return isT ? P.visible : P.displayed; }
 //==============================================================================
-// getTime()
-function setTime(t) {
-    t *= MILLI;
-    return timeFrames(t);
-}
 // inputLastTime() is the input event handler for lastUserTime
 function inputLastTime(evt) {
     if (!isInvalid(evt.target))
-        setTime(evt.target.valueAsNumber);
+        timeFrames(evt.target.valueAsNumber * MILLI);
 }
 // inputLastValue() is the input event handler for elms.userValues.at(-1)
 function inputLastValue(evt) {
@@ -162,21 +155,22 @@ function initSteps(obj) {
 function isSteps(val = g.type) { // val only defined by formFromObj()
     return val == E.steps;
 }
-// wasIsSteps() handles the switch to and from type:E.steps, assumes was = !is
+// wasIsSteps() helps fromFromObj(), change.type() switch to/from type:E.steps,
+//              assumes was != is, callers ensure that one is always true.
 function wasIsSteps(is, isU) {           // isU = [isUT, isUV], order critical
     P.visible  (elms.drawAsSteps, !is);
     P.displayed(elms.initZero,     is);
-    [TIMING, VALUES].forEach((id, i) =>  // order critical for !i below
-        toggleUser(elms[id], !i, wasStp && isU[i], is && isU[i])
+    [TIMING, VALUES].forEach((id, i) =>  // order is critical for !i below
+        toggleUser(elms[id], !i, is && isU[i], wasStp && isU[i])
     );
 }
-// toggleUser() helps wasIsSteps(), changeSteps(), formFromObj() handle user
-//              timing, values in one place.
+// toggleUser() helps wasIsSteps(), changeSteps(), formFromObj() handle toggling
+//              to/from user timing and values, is and was are independent.
 //              was argument is wasSteps or wasUser, depending on the caller.
 //              If you enter an invalid value then switch to not userValues and
 //              back again, the invalid valid will not be displayed.
-function toggleUser(sel, isT, was = P.isDisplayed(sel[OTHER][1]),
-                              is  = isUserTV(sel)) {
+function toggleUser(sel, isT, is  = isUserTV(sel),
+                              was = P.isDisplayed(sel[OTHER][1])) {
     let invalid, val;
     if (is) {
         const elm = elms[Ez.toCamel(USER, sel.id)].at(-1);
@@ -185,20 +179,18 @@ function toggleUser(sel, isT, was = P.isDisplayed(sel[OTHER][1]),
             val = elm.valueAsNumber;
     }
     else if (was) {
-        if (!isT)                              // TIMING: getMsecs()
-            val = elms.flip.value ? 0 : MILLI; // VALUES: end
+        if (!isT)                              // TIMING: undefined = getMsecs()
+            val = elms.flip.value ? 0 : MILLI; // VALUES: system end value
     }
     else
         return false;
     //--------
     if (isT) {
         P.visible(elms.time, was);
-        if (is) {
-            if (!invalid)
-                setTime(val);
-        }
-        else
+        if (!is)
             timeFrames();
+        else if (!invalid)
+            timeFrames(val * MILLI);
     }
     else if (!invalid)
         formatNumber(val, ...FORMAT_END);
@@ -217,14 +209,14 @@ function changeSteps(evt) { // #values/timing.other[0], elms.userValues/Timing.
             defUserInputs([TIMING, secs / COUNT]);  // defaults for userTiming[]
             setInfo(lastUserTime.valueAsNumber);    // depend on variable secs.
         }
-        toggleUser(tar, true, undefined, isUT);
+        toggleUser(tar, true, isUT);
         updateTV();
         if (isUT || wasUT)
             updateTime();
         wasUT = isUT;
         break;
     case elms[VALUES]:
-        isUV = toggleUser(tar);
+        isUV = toggleUser(tar); // fall-through intentional
     case elms.jump:
         updateTV(isUT, isUV);
         break;
@@ -233,7 +225,7 @@ function changeSteps(evt) { // #values/timing.other[0], elms.userValues/Timing.
         infoZero(true, true);
         break;
     default:
-        if (isInvalid(tar)) // for <input type="number"> invalid user value
+        if (isInvalid(tar))     // <input type="number"> invalid user value
             return;
     }
     refresh(tar);

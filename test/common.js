@@ -17,10 +17,7 @@ MEASER_ = "MEaser-",
 LITE = ["lo","hi"],   // playback formatting
 elms = {},            // the HTML elements of interest
 dlg  = {},            // <dialog> sub-elements
-g = {                 // g for global, these properties are read-write:
-//!!notLoopWait:null, // notX = !isX, bools to help choose easy.e vs easy.e2
-//!!notTripWait:null  // in multi.js they are arrays of bools
-};
+g    = {};           // g for global
 //====== wrappers for addEventListener() =======================================
 export function addEventByClass(type, name, obj, func) {
     if (obj)
@@ -50,19 +47,33 @@ export function boolToString(b) { // for localStorage and <button>.value
 }
 //====== error messaging =======================================================
 // messageBox() configures and displays an error|warning|info dialog box
-export function messageBox(type, title, msg) {
+export function messageBox(type, title = "", msg = "") {
     dlg.icon.src = `/icons/${type}.svg`; // "error"|"warning"|"info"
     dlg.title.textContent = title
     dlg.msg  .innerHTML   = msg;
     elms.msgBox.showModal();
 }
-// errorAlert() displays an error dialog, Error.proto.stack not 100% supported
+// errorAlert() displays an error dialog, Error.proto.stack not 100% supported.
+//              Generally msgBox.title = err.message and msgBox.msg = err.stack,
+//              but there are a few other configurations to handle.
 export function errorAlert(err, title) { // err = err.toString()
-    dlg.msg.style.width = ""; //!!for lack of a better place to do this!!see easings/resizeWindow()
-    messageBox("error", title, err.stack ?? err);
+    let msg, stackMsg,
+    stack = err.stack ?? "";
+    if (stack) {
+        stackMsg = stack.startsWith("Error: " + err.message);
+        if (!title && stackMsg) // Chrome: err.stack starts with err.message\n
+            stack = stack.slice(err.message.length + 8); // +1 for newline
+    }
+    if (title)
+        msg   = stackMsg ? stack : err.message + stack;
+    else {
+        title = err.message;
+        msg   = stack;
+    }
+    messageBox("error", title, msg);
 }
 // errorLog() normalizes console.error() usage
-export function errorLog(err, title) {
+export function errorLog(err, title = "") {
     console.error(title, err.stack ?? err);
 }
 //====== miscellaneous =========================================================

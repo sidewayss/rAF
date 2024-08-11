@@ -154,7 +154,6 @@ circle {
 #diptych {
   display:grid;
   grid-template-columns:1fr 1fr;
-  /* row-gap:0.5rem; */
   padding-top:var(--9-16ths);
 }
 #triptych {

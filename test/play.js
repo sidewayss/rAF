@@ -35,7 +35,7 @@ function changePlay() {
     else {                               // PLAY or RESUME
         if (elms.play.value == PLAY) {
             prePlay();
-            ns.newTargets();
+            ns.newTargets(false);
             ns.formatPlayback?.(true);   // multi only
             elms.stop.disabled = false;
         }

@@ -254,7 +254,7 @@
         "easy":  ["","sineIn","sineOut"],
         "plays": ["","",""],
         "eKey":  ["unit","unit","unit"],
-        "trip":  ["","",""]
+        "trip":  [null, null, null]
       }
     }
   }
