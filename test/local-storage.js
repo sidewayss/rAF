@@ -50,8 +50,8 @@ function isNamedSteps(str, isCopy) {
     return str.includes(isCopy ? "type: 9" : '"type":9');
 }
 //==============================================================================
-// getNamedEasy() returns an Easy instance for a named item. Multi page gets
-//                Easys for the timing and easy properties, thus recursion.
+// getNamedEasy() returns an Easy instance for a named item. Multi/color pages
+//                get Easys for the timing and easy properties, thus recursion.
 function getNamedEasy(name, isMulti) {
     const obj = getNamedObj(name, EASY_);
     if (isMulti) {

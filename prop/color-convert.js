@@ -97,8 +97,8 @@ function fromColor(v, toNum, f = F.rgb, u = f._u) {
         if (!toNum)
             arr.forEach((n, i) => arr[i] = n + u[i]);
     }
-    if (arr.length == A)            //!!until there's a way to handle missing
-        arr.push(toNum ? 1 : "1");  //!!optional params that don't default to 0.
+//!!if (arr.length == A)            //!!until there's a way to handle missing
+//!!    arr.push(toNum ? 1 : "1");  //!!optional params that don't default to 0.
     return arr;
 }
 // toPercent() converts RGB to % units as specified by the u (units) argument

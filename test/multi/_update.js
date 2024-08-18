@@ -36,7 +36,7 @@ function refresh() {
 // initPseudo() sets frames[0], creates targets w/o elements, assumes that
 //              clip-path is set at elapsed = 0, called by pseudoAnimate().
 function initPseudo() {
-    frames[0] = getFrame(0, MASK_X, true, true);
+    frames[0] = getFrame(0, MASK_X.map(v => clip[v]));
     newTargets(true);
 }
 // newTargets() calls Easies.proto.newTarget(), with and w/o .prop and .elms,
@@ -66,15 +66,10 @@ function getMsecs() {
 //            initPseudo()   t = 0,           oneD = MASK_X, isMask = true
 //            pseudoUpdate() t = 0,           oneD = oneD
 //            updateFrame()  t = raf.elapsed, oneD = oneD
-function getFrame(t, oneD, everyOther = true, isMask = false) {
+function getFrame(t, oneD) {
     const
     e   = eGet(easys),
     frm = {t, x:new Array(COUNT)};
-
-    if (everyOther)
-        oneD = oneD.filter((_, j) => j % 2);
-    if (isMask)
-        oneD = oneD.map(v => clip[v]);
 
     for (var i = 0; i < COUNT; i++) // ?? 0 for steps && !(jump & E.start)
         frm.x[i] = {value:oneD[i] ?? 0, unit:e[i].unit, comp:e[i].comp};

@@ -1,9 +1,8 @@
 export {loadNamed, setPrefix, disableSave, disablePreset, disableDelete};
-export let   ns, preClass, presets; // ns exported for storeCurrent()
+export let   LINEAR, ns, preClass, presets; // ns exported for storeCurrent()
 export const
 DEFAULT_NAME = "",             // default value for elms.named[0]
-DEFAULT = "default",           // default text  ditto
-LINEAR  = Easy.type[E.linear]; // double ditto and see click.ok()
+DEFAULT = "default";           // default text  ditto
 
 import {E, Easy} from "../raf.js";   // all for a reserved name...
 
@@ -20,6 +19,7 @@ let ns_load;                        // for openNamed()
 // loadNamed() called by loadCommon()
 async function loadNamed(isMulti, dir, _load) {
     ns_load = _load;
+    LINEAR  = Easy.type[E.linear];        // #easies[0].text, see click.ok()
     setPrefix(isMulti ? MEASER_ : EASY_); // prefix by class
 
     elms.named.addEventListener(CHANGE, openNamed, false);

@@ -32,7 +32,7 @@
 }
 html * {
   font-family:"Roboto Mono", monospace;
-  accent-color :var(--medium-blue);
+  accent-color: var(--dark-blue);
   outline-color:var(--charcoal);
   outline-width:thin;
 }
@@ -74,7 +74,6 @@ select, input {
 }
 input[type=range] {
   margin:0;
-  accent-color:var(--dark-blue);
 }
 button, input[type=color],
 select, input[type=number] {

@@ -77,6 +77,8 @@ function create(o, set, isEasies) {
         maskCV(o);                  // for o.configCV (config.param = E.cV)
     }
     endToDist(o);                   // convert end to distance = factor
+    o.dims = o.config.map(cfg => cfg.dim);
+                                    // maskCV(), endToDist() can modify cfg.dim
     plugCV(o, hasElms, is1Elm);     // build squeezed o.value and reset o.mask
                                     // calc functions are the final step:
     let tar;                        // tar for target = the [M]Easer
@@ -98,7 +100,7 @@ function create(o, set, isEasies) {
                     o.l1 = o.lm;
                 }
             }
-        }
+        }                           // o.twoD is the fully calculated data array
         o.twoD = Ez.newArray2D(o.l2, o.l1);
         tar = isME ? calcMEaser(o, hasElms)
                    : calcEaser (o, hasElms);
@@ -586,7 +588,12 @@ function current(o, cv) {
             delete o.cjs;
     }
     else {                   // parse the DOM values into numeric arrays
-        o.cv = cv.map(v => o.prop.parse(v, o.func, o.u));
+        o.cv = cv.map(v => { // color values might need a default alpha = "1"
+            v = o.prop.parse(v, o.func, o.u);
+            if (o.prop.isColor && v.length == CFunc.A && o.mask.at(-1) == CFunc.A)
+                v.push("1");
+            return v;
+        });
         o.c  = Math.max(
             o.c,
             Math.max(...o.cv.map((args, i) => {
@@ -1129,9 +1136,6 @@ function plugCV(o, hasElms, is1Elm) {
         o.maskCV = o.mask;       //!!?? unused, but MEaser loopByElm is untested
     i = Number(!nb);
     o.mask = o.mask.map((_, j) => j * 2 + i);
-
-    // maskCV(), endToDist() can modify .dim
-    o.dims = o.config.map(cfg => cfg.dim);
 }
 //==============================================================================
 // calc functions convert configs into objects used by class ECalc to run
@@ -1388,7 +1392,7 @@ function meParam(prm, mask) {
 //            swaps dimensions. It also handles 1D byArg params when twoD is
 //            bAbE, and returns a boolean indicating if that is the case.
 function swapDims(o, cfg, calc) {
-    const swap1D = (cfg.byArg && !o.bySame);
+    const swap1D = cfg.byArg && !o.bySame;
     if (swap1D || (cfg.dim == 2 && !cfg.bAbE))
         calc.cNN += "s"
     return swap1D;

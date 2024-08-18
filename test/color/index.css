@@ -5,6 +5,9 @@ button, select, span, input[type=text], label, .lbl-right {
 .symSpan, .display, .number {
   color:var(--darker-gray);
 }
+.emphasis {
+  color:black;
+}
 state-button {
   opacity:1;
   fill  :var(--pitch);
@@ -107,7 +110,8 @@ input[type=text]:focus {
 .number.right {
   margin-left: var(--3-16ths);
   padding-left:var(--3-8ths);
-  border-left: var(--border-gray);
+  border: var(--border-gray);
+  border-width:0 0 0 1px; /* done this way for animation of border-color */
 }
 #canvas {
   z-index:-1;

@@ -36,18 +36,18 @@ awaitFonts.forEach(f => document.fonts.add(f));
 //==============================================================================
 document.addEventListener("DOMContentLoaded", loadCommon, false);
 async function loadCommon() {
-    PFactory.init();                 // raf.js infrastructure init
+    PFactory.init();                  // raf.js infrastructure init
 
-    let elm, i, id;                  // collect HTMLElements by tag, then by id
+    let elm, i, id;                   // collect HTMLElements by tag, then by id
     const
     tags  = [INPUT, SELECT, BUTTON, "dialog", DIV, LABEL,"span",
                    "state-button","check-box"],
     byTag = tags.map(tag => [...document.body.getElementsByTagName(tag)]),
 
-    arr = byTag[0].at(-1) == "name"  // break out <dialog> sub-elements by id
-        ? [...byTag[0].splice(-1, 1),
+    arr = byTag[0].at(-1).id == "name"
+        ? [...byTag[0].splice(-1, 1), // break out <dialog> sub-elements by id
            ...byTag[2].splice(-3, 3)]
-        : byTag[2].splice(-1, 1);    // color page only has msgBox
+        : byTag[2].splice(-1, 1);     // color page only has msgBox
 
     for (id of ["icon","title","msg"])
         arr.push(document.getElementById(id));
@@ -55,10 +55,10 @@ async function loadCommon() {
     for (elm of arr)
         dlg[elm.id] = elm;
 
-    for (elm of byTag.flat())        // populate elms by id
-        if (elm.id)                  // most <div>, <label>, <span>s have no id
+    for (elm of byTag.flat())         // populate elms by id
+        if (elm.id)                   // most <div>, <label>, <span>s have no id
             elms[elm.id] = elm;
-                                     // elms.x doesn't disable the normal way
+                                      // elms.x doesn't disable the normal way
     byTag[0].splice(byTag[0].indexOf(elms.x), 1);
     Ez.readOnly(g, "buttons",  byTag[2]);          // <button>, see disablePlay()
     Ez.readOnly(g, "playback", byTag.at(-2));      // <state-button> #play,#stop
@@ -67,15 +67,15 @@ async function loadCommon() {
                                 ...byTag.at(-1)]); // <check-box>
     Ez.readOnly(g, "invalids", new Set);           // <input>s w/invalid values
 
-    elm = elms.plays ?? elms.plays0; // plays0 is multi
+    elm = elms.plays ?? elms.plays0;  // plays0 is multi
     if (elm)
         for (i = 1; i <= COUNT; i++)
             elm.add(new Option(i));
 
     const msg = "Error fetching common.json: presets & tooltips are unavailable";
     id  = document.documentElement.id;
-    const dir = `./${id}/`;         // directory path relative to this module
-    preDoc    = `${id}-`;           // prefix by document, see local-storage.js
+    const dir = `./${id}/`;          // directory path relative to this module
+    preDoc    = `${id}-`;            // prefix by document, see local-storage.js
 
     Ez.readOnly(g, "keyName", `${preDoc}name`);
     let name = localStorage.getItem(g.keyName);
@@ -84,8 +84,8 @@ async function loadCommon() {
     ns = await import(`${dir}_load.js`).catch(errorAlert);
     const is = ns.loadIt(byTag, hasVisited);
 
-    awaitNamed  = Ez.promise();      // resolves in loadJSON()
-    awaitUpdate = Ez.promise();      // ditto
+    awaitNamed  = Ez.promise();       // resolves in loadJSON()
+    awaitUpdate = Ez.promise();       // ditto
     fetch("../common.json")
       .then (rsp => loadJSON(rsp, is.multi, dir, ns, hasVisited, msg))
       .catch(err => errorAlert(err, msg));
@@ -242,13 +242,12 @@ function loadFinally(is, name, hasVisited, id) {
 
                 af.addTarget(new Easies([ez, ez2])); // af.oneShot == true
                 af.play()
-                  .catch(err => {
-                    errorLog(err, "elms.named animation failed");
-                }).finally(() => {
-                    // finally required for error and switching away from the
-                    // browser (or browser tab) during animation, which stops
-                    // because it's in the background behind the modal dialog.
-                    // Or so it seems...
+                  .catch(err => errorLog(err, "elms.named animation failed"))
+                  // .finally is required for errors and switching away from the
+                  // browser (or browser tab) during animation, which then stops
+                  // because it's in the background behind the modal dialog.
+                  // Or so it seems...
+                  .finally(() => {
                     for (const p of props)
                         p.cut(elm);
                 });

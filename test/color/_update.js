@@ -12,6 +12,12 @@ import {frames, inputX, updateFrame, pseudoFrame, pseudoAnimate}
 
 import {ezColor, isCSSSpace} from "./_load.js";
 import {isMulti}             from "./events.js";
+
+let keys;
+const
+LEFT  = "left",
+RIGHT = "right",
+data  = {[LEFT]:null, [RIGHT]:null};
 //==============================================================================
 // redraw() called by updateAll(), changeStop(), input.color(), change.space()
 function refresh() {
@@ -29,91 +35,68 @@ function initPseudo() {
 // newTargets() clears ez.targets adds 1 or 2 new targets (left and/or right)
 function newTargets(isPseudo) {
     const
+    ez = isMulti ? g.easies : ezColor,
     isComp = elms.compare.value,
-    sides  = isComp  ? g.leftRight : [g.left],
-    ez     = isMulti ? g.easies    : ezColor;
+    sides  = isComp ? g.leftRight : [g.left]; // [Object]
 
+    keys = isComp ? [LEFT, RIGHT] : [LEFT];   // [String]
     ez.clearTargets();
-    if (isPseudo && isComp)
-        ez.newTarget(newTar(null, isPseudo, isComp));
-    else
-        for (const side of sides)
-            ez.newTarget(newTar(side, isPseudo, isComp));
+    for (const side of sides)
+        ez.newTarget(newTar(side, isPseudo, isComp));
 
-    g.easies[isPseudo ? "delete" : "add"](ezX);
+    if (isPseudo) {
+        g.easies.delete(ezX);
+        g.easies.peri = updaters.pseudo;      // runs every frame
+    }
+    else {
+        g.easies.add(ezX);
+        g.easies.peri = updaters.update;      // ditto
+    }
 }
 // newTar() helps newTargets()
-function newTar(lr, isPseudo, isComp) { // isComp only defined by newTargets()
-    let side;
+function newTar(lr, isPseudo, isComp) { // isComp not defined by copyObj()
+    let i, side;
     const o = {},
     hasComp = Is.def(isComp);
 
-    if (hasComp && isMulti)             // slice out ezX:
+    if (hasComp && isMulti)             // slice out ezX: //!!delete|add(ezX) above!!
         o.easies = isPseudo ? g.easies : g.easies.slice(1);
 
-    if (lr) {
-        side = lr.id,
-        o.start = Ez.noneToZero(g.start[side]);
-        o.end   = Ez.noneToZero(g.end  [side]);
-        o.currentValue = [o.start];     // currentValue must be 2D byElmByArg
-    }
-    else {                              // !lr == isPseudo && isComp
-        let arr, se;                    // two targets in one, double the fun
-        for (se of g.startEnd) {
-            arr = [];
-            for (side of g.leftRight.map(obj => obj.id))
-                arr.push(...Ez.noneToZero(se[side]));
-            o[se.id] = arr;
-        }
-        if (isMulti)
-            o.easies.push(...o.easies);
-    }
-
+    side = lr.id,
+    o.start = Ez.noneToZero(g.start[side]);
+    o.end   = Ez.noneToZero(g.end  [side]);
+//!!o.currentValue = [o.start];         // currentValue must be 2D byElmByArg
+    if (hasComp)                        // else copyCode()
+        o.peri = updaters[side];        // runs in frames that apply values,
+                                        // i.e. where e.status != E.waiting.
     if (isPseudo)
-        o.peri = updaters.pseudo;
-    else if (hasComp) {                 // else copyCode()
-        o.peri = updaters[isComp ? side : "one"];
+        o.pseudo = true;
+    else if (hasComp) {
         o.elm  = lr.canvas;
         o.prop = P.bgColor;
         if (isCSSSpace(lr.spaces.value))
             o.func = F[lr.spaces.value];
         else
-            o.cjs = lr.color;
+            o.cjs  = lr.color;
     }
-
     const mask = [];                    // create mask if any start[i] == end[i]
-    for (let i = 0; i < COUNT; i++)
+    for (i = 0; i < COUNT; i++)
         if (o.start[i] != o.end[i])
             mask.push(i);
 
-    if (mask.length < COUNT)
+    if (mask.length < COUNT)            // else default = mask all
         o.mask = mask;
-
     return o;
 }
 // updaters() are the .peri() callbacks, there are four of them because there
 //            are two targets (left and right), plus updateOne() for when
 //            elms.compare is off, plus pseudo().
-const
-LEFT  = "left",
-RIGHT = "right",
-data  = {[LEFT]:null, [RIGHT]:null},
+const updaters = {
+    left (oneD) { data[LEFT]  = oneD.slice(); },    // [M]Easer.proto.peri
+    right(oneD) { data[RIGHT] = oneD.slice(); },
 
-updaters = {
-    one(oneD) {             // only left side showing
-        data[LEFT] = oneD.slice();
-        updateFrame(data, [LEFT]);
-    },
-    left(oneD) {            // runs first
-        data[LEFT] = oneD.slice();
-    },
-    right(oneD) {           // runs second
-        data[RIGHT] = oneD.slice();
-        updateFrame(data, [LEFT, RIGHT]);
-    },
-    pseudo(oneD) {          // either or both sides concatenated in oneD
-        pseudoFrame(oneD);
-    }
+    update() { updateFrame(data, keys); },          // Easies.proto.peri
+    pseudo() { pseudoFrame(data, keys); }
 };
 //==============================================================================
 // getMsecs() is as simple as it gets, elms.time overrides everything else
@@ -121,17 +104,10 @@ function getMsecs() {
     return elms.time.valueAsNumber;
 }
 // getFrame() <= update() and pseudoAnimate(), can be MEaser or Easy
-function getFrame(t, data, keys) {
-    const frm = {};
-    if (keys) {
-        frm.t = t;
-        for (const key of keys)
-            frm[key] = data[key];
-    }
-    else {          // pseudoAnimate()
-        frm[LEFT]  = data.slice(0, COUNT);
-        frm[RIGHT] = data.slice(COUNT);
-    }
+function getFrame(t, data) {
+    const frm = {t};
+    for (const key of keys)
+        frm[key] = data[key];
     return frm;
 }
 //==============================================================================

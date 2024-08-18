@@ -124,8 +124,8 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
         let mask;
         if (isAm && !m.includes(undefined)) { // m is a dense array
             mask = Ez.toArray(m, name, (val, nm) => {
-                return Ez.toNumber(val, nm, ...Ez.intNotNeg, true);
-            });
+                return Ez.toNumber(val, nm, 0, ...Ez.intNotNeg, true);
+            });                               // defaultValue = 0 is meaningless
             name += " values";
             Ez._mustAscendErr(mask, name);
             if (new Set(mask).size != mask.length)
@@ -183,7 +183,8 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
         const name  = this.name;
         let   value = elm.style[name];  // style overrides attribute in HTML/SVG
         if (value) {
-            if ((this.isColor || this === F.colorMix) && value.includes(Fn.rgb)) {
+            if (!isCSS && (this.isColor || this === F.colorMix)
+                       && value.includes(Fn.rgb + E.lp)) {
                 // elm.style converts hsl(), hwb() to rgb() or rgba()
                 // parse getAttribute("style") to get the original value
                 const style = elm.getAttribute("style").split(/[:;]\s*/);
@@ -195,7 +196,8 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
                     if (isCSS) {        // var() is the only one that's gettable
                         const split = isFunc ? value.split(E.func) : [value];
                         if (split[0] != Fn.var)
-                            Ez._cantErr("You", `get a numeric value from a CSSStyleRule if the property uses ${split[0]}(). You must use an HTMLElement instead.`);
+                            Ez._cantErr("You", `get a numeric value from a CSSStyleRule if the property uses ${split[0]}().`
+                                            +  "You must use an HTMLElement instead.");
                         else
                             value = getComputedStyle(document.documentElement)
                                                     .getPropertyValue(split[1]);

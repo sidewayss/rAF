@@ -13,10 +13,12 @@ import {C, U, E, Fn, F, P, Is, Ez, Easy} from "../../raf.js";
 import {CFunc} from "../../prop/func.js"; //!!need better way to access CFunc.A!!
 
 import {LINEAR} from "../named.js";
-import {msecs, pad, newEasies, updateTime, updateCounters} from "../update.js";
-import {getLocalByElm, getNamed, getNamedObj}              from "../local-storage.js";
+import {msecs, pad, newEasies, updateTime, updateCounters}  from "../update.js";
+import {getLocalByElm, getNamed, getNamedObj, getNamedEasy} from "../local-storage.js";
 import {MILLI, COUNT, CHANGE, CLICK, INPUT, EASY_, MEASER_, elms, g,
-        pairOfOthers, orUndefined, dummyEvent, errorAlert} from "../common.js";
+        pairOfOthers, orUndefined, dummyEvent, errorAlert}  from "../common.js";
+
+import {EASY, TIMING} from "../easings/steps.js";
 
 import {refresh}                                  from "./_update.js";
 import {isMulti, loadEvents, timeFactor, getCase} from "./events.js";
@@ -160,8 +162,8 @@ function getEasies(hasVisited) {
     controlsWidth   = Math.round(P.width.getn(div));
     div.style.width = controlsWidth + U.px;   // hard set for collapse()
 
-    if (hasVisited)                           // call input.time()
-        elms.time.dispatchEvent(new Event(INPUT));
+//!!if (hasVisited)                           // call input.time()
+    elms.time.dispatchEvent(new Event(INPUT));
 }
 //==============================================================================
 // initEasies() is called by loadFinally(), updateNamed
@@ -220,6 +222,12 @@ function newEasy(obj, f) {
     obj.time      = f ? Math.round(obj.time * f) : msecs;
     obj.roundTrip = orUndefined(elms.roundT.value);
 
+    // Get timing/easy Easys for steps
+    if (obj.type == E.steps)
+        for (key of [EASY, TIMING])
+            if (Is.String(obj[key]))
+                obj[key] = getNamedEasy(obj[key]);
+
     try         { return new Easy(obj); }
     catch (err) { errorAlert(err);    }
 }
@@ -244,7 +252,7 @@ function easeFinally(af, ezs, ez, wait, is) {
     let end, ez2, ez3, mask, prop, start, time,
     elm = elms.controls;
 
-    af.preInit = true;
+    af.initZero = true;
     ez.newTarget({prop:P.o, elm});          // #controls opacity 0-1
 
     start = E.currentValue;                 // body filter
@@ -283,7 +291,7 @@ function easeFinally(af, ezs, ez, wait, is) {
     ez.newTarget({start:elm.map(e => e.max), end, prop:P.value, elm});
     ezs.add(ez);
                                             // test animating CSSStyleRules
-    const rules = Array.from(document.styleSheets[1].cssRules).slice(0, 5);
+    const rules = Array.from(document.styleSheets[1].cssRules).slice(0, 4);
     wait += 400;
     time -=  40;
     ez    = new Easy({wait, time, type:E.expo});

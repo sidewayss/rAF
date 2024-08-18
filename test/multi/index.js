@@ -2,12 +2,14 @@ export {multiFromObj};
 
 import {P, Is} from "../../raf.js";
 
-import {updateFrame, pseudoFrame}                from "../update.js";
-import {COUNT, elms, orUndefined, elseUndefined} from "../common.js";
+import {updateFrame, pseudoFrame}                   from "../update.js";
+import {COUNT, elms, g, orUndefined, elseUndefined} from "../common.js";
 
 import {clipEnd, clipStart} from "./_load.js";
 import {MASK_X}             from "./_update.js";
 import {objEz}              from "./_named.js";
+
+let data;
 //==============================================================================
 // multiFromObj() creates/returns the object passed to Easies.proto.newTarget().
 //                Converts 3 Easys to 3 pairs of Easys for the masked args:
@@ -17,17 +19,20 @@ import {objEz}              from "./_named.js";
 //                the same as another one. Called by newTargets(), clickCode(),
 //                which passes an array of strings (local storage keys) as ezs.
 function multiFromObj(ezs, isPseudo) {
-    if (!isPseudo)                          // spread 3 to 6
+    if (isPseudo)
+        g.easies.peri = pseudoUpdate;
+    else {
+        g.easies.peri = update;             // spread 3 to 6:
         ezs = Array.from({length:COUNT * 2}, (_, i) => ezs[Math.floor(i / 2)]);
-
+    }
     const me = {easies:ezs, eKey:objEz.eKey,
                 addend:clipStart,
                 factor:clipEnd - clipStart};
     if (isPseudo)                           // initPseudo()
-        Object.assign(me, {peri:pseudoUpdate, pseudo:true});
+        Object.assign(me, {peri:pseudoMe, pseudo:true});
     else {
         Object.assign(me, Is.def(isPseudo)  // ? changePlay()
-                        ? {elm:elms.clip, prop:P.clipPath, peri:update}
+                        ? {elm:elms.clip, prop:P.clipPath, peri:updateMe}
                         : {elm:"myElm",   prop:"P.clipPath"}
         );                                  // : clickCode()<=multiToText()
         me.mask = MASK_X;
@@ -39,12 +44,18 @@ function multiFromObj(ezs, isPseudo) {
     return me;
 }
 //==============================================================================
-// update() is the animation .peri() callback
-function update(oneD) {
-    updateFrame(oneD);
+// update() and pseudoUpdate are the g.easies.peri() callbacks
+function update() {
+    updateFrame(data);
 }
-// pseudoUpdate() is the pseudo-animation .peri() callback. EBase.proto.peri()
-//                doesn't know time, pseudo-animation doesn't update counters.
-function pseudoUpdate(oneD) {
-    pseudoFrame(oneD, false);
+function pseudoUpdate() {
+    pseudoFrame(data);
+}
+// updateMe() and pseudoMe() are the MEaser.peri() callbacks. They don't execute
+// every frame for E.steps, so they store the data for g.easies.peri().
+function updateMe(oneD) {
+    data = oneD.filter((_, i) => i % 2);
+}
+function pseudoMe(oneD) {
+    data = oneD;
 }
