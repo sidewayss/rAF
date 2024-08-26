@@ -1,12 +1,20 @@
 export {formFromObj, objFromForm, updateNamed};
 export let objEz;
 
+export const
+idsPerEasy  = [EASY,         "plays","eKey", "trip"],
+defsPerEasy = [DEFAULT_NAME, "",      E.unit, false];
+
+import {E} from "../../raf.js";
+
 import {timeFrames}   from "../update.js";
+import {DEFAULT_NAME} from "../named.js";
 import {COUNT, elms}  from "../common.js";
 
-import {initEasies}      from "./_load.js";
-import {idsPerEasy, set} from "./events.js";
+import {initEasies} from "./_load.js";
+import {set}        from "./events.js";
 
+import {EASY} from "../easings/steps.js";
 //==============================================================================
 // For multi, these 2 functions convert between localStorage JSON and the form,
 // but the JSON does not convert directly to Easy, Easies, or MEaser, it uses
@@ -15,31 +23,24 @@ import {idsPerEasy, set} from "./events.js";
 //==============================================================================
 // formFromObj() updates the form based on obj, <= loadFinally(), openNamed()
 function formFromObj(obj) {
-    let i, id, val;
-    for (i = 0; i < COUNT; i++) {
-        for (id of idsPerEasy) {
-            val = obj[id]?.[i];      // easy is required, the rest are optional
-            set[id](i, val);         // set.easy() .plays() .eKey() .trip()
-            elms[id][i].value = val;
-        }
-    }
-    timeFrames();  // no #time, no input event
+    let i, id;
+    for (id of idsPerEasy)
+        for (i = 0; i < COUNT; i++)
+            elms[id][i].value = set[id](i, obj[id]?.[i]);
+
+    timeFrames(); // no #time, no input event
     objEz = obj;
 }
-// objFromForm() called loadFinally(), change.plays/eKey/trip/easy()
-function objFromForm(hasVisited = true) {
-    let elm, i, id, obj;
-    if (!hasVisited) {        // else always defined with the same structure
-        objEz = {};
-        for (id of idsPerEasy)
-            objEz[id] = new Array(COUNT);
-    }
-    for (id of idsPerEasy) {  // assign the form values to objEz
-        obj = objEz[id];
-        elm = elms[id];
-        for (i = 0; i < COUNT; i++)
-            obj[i] = elm[i].value;
-    }
+// objFromForm() is called by change.plays/eKey/trip/easy()
+function objFromForm() {
+    let arr, def;
+    objEz = {};
+    idsPerEasy.forEach((id, i) => {
+        arr = elms[id];
+        def = defsPerEasy[i];
+        if (arr.some(elm => elm.value != def))
+            objEz[id] = arr.map(elm => elm.value);
+    });
     return objEz;
 }
 //==============================================================================

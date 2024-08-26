@@ -15,7 +15,7 @@
     "data":       "Copy animation data as a tab-delimited table, for pasting into a spreadsheet",
     "code":       "Copy object(s) as plain text JavaScript code",
     "time":       "Sets the duration of a single play",
-    "flip":       "Flip it upside-down: swap start & end",
+    "swap":       "Swap start & end",
     "type":       "The primary shaper of the timing curve(s)",
     "type2":      "Ease for the second leg",
     "io":         "IO: the permutations of in and out, here it determines if the animation has one or two legs",
@@ -247,15 +247,29 @@
         "mid": 350,
         "split": 1350,
         "gap": 350
+      },
+      "autoTrip": {
+        "time": 2500,
+        "type": 2,
+        "roundTrip":true
+      },
+      "manualTrip": {
+        "time": 2500,
+        "type": 2,
+        "roundTrip": true,
+        "autoTrip": false
+      },
+      "tripNoFlip": {
+        "time": 2500,
+        "type": 2,
+        "roundTrip":true
       }
     },
     "MEaser-": {
-      "": {
-        "easy":  ["","sineIn","sineOut"],
-        "plays": ["","",""],
-        "eKey":  ["unit","unit","unit"],
-        "trip":  [null, null, null]
-      }
+      "": {"easy": ["","sineIn","sineOut"]},
+      "bezier+": {"easy": ["bezierA","bezierB","sine + pow"]},
+      "multiSteps": {"easy": ["steps_15","steps_outIn","steps_oIline"]},
+      "multiStepsEz": {"easy": ["steps_easeT","steps_easeV","steps_oIbezB"]}
     }
   }
 }

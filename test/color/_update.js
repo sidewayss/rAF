@@ -57,18 +57,17 @@ function newTargets(isPseudo) {
 function newTar(lr, isPseudo, isComp) { // isComp not defined by copyObj()
     let i, side;
     const o = {},
-    hasComp = Is.def(isComp);
+    hasComp = Is.def(isComp);           // else copyCode()
 
-    if (hasComp && isMulti)             // slice out ezX: //!!delete|add(ezX) above!!
-        o.easies = isPseudo ? g.easies : g.easies.slice(1);
-
+    if (hasComp && isMulti) {
+        o.easies = g.easies.easies;
+        o.easies.length = COUNT;        // not always necessary
+    }
     side = lr.id,
     o.start = Ez.noneToZero(g.start[side]);
     o.end   = Ez.noneToZero(g.end  [side]);
-//!!o.currentValue = [o.start];         // currentValue must be 2D byElmByArg
-    if (hasComp)                        // else copyCode()
-        o.peri = updaters[side];        // runs in frames that apply values,
-                                        // i.e. where e.status != E.waiting.
+    if (hasComp)                        // runs in frames that apply values,
+        o.peri = updaters[side];        // i.e. where e.status != E.waiting.
     if (isPseudo)
         o.pseudo = true;
     else if (hasComp) {

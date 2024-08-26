@@ -180,27 +180,37 @@ check-box, check-tri {
   stroke:var(--charcoal);
   color: var(--charcoal);
 }
-check-box:hover, check-tri:hover {
-  fill-opacity:0.05;
-  fill:  var(--accent-blue);
-  color: var(--medium-blue);
-}
-check-box:active, check-tri:active {
-  fill:white;
-  stroke:var(--medium-blue);
-  color: var(--medium-blue);
-}
-check-box[checked], check-tri[checked] {
-  fill:  var(--sidebar-white);
-  stroke:var(--dark-blue);
-  color: var(--dark-blue);
-}
 check-box[disabled],
 check-tri[disabled],
 label[disabled],
 select:disabled {
   stroke:var(--medium-gray);
   color: var(--medium-gray);
+}
+check-box[checked],
+check-tri[value]::part(check) {
+  fill:  white;
+  stroke:var(--dark-blue);
+  color: var(--dark-blue);
+}
+check-box:hover, check-tri:hover::part(check),
+check-box[checked]:hover {
+  fill-opacity:0.05;
+  fill:  var(--accent-blue);
+  color: var(--medium-blue);
+}
+check-box:active, check-tri:active::part(check),
+check-box[checked]:active,
+check-tri:not([value])::part(default) {
+  fill:white;
+  stroke:var(--medium-blue);
+  color: var(--medium-blue);
+}
+check-tri[value]::part(default) {
+  fill-opacity:0.1;
+  fill:var(--medium-gray);
+  stroke:var(--dark-gray);
+  color: var(--dark-gray);
 }
 
 /* <state-button> - #play, #stop */

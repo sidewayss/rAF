@@ -8,7 +8,7 @@ import {formatNumber} from "../update.js";
 import {INPUT, elms, g, orUndefined, elseUndefined} from "../common.js";
 
 import {wasStp, theStart, theEnd}      from "./_update.js";
-import {FORMAT_START, flipIt}          from "./chart.js";
+import {FORMAT_START, swapIt}          from "./chart.js";
 import {shallowClone}                  from "./events.js";
 import {initEzXY, updateTrip}          from "./index.js";
 import {easingFromObj, easingFromForm} from "./not-steps.js";
@@ -50,7 +50,7 @@ function formFromObj(obj) {
     func  = isStp ? stepsFromObj : easingFromObj,
     [isUT, isUV, wasUT, wasUV] = func(obj, leg0, leg1);
 
-    flipIt(Boolean(start));
+    swapIt(Boolean(start));
     formatNumber(start, ...FORMAT_START);
     if (isStp != wasStp)
         wasIsSteps(isStp, [isUT, isUV]);       // if (isUT) 2nd timeFrames()
@@ -66,8 +66,8 @@ function formFromObj(obj) {
     objEz = obj;
 }
 //==============================================================================
-// objFromForm() creates an object from form element values,
-//               called by loadFinally(), clickCode(), refresh().
+// objFromForm() creates an object from form element values
+//               called by clickCode(), refresh()
 function objFromForm() {
     let autoTrip, flipTrip, loopWait, plays, tripWait;
     const

@@ -310,7 +310,7 @@ function postPlay() {
      && !elms.autoTrip.checked                    // && !autoTrip
      && ezX.e.status != E.tripped) {              // && end of return trip
         const
-        v = theEnd() * Number(!elms.flip.value),  // E.steps can end anywhere
+        v = theEnd() * Number(!elms.swap.value),  // E.steps can end anywhere
         u = Math.ceil(v) / MILLI;                 // unit is 0 or 1
         frames[0] = vucFrame(0, MILLI, v, v, u, Ez.comp(u));
     }

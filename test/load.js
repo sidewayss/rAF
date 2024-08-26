@@ -154,8 +154,6 @@ function loadFinally(is, name, hasVisited, id) {
         elms.named.value = name;
     }
     else {              // user has never visited this page
-//!!    elms.time?.dispatchEvent(dummyEvent(INPUT, "isLoading")) ?? timeFrames();
-//!!    obj = ns_named.objFromForm(hasVisited);
         obj = getNamedObj(DEFAULT_NAME);
         setNamed(DEFAULT_NAME, elms.save ? JSON.stringify(obj) : undefined);
     }

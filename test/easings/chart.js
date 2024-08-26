@@ -1,4 +1,4 @@
-export {loadChart, flipIt};
+export {loadChart, swapIt};
 export let FORMAT_START;
 
 import {E} from "../../raf.js";
@@ -22,25 +22,25 @@ function loadChart() { // called by loadTIOPow() so cloning is finished prior
     listenInputNumber(elements);  // must precede next line
     addEventsByElm(INPUT, [elms.time, ...elms.beziers], input, true);
 
-    elms.flip.addEventListener(CLICK, clickFlip);
+    elms.swap.addEventListener(CLICK, clickSwap);
     FORMAT_START = [pad.milli, 0, elms.start];
 }
 //==============================================================================
 // Event handlers, all call refresh() except input.time():
-function clickFlip(evt) {
+function clickSwap(evt) {
     const tar = evt.target,
-    isFlipped = !tar.value;     // it's a toggle
+    isSwapped = !tar.value;     // it's a toggle
 
-    flipIt(isFlipped)
-    formatNumber(isFlipped ? MILLI : 0, ...FORMAT_START);
+    swapIt(isSwapped)
+    formatNumber(isSwapped ? MILLI : 0, ...FORMAT_START);
     if (!isSteps() || !isUserTV(elms.values))
-        formatNumber(isFlipped ? 0 : MILLI, ...FORMAT_END);
+        formatNumber(isSwapped ? 0 : MILLI, ...FORMAT_END);
 
     refresh(tar);
 }
-function flipIt(b) { // true means flipped: start > end
-    elms.flip.value = boolToString(b);
-    elms.flip.style.transform = b ? "none" : "";
+function swapIt(b) { // true means swapped: start > end
+    elms.swap.value = boolToString(b);
+    elms.swap.style.transform = b ? "none" : "";
 }
 //==============================================================================
 // input event handlers

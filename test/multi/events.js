@@ -1,18 +1,17 @@
 export {loadEvents, set};
-export const idsPerEasy = [EASY, "plays","eKey","trip"];
 
-import {E} from "../../raf.js";
+import {E, P} from "../../raf.js";
 
-import {timeFrames}                                from "../update.js";
-import {storeCurrent, getLocalByElm, getNamedEasy} from "../local-storage.js";
+import {timeFrames} from "../update.js";
+import {storeCurrent, setLocal, getLocalByElm, getNamedEasy}
+                    from "../local-storage.js";
 import {COUNT, PLAYS, CHANGE, LITE, elms, addEventsByElm, toggleClass}
-                                                   from "../common.js";
+                    from "../common.js";
 
 import {initEasies}     from "./_load.js";
 import {easys, refresh} from "./_update.js";
-import {objFromForm}    from "./_named.js";
+import {idsPerEasy, defsPerEasy, objFromForm} from "./_named.js";
 
-import {EASY} from "../easings/steps.js";
 const
 LO  = LITE[0],
 EZ_ = "ez-",
@@ -28,7 +27,7 @@ function loadEvents() {
             elms[id][i].addEventListener(CHANGE, func, false);
     }
     const colors = [elms.color0, elms.color1];
-    addEventsByElm(CHANGE, colors, change);
+    addEventsByElm(CHANGE, colors, change, true);
     getLocalByElm(colors);
     change.color();
 }
@@ -68,29 +67,35 @@ function helpChange(evt) {
 }
 //==============================================================================
  // "set" helpers for the change event handlers, exported for formFromObj()
+ // It would be nice to be able to get the current function's name instead of
+ // using literals for the index into  defsPerEasy...
  const set = {
-    easy(i, name) {
+    easy(i, name = defsPerEasy[0]) {
         const ez = getNamedEasy(name, true); // returns undefined if it fails!!
         easys[i] = ez;
         toElm(EZ_, PLAYS, i).textContent = ez.plays;
-        elms.trip[i].default = ez.roundTrip ?  ez.autoTrip : null;
-    },
-    plays(i, val = "") {  // val = "", "1", "2", or "3"
-        toggleClass(toElm(EZ_, PLAYS, i), LO, Boolean(val))
-    },
-    eKey(i, val = E.unit) {
-        const
-        selected = elms[val][i],                    // selected key's <span>
-        other    = elms[val == E.comp ? E.unit : E.comp][i],
-        parent   = selected.parentNode.parentNode,
-        opie     = other.parentNode;                // pronounced "ow·pee"
 
-        parent.removeChild(opie);                   // reorder by moving
-        parent.appendChild(opie);                   // other to the bottom.
-        [selected, other].forEach((span, j) => {    // j acts as a boolean
-            toggleClass(span, LO, j);               // <span> has content
-            toggleClass(span.parentNode, LO, j);    // <p>    is the label
-        })
+        elms.trip[i].default = ez.autoTrip;  // only necessary if (ez.roundTrip)
+        P.visible(elms.trip[i], ez.roundTrip);
+        return name;
+    },
+    plays(i, val = defsPerEasy[1]) {  // val = "", "1", "2", or "3"
+        toggleClass(toElm(EZ_, PLAYS, i), LO, Boolean(val))
+        return val;
+    },
+    eKey(i, val = defsPerEasy[2]) {
+        const
+        selected = elms[val][i],                  // selected key's <span>
+        parent   = selected.parentNode.parentNode,
+        other    = elms[val == E.comp ? E.unit : E.comp][i];
+
+        parent.removeChild(other.parentNode);     // reorder by moving
+        parent.appendChild(other.parentNode);     // other to the bottom.
+        [selected, other].forEach((span, j) => {  // j acts as a boolean
+            toggleClass(span, LO, j);             // <span> has content
+            toggleClass(span.parentNode, LO, j);  // <p>    is the label
+        });
+        return val;
     },
     trip() {} //!!no longer has anything to do, called exclusively by set.easy()
 }

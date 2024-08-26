@@ -180,7 +180,7 @@ function toggleUser(sel, isT, is  = isUserTV(sel),
     }
     else if (was) {
         if (!isT)                              // TIMING: undefined = getMsecs()
-            val = elms.flip.value ? 0 : MILLI; // VALUES: system end value
+            val = elms.swap.value ? 0 : MILLI; // VALUES: system end value
     }
     else
         return false;

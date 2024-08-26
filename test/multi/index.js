@@ -36,9 +36,9 @@ function multiFromObj(ezs, isPseudo) {
                         : {elm:"myElm",   prop:"P.clipPath"}
         );                                  // : clickCode()<=multiToText()
         me.mask = MASK_X;
-        if (objEz.plays.some(v => v))       // convert "" to undefined
+        if (objEz.plays?.some(v => v))      // convert "" to undefined
             me.plays    = objEz.plays.map(v => orUndefined(v));
-        if (objEz.trip .some(v => v))       //convert "number" to number
+        if (objEz.trip?. some(v => v))      //convert "number" to number
             me.autoTrip = objEz.trip .map(v => elseUndefined(v, Number(v)));
     }
     return me;

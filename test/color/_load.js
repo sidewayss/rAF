@@ -181,7 +181,7 @@ function initEasies(obj, hasVisited) {  // run the event handlers that populate
     const b = newEasies();              // instantiate a new, empty g.easies
     if (b) {                            // ezX added/deleted in newTargets()
         if (isMulti) {
-            const json = obj.easy.map(name => getNamedObj(name));
+            const json = obj.easy.map(name => getNamedObj(name, EASY_));
             const f    = timeFactor(json);
             for (const o of json)       // scale each easy.time by f
                 g.easies.add(newEasy(o, f));
@@ -294,12 +294,13 @@ function easeFinally(af, ezs, ez, wait, is) {
     const rules = Array.from(document.styleSheets[1].cssRules).slice(0, 4);
     wait += 400;
     time -=  40;
-    ez    = new Easy({wait, time, type:E.expo});
+    ez = new Easy({wait, time, type:E.expo});
+    ez.newTarget({cjs, start, end, prop:P.color,   elms:rules.splice(0, 3)});
+    ez.newTarget({cjs, start, end, prop:P.fill,    elms:rules});
+    ez.newTarget({cjs, start, end, prop:P.stroke,  elms:rules});
+
     time -= 150;
-    ez2   = new Easy({wait, time, type:E.sine, io:E.out});
-    ez .newTarget({cjs, start, end, prop:P.color,   elms:rules.splice(0, 3)});
-    ez2.newTarget({cjs, start, end, prop:P.fill,    elms:rules});
-    ez2.newTarget({cjs, start, end, prop:P.stroke,  elms:rules});
+    ez2 = new Easy({wait, time, type:E.sine, io:E.out});
     ez2.newTarget({cjs, start, end, prop:P.bgColor, elms:endCanvas});
 
     prop = P.accentColor;                   // #time, #x again
