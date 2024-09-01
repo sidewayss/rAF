@@ -10,12 +10,11 @@ import {CFunc}           from "../prop/func.js"
 // multiple inheritance and there are two forks: ME and ByElm.
 class EBase {
     #assign; #autoTrip; #cElms; #cjs; #eKey; #elms; #evaluate; #hasF; #iElm;
-    #initByElm; #initial; #isLooping; #isSDE; #loopByElm; #loopElms; #mask;
+    #initByElm; #initial; #isLooping; #isSDE; #loopByElm; #loopElms; #lz; #mask;
     #oneD; #onLoop; #onLoopByElm; #original; #peri; #plays; #prop; #setOne;
     #space; #twoD; #value;
 
-    _autoTripping;  // the active autoTrip value during an animation
-    _eVal;          // run-time evaluate function
+    _eVal; // run-time evaluate function
 
     constructor(o) {
         this.#mask = o.mask;        this.#cElms = o.l;
@@ -26,10 +25,11 @@ class EBase {
         if (o.l) {
             this.#elms = o.elms;
             this.#prop = o.prop;
-            if (o.calcByElm) {      // uses this._setElm(), not this._set
+            if (o.calcByElm) {
+                this._set  = this.#setElm;
                 this.#oneD = o.oneD;
-                this.#iElm = 0;     // EaserByElm.proto._apply() calls _setElm()
-                this.#loopByElm  = o.loopByElm;
+                this.#iElm = 0;
+                this.#loopByElm  = Boolean(o.loopByElm);
                 this.onLoopByElm = o.onLoopByElm;
             }
             else {                  // Easer.proto._apply() calls _set()
@@ -38,10 +38,11 @@ class EBase {
                                       : EBase.#assignByElmByArg;
             }
         }
-        else {                      // no elements, no property, just #peri()
-            this._set  = this.#runPeri;
-            this.#oneD = o.oneD;
-        }
+        else                        // zero elements, for pseudo-only
+            this.#oneD = o.oneD;    // similar to calcByElm
+
+        if (o.pseudo)               // overrides any previous setting
+            this._set = this.#runPeri;
 
         if (o.cjs) {                // Color.js settings
             this.#cjs    = o.cjs;
@@ -52,13 +53,12 @@ class EBase {
             this.#setOne = this.#setIt;
 
         if (o.easies) {             // o.easies validated by EFactory.#easies()
-            this.#eKey     = new Array(o.lz);
-            this.#plays    = new Array(o.lz);
-            this.#autoTrip = new Array(o.lz);
-            Ez.is(this, "MEaser");  // do it here so setters can use it below
+            this.#lz   = o.lz;
+            this.#eKey = new Array(o.lz);
+            Ez.is(this, "MEaser");  // do it here so setters can use it:
         }                           // use setters for values not yet validated
-        this.plays = o.plays;       this.evaluate = o.evaluate;
-        this.eKey  = o.eKey;        this.autoTrip = o.autoTrip;
+        this.plays = o.plays;   this.evaluate = o.evaluate;
+        this.eKey  = o.eKey;    this.autoTrip = o.autoTrip;
         Ez.is(this, "Easer");
     }
 //  static _validate() validates that obj is an instance an Easer class
@@ -78,23 +78,21 @@ class EBase {
     get onLoopByElm()    { return this.#onLoopByElm; }
     set onLoopByElm(val) { this.#onLoopByElm = Ez._validFunc(val, "onLoopByElm"); }
 
-    get loopByElm()    { return this.#loopByElm; }
-    set loopByElm(val) {
-        this.#loopByElm = Boolean(val);
-        if (!this.isMEaser)
-            this.setInitial(); // only for MEaserByElm, else no way to get easy.e
-    }
-
-// this.elmIndex is for loopByElm
-    get elmIndex()  { return this.#iElm;  }
+    get loopByElm() { return this.#loopByElm; }
+//!!set loopByElm(val) {
+//!!    this.#loopByElm = Boolean(val);
+//!!    if (this.isMEaser)
+//!!        this.setInitial(); // only for MEaserByElm, else no way to get easy.e
+//!!}                          // thus no setter, must be done via create()
 
 // this.elmCount is for loopByElm, and for identifying targets w/o elements
-    get elmCount()  { return this.#cElms; } // loopByElm + everything else too
+    get elmCount() { return this.#cElms; } // loopByElm + everything else too
+
+// this.elmIndex is for loopByElm
+    get elmIndex() { return this.#iElm;  }
 
 // this._isLooping is true when loopByElm loops by play, see Easies.proto._next()
-    set _isLooping(b) {
-        this.#isLooping = Boolean(b);
-    }
+    set _isLooping(b) { this.#isLooping = Boolean(b); }
 
 // this.eKey, this.autoTrip, this.plays are byEasy arrays for MEBase
 // this.eKey
@@ -102,14 +100,16 @@ class EBase {
         return this.isMEaser ? this.#eKey.slice() : this.#eKey;
     }
     set eKey(val) {
-        const name = "eKey";
+        const
+        name     = "eKey",
+        validate = this.#validEKey.bind(this);  // bind for Ez.toArray()
         if (!this.isMEaser)
-            this.#eKey = this.#validEKey(val, name);
+            this.#eKey = validate(val, name);
         else if (!Is.Arrayish(val))
-            this.#eKey.fill(this.#validEKey(val, name));
+            this.#eKey.fill(validate(val, name));
         else {
             const
-            eKey = Ez.toArray(val, name, this.#validEKey.bind(this)),
+            eKey = Ez.toArray(val, name, validate),
             lNew = eKey.length,
             lOld = this.#eKey.length;
             if (lNew != lOld)
@@ -141,6 +141,7 @@ class EBase {
         else
             Ez._invalidErr(name, val, Easy._listE(name));
     }
+
 // this.autoTrip
     get autoTrip()  {
         return this.isMEaser ? this.#autoTrip.slice() : this.#autoTrip;
@@ -148,12 +149,19 @@ class EBase {
     set autoTrip(val) { // 3 states: true, false, undefined
         const validate = EBase.#validTrip;
         this.#autoTrip = this.isMEaser
-                       ? this.#tripPlays(val, "autoTrip", this.#autoTrip, validate)
+                       ? this.#tripPlays(val, "autoTrip", validate)
                        : validate(val);
     }
     static #validTrip(val) {
         return Is.def(val) ? Boolean(val) : val;
     }
+    // _autoTripping computes a run-time autoTrip value, no this.autoTripping
+    // because getter can't have an ez argument, see Easies.proto._zero() and
+    _autoTripping(ez, val) {                      // MEaser.proto.autoTripping
+        return Is.def(val) ? val && ez.roundTrip
+                           : ez.autoTripping;     // ez.autoTrip && ez.roundTrip
+    }
+
 // this.plays
     get plays()    {
         return this.isMEaser ? this.#plays.slice() : this.#plays;
@@ -161,12 +169,14 @@ class EBase {
     set plays(val) {    // a positive integer or undefined
         const validate = EBase.#validPlays;
         this.#plays    = this.isMEaser
-                       ? this.#tripPlays(val, "plays", this.#plays, validate)
+                       ? this.#tripPlays(val, "plays", validate)
                        : validate(val);
     }
     static #validPlays(val) {           // default, !neg,!zero,!float,!undef,!null
         return Ez.toNumber(val, "plays", undefined, true, true, true, false, false);
     }
+    // no this.playings because it requires ez and getters don't take args
+    _playings(ez, val) { return val ?? ez.plays; }
 
 // this.evaluate allows the user to do their own evaluation
     get evaluate()    { return this.#evaluate; }
@@ -182,11 +192,11 @@ class EBase {
     #MEval(e, i) { return e[this.#eKey[i]]; }
 
 //  MEaser only:
-    #tripPlays(val, name, currentVal, validate) {
+    #tripPlays(val, name, validate) {
         const arr = Ez.toArray(val, name, validate, ...Ez.okEmptyUndef);
         if (!arr.length || (arr.length == 1 && arr[0] == val)) {
-            arr.length = currentVal.length; // should always be > 1
-            arr.fill(arr[0]);               // undefined || val
+            arr.length = this.#lz;  // should always be > 1
+            arr.fill(arr[0]);       // undefined || val
         }
         return arr;
     }
@@ -207,14 +217,8 @@ class EBase {
     }
 //==============================================================================
 // "Protected" methods:
-//  _autoTrippy() returns run-time autoTrip, falls back to ez.autoTrip or false
-    _autoTrippy(ez, autoTrip) {
-        return autoTrip ?? ez.autoTrip ?? false;
-    }
 //  _zero() resets stuff before playback
-    _zero(ez) { // !ez <= MEBase().prototype._zero() <= Easies.proto._zero()
-        if (ez)
-            this._autoTripping = this._autoTrippy(ez, this.#autoTrip);
+    _zero() {
         if (this.#loopByElm)
             this.#iElm = 0;
     }
@@ -262,7 +266,7 @@ class EBase {
         return this.#iElm;
     }
 //==============================================================================
-//  #runPeri() does not apply values: no elms, no prop, no mask
+//  #runPeri() does not apply values: zero elms, no prop, no mask
     #runPeri(e) {
         this.#peri(this.#oneD, e);
     }
@@ -278,8 +282,8 @@ class EBase {
         this.#elms.forEach((elm, i) => this.#setOne(prop, elm, val[i]));
         this.#peri?.(this.#twoD, e);
     }
-//  _setElm() is the byElm set function, for single-elm and loopByElm
-    _setElm(e) {
+//  #setElm() is the byElm set function, for single-elm and loopByElm
+    #setElm(e) {
         const
         i   = this.#iElm,
         elm = this.#elms[i];
@@ -328,22 +332,31 @@ class EBase {
 //==============================================================================
 //  setInitial() ensures #initial and friends are populated
 //               called by new [M]EaserByElm and set loopByElm()
-//               o is only defined by new EaserByElm, and only for o.e
+//               o is only defined by Easy.proto.newTarget() via new EaserByElm
+//               loopByElm requires that #cElms is > 1.
     setInitial(o) {
         if (!this.#loopByElm) return;
         //---------------------------
         if (!Is.def(this.#initial)) {
-            const
-            e   = this.easies?.map(ez => ez.e) ?? o.e,
-            val = new Array(this.#cElms);
-            for (let i = 0, l = this.#cElms; i < l; i++) {
-                this._calc(e, i);
-                val[i] = this._parseElm(i).join("");
-            }
-            this.#initial = val;
+            this.calcInitial(o);
+            this.#initial = new Array(l);
+            for (let i = 0, l = this.#cElms; i < l; i++)
+                this.#initial[i] = arr.map((_, i) => this._parseElm(i).join(""));
         }
         this.#initByElm = this.#initial.slice(1); // see _initByElm()
         this.#loopElms  = this.#elms   .slice(1); // ditto
+    }
+//  calcInitial() pre-populates #twoD or #oneD with initial values, necessary
+//                for MEasers where an Easy waits longer than another to start,
+//                and for loopByElm/#initial. Used by pseudo-animations that
+//                have no elements, thus #cElms || 1.
+    calcInitial(o) {
+        const e = this.easies?.map(ez => ez.e) ?? o.e;
+        if (this.isByElm)
+            for (let i = 0, l = this.#cElms || 1; i < l; i++)
+                this._calc(e, i);
+        else
+            this._calc(e);
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -355,8 +368,11 @@ class Easer extends EBase {      // basic Easer
         Object.seal(this);
     }
     _apply(e) {
+        this._calc(e);
+        this._set (e);
+    }
+    _calc(e) {
         this.#calc.calculate(this._eVal(e));
-        this._set(e);
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -367,11 +383,12 @@ class EaserByElm extends EBase { // Easer by Element, single-elm or loopByElm
         this.#calcs = Array.from({length:o.l},
                                  (_, i) => new ECalc(o, o.calcs[i]));
         this.setInitial(o); // must follow super() and this.#calcs assignment
+        Ez.is(this, "ByElm");
         Object.seal(this);
     }
     _apply(e) {
-        this.#calcs[this.elmIndex].calculate(this._eVal(e));
-        this._setElm(e);
+        this._calc(e, this.elmIndex);
+        this._set (e);
     }
     _calc(e, i) {
         this.#calcs[i].calculate(this._eVal(e));

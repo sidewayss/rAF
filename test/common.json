@@ -44,6 +44,9 @@
     "clearGap":   "Clear gap",
     "lockSplit":  "Lock split: maintain or scale value when Duration changes",
     "lockGap":    "Lock gap: maintain or scale value when Duration changes",
+    "trip0":      "Auto-trip by Easy. Unchecked prevents autoTrip, but does not enable a return trip. Too funky to be worth it at this time.",
+    "trip1":      "Auto-trip by Easy. Unchecked prevents autoTrip, but does not enable a return trip. Too funky to be worth it at this time.",
+    "trip2":      "Auto-trip by Easy. Unchecked prevents autoTrip, but does not enable a return trip. Too funky to be worth it at this time.",
     "color0":     "Color of top-left corner of gradient",
     "color1":     "Color of bottom-right corner of gradient",
     "compare":    "Toggle between 1 and 2 colors",
@@ -160,13 +163,27 @@
         "time": 2000,
         "type": 8,
         "end": 1000,
-        "bezier": [0.57, 0, 0.18,1]
+        "bezier": [0.57, 0, 0.18, 1]
       },
       "bezierB": {
         "time": 2000,
         "type": 8,
         "end": 1000,
         "bezier": [0.75, -0.5, 0.25, 1.33]
+      },
+      "bezierC": {
+        "time": 2000,
+        "type": 8,
+        "end": 1000,
+        "bezier": [0, 0.75, 0.9, 0.5]
+      },
+      "bezierD": {
+        "time": 2000,
+        "type": 8,
+        "end": 1000,
+        "bezier": [0.5, -0.75, 0.25, 1.25],
+        "roundTrip": true,
+        "flipTrip": false
       },
       "steps_15": {
         "time": 2000,
@@ -251,25 +268,35 @@
       "autoTrip": {
         "time": 2500,
         "type": 2,
+        "end": 1000,
         "roundTrip":true
       },
       "manualTrip": {
         "time": 2500,
         "type": 2,
+        "end": 1000,
         "roundTrip": true,
         "autoTrip": false
       },
       "tripNoFlip": {
         "time": 2500,
         "type": 2,
-        "roundTrip":true
+        "end": 1000,
+        "roundTrip": true,
+        "flipTrip": false
       }
     },
     "MEaser-": {
       "": {"easy": ["","sineIn","sineOut"]},
-      "bezier+": {"easy": ["bezierA","bezierB","sine + pow"]},
-      "multiSteps": {"easy": ["steps_15","steps_outIn","steps_oIline"]},
-      "multiStepsEz": {"easy": ["steps_easeT","steps_easeV","steps_oIbezB"]}
+      "bezierABC": {"easy": ["bezierA","bezierB","bezierC"] },
+      "sineSteps": {"easy": ["sineOut","steps_15",""]},
+      "sineStepsEz": {"easy": ["sineOut","steps_15","steps_easeT"]},
+      "allSteps":   {"easy": ["steps_15","steps_outIn","steps_oIline"]},
+      "allStepsEz": {"easy": ["steps_easeT","steps_easeV","steps_oIbezB"]},
+      "antiTrip": {
+        "easy": ["autoTrip","manualTrip",""],
+        "trip": [false, true, null]
+      }
     }
   }
 }

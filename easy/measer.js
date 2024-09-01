@@ -8,35 +8,25 @@ import {Ez}    from "../raf.js";
 
 // This would benefit from multiple inheritance: ByElm and ME
 class MEBase extends EBase { // M = multi E = Easer, the multi-ease base class
-    #easies; #loopEasy;
+    #easies; #easy2Mask; #loopEasy;
     constructor(o) {
         super(o);
-        this.#easies = o.easies;       // [Easy] validated in EFactory.easies()
-        this._autoTripping = new Array(o.lz);
+        this.#easies    = o.easies;    // [Easy] validated in EFactory.easies()
+        this.#easy2Mask = o.easy2Mask; // may never be used...
+
         if (this.loopByElm) {          // loopByElm requires easies to sync time
-            const
-            MUST_BE  = "MEaser loopByElm: easy.",
-            THE_SAME = "the same for all easies",
-            easies   = o.easies;
-            let time = easies[0].loopTime;
-            if (easies.some(ez => ez.loopTime != time))
-                Ez._mustBeErr(`${MUST_BE}loopTime`, THE_SAME);
-            //-----------------------
-            const plays = this.plays;
-            let v, p = 0;
-            time = Math.max(...easies.map(ez => ez.firstTime));
-            easies.forEach((ez, i) => {
-                if (time - ez.firstTime - ez.loopWait > 0) //!!needs testing!!
-                    Ez._mustBeErr(`${MUST_BE}firstTime`, THE_SAME);
-                //-------------------------
-                if (ez.firstTime == time) {
-                    v = plays[i] || ez.plays;
-                    if (v > p) {
-                        this.#loopEasy = ez;
-                        p = v;
-                    }
-                }
-            });
+            let name, time;            // across first play and any loop plays.
+            const easies = o.easies;
+            for (name of ["firstTime","loopTime"]) {
+                time = easies[0][name];
+                if (easies.some(ez => ez[name] != time))
+                    Ez._mustBeErr(`MEaser loopByElm: easy.${name}`,
+                                  "the same for all of this.easies");
+            } //--------------------------------------------------------
+            const // the ez with the most plays has the longest duration
+            plays = easies.map(ez => this._playings(ez)),
+            index = plays.findIndex(Math.max(plays));
+            this.#loopEasy = easies[index];           // for onLoop callback
         }
     }
 //  static _validate() validates that obj is an instance a MEaser class
@@ -45,21 +35,54 @@ class MEBase extends EBase { // M = multi E = Easer, the multi-ease base class
             Ez._mustBeErr(name, "an instance of a MEaser class");
         return obj;
     }
-// this.easies is a shallow copy
-    get easies()   { return this.#easies.slice(); }
-    get loopEasy() { return this.#loopEasy; } // see Easies.prototype._next()
+//==============================================================================
+// this.easies is a shallow copy, easy2Mask too
+    get easies()    { return this.#easies.slice(); }
+    get easy2Mask() { return new Map(this.#easy2Mask); }
+    get loopEasy()  { return this.#loopEasy; } // see Easies.prototype._next()
 
+    get autoTripping() {
+        const trips = this.autoTrip;  // #autoTrip not available here
+        return this.#easies.map((ez, i) => this._autoTripping(ez, trips[i]));
+    }
+
+    get playings() {
+        const plays = this.plays;     // #plays not available here
+        return this.#easies.map((ez, i) => this._playings(ez, plays[i]));
+    }
+
+// this.duration returns the total duration, with autoTripping and playings
+    get duration() {
+        let first, t;
+        const
+        trips = this.autoTripping,
+        plays = this.playings;
+        return Math.max(...this.#easies.map((ez, i) => {
+            t = ez.time;
+            first = t + ez.wait;
+            if (trips[i])
+                first += t + ez.tripWait;
+
+            return ez._duration(first, trips[i]) // _duration() trims time
+                 + (first + ez.loopWait)         // * has precedence over +
+                 * (plays[i] - 1);               // plays[i] range is 1 to COUNT
+        }));
+    }
+// this.startTime is the start of animation, after the shortest ez.wait
+    get startTime() {
+        return Math.min(...this.#easies.map(ez => ez.startTime));
+    }
+//==============================================================================
+//  _zero()
+    _zero() {
+        super._zero();
+        const start = this.#easies[0].startTime;
+        if (this.#easies.some(ez => ez.startTime != start))
+            this.calcInitial(); // pre-populate #twoD or #oneD
+    }
 //  init() calls super.init() with an array of ez.#e as the argument
     init() {
         super.init(this.#easies.map(ez => ez.initial_e));
-    }
-//  _zero() resets stuff before playback
-    _zero() {
-        super._zero();              // resets #iElm
-        const auto = this.autoTrip; // #autoTrip not available here, use getter
-        this.#easies.forEach((ez, i) =>
-            this._autoTripping[i] = this._autoTrippy(ez, auto[i])
-        );
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,8 +95,11 @@ class MEaser extends MEBase {        //\ Multi-ease Easer
         Object.seal(this);
     }
     _apply(es) { // es = easies.map(ez => ez.e)
+        this._calc(es);
+        this._set (es);
+    }
+    _calc(es) {
         es.forEach((e, i) => this.#calcs[i].calculate(this._eVal(e, i)));
-        this._set(es);
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,12 +110,13 @@ class MEaserByElm extends MEBase {
         this.#calcs = Array.from({length:o.l}, (_, i) =>
                             Array.from({length:o.lz}, (_, j) =>
                                   new ECalc(o, o.calcs[i][j])));
-        this.setInitial(); //!!test!!
+        this.setInitial();
+        Ez.is(this, "ByElm");
         Object.seal(this);
     }
     _apply(es) { // es = easies.map(ez => ez.e)
         this._calc(es, this.elmIndex);
-        this._setElm(es);
+        this._set (es);
     }
     _calc(es, iElm) {
         const calcs = this.#calcs[iElm];

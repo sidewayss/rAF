@@ -136,17 +136,6 @@ function eGet(ezs) {
     if (isContinuing) {             // isLooping || isTripping
         isContinuing = false;
         return ezs.map(ez => ez.e.status == E.waiting ? ez.e : ez.e2);
-//!!    return ezs.map(ez => {
-//!!        e = ez.e;
-//!!        if (e.status == E.waiting) {
-//!!            console.log("eGet e:", ez.e2, ez.e)
-//!!            return e;
-//!!        }
-//!!        else {
-//!!            console.log("eGet e2:", ez.e2, ez.e)
-//!!            return ez.e2
-//!!        }
-//!!    });
     }
     else
         return ezs.map(ez => ez.e);
@@ -182,30 +171,30 @@ function pseudoFrame(...args) {     // 0 is dummy time
 //==============================================================================
 // pseudoAnimate() populates the frames array via the .peri() callbacks, does
 //                 not apply values or update counters, called by refresh().
-function pseudoAnimate(isEasies) {    // Easies.proto.#pseudo = isEasies
-    let i, l, t;
+function pseudoAnimate(noTargets) { // Easies.proto.#noTargets = noTargets
+    let i, s, t;
     const ezs = g.easies;
 
-    changeStop(null);                 // resets stuff if pausing or arrived
-    ns.initPseudo();                  // page-specific init, calls newTargets()
-    ezs._zero(0, isEasies);           // pre-play initialization
-    frameIndex = 0;                   // see frames[++frameIndex] above
+    changeStop(null);               // resets stuff if pausing or arrived
+    ns.initPseudo();                // page-specific init, calls newTargets()
+    ezs._zero(0, noTargets);        // pre-play initialization
+    frameIndex = 0;                 // see frames[++frameIndex] above
 
-    i = ns.isInitZero?.() ? 0         // steps && (jump & E.start)
-                          : MILLI;    // everything else
-    if (isEasies)
-        do {
-            t = i / FPS;
-            l = ezs._next(t);         // returns #active.size()
-            frames[frameIndex].t = t; // _next(timeStamp) != t
-            i += MILLI;
-        } while(l);
-    else
-        for (l = lastFrame * MILLI; i <= l; i += MILLI) {
-            t = i / FPS;              // derive t and execute the next frame
-            ezs._next(t);
-            frames[frameIndex].t = t; // EBase.proto.peri() doesn't have time
-        }
+    i = ns.isInitZero?.() ? 0       // steps && (jump & E.start)
+                          : MILLI;  // everything else
+//!!if (isEasies)
+    do {
+        t = i / FPS;                // time in milliseconds
+        s = ezs._next(t);           // ezs.#active.size()
+        frames[frameIndex].t = t;   // the one common property across pages
+        i += MILLI;                 // unnecessary in last iteration
+    } while(s);
+//!!else
+//!!    for (l = lastFrame * MILLI; i <= l; i += MILLI) {
+//!!        t = i / FPS;              // derive t and execute the next frame
+//!!        ezs._next(t);
+//!!        frames[frameIndex].t = t; // EBase.proto.peri() doesn't have time
+//!!    }
     raf.init();                       // reset properties set by final frame
 }                                     //!!must it be E.original for jump:start??
 //==============================================================================

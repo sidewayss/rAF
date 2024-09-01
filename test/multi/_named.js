@@ -3,7 +3,7 @@ export let objEz;
 
 export const
 idsPerEasy  = [EASY,         "plays","eKey", "trip"],
-defsPerEasy = [DEFAULT_NAME, "",      E.unit, false];
+defsPerEasy = [DEFAULT_NAME, "",      E.unit, null];
 
 import {E} from "../../raf.js";
 
@@ -12,6 +12,7 @@ import {DEFAULT_NAME} from "../named.js";
 import {COUNT, elms}  from "../common.js";
 
 import {initEasies} from "./_load.js";
+import {newTargets} from "./_update.js";
 import {set}        from "./events.js";
 
 import {EASY} from "../easings/steps.js";
@@ -28,11 +29,11 @@ function formFromObj(obj) {
         for (i = 0; i < COUNT; i++)
             elms[id][i].value = set[id](i, obj[id]?.[i]);
 
-    timeFrames(); // no #time, no input event
-    objEz = obj;
+    objEz = obj;         // setTimeFrames=>newTargets=>multiFromObj() needs it
+    setTimeFrames(true);
 }
 // objFromForm() is called by change.plays/eKey/trip/easy()
-function objFromForm() {
+function objFromForm(doTime, isEasy) {
     let arr, def;
     objEz = {};
     idsPerEasy.forEach((id, i) => {
@@ -41,10 +42,17 @@ function objFromForm() {
         if (arr.some(elm => elm.value != def))
             objEz[id] = arr.map(elm => elm.value);
     });
+    if (doTime)
+        setTimeFrames(isEasy);
+
     return objEz;
 }
-//==============================================================================
-// updateNamed() helps openNamed()
-function updateNamed(obj) {
-    return initEasies(obj);
+function setTimeFrames(isEasy) { // always precedes refresh()
+    if (isEasy)
+        initEasies();   // easys has changed, reset g.easies
+    newTargets(true);   // required for timeFrames(msecs = ns.getMsecs())
+    timeFrames();       // no #time, no input event
 }
+//==============================================================================
+// updateNamed() would run initEasies() were it not for formFromObj() running it
+function updateNamed() { return true; }

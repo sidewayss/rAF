@@ -1,3 +1,8 @@
+/* necessary for resizeWindow() */
+check-box::part(box) {
+  width:18px;
+  height:15px;
+}
 /* overrides of common.css */
 body {
   padding:var(--3-16ths) 0 var(--7-16ths) var(--3-16ths);

@@ -207,10 +207,9 @@ check-tri:not([value])::part(default) {
   color: var(--medium-blue);
 }
 check-tri[value]::part(default) {
-  fill-opacity:0.1;
-  fill:var(--medium-gray);
-  stroke:var(--dark-gray);
-  color: var(--dark-gray);
+  fill-opacity:0.05;
+  fill:  var(--medium-gray);
+  stroke:var(--medium-gray);
 }
 
 /* <state-button> - #play, #stop */

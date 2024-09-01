@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html id="color">
   <head>
@@ -25,22 +26,31 @@
         <label for="time" class="lbl-right">2.000s</label>
       </div>
       <div class="row collapse">
-        <label for="startInput">Start:</label>
-        <input  id="startInput"  type="text"  value="darkred" class="border-gray" spellcheck="false"/>
+        <label for="startText">Start:</label>
+        <input  id="startText"  type="text"  value="darkred" class="border-gray" spellcheck="false"/>
         <div    id="startCanvas" class="canvas"></div>
       </div>
       <div class="row mb3-8 collapse" style="margin-top:-1px">
-        <label for="endInput">End:&nbsp;&nbsp;</label>
-        <input  id="endInput"  type="text"  value="color(--lchuv 86.8 42.9 230)" class="border-gray" spellcheck="false"/>
+        <label for="endText">End:&nbsp;&nbsp;</label>
+        <input  id="endText"  type="text"  value="color(--lchuv 86.8 42.9 230)" class="border-gray" spellcheck="false"/>
         <div    id="endCanvas" class="canvas"></div>
       </div>
       <div id="triptych" class="collapse">
         <button id= "compare" class="symBtn boolBtn emphasis" value="true">switch_right</button>
         <select id= "leftSpaces" class="spaces border-gray" style="margin-left:var(--3-16ths)"></select>
         <select id="rightSpaces" class="spaces border-gray" style="margin-left:var(--5-16ths)"></select>
-        <div id="divCopy" class="row ml1-2" style="display:none">
-          <button id="data" class="symBtn">data_table</button>
-          <button id="code" class="symBtn">data_object</button>
+        <div id="divNoCompare" class="col ml5-8" style="display:none">
+          <div class="row">
+            <button id="data" class="symBtn">data_table</button>
+            <button id="code" class="symBtn">data_object</button>
+          </div>
+          <div class="row">
+            <label for="gamut">gamut:</label>
+            <select id="gamut">
+              <option value="srgb">RGB</option>
+              <option value="p3"  >P3</option>
+            </select>
+          </div>
         </div>
         <span id=  "lblDisplay" class="symSpan">monitor</span>
         <span id= "leftDisplay" class="display left" ></span>
@@ -79,8 +89,8 @@
         </div>
       </div>
     </div>
-    <input id="startRgb" type="color" class="collapse"/> <!-- position:absolute -->
-    <input id="endRgb"   type="color" class="collapse"/>
+    <input id="startColor" type="color" class="collapse"/> <!-- position:absolute -->
+    <input id="endColor"   type="color" class="collapse"/>
     <span  id="copied">Copied!</span>
     <!-- Error/Warning/Info Dialog -->
     <dialog id="msgBox">

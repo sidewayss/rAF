@@ -17,30 +17,31 @@ let data;
 //                MEBase.#easies is an Array of Easy. Illustrates an (obscure?)
 //                inefficiency: every masked value is calculated even if it's
 //                the same as another one. Called by newTargets(), clickCode(),
-//                which passes an array of strings (local storage keys) as ezs.
-function multiFromObj(ezs, isPseudo) {
+//                which passes an array of strings (local storage keys) as ezs,
+function multiFromObj(ezs, isPseudo) {          // and does not define isPseudo.
     if (isPseudo)
         g.easies.peri = pseudoUpdate;
     else {
-        g.easies.peri = update;             // spread 3 to 6:
+        g.easies.peri = update;                 // spread 3 to 6:
         ezs = Array.from({length:COUNT * 2}, (_, i) => ezs[Math.floor(i / 2)]);
     }
     const me = {easies:ezs, eKey:objEz.eKey,
                 addend:clipStart,
                 factor:clipEnd - clipStart};
-    if (isPseudo)                           // initPseudo()
+    if (isPseudo)                               // initPseudo()
         Object.assign(me, {peri:pseudoMe, pseudo:true});
     else {
-        Object.assign(me, Is.def(isPseudo)  // ? changePlay()
+        Object.assign(me, Is.def(isPseudo)      // ? changePlay()
                         ? {elm:elms.clip, prop:P.clipPath, peri:updateMe}
                         : {elm:"myElm",   prop:"P.clipPath"}
-        );                                  // : clickCode()<=multiToText()
+        );                                      // : clickCode()<=multiToText()
         me.mask = MASK_X;
-        if (objEz.plays?.some(v => v))      // convert "" to undefined
-            me.plays    = objEz.plays.map(v => orUndefined(v));
-        if (objEz.trip?. some(v => v))      //convert "number" to number
-            me.autoTrip = objEz.trip .map(v => elseUndefined(v, Number(v)));
     }
+    if (objEz.plays?.some(v => v))          // convert to Number or undefined
+        me.plays    = objEz.plays.map(v => orUndefined(Number(v)));
+    if (objEz.trip?. some(v => v !== null)) // convert null to undefined
+        me.autoTrip = objEz.trip .map(v => elseUndefined(v !== null, v));
+
     return me;
 }
 //==============================================================================

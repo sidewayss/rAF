@@ -1206,7 +1206,7 @@ function calcMEaser(o) {
         o.dmax = Math.max(...o.dims);
         o.dmin = Math.min(...o.dims);
     }
-    else { // no configs, easer uses raw _calc() return value
+    else { // no configs, easer uses raw Easy.proto.e
         o.dmax = 0;
         o.dmin = 0;
     }

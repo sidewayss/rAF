@@ -1,15 +1,17 @@
 export {loadIt, getEasies, initEasies, updateAll, resizeWindow};
-export let clipDist, clipEnd, clipStart;
+export let clipEnd, clipStart;
 
 import {U, Is} from "../../raf.js";
 
+import {raf}                                   from "../load.js";
 import {DEFAULT_NAME, LINEAR}                  from "../named.js";
 import {newEasies, updateTime, updateCounters} from "../update.js";
-import {getNamed, getNamedEasy}                from "../local-storage.js";
+import {changeStop}                            from "../play.js";
+import {getNamed}                              from "../local-storage.js";
 import {COUNT, BUTTON, SELECT, LABEL, EASY_, elms, g, is}
                                                from"../common.js";
 import {loadEvents} from "./events.js";
-import {MASK_X, clip, easys, refresh, setClipPair, setClipPath}
+import {MASK_X, clip, easys, refresh, setClipPair, setClipPath, newTargets}
                     from "./_update.js";
 //==============================================================================
 // loadIt() is called by loadCommon()
@@ -47,37 +49,33 @@ function getEasies(hasVisited) {
         }
     }
     getNamed(elms.easy0, EASY_, LINEAR); // easy0 is inside #template
-    elms.ucvDivs = [src.lastElementChild];
+    elms.easyDivs = [src.lastElementChild];
     for (i = 1; i < COUNT; i++) {        // clone 'em
         clone = par.insertBefore(src.cloneNode(true), sib);
-        elms.ucvDivs.push(clone.lastElementChild);
+        elms.easyDivs.push(clone.lastElementChild);
         j = 0;
         for (tag of TAGS) {
             for (elm of clone.getElementsByTagName(tag)) {
                 id = ids[j++];
                 elm.id = id + i;
                 elms[id][i] = elm;
+                elms[elm.id] = elm;
             }
         }
         for (elm of clone.getElementsByTagName(LABEL))
             elm.htmlFor = elm.htmlFor.slice(0, -1) + i;
     }
     loadEvents();                        // must wait until after cloning
-
-    if (!hasVisited)                     // default to the first three presets,
-        for (i = 0; i < COUNT; i++) {    // in order, better than all three the same.
-            elm = elms.easy[i];
-            elm.selectedIndex = i;
-            easys[i] = getNamedEasy(elm.value, true); // returns undefined if failure!!
-        }
 }
 //==============================================================================
-// initEasies() is called by loadFinally(), updateNamed(), changeEasy()
-function initEasies() {
-    const b = newEasies(easys);
-    if (b)
-        g.easies.oneShot = true;  // test Easies.proto.oneShot, see newTargets()
-    return b;
+// initEasies() is called by loadFinally(), formFromObj(), objFromForm()
+function initEasies(_, hasVisited) {
+    if (Is.def(hasVisited)) {    // called by loadFinally() once per session
+        raf.initZero = true;
+        return true;
+    }
+    else                         // called prior to loadFinally by formFromObj()
+        return newEasies(easys);
 }
 //==============================================================================
 // updateAll() called by loadFinally(), openNamed()
@@ -88,7 +86,9 @@ function updateAll() {
 }
 //==============================================================================
 // resizeWindow() resizes the polygon: y-values and all stationary x-values
-function resizeWindow() {
+function resizeWindow(evt) {
+    changeStop();                       // in case playback is in progress
+                                        // changes to clipStart/End = refresh()
     let i, m, mask, val,
     elm = elms.bgWhite;
     const                               // all four border widths are the same
@@ -124,7 +124,6 @@ function resizeWindow() {
     elm      = plate.lastElementChild;
     clipEnd  = plate.firstElementChild.offsetWidth
              + elm.clientWidth;         // exclude the right border
-    clipDist = clipEnd - clipStart - elm.lastElementChild.offsetWidth;
 
     for ([val, mask] of sizes)
         for (m of mask)
@@ -133,11 +132,16 @@ function resizeWindow() {
     i = 3;                              // y-axis: otherwise static values
     mask = Array.from({length:COUNT * 4}, () => i += 2);
     i = 0;                              // [5,7,9,11, 13,15,17,19, 21,23,25,27]
-    for (elm of elms.ucvDivs) {         // 3 ucvDivs by (pair * 2)
+    for (elm of elms.easyDivs) {        // 3 easyDivs by (pair * 2)
         val = elm.offsetTop - top;
         i = setClipPair(val, i, mask);  // pair 0, i += 2
         val += elm.offsetHeight;
         i = setClipPair(val, i, mask);  // pair 1, ditto
     }
-    setClipPath();
+    if (evt.isLoading)
+        setClipPath();
+    else {
+        newTargets(true);
+        refresh();                      // calls setClipPath()
+    }
 }

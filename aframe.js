@@ -3,9 +3,9 @@ import {E, Ez, Is, Easies, ACues} from "./raf.js";
 
 // AFrame: the animation frame manager
 export class AFrame {
-    #backup; #callback; #fps; #frame; #frameZero; #gpu; #keepPost; #initZero;
-    #now; #oneShot; #peri; #post; #promise; #status; #syncZero; #targets;
-    #useNow; #zero;
+    #backup; #callback; #callFirst; #fps; #frame; #frameZero; #gpu; #keepPost;
+    #initZero; #now; #oneShot; #peri; #post; #promise; #status; #syncZero;
+    #targets; #useNow; #wait; #zero;
 //==============================================================================
     constructor(arg) {    // arg is int, bool, arrayish, object, or undefined
         this.#status    = E.empty;
@@ -131,39 +131,54 @@ export class AFrame {
     get gpu()    { return this.#gpu; }
 //==============================================================================
 //  play() initiates the #animate() callback loop
-    play() {
+    play(wait) {
         if (!this.isPlaying) {          // if it's already playing, ignore it
             this.#promise = Ez.promise();
             if (!this.#targets.size)    // nothing to animate
                 this.#promise.resolve(E.empty);
             else {
-                let t;
-                const now = this.#useNow
-                          ? performance.now()
-                          : document.timeline.currentTime,
-                isZero = !this.isPausing;
-                if (isZero) {           // starting from zero
+                wait = Is.def(wait) ? Number(wait) : 0;
+                if (Number.isNaN(wait))
+                    Ez._mustBeErr("AFrame.prototype.play(wait): wait argument",
+                                  "a number or undefined");
+                //-----------------------------
+                const isPlaying = !this.isPausing;
+                let t,
+                now  = performance.now(),
+                zero = this.#useNow ? now : document.timeline.currentTime;
+                zero += wait;
+                if (isPlaying) {           // starting from zero
                     for (t of this.#targets)
                         t.pre?.(t);
-                    if (!this.#frameZero)
-                        this.#setZero(now);
+                    if (wait || !this.#frameZero)
+                        this.#setZero(zero);
                 }
                 else {                  // resuming from pause
-                    this.#zero = this.#zero + now - this.#now;
-                    this.#now  = now;
+                    this.#zero = this.#zero + zero - this.#now;
+                    this.#now  = zero;
                     for (t of this.#targets)
-                        t._resume(now);
+                        t._resume(zero);
                 }
-                this.#status = E.playing;
-                if (isZero && this.#frameZero)
-                    this.#frame = requestAnimationFrame(t => this.#animateZero(t));
-                else
-                    this.#frame = requestAnimationFrame(t => this.#callback(t));
+                this.#wait      = wait + now;
+                this.#status    = E.playing;
+                this.#callFirst = isPlaying && this.#frameZero
+                                ? this.#animateZero
+                                : this.#callback;
+                this.#frame = requestAnimationFrame(t =>
+                    wait ? this.#delay(t) : this.#callFirst(t)
+                );
             }
         }
         return this.#promise;
     }
-//  #animate() is the requestAnimationFrame() callback
+//  #delay() is the callback for play(wait > 0), delays the start of animation
+    #delay(timeStamp) {
+        if (performance.now() < this.#wait)
+            this.#frame = requestAnimationFrame(t => this.#delay(t));
+        else
+            this.#callFirst(timeStamp); // #callback() or #animateZero
+    }
+//  #animate() is the base requestAnimationFrame() #callback
     #animate(timeStamp) {
         this.#now = timeStamp;           // set it first so callbacks can use it
         for (const t of this.#targets) { // execute this frame
@@ -177,7 +192,7 @@ export class AFrame {
         else
             this.#stop(E.arrived, true);
     }
-//  #animateNow() is the animation callback that uses performance.now()
+//  #animateNow() is the animation #callback that uses performance.now()
     #animateNow() { this.#animate(performance.now()); }
 
 //  #animateZero() is the callback for one frame only

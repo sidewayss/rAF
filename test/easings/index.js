@@ -11,8 +11,8 @@ POW   = "pow";
 
 import {E, P, Easy} from "../../raf.js";
 
-import {ezX}                        from "../load.js";
-import {PLAYS, elms, g, errorAlert} from "../common.js";
+import {ezX}                 from "../load.js";
+import {elms, g, errorAlert} from "../common.js";
 //==============================================================================
 // Animation object functions:
 // initEzXY() <= refresh(), loadFinally=>initEasies(), openNamed=>updateNamed()
@@ -41,7 +41,7 @@ function initEzXY(obj) {
              ? obj.legs[0].time + obj.legs[1].time + (obj.legs[1].wait ?? 0)
              : obj.time || obj.timing.at(-1);
 
-    for (const prop of [PLAYS, "loopWait", ...g.trips.map(elm => elm.id)])
+    for (const prop of ["plays", "loopWait", ...g.trips.map(elm => elm.id)])
         ezX[prop] = obj[prop];
 
     return true;

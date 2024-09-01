@@ -159,16 +159,17 @@ function newTargets(isPseudo) {
     let cb;
     if (isPseudo) {                     // pseudo has no targets
         g.easies.peri = pseudoUpdate;   // outside if(.size) for page load
-        if (ezY.targets.size) {         // ezX.oneShot = true, see initEasies()
+        if (ezY.targets.size) {
+            ezX.clearTargets();
             ezY.clearTargets();
             for (cb of ["onAutoTrip","onLoop"])
                 ezY[cb] = undefined;
         }
     }
-    else {                              // refresh() runs between every playback
+    else if (ezX.e.status != E.tripped) {
         let arr, cr, ez, prop;          // cr for chart|range
         const loopByElm = elms.loopByElm.checked;
-
+                                        // refresh() runs between every playback
         g.easies.peri  = update;        // test Easies.proto.peri()
         ezY.post       = postY;         // test Easy.proto.post()
         ezY.onAutoTrip = callbacks.onAutoTrip;
@@ -195,7 +196,7 @@ function newTargets(isPseudo) {
             for ([ez, prop, cr] of arr)
                 ez.newTarget({prop, elms:cr.map(v => v.dots[0])});
         }
-    }
+    } // else about to play !autoTrip return trip
 }
 //==============================================================================
 // initPseudo() sets frames[0], calls newTargets(true)
@@ -216,9 +217,9 @@ function postY() {
 function update() {
     updateFrame(...eGet([ezX, ezY]));
 }
-// pseudoUpdate() is the pseudo-animation callback, ezX.target.peri() only. For
-//                E.steps w/jump:E.start|E.none, ezY ends before ezX, but ezY.e
-//                remains intact for drawing the rest of the line.
+// pseudoUpdate() is the pseudo-animation g.easies.peri callback.
+//                For E.steps w/jump:E.start|E.none, ezY ends before ezX, but
+//                ezY.e remains intact for drawing the rest of the line.
 function pseudoUpdate() {
     pseudoFrame(ezX.e, ezY.e);  // avoids eGet() and always uses e, not e2
 }

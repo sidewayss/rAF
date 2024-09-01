@@ -1,9 +1,11 @@
-export {refresh, initPseudo, newTargets, getMsecs, getFrame, updateX,
+export {refresh, initPseudo, newTargets, getMsecs, getFrame, status, updateX,
         setCounters, formatDuration, formatPlayback, setClipPair, setClipPath};
+export let measer;
 export const
     MASK_X = [6,8, 14,16, 22,24],  // polygon's animated x-value indexes
     clip   = new Array(32),        // there are 32 polygon numbers
     easys  = new Array(COUNT),     // easys = [Easy x 3], g.easies = Easies
+    wait   = 400,                  // changePlay()=>raf.play(ns.wait);
     formatFrames = true
 ;
 import {E, U, F, P, Easy} from "../../raf.js";
@@ -36,31 +38,35 @@ function refresh() {
 // initPseudo() sets frames[0], creates targets w/o elements, assumes that
 //              clip-path is set at elapsed = 0, called by pseudoAnimate().
 function initPseudo() {
-    frames[0] = getFrame(0, MASK_X.map(v => clip[v]));
-    newTargets(true);
+    frames[0] = getFrame(0, MASK_X.map(v => clip[v]).filter((_, i) => i % 2));
+//!!newTargets(true);
 }
 // newTargets() calls Easies.proto.newTarget(), with and w/o .prop and .elms,
-//              always calls g.easies.newTarget() 'cuz g.easies.oneShot = true,
-//              called by changePlay(), initPseudo(true).
-function newTargets(isPseudo = false) { // multiFromObj() checks false vs undef
+//              called by changePlay(), formFromObj(), objFromForm().
+function newTargets(isPseudo) {                 // isPseudo is always defined
     g.easies[isPseudo ? "delete" : "add"](ezX);
-    g.easies.clearTargets();
-    g.easies.newTarget(multiFromObj(easys, isPseudo));
+    g.easies.cutTarget(measer);                 // test Easies.proto.cutTarget()
+    measer = g.easies.newTarget(multiFromObj(easys, isPseudo));
 }
 //==============================================================================
-// getMsecs() returns the current duration in milliseconds
+// getMsecs() returns the full run-time in milliseconds
 function getMsecs() {
-    const me = g.easies?.targets[0];
-    if (me)
-        return Math.max(...easys.map((ez, i) =>
-                            (me.autoTrip[i] ? ez.firstTime : ez.duration)
-                          + (ez.loopTime * ((me.plays[i] ?? ez.plays) - 1))));
-    else {
-        console.log("multi getMsecs(): no g.easies or g.easies has no targets.");
-        return Math.max(...easys.map((ez, i) =>
-                            (elms.trip[i].checked ? ez.firstTime : ez.duration)
-                          + (ez.loopTime * ((elms.plays[i].value || elms["ez-plays"][i].textContent) - 1))));
-    }
+    return measer.duration;
+//!!let first, t;
+//!!const
+//!!trips = elms.trip .map( elm => elm.checked && P.isVisible(elm)),
+//!!plays = elms.plays.map((elm, i) => Number(elm.value
+//!!                                       || elms.ez_plays[i].textContent));
+//!!return Math.max(...easys.map((ez, i) => {
+//!!    t = ez.time;
+//!!    first = t + ez.wait;
+//!!    if (trips[i])
+//!!        first += t + ez.tripWait;
+//!!    // _duration removes excess E.steps time, in first or last loop play
+//!!    return ez._duration(first, trips[i])
+//!!         + (first + ez.loopWait)         // * has precedence over +
+//!!         * (plays[i] - 1);               // plays[i] has range of 1 to COUNT
+//!!}));
 }
 // getFrame() is called by these three functions:
 //            initPseudo()   t = 0,           oneD = MASK_X, isMask = true
@@ -75,6 +81,18 @@ function getFrame(t, oneD) {
         frm.x[i] = {value:oneD[i] ?? 0, unit:e[i].unit, comp:e[i].comp};
 
     return frm;
+}
+// status() returns the highest status number, excluding E.tripped
+// roundTrip && !autoTrip for multi only behaves sensibly if all the targets
+// are set that way. Otherwise autoTrip and non-roundTrip targets start over
+// from the beginning. Here it's just disabled to avoid confusion. !autoTrip
+// is a way not to autoTrip when other mask indexes are autoTripping. It's
+// too funky to make it work properly for the combo: autoTrip || !autoTrip.
+function status() {
+    let sts = g.easies.status;
+    if (sts == E.tripped)
+        sts = E.arrived;
+    return sts;
 }
 //==============================================================================
 // updateX() is called exclusively by inputX()
@@ -110,8 +128,15 @@ function formatDuration(val, d) {
 }
 // formatPlayback() helps changePlay(), changeStop()
 function formatPlayback(isPlaying) {
-    elms.clip.style.opacity = g.clipOpacity[Number(isPlaying)]; // see multi.loadIt()
-    P.visible(elms.ucvDivs.map(div => div.firstElementChild), !isPlaying); //!!if this can be elms.value[i], then ucvDivs is a local var for _load!!
+    elms.clip.style.opacity = g.clipOpacity[Number(isPlaying)]; // see loadIt()
+    P.visible(elms.easyDivs.map(div => div.firstElementChild), !isPlaying);
+
+    if (isPlaying)                      // element visibility overrides parent
+        P.visible(elms.trip, false);
+    else {
+        const ezs = g.easies.easies;    // g.easies as an Array (vs Set)
+        elms.trip.forEach((elm, i) => P.visible(elm, ezs[i].roundTrip));
+    }
 }
 //==============================================================================
 // setClipPair() populates clip, pair by pair, mask by mask.

@@ -4,7 +4,6 @@ export const          // export everything:
 MILLI = 1000,         // for milliseconds, and #chart is 1000 x 1000
 COUNT = 3,            // multi.js: easys.length, loopByElm: elms.length
 ZERO  = "0", ONE = "1", TWO = "2",
-PLAYS   = "plays",
 CHANGE  = "change",   // event names
 CLICK   = "click",
 INPUT   = "input",    // event & tag name
@@ -40,6 +39,11 @@ export function addEventsByElm(type, elms, obj, noDigits, noPrefix = true) {
     else
         for (elm of elms) // elm maybe undefined, e.g. elms.time in multi
             elm?.addEventListener(type, obj[Ez.toCamel(type, elm.id)]);
+}
+export function dummyEvent(type, name, value = true) {
+    const evt = new Event(type);
+    evt[name] = value;
+    return evt;
 }
 //====== string conversion to/from =============================================
 export function boolToString(b) { // for localStorage and <button>.value
@@ -100,9 +104,4 @@ export function isTag(elm, tag) { // only called by easings.loadIt()
 export function is(obj = {}) {
     obj[document.documentElement.id] = true;
     return Object.freeze(obj);
-}
-export function dummyEvent(type, name, value = true) {
-    const evt = new Event(type);
-    evt[name] = value;
-    return evt;
 }

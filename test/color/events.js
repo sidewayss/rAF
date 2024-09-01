@@ -1,18 +1,18 @@
-export {loadEvents, timeFactor, getCase};
+export {loadEvents, timeFactor, outOfGamut, getCase};
 export let isMulti;
 
 import Color from "https://colorjs.io/dist/color.js";
 
 import {E, Ez, Fn, Is, P} from "../../raf.js";
 
-import {ezX}                            from "../load.js";
-import {msecs, timeFrames, updateTime}  from "../update.js";
-import {setPrefix}                      from "../named.js";
-import {changeStop}                     from "../play.js";
-import {setLocal, setLocalBool}         from "../local-storage.js";
-import {invalidInput}                   from "../input-number.js";
+import {ezX}                    from "../load.js";
+import {setPrefix}              from "../named.js";
+import {changeStop}             from "../play.js";
+import {setLocal, setLocalBool} from "../local-storage.js";
+import {invalidInput}           from "../input-number.js";
+import {msecs, frames, timeFrames, updateTime}       from "../update.js";
 import {CHANGE, CLICK, INPUT, MEASER_, elms, g, is, boolToString,
-        addEventToElms, addEventsByElm} from "../common.js";
+        addEventToElms, addEventsByElm, orUndefined} from "../common.js";
 
 import {ezColor, refRange, resizeWindow} from "./_load.js";
 import {refresh, oneCounter}             from "./_update.js";
@@ -27,10 +27,10 @@ const btnText = { // textContent: boolean as number is index into each array
 function loadEvents() {
     addEventsByElm(CLICK,  g.boolBtns,  click);
     addEventsByElm(INPUT,  [elms.time], input);
-    addEventsByElm(CHANGE, [elms.time, elms.type], change);
+    addEventsByElm(CHANGE, [elms.time, elms.type, elms.gamut], change);
 
-    addEventToElms(INPUT,  [elms.startInput, elms.endInput],    input.color);
-    addEventToElms(CHANGE, [elms.startRgb,   elms.endRgb],      change.rgb);
+    addEventToElms(INPUT,  [elms.startText,  elms.endText],     input .text);
+    addEventToElms(CHANGE, [elms.startColor, elms.endColor],    change.color);
     addEventToElms(CHANGE, [elms.leftSpaces, elms.rightSpaces], change.space);
 
     change.type();              // sets isMulti
@@ -39,9 +39,9 @@ function loadEvents() {
 //==============================================================================
 //    input event handlers:
 const input = {
- // color() handles input events for #startInput, #endInput, validates that text
- //         is a CSS color, updates start | end for both left & right.
-    color(evt) {
+ // text() handles input events for #startText, #endText, validates that its' a
+ //        CSS color, updates start | end for both left & right.
+    text(evt) {
         const tar = evt.target;
         const se  = g[getCamel(tar)];  // g.start or g.end
 
@@ -54,9 +54,9 @@ const input = {
         invalidInput(tar, false);
 
         se.canvas.style.backgroundColor = se.color.display();
-        if (Is.def(evt.type))          // else called by change.rgb()
-            se.rgb.value = se.color.to("srgb").toString({format: "hex"});
-
+        if (Is.def(evt.type))          // else called by change.color()
+            se.color.value = se.color.to("srgb").toString({format: "hex"});
+                                       // <input>.value is in hex notation
         for (const lr of g.leftRight)
             updateOne(se, lr);
 
@@ -125,12 +125,25 @@ const change = {
             elms.named.dispatchEvent(new Event(CHANGE)); // calls openNamed()
         }
     },
-    rgb(evt) {
+    color(evt) {  // <input type="color"> g.startEnd.color, value = hex notation
         const
         tar = evt.target,
-        inp = g[getCamel(tar)].input;
-        inp.value = tar.value;
-        input.color({target:inp});
+        txt = g[getCamel(tar)].text;
+        txt.value = tar.value;
+        input.color({target:txt});
+    },
+    gamut(evt) {  // <select id="gamut"> runs outOfGamut() for start, end, value
+        const
+        color = g.left.color,                 // Color instance
+        gamut = elms.gamut.value,             // color space id
+        inGamut = evt.inGamut;                // called by click.compare()
+        for (const obj of g.startEnd) {
+            color.coords = obj.left;          // cached by updateOne()
+            outOfGamut(obj.id, color, gamut, inGamut);
+        }
+        color.coords = evt.isLoading ? g.start.left
+                                     : frames[elms.x.value].left;
+        outOfGamut(E.value, color, gamut, inGamut);
     }
 };
 //==============================================================================
@@ -142,9 +155,11 @@ const click = {
         const r = g.right;
         P.visible  ([r.display, r.start, r.value, r.end], b);
         P.displayed([r.spaces, r.canvas], b);
-        P.displayed(elms.divCopy, !b);
+        P.displayed(elms.divNoCompare, !b);
         elms.leftCanvas.style.width = b ? "50%" : "100%";
-        if (b && !evt.isLoading)
+
+        change.gamut({isLoading:evt.isLoading, inGamut:orUndefined(b)});
+        if (b && !evt.isLoading) // only check inGamut when !b
             refresh();
     },
  // roundT() elm.id distinguishes it from elms.roundTrip on other test pages
@@ -153,8 +168,8 @@ const click = {
         changeStop();
         ezX.roundTrip = b;
         if (isMulti)
-            for (const ezC of g.easies)
-                ezC.roundTrip = b;
+            for (const ez of g.easies)
+                ez.roundTrip = b;
         else
             ezColor.roundTrip = b;
     },
@@ -191,12 +206,32 @@ function updateOne(se, lr) {
     if (lr.spaces.value == Fn.rgb)
         coords = coords.map(v => Math.round(Ez.clamp(0, v, 1) * 255));
 
-    oneCounter(coords, lr[se.id], lr.range);
     se[lr.id] = coords;
+    oneCounter(coords, lr, se.id);
 }
+
 // timeFactor() helps change.time() and initEasies(), only if (isMulti)
 function timeFactor(arr) {
     return msecs / Math.max(...arr.map(obj => obj.time));
+}
+
+// outOfGamut() helps change.gamut(), oneCounter() format out-of-gamut labels
+function outOfGamut(id, color, gamut = elms.gamut.value,
+                             inGamut = color.inGamut(gamut)) { // see collapse()
+    const
+    lbl = g.lbl[id],
+    arr = lbl.title.split(E.sp),
+    was = (arr.length == 2);
+    if (was != inGamut) {
+        if (inGamut) {
+            lbl.style.color = "";
+            lbl.title = arr.slice(0, 2).join(E.sp);
+        }
+        else {
+            lbl.style.color = "rgb(192 0 0)";  // 75% red
+            lbl.title += " (out of gamut)";
+        }
+    }
 }
 //==============================================================================
 function getCamel(elm) {

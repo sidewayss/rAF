@@ -133,5 +133,5 @@ function shallowClone(obj) {
 }
 // storeIt() wraps storeCurrent() with a clone, refresh() defines obj
 function storeIt(obj = objEz) {
-    storeCurrent("", shallowClone(obj));
+    storeCurrent(shallowClone(obj));
 }

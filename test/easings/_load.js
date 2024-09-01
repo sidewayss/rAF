@@ -60,7 +60,7 @@ function loadIt(byTag, hasVisited) {
     elms[id] = clone;                   // elms.tripWait
     elms.autoTrip.parentNode.appendChild(clone);
 
-    const checks = byTag.at(-1);        // <check-box>s
+    const checks = byTag.at(-2);        // <check-box>s
     Ez.readOnly(g, "trips", checks.filter(e => e.id.endsWith("Trip")));
     g.trips.push(clone);
 
@@ -137,7 +137,7 @@ function initEasies(obj, hasVisited) {
         initSteps(obj);
         updateTrip();
         raf.syncZero = syncZero;
-        ezX.oneShot  = true;              // see _update.js/newTargets()
+    //!!ezX.oneShot  = true;              // see _update.js/newTargets()
         b = initEzXY(obj);
         if (b) {                          // resizeWindow() pseudo-constants:
             const cw = chart.viewBox[E.w];

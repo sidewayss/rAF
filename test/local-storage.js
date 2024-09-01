@@ -16,33 +16,36 @@ import {EASY_, elms, g, boolToString, errorAlert} from "./common.js";
 //            from localStorage. Those names can overlap, in which case the
 //            user item overrides the preset.
 function getNamed(sel = elms.named, prefix = preClass, defText = DEFAULT,
-                  getAll = true) {
+                  getAll = true) { // !getAll = exclude E.steps
     let i, key, opt, val;
-    const                                       // !getAll = exclude E.steps
-    keys   = getAll ? Object.keys(g.presets[prefix])
-                    : Object.entries(g.presets[prefix])
-                            .filter(([_, obj]) => obj.type != E.steps)
-                            .map(pair => pair[0]),
-    names  = new Set(keys),                     // start with presets
-    lenPre = prefix.length;
+    const   // sel.fontStyle is "italic" for modified objects
+    fontSty = (sel === elms.named && elms.save) ? "normal" : "",
+    lenPre  = prefix.length,
+    local   = [],
+    presets = getAll ? Object.keys(g.presets[prefix])
+                     : Object.entries(g.presets[prefix])
+                             .filter(([_, obj]) => obj.type != E.steps)
+                             .map(pair => pair[0]);
     i = 0;
-    while ((key = localStorage.key(i++))) {     // then add the local names:
-        if (key.startsWith(prefix)) {           // localStorage has no querying
-            val = localStorage.getItem(key);    // for a single prefix/document.
+    while ((key = localStorage.key(i++))) { // collect the local names:
+        if (key.startsWith(prefix)) {         // localStorage has no querying
+            val = localStorage.getItem(key);  // for a single prefix/document.
             if (getAll || !isNamedSteps(val))
-                names.add(key.slice(lenPre));
+                local.push(key.slice(lenPre));
         }
     }
-    for (key of names) {
+    // <option> order: default, local, non-default presets. Local includes
+    // user-modified presets, and Set weeds out those duplicate names.
+    for (key of new Set([presets.splice(0, 1), ...local, ...presets])) {
         opt = new Option(key)
-        opt.style.fontStyle = "normal";         // sel is sometimes "italic"
+        opt.style.fontStyle = fontSty;
         sel.add(opt);
     }
     opt = sel[0];
-    if (opt.value == DEFAULT_NAME) {            // value implied from text
-        opt.value = DEFAULT_NAME;               // must be set explicitly
-        opt.text  = defText;                    // DEFAULT or LINEAR
-    }
+//!!if (opt.value == DEFAULT_NAME) {        // value implied from text
+    opt.value = DEFAULT_NAME;   // must be set explicitly
+    opt.text  = defText;        // DEFAULT or LINEAR
+//!!}
     return sel;
 }
 // isNamedSteps() searches a JSON or modified-JSON string for type:E.steps
@@ -118,7 +121,7 @@ function setLocalBool(elm, b = elm.checked) {
 }
 //==============================================================================
 // storeCurrent() stores a named object as JSON in localStorage
-function storeCurrent(key, obj = ns.objEz) {
+function storeCurrent(obj = ns.objEz, key = "") {
     const str = JSON.stringify(obj);
     localStorage.setItem(g.restore, str);
     if (key) {                          // only clickOK() passes in a key.

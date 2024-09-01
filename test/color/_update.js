@@ -1,6 +1,5 @@
 export {refresh, initPseudo, newTargets, newTar, getMsecs, getFrame, updateX,
         setCounters, formatDuration, oneCounter};
-//!!export let   initZero; // is raf.initZero applicable now? cached for animation
 export const formatFrames = true;   // see setDuration()
 
 import {E, U, Is, F, Fn, P, Ez} from "../../raf.js";
@@ -11,7 +10,7 @@ import {frames, inputX, updateFrame, pseudoFrame, pseudoAnimate}
                         from "../update.js";
 
 import {ezColor, isCSSSpace} from "./_load.js";
-import {isMulti}             from "./events.js";
+import {isMulti, outOfGamut} from "./events.js";
 
 let keys;
 const
@@ -37,20 +36,20 @@ function newTargets(isPseudo) {
     const
     ez = isMulti ? g.easies : ezColor,
     isComp = elms.compare.value,
-    sides  = isComp ? g.leftRight : [g.left]; // [Object]
+    sides  = getSides(isComp);              // [Object]
 
-    keys = isComp ? [LEFT, RIGHT] : [LEFT];   // [String]
+    keys = isComp ? [LEFT, RIGHT] : [LEFT]; // [String]
     ez.clearTargets();
     for (const side of sides)
         ez.newTarget(newTar(side, isPseudo, isComp));
 
     if (isPseudo) {
         g.easies.delete(ezX);
-        g.easies.peri = updaters.pseudo;      // runs every frame
+        g.easies.peri = updaters.pseudo;    // runs every frame
     }
     else {
         g.easies.add(ezX);
-        g.easies.peri = updaters.update;      // ditto
+        g.easies.peri = updaters.update;    // ditto
     }
 }
 // newTar() helps newTargets()
@@ -87,6 +86,11 @@ function newTar(lr, isPseudo, isComp) { // isComp not defined by copyObj()
         o.mask = mask;
     return o;
 }
+//==============================================================================
+// getSides gets the current sides object(s) in an array
+function getSides(isComp = elms.compare.value) {
+    return isComp ? g.leftRight : [g.left];
+}
 // updaters() are the .peri() callbacks, there are four of them because there
 //            are two targets (left and right), plus updateOne() for when
 //            elms.compare is off, plus pseudo().
@@ -94,8 +98,8 @@ const updaters = {
     left (oneD) { data[LEFT]  = oneD.slice(); },    // [M]Easer.proto.peri
     right(oneD) { data[RIGHT] = oneD.slice(); },
 
-    update() { updateFrame(data, keys); },          // Easies.proto.peri
-    pseudo() { pseudoFrame(data, keys); }
+    update() { updateFrame(); },                    // Easies.proto.peri
+    pseudo() { pseudoFrame(); }
 };
 //==============================================================================
 // getMsecs() is as simple as it gets, elms.time overrides everything else
@@ -103,7 +107,7 @@ function getMsecs() {
     return elms.time.valueAsNumber;
 }
 // getFrame() <= update() and pseudoAnimate(), can be MEaser or Easy
-function getFrame(t, data) {
+function getFrame(t) {
     const frm = {t};
     for (const key of keys)
         frm[key] = data[key];
@@ -112,12 +116,8 @@ function getFrame(t, data) {
 //==============================================================================
 // updateX() is called exclusively by inputX()
 function updateX(frm) {
-    let coords, space;
-    const arr = [g.left];
-    if (elms.compare.value)
-        arr.push(g.right)
-
-    for (const lr of arr) {
+    let coords, lr, space;
+    for (lr of getSides()) {
         space  = lr.spaces.value;
         coords = frm[lr.id];
         lr.color.coords = (space == Fn.rgb) ? coords.map(v => v / 255)
@@ -131,14 +131,19 @@ function updateX(frm) {
 //==============================================================================
 // setCounters() is called exclusively by updateCounters()
 function setCounters(frm) {
-    oneCounter(frm.left, g.left.value, g.left.range);
-    if (elms.compare.value)
-        oneCounter(frm.right, g.right.value, g.right.range);
+    const isComp = elms.compare.value
+    oneCounter(frm.left, g.left, E.value, isComp);  // g.left|right.value is the <span>
+    if (isComp)                 // that displays the current value.
+        oneCounter(frm.right, g.right, E.value);
 }
-// oneCounter() sets one <span>'s textContent
-function oneCounter(coords, span, range) {
-    span.textContent = coords.map((n, i) => range[i](n).padStart(5, E.sp))
-                             .join(E.sp);
+// oneCounter() sets one <span>'s textContent,  id = "value","start","end"
+function oneCounter(coords, lr, id, isComp = elms.compare.value) {
+    lr[id].textContent = coords.map((n, i) => lr.range[i](n).padStart(5, E.sp))
+                               .join(E.sp);
+    if (!isComp) {
+        lr.color.coords = coords;
+        outOfGamut(id, lr.color);
+    }
 }
 // formatDuration() is called exclusively by setDuration()
 function formatDuration(val, d) { // duplicate of multi

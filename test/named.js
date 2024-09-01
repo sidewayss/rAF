@@ -75,10 +75,10 @@ const click = {
         else if (name == DEFAULT || name == LINEAR) { // avoid confusion
             messageBox("info",
                        `"${DEFAULT}" and "${LINEAR}" are reserved names.`,
-                       "Please choose another name.");
+                       "Please input a different name.");
             return;
         } //--------------- storeCurrent() calls disableSave()
-        disablePreset(name, storeCurrent(preClass + name, ns.ok?.(name)));
+        disablePreset(name, storeCurrent(ns.ok?.(name), preClass + name));
         disableDelete(name);                           // ns.ok() = easings only
         if (presets[name] && elms.preset.disabled)
             localStorage.removeItem(preClass + elm.value);

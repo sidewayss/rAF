@@ -6,12 +6,11 @@ preDoc;      // prefix for this document, see local-storage.js
 import {E, Ez, P, PFactory, Easy, Easies, AFrame} from "../raf.js";
 
 import {getNamed, getNamedObj, getNamedBoth, setNamed} from "./local-storage.js";
-import {msecs, loadUpdate, timeFrames, formatNumber}   from "./update.js";
+import {msecs, loadUpdate, formatNumber}               from "./update.js";
 import {DEFAULT_NAME, loadNamed, disableSave, disablePreset, disableDelete}
                                                        from "./named.js";
-
 import {MILLI, COUNT, ONE, INPUT, SELECT, BUTTON, DIV, LABEL, dlg, elms, g,
-        dummyEvent, errorAlert, errorLog} from "./common.js";
+        dummyEvent, errorAlert, errorLog}              from "./common.js";
 /*
 import(_load.js): loadIt, getEasies, initEasies, updateAll, resizeWindow;
                   and showControls for color page.
@@ -41,7 +40,7 @@ async function loadCommon() {
     let elm, i, id;                   // collect HTMLElements by tag, then by id
     const
     tags  = [INPUT, SELECT, BUTTON, "dialog", DIV, LABEL,"span",
-                   "state-button","check-box"],
+                   "state-button","check-box","check-tri"],
     byTag = tags.map(tag => [...document.body.getElementsByTagName(tag)]),
 
     arr = byTag[0].at(-1).id == "name"
@@ -61,10 +60,10 @@ async function loadCommon() {
                                       // elms.x doesn't disable the normal way
     byTag[0].splice(byTag[0].indexOf(elms.x), 1);
     Ez.readOnly(g, "buttons",  byTag[2]);          // <button>, see disablePlay()
-    Ez.readOnly(g, "playback", byTag.at(-2));      // <state-button> #play,#stop
+    Ez.readOnly(g, "playback", byTag.at(-3));      // <state-button> #play,#stop
     Ez.readOnly(g, "disables", [...byTag[0],       // <input>
                                 ...byTag[1],       // <select>
-                                ...byTag.at(-1)]); // <check-box>
+                                ...byTag.at(-2)]); // <check-box>
     Ez.readOnly(g, "invalids", new Set);           // <input>s w/invalid values
 
     elm = elms.plays ?? elms.plays0;  // plays0 is multi
@@ -112,21 +111,21 @@ function loadJSON(response, isMulti, dir, ns, hasVisited, msg) {
             loadUpdate(isMulti, dir)
               .then (() => {
                 ns.getEasies(hasVisited, json);
+                let elm, id, title;    // apply titles to elements and labels
+                for ([id, title] of Object.entries(json.titles)) {
+                    elm = elms[id];    // awaits elements cloned in getEasies()
+                    if (elm) {
+                        elm.title = title;
+                        if (elm.labels?.[0])
+                            elm.labels[0].title = title;
+                    }
+                }
                 awaitUpdate.resolve();
             }).catch(
                 awaitUpdate.reject
             );
 
             getNamed();                // populate elms.named from localStorage
-            let elm, id, title;        // apply titles to elements and labels
-            for ([id, title] of Object.entries(json.titles)) {
-                elm = elms[id];
-                if (elm) {
-                    elm.title = title;
-                    if (elm.labels?.[0])
-                        elm.labels[0].title = title;
-                }
-            }
         }).catch(err => errorAlert(err, msg));
     else
         errorAlert(`HTTP error ${response.status} ${response.statusText}`, msg);
@@ -158,9 +157,11 @@ function loadFinally(is, name, hasVisited, id) {
         setNamed(DEFAULT_NAME, elms.save ? JSON.stringify(obj) : undefined);
     }
     elms.x.value = 0;   // re-opening page uses previous value, default = center
-    ns_named.formFromObj(obj);  // !hasVisited: Easy .html settings ignored
-    if (is.multi)
-        window.dispatchEvent(new Event(RESIZE));
+    raf = new AFrame;
+    if (is.multi)       // multi ready for resize, needs clipStart, clipEnd now
+        window.dispatchEvent(dummyEvent(RESIZE, "isLoading"));
+
+    ns_named.formFromObj(obj, hasVisited);
 
     // msecs and secs are now set, see timeFrames().
     // ezX animates elms.x in all pages, and the x-axis of the chart in the
@@ -168,38 +169,38 @@ function loadFinally(is, name, hasVisited, id) {
     // to have no factor at all, while testing Easy end values and burdening
     // elms.x with a divisor in its factor calculation - see updateTime().
     ezX = new Easy({time:msecs, end:MILLI}); //*05
-    raf = new AFrame;
     if (!ns.initEasies(obj, hasVisited))
         return;
     //----------------
     ns.updateAll(obj);
-    if (!is.multi)
+    if (!is.multi)      // easings and color resize must follow updateAll()
         window.dispatchEvent(new Event(RESIZE));
 
     Object.seal(g);
-    Object.seal(elms);       // can't freeze: color page elms.named is variable
+    Object.seal(elms);  // can't freeze: color page elms.named is variable
 
     const af = new AFrame;
-    af.fpsBaseline()         // discover the device's screen refresh rate
+    af.fpsBaseline()    // discover the device's screen refresh rate
       .then(fps => {
         const rounded = AFrame.fpsRound(fps.value);
         FPS = rounded;
         logBaseline(fps, rounded);
-        if (elms.fps)        // multi and color
+        if (elms.fps)   // multi and color
             elms.fps.textContent = `${rounded}fps`;
-        else                 // easings
+        else            // easings
             elms.frames.title = `@${rounded}fps - for more detail see the Developer Tools console`;
-    }).catch(err =>          // .catch = fpsBaseLine() only, the show can go on
-        errorLog(err, "fpsBaseline() failed")
-     ).finally(() => {       // fade document.body into view
-        let
+      })
+      .catch(err =>     // .catch = fpsBaseLine() only, the show can go on
+        errorLog(err, "fpsBaseline() failed"))
+      .finally(() => {
+        let             // fade document.body into view, P.o == P.opacity
         time = 750,
         ez   = new Easy({time, type:E.expo}),
         ezs  = af.newEasies([ez]),
-        elm  = ns.easeFinally?.(af, ezs, ez, time, is) // color page only
+        elm  = ns.easeFinally?.(af, ezs, ez, time, is)
             ?? document.body;
-        ez.newTarget({elm, prop:P.o});  // opacity
-        af.oneShot = true;   // needs testing, see if (showDialog) below
+        ez.newTarget({elm, prop:P.o});
+        af.oneShot = true;
 
         const showDialog = !hasVisited && is.easings;
         if (showDialog) {
@@ -208,12 +209,12 @@ function loadFinally(is, name, hasVisited, id) {
             dlg.msg.innerHTML =
                 "I suggest you begin by exploring the presets in the "
                 + "<span>Name</span> drop-down at the bottom, left."
-            ;                           // just for this one message:
+            ;           // just for this one message:
             elms.msgBox.style.transitionDelay = "750ms";
             elms.msgBox.showModal();
         }
         af.play()
-          .catch(err => {    // don't alert the user, just display the page
+          .catch(err => { // don't alert the user, just display the page
             errorLog(err, "Fade-in animation failed");
             P.opacity.setIt(elm, ONE);
             P.filter .setIt(elm, "none"); // not all pages require this

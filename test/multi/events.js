@@ -2,20 +2,17 @@ export {loadEvents, set};
 
 import {E, P} from "../../raf.js";
 
-import {timeFrames} from "../update.js";
 import {storeCurrent, setLocal, getLocalByElm, getNamedEasy}
                     from "../local-storage.js";
-import {COUNT, PLAYS, CHANGE, LITE, elms, addEventsByElm, toggleClass}
+import {COUNT, CHANGE, LITE, elms, addEventsByElm, toggleClass}
                     from "../common.js";
 
-import {initEasies}     from "./_load.js";
-import {easys, refresh} from "./_update.js";
+import {measer, easys, refresh}               from "./_update.js";
 import {idsPerEasy, defsPerEasy, objFromForm} from "./_named.js";
 
 const
-LO  = LITE[0],
-EZ_ = "ez-",
-L_G = "linear-gradient(to bottom right, ";
+LO = LITE[0],
+LG = "linear-gradient(to bottom right, ";
 //==============================================================================
 // loadEvents() adds event listeners to source and cloned elements, as they are
 //              not cloned, called by getEasies().
@@ -35,30 +32,46 @@ function loadEvents() {
 const change = {
     easy(evt) {
         helpChange(evt);
-        timeFrames();   	           // each Easy has its own duration
-        if (initEasies(objFromForm()))
-            refresh();
+        objFromForm(true, true);
+        refresh();
     },
     plays(evt) {
         helpChange(evt);
-        storeCurrent(objFromForm());
-    },
-    trip() {
-        storeCurrent(objFromForm());
+        storeCurrent(objFromForm(true));
     },
     eKey(evt) {
         helpChange(evt);
         objFromForm();
-        refresh();     // calls storeCurrent()
+        refresh();
     },
+    trip(evt) {
+        const
+        tar = evt.target,
+        val = tar.value,
+        def = tar.default,
+        isNull = (val == null),
+
+        prev = (val == def) ? !def
+                   : isNull ?  def  // .checked prior to this event
+                            :  def; // null means use default
+        if (prev == val) {          // effectively no change
+            storeCurrent(objFromForm());
+            measer.autoTrip = elseUndefined(!isNull, val);
+        }
+        else {                      // tar.checked changed
+            objFromForm(true);      // calls newTargets()
+            refresh();              // calls storeCurrent()
+        }
+    },
+ // color() is the event handler for <input type="color">, purely cosmetic
     color(evt) {
-        const val = `${L_G}${elms.color0.value}, ${elms.color1.value})`;
+        const val = `${LG}${elms.color0.value}, ${elms.color1.value})`;
         elms.clip.style.backgroundImage = val;
         if (evt)
             setLocal(evt.target, evt.target.value);
     }
 };
-function helpChange(evt) {
+function helpChange(evt) { // helps change.easy/plays/eKey()
     const
     tar = evt.currentTarget,
     id  = tar.id.slice(0, -1),
@@ -73,14 +86,14 @@ function helpChange(evt) {
     easy(i, name = defsPerEasy[0]) {
         const ez = getNamedEasy(name, true); // returns undefined if it fails!!
         easys[i] = ez;
-        toElm(EZ_, PLAYS, i).textContent = ez.plays;
+        elms.ez_plays[i].textContent = ez.plays;
 
         elms.trip[i].default = ez.autoTrip;  // only necessary if (ez.roundTrip)
         P.visible(elms.trip[i], ez.roundTrip);
         return name;
     },
     plays(i, val = defsPerEasy[1]) {  // val = "", "1", "2", or "3"
-        toggleClass(toElm(EZ_, PLAYS, i), LO, Boolean(val))
+        toggleClass(elms.ez_plays[i], LO, Boolean(val))
         return val;
     },
     eKey(i, val = defsPerEasy[2]) {
@@ -97,7 +110,9 @@ function helpChange(evt) {
         });
         return val;
     },
-    trip() {} //!!no longer has anything to do, called exclusively by set.easy()
+    trip(_, val = defsPerEasy[3]) { // only called by formFromObj() default val
+        return val;
+    }
 }
 //====== local helpers =========================================================
 function toElm(prefix, id, i) {

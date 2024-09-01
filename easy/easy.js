@@ -229,7 +229,7 @@ export class Easy {
         let
         orig = this.#lastLeg,
         next = orig.prev,
-        prev = {end:orig.end, unit:orig.unit};
+        prev = {end:orig.end, unit:orig.unit, comp:orig.comp};
 
         this.#lastLeg = this.#reverseLeg(orig, prev, 0, isInc);
         prev = this.#lastLeg;
@@ -256,6 +256,7 @@ export class Easy {
                 Easy.#flipTripLeg(clone);
         }
         clone.unit = leg.prev.unit;
+        clone.comp = leg.prev.comp;
         clone.prev = prev;
         clone.next = undefined;
         clone.wait = wait + (leg.leftover ?? 0);
@@ -316,6 +317,8 @@ export class Easy {
         val = this.#multiPlayTripNoAuto(...[,,Ez.defaultToTrue(val)]);
         this.#autoTrip = val;
     }
+    get autoTripping() { return this.#roundTrip && this.#autoTrip; }
+
     get flipTrip() { return this.#flipTrip; }
     set flipTrip(val) {
         if (!this.isIncremental) {
@@ -351,7 +354,7 @@ export class Easy {
     }
 
     get loopWait()    {
-        return this.#loopWait - this.#stepsLoopWait();
+        return this.#loopWait - this.#stepsLoopWait() || 0;
     }
     set loopWait(val) {
         this.#loopWait = this.#setWait(val, "loopWait") + this.#stepsLoopWait();
@@ -361,38 +364,47 @@ export class Easy {
     }
 
     get tripWait()    {
-        return this.#tripWait - this.#stepsTripWait();
+        return this.#tripWait - this.#stepsTripWait() || 0;
     }
     set tripWait(val) {
         this.#tripWait = this.#setWait(val, "tripWait") + this.#stepsTripWait();
     }
-    #stepsTripWait() {
+    #stepsTripWait() {  //!!is this.#reversed the correct boolean here and below??
         return this.#lastLeg.type == E.steps
              ? this.#lastLeg[this.#reversed ? "wait" : "leftover"]
              : 0;
     }
 
+// this.startTime is the relative start time, after all the waits
+    get startTime() { return this.#wait + this._firstLeg.wait; }
+
 // this.firsTime and this.loopTime return the duration of a single play within
 //               the context of plays > 1, including steps leftovers.
     get firstTime() { return this.#playTime(this.#wait);     }
     get loopTime()  { return this.#playTime(this.#loopWait); }
-    #playTime(wait) { // the duration of one play
-        let val = wait + this.#time;
-        if (this.#roundTrip && this.#autoTrip)
-            val += this.#time + this.#tripWait;
-        return val;
-    }
+
 // this.tripTime is the return trip time for roundTrip && !autotrip
     get tripTime() {
         return this.#time + this.#tripWait;
     }
-// this.duration is for E.steps && (plays == 1 || the last play during playback)
-//               duration <= this.#time, only less than if:
+// this.duration returns the run-time duration of a single play, trims time
+//               leftover by E.steps in the first or last play.
+//               duration < this.#time when:
 //                  E.steps && (roundTrip ? !(jump & E.start) : !(jump & E.end))
-    get duration()  { //!!this.lastTime alias??
-        return this.firstTime
-            - (this.#reversed ? this._firstLeg.wait
-                              : (this.#lastLeg.leftover ?? 0));
+    get duration() {
+        return this._duration(this.firstTime, this.#reversed);
+    }
+//  _duration() makes it more flexible for friendly external use
+    _duration(t, isTripping) {
+        return t - (isTripping ? this._firstLeg.wait
+                               : (this.#lastLeg.leftover ?? 0));
+    }
+//  #playTime() returns the duration of one play for get firstTime, loopTime
+    #playTime(wait) {
+        let val = wait + this.#time;
+        if (this.autoTripping)
+            val += this.#time + this.#tripWait;
+        return val;
     }
 //->total time = (plays == 1 ? 0 : firstTime + (loopTime * (plays - 2)))
 //->           + duration;
@@ -425,9 +437,9 @@ export class Easy {
 //  static #spreadLegTimeCount() consolidates code for #setTimeCount()
     static #spreadLegTimeCount(leg, tc, f) {
         do {
-            leg[tc] *= f;         // leg.time defaults to 0 for E.steps
+            leg[tc] *= f;          // leg.time defaults to 0 for E.steps
             if (tc[0] == "t")
-                leg.wait *= f;    // leg.wait defaults to 0
+                leg.wait *= f;     // leg.wait defaults to 0
         } while((leg = leg.next));
     }
 

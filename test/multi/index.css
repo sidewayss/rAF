@@ -103,8 +103,6 @@ input[type=color] {
   margin:0;
   padding:var(--16th) var(--5-16ths) 0 var(--5-16ths);
   color:var(--dark-blue);
-  background-color: var(--sidebar-white);
-  box-shadow:0 0 2px var(--bg-white) inset;
   border-bottom: var(--border-gray);
 }
 .spacer {
@@ -138,7 +136,6 @@ input[type=color] {
 /* rules for svg tri-state button images */
 .trip {
   margin-left:calc(5ch + 0.25rem);
-  visibility:hidden; /* overridden by javascript */
 }
 .tri {
   width: 36px;

@@ -2,13 +2,13 @@ export {loadPlay, changeStop};
 
 import {E, P} from "../raf.js";
 
-import {ezX, raf} from "./load.js";
+import {raf} from "./load.js";
 import {frameIndex, updateCounters, updateTime, setDuration, prePlay}
-                  from "./update.js";
+             from "./update.js";
 import {MILLI, ZERO, ONE, TWO, LITE, CHANGE, elms, g, toggleClass, errorAlert}
-                  from "./common.js";
+             from "./common.js";
 
-let ns; // _update.js namespace: refresh, formatPlay, postPlay (easings)
+let ns; // _update.js namespace
 //==============================================================================
 // -- Button States --
 // initial: PLAY   STOP  = stop disabled
@@ -43,12 +43,14 @@ function changePlay() {
         disablePlay(true);
         elms.play.value = PAUSE;
         elms.stop.value = STOP;
-        raf.play()
+        raf.play(ns.wait)               // multi has wait
           .then(sts => {                // if (!pausing and !#stop.onclick)
-            if (!resetPlay(sts == E.pausing) || ezX.e.status <= E.tripped) {
-                if (!ezX.e.status)      // E.arrived, not E.tripped
+            const status = ns.status?.() ?? g.easies.status;
+            if (!resetPlay(sts == E.pausing) && status <= E.tripped) {
+                if (!status) {          // E.arrived, not E.tripped
                     elms.play.disabled = true;
-                elms.stop.value = RESET;
+                    elms.stop.value    = RESET;
+                }
                 setDuration(raf.elapsed / MILLI, frameIndex, true);
                 elms.x.value = frameIndex;
                 ns.postPlay?.();        // color doesn't need it //!!multi does

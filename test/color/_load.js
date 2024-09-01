@@ -3,8 +3,9 @@ export {loadIt, getEasies, initEasies, updateAll, easeFinally, resizeWindow,
 
 export let ezColor;
 export const
-easys    = new Array(COUNT),
-refRange = {};
+easys     = new Array(COUNT),
+refRange  = {},
+START_END = ["start","end"];
 
 import Color    from "https://colorjs.io/dist/color.js";
 import {spaces} from "https://colorjs.io/src/spaces/index.js";
@@ -24,11 +25,10 @@ import {refresh}                                  from "./_update.js";
 import {isMulti, loadEvents, timeFactor, getCase} from "./events.js";
 
 let collapsed, controlsWidth, expanded, padding;
-const START_END = ["start","end"];
 //==============================================================================
 // loadIt() is called by loadCommon()
 function loadIt(_, hasVisited) {
-    let css, elm, id, max, obj, opt, rng, space, txt;
+    let bw, css, elm, id, max, obj, opt, rng, space, txt;
     pad.frame = 4;
 
     elm = elms.leftSpaces; // populate leftSpaces <select>:
@@ -66,7 +66,7 @@ function loadIt(_, hasVisited) {
         });
     }
     refRange["--acescg"]     .fill(format.positiveThree); //!!
-    refRange["--xyz-abs-d65"].fill(format.one); //!!
+    refRange["--xyz-abs-d65"].fill(format.one);           //!!
     refRange[Fn.rgb] = new Array(COUNT).fill(format.zero);
 
     const                   // clone leftSpaces to create rightSpaces
@@ -76,25 +76,22 @@ function loadIt(_, hasVisited) {
     elms[sib.id] = clone;   // from reflowing via replaceWith().
     clone.style.marginLeft = sib.style.marginLeft;
     sib.replaceWith(clone);
-                            // initialize elms.type
+                            // initialize elms:
     [EASY_, MEASER_].forEach((v, i) => elms.type.options[i].value = v);
 
-                            // (re)set control values
     const byClass = (v) => Array.from(document.getElementsByClassName(v));
     elms.collapsible = byClass("collapse");
     g.boolBtns       = byClass("boolBtn");
-
     if (hasVisited)
-        getLocalByElm([elm, clone, ...g.boolBtns, elms.type, elms.startInput,
-                                                  elms.time, elms.endInput]);
+        getLocalByElm([elm, clone, ...g.boolBtns, elms.type, elms.startText,
+                                                  elms.time, elms.endText]);
     else {
         elm.selectedIndex = 0;
         clone.value       = "jzczhz";
         elms.type.value   = EASY_;
-    }
-                            // create and populate g.left/right/start/end...
+    }                        // create and populate g.lbl/left/right/start/end...
     const elmsArray = Object.values(elms);
-    for (id of ["left", "right", ...START_END]) {
+    for (id of ["lbl","left","right", ...START_END]) {
         obj = {id};
         for (elm of elmsArray.filter(e => e.id?.startsWith(id)))
             obj[getCase(elm).toLowerCase()] = elm;
@@ -103,17 +100,15 @@ function loadIt(_, hasVisited) {
     pairOfOthers(g.left, g.right);  //!!is g.left|right.other referenced anywhere??
     g.leftRight = [g.left,  g.right];
     g.startEnd  = [g.start, g.end];
-
-    let bw, prop, rgb;
     for (id of START_END) {
-        elm = g[id].canvas;
-        rgb = g[id].rgb.style;
-        obj = elm.getBoundingClientRect();
-        bw  = P.borderWidth.getn(elm);
-        for (prop of ["top","left"])    // these two need border-width offset
-            rgb[prop] = obj[prop] + bw + U.px;
-        for (prop of ["width","height"])
-            rgb[prop] = obj[prop] + U.px;
+        css = g[id].color.style;                // <input type="color">:absolute
+        elm = g[id].canvas;                     // <div>
+        bw  = P.borderWidth.getn(elm);          // border-width offset
+        obj = elm.getBoundingClientRect();      // move color to cover canvas
+        css.width  = obj.width  + U.px;         // canvas always visible
+        css.height = obj.height + U.px;         // color has opacity:0
+        css.left   = obj.left + bw + U.px;      // except on :hover and :active
+        css.top    = obj.top  + bw + bw + U.px; // bw x 2 for margin-top:-1px??
     }
     return loadEvents();
 }
@@ -176,7 +171,7 @@ function initEasies(obj, hasVisited) {  // run the event handlers that populate
 
     evt = dummyEvent(INPUT, LOADING);
     for (lrse of g.startEnd)            // dispatchEvent() avoids im/exports
-        lrse.input.dispatchEvent(evt);  // call input.color() for both
+        lrse.text.dispatchEvent(evt);   // call input.color() for both
 
     const b = newEasies();              // instantiate a new, empty g.easies
     if (b) {                            // ezX added/deleted in newTargets()
@@ -280,7 +275,7 @@ function easeFinally(af, ezs, ez, wait, is) {
 
     let   cjs   = g.left.color;             // cjs can be reset to undefined
     const space = cjs.space;
-    start = Color.to(elms.startInput.value, space).coords.slice();
+    start = Color.to(elms.startText.value, space).coords.slice();
     end   = E.cV;
     if  (elms.leftSpaces.value == Fn.rgb)   // raison de slice():
         start.forEach((_, i) => start[i] *= 255);
