@@ -277,8 +277,9 @@ export class AFrame {
 //==============================================================================
 //  fpsBaseline() runs rAF() with no animation and returns average fps + times
     fpsBaseline(size, max, diff) {
-        const args = ["sampleSize","maxFrames","maxDiff"];
-        const name = `fpsBaseline(${args.join(", ")})`;
+        const
+        args = ["sampleSize","maxFrames","maxDiff"],
+        name = `fpsBaseline(${args.join(", ")})`;
         if (this.isPlaying)
             Ez._cantErr("You", `run ${name} during animation playback`);
         //----------------------------------------------------------------------
@@ -286,21 +287,26 @@ export class AFrame {
         max  = Math.max(1 + size, Ez.toNumber(max,  `${name}: ${args[1]}`, 10));
         diff = Math.max(0,        Ez.toNumber(diff, `${name}: ${args[2]}`,  0.1));
 
-        this.#fps = {size, max, diff, times:[], intervals:[], diffs:[],
+        this.#fps = {size, max, diff,
+                     times:[], intervals:[], diffs:[],
                      status:this.#status};
+
         this.#status  = E.playing;
         this.#frame   = requestAnimationFrame(t => this.#fpsAnimate(t));
         this.#promise = Ez.promise();
         return this.#promise;
     }
-//  #fpsAnimate() is the rAF callback for fpsBaseline()
+//  #fpsAnimate() is the rAF callback for fpsBaseline(). It waits until the
+//                average rate variance is below the fps.diff threshold, along
+//                with sample size and max frames settings.
     #fpsAnimate(timeStamp) {
         let diff, isDone, lt, lv, sample;
-        const fps   = this.#fps;
-        const size  = fps.size;
-        const times = fps.times;
-        const vals  = fps.intervals;
-        const diffs = fps.diffs;
+        const
+        fps   = this.#fps,
+        size  = fps.size,
+        times = fps.times,
+        vals  = fps.intervals,
+        diffs = fps.diffs;
 
         lt = times.length;
         if (lt++) {         // don't run when .length == 0
@@ -342,8 +348,9 @@ export class AFrame {
 //  prior to collecting data, because the time between the first two frames are
 //  rarely reprentative of the device's frame rate.
     gpuTest(min, skip, peri) { // they're used via arguments global array
-        const args = ["min","skip","peri"];
-        const name = `gpuTest(${args.join(", ")})`;
+        const
+        args = ["min","skip","peri"],
+        name = `gpuTest(${args.join(", ")})`;
         if (this.isPlaying)
             Ez._cantErr("You", `run ${name} during animation playback`);
         //------------------

@@ -19,8 +19,8 @@ import {frames, pad, formatNumber, eGet, pseudoAnimate}
 import {clipEnd, clipStart} from "./_load.js";
 import {multiFromObj}       from "./index.js";
 //==============================================================================
-// refresh() called by updateAll(), changeEKey(), changeEasy(), changeStop(),
-//           play.js gets it via dynamic import by update.js.
+// refresh() called by updateAll(), change.eKey(), change.easy(), changeStop(),
+//           play.js gets it via update.js dynamic import.
 function refresh() {
     let down, flip, i, j, l, val;
     for (i = 0, j = 0, l = COUNT; j < l; j++) {

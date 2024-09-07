@@ -8,6 +8,7 @@ refRange  = {},
 START_END = ["start","end"];
 
 import Color from "https://colorjs.io/dist/color.js";
+//import Color from "./dist/color.js";
 
 import {C, U, E, Fn, F, P, Is, Ez, Easy} from "../../src/raf.js";
 import {CFunc} from "../../src/prop/func.js"; //!!need better way to access CFunc.A!!
@@ -42,21 +43,17 @@ function loadIt(_, hasVisited) {
         fromBase: rgb => sRGB.fromBase(rgb).map(n => n * 255 ),
         toBase:   rgb => sRGB.toBase(  rgb .map(n => n / 255)),
         formats: {
-            rgb: {
-            //!!type:"custom",
+            rgb255: {
+                type: "custom",
                 coords:Array(3).fill("<number>[0, 255]"),
-            //!!parse (str) {
-            //!!    return {
-            //!!        spaceId: "rgb255",
-            //!!        coords: /** @type {Coords} */ (rgba.slice(0, 3)),
-            //!!        alpha: /** @type {number} */ (rgba.slice(3)[0]),
-            //!!    };
-            //!!},
-            //!!serialize: (coords, alpha) => {
-            //!!    if (Is.def(alpha))
-            //!!        coords.push(alpha);
-            //!!    return `${Fn.rgb}(${coords.map(n => n.toFixed(0)).join(E.sp)})`;
-            //!!}
+                parse: () => false,
+                serialize: (coords, alpha) => {
+                    coords = coords.map(n => n.toFixed(0)).join(E.sp);
+                    if (Is.def(alpha))
+                        coords += ` / ${alpha}`;
+
+                    return `${Fn.rgb}(${coords})`;
+                }
             }
         }
     }),

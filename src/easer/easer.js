@@ -236,10 +236,8 @@ class EBase {
 //         but has no validation, and is designed only to be called by
 //         Easy.proto.init() and Easies.proto.init=>MEBase.proto.init().
     init(e, isRT) {                  // e is easy.e/[easy.e] for Easer/MEaser
-        if (!this.#cElms) {          // no elms = nothing to apply
-            console.info(Ez._cant("You", "init the target: it has no elements."));
-            return;
-        } //----------------
+        if (!this.#cElms) return;    // no elms = nothing to apply
+        //------------------
         if (this.#loopByElm)
             this.#iElm = 0;
         if (!isRT && this.#initial)

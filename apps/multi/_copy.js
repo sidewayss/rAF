@@ -11,11 +11,12 @@ function copyData(txt, keys) {
     let i, f;
     for (i = 0; i < COUNT; i++)
         txt += copyByKey(keys, i);
-    for (f of frames()) {
+    for (f of frames) {
         txt += copyTime(f);
         for (i = 0; i < COUNT; i++)
             txt += copyFrameByKey(keys, f.x[i]);
     }
+    return txt;
 }
 //==============================================================================
 function copyCode(obj) {

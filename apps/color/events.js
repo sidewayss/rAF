@@ -102,15 +102,14 @@ const change = {
                 updateOne(se, lr);
             refresh();
         }
-        const
+        const                           // get the CSS func or space id
         display = lr.color.display().split(E.func),
         space   = (display[0] == Fn.color) ? display[1].split(E.sp)[0]
                                            : display[0];
-    //!!let css = lr.color.space.cssId;
-    //!!if (css = Fn.srgb)              // nobody uses color(srgb)
-    //!!     css = css.slice(1);
 
-        lr.display.textContent = (space == lr.color.space.cssId) ? "~" : space;
+        lr.display.textContent = (space == lr.color.space.cssId || space == Fn.rgb)
+                               ? "~"    // Color.js srgb displays with rgb()
+                               : space; // the one thing rgb255 cannot customize
         setLocal(tar);
     },
  // type() swaps elms.named, indirectly calls openNamed().

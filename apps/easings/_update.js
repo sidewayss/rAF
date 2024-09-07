@@ -12,7 +12,7 @@ import {E, U, P, Pn, Is, Ez, Easy} from "../../src/raf.js";
 
 import {ezX, raf}              from "../load.js";
 import {MILLI, COUNT, elms, g} from "../common.js";
-import {frames, playZero, targetInputX, inputX, eGet, callbacks, updateFrame,
+import {frames, playZero, newTargetX, inputX, eGet, callbacks, updateFrame,
         pseudoFrame, pseudoAnimate, formatNumber} from "../update.js";
 
 import {objEz, objFromForm}                  from "./_named.js";
@@ -176,7 +176,7 @@ function newTargets(isPseudo) {
 
         ezY.clearTargets();             // not always necessary
         ezX.clearTargets();             // ditto
-        ezX.addTarget(targetInputX);    // test Easy.proto.addTarget()
+        newTargetX();                   // creates/adds elms.x as target
         if (loopByElm) {                // test single-element targets
             let tar;
             arr = [[ezX, P.cx, chart],

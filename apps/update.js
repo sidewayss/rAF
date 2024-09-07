@@ -1,10 +1,9 @@
 export {loadUpdate, inputX, timeFrames, prePlay, updateTime, updateCounters,
         formatNumber, setDuration, eGet, callbacks, updateFrame, pseudoFrame,
-        pseudoAnimate, newEasies};
+        pseudoAnimate, newEasies, newTargetX};
 
 export let
 msecs, secs,    // alternate versions of time, both integers
-targetInputX,   // only imported by easings/_update.js
 frameIndex,     // the current frame
 playZero;       // for measuring time between changePlay() and first frame
 
@@ -34,6 +33,7 @@ import(_update.js): formatDuration, formatFrames, getFrame, getMsecs,
 let ns,           // _update.js namespace
     lastFrame,    // frames.length - 1
     prevLast,     // previous lastFrame for scaling #x.value
+    targetInputX, // for .cutTarget()
     isContinuing; // isLooping || isAutoTripping during animation
 //==============================================================================
 // loadUpdate() is called by loadCommon()
@@ -92,23 +92,23 @@ function prePlay() {
     frameIndex = 0;
 }
 //==============================================================================
+// newTargetX() creates a new Easer and adds it to ezX.targets
+function newTargetX() { // for factor: eKey defaults to E.unit
+    targetInputX = ezX.newTarget({elm:elms.x, prop:P.value, factor:lastFrame});
+}
 // updateTime() is called by change.time(), changeStop(), and updateAll().
-//              !addIt is easings page, doesn't add targetInputX to ezX.targets
-//              because next run is pseudoAnimate() and a different target.
+//              !addIt is easings page that clears all targets prior.
 function updateTime() {
     const f  = prevLast ? elms.x.valueAsNumber / prevLast : 0;
     prevLast = lastFrame; // for next time
 
     elms.x.value = Math.round(f * lastFrame);
     ezX.time     = msecs;
-    const addIt  = !ns.drawLine;
+    const addIt  = !ns.drawLine;     // !easings page
     if (addIt)                       // changing factor requires new target
         ezX.cutTarget(targetInputX); // see newTargets()
 
-    targetInputX = ezX.newTarget(    // for factor: eKey defaults to E.unit
-        {elm:elms.x, prop:P.value, factor:lastFrame},
-        addIt
-    );
+    newTargetX();
 }
 // updateCounters() is called by inputX(), updateFrame(), and changeStop()
 function updateCounters(i = 0, frm = frames[i]) {

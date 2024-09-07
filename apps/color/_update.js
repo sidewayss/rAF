@@ -121,11 +121,8 @@ function updateX(frm) {
         space  = lr.spaces.value;
         coords = frm[lr.id];
         lr.color.coords = coords;
-        if (isCSSSpace(space)) {
+        if (isCSSSpace(space))
             P.bgColor.setOne(lr.canvas, coords, F[space]);
-            if (lr === g.left)
-                console.log(lr.color.display());
-        }
         else
             P.bgColor.setIt(lr.canvas, lr.color.display());
     }
