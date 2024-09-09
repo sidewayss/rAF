@@ -25,6 +25,7 @@ import {refresh}                                  from "./_update.js";
 import {isMulti, loadEvents, timeFactor, getCase} from "./events.js";
 
 let collapsed, controlsWidth, expanded, padding;
+const postIts = [];
 //==============================================================================
 // loadIt() is called by loadCommon()
 function loadIt(_, hasVisited) {
@@ -101,10 +102,12 @@ function loadIt(_, hasVisited) {
 
     const                   // clone leftSpaces to create rightSpaces
     sib   = elm.nextElementSibling,
-    clone = elm.cloneNode(true);
+    clone = elm.cloneNode(true),
+    idx   = g.disables.indexOf(sib);
     clone.id = sib.id       // dummy element contains id and keeps the grid
     elms[sib.id] = clone;   // from reflowing via replaceWith().
     clone.style.marginLeft = sib.style.marginLeft;
+    g.disables.splice(idx, 1, clone);
     sib.replaceWith(clone);
                             // initialize elms:
     [EASY_, MEASER_].forEach((v, i) => elms.type.options[i].value = v);
@@ -231,7 +234,7 @@ function initEasies(obj, hasVisited) {  // event handlers populate the form and
 // newEasy(obj) creates a new Easy(obj), resetting start and end to default.
 // localStorage and presets have {start:0, end:1000} or vice-versa.
 // Better for front-end and copyCode() to go with the default: {start:0, end:1}
-// Two-legged objects require start and end to be scaled.
+// Two-legged objects require start, end, time to be scaled.
 function newEasy(obj, f) {
     let key;
     const isDown = (obj.end != MILLI);
@@ -243,10 +246,11 @@ function newEasy(obj, f) {
     // Scale obj.mid and leg.end|start to 0-1 range
     scaleOne(obj, "mid", isDown);
     if (obj.legs)
-        for (const leg of obj.legs)
+        for (const leg of obj.legs) {
+            leg.time = scaleTime(leg, f);
             for (key of START_END)
                 scaleOne(leg, key, isDown);
-
+        }
     // Scale time to match elms.time and set roundTrip
     obj.time      = f ? Math.round(obj.time * f) : msecs;
     obj.roundTrip = orUndefined(elms.roundT.value);
@@ -259,6 +263,9 @@ function newEasy(obj, f) {
 
     try         { return new Easy(obj); }
     catch (err) { errorAlert(err);    }
+}
+function scaleTime(obj, f) {
+    return f ? Math.round(obj.time * f) : msecs;
 }
 function scaleOne(obj, key, isDown) {     // helps newEasy()
     if (Is.def(obj[key])) {
@@ -278,8 +285,9 @@ function updateAll() { // identical to multi updateAll()
 //!!E.cV overlap (in)efficiency?? Maybe not "fix" it, but at least document it.
 //!!units based on current value?? Good idea. Somewhat "unstructured"-like.
 function easeFinally(af, ezs, ez, wait, is) {
-    let end, ez2, ez3, mask, prop, start, time,
-    elm = elms.controls;
+    let end, ez2, ez3, mask, start, time,
+    elm  = elms.controls,
+    prop = P.filter;
 
     af.initZero = true;
     ez.newTarget({prop:P.o, elm});          // #controls opacity 0-1
@@ -287,7 +295,7 @@ function easeFinally(af, ezs, ez, wait, is) {
     start = E.currentValue;                 // body filter
     time  = 400;
     ez    = new Easy({wait, time});
-    ez.newTarget({start, end:1, prop:P.filter, elm:document.body, set:E.net});
+    ez.newTarget({start, end:1, prop, elm:document.body, set:E.net});
     ezs.add(ez);
 
     wait += 200;                           // everything return to original
@@ -303,8 +311,8 @@ function easeFinally(af, ezs, ez, wait, is) {
     ezs.add(ez);                            // contrast
     ezs.add(ez2);                           // saturation, blur
     ezs.add(ez3);                           // drop-shadow blur
-    ezs.newTarget({start, end:[1, 0, 1, 0], prop:P.filter, elm, set:E.net,
-                         mask:[0, 1, 2, 8], easies:[ez2, ez2, ez, ez3]});
+    ezs.newTarget({end:[1, 0, 1, 0], start, prop, elm,
+                  mask:[0, 1, 2, 8], easies:[ez2, ez2, ez, ez3], set:E.net});
     // drop-shadow blur moves from 5 to 8 via getComputedStyle(rgb(), ...)
 
     let   cjs   = g.left.color;             // cjs can be reset to undefined
@@ -335,20 +343,29 @@ function easeFinally(af, ezs, ez, wait, is) {
     prop = P.accentColor;                   // #time, #x again
     end  = Color.to(prop.getOne(elm[0]), space).coords;
     ez.newTarget({cjs, start, end, prop, elm});
+    postIts.push(...elm.map(lm => [prop, lm]));
 
     prop = P.borderColor;                   // alpha = borderOpacity
     mask = C.alpha;                         // mask as bitmask integer
     elm  = Array.from(document.getElementsByClassName("border-gray"));
     end  = prop.getn(elm[0])[CFunc.A];      // --border-gray: #0002;
-    elm.push(is.multi ? elms.multis : elms.easys);
+    elm.push(elms.named);
     ez.newTarget({end, prop, elm, mask});   // start:0
+    postIts.push(...elm.map(lm => [prop, lm]));
 
     elm = [elms.controls, elms.startCanvas, elms.endCanvas];
     ez.newTarget({prop, elm, mask});        // start:0, end:1
+    postIts.push(...elm.map(lm => [prop, lm]));
+
     ezs.add(ez);
     ezs.add(ez2);
-
+    ezs.post = postFinally;
     return elms.canvas;
+}
+function postFinally() {
+    for (const [prop, elm] of postIts)
+        prop.cut(elm);
+    postIts.length = 0;
 }
 //==============================================================================
 // resizeWindow() additionally called by click.collapse()

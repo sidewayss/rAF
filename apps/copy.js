@@ -1,19 +1,21 @@
-export {loadCopy, easyToText, multiToText, copyTime, copyByKey, copyFrameByKey,
-        rgxPropertyValue};
+export {loadCopy, easyToText, multiToText, jsonToText, nameToJS, newRaf,
+        copyTime, copyByKey, copyFrameByKey, rgxPropertyValue};
 
 import {E, Is, P, Easy, Easies, AFrame} from "../src/raf.js";
 
-import {getNamedObj, isNamedSteps} from "./local-storage.js";
+import {D}           from "./update.js";
+import {getNamedObj} from "./local-storage.js";
 import {MILLI, CLICK, EASY_, elms, addEventsByElm, errorAlert, errorLog}
-        from "./common.js";
+                     from "./common.js";
 
 import {TYPE, IO}     from "./easings/index.js";
-import {EASY, TIMING} from "./easings/steps.js";
+import {EASY, TIMING, isSteps} from "./easings/steps.js";
 
 let ezCopy, ns, ns_named, rafCopy;
 const
-EZ     = "ez", // default variable name for Easys
-IMPORT = 'import {E, F, P, Easy, Easies, AFrame} from "[path]/raf.js";\n';
+EZ      = "ez",     // default variable name for Easys
+IMPORT  = 'import {E, F, P, Easy, Easies, AFrame} from "[path]/raf.js";\n',
+ezNames = new Set;  // shared across multi easyes
 //==============================================================================
 function loadCopy(dir, _named) {
     ns_named = _named;
@@ -67,50 +69,51 @@ function copyFrameByKey(keys, f) {
 }
 //==============================================================================
 // copyCode() helpers
-function easyToText(name, obj, isSteps, varName = nameToJS(name)) {
-    let isMulti, isRecursion;
-    const
-    noObj  = !obj,
-    isEasy = Is.def(isSteps);  // easings page has extra features
-
-    if (noObj) {
-    // Leaves plays, roundTrip, etc, that are deleted by color page, intact
-        obj = getNamedObj(name, EASY_);
-        delete obj.start;
-        delete obj.end;
+function easyToText(name, obj, varName = nameToJS(name), isMulti = !Is.def(obj),
+                    isStp) { // isStp only defined by recursive call below
+    if (!obj) {
+        obj = getNamedObj(name, EASY_);           // leaves intact roundTrip,
+        delete obj.start;                         // plays, and other properties
+        delete obj.end;                           // that color page deletes.
         if (obj.mid)
-            obj.mid /= MILLI;
-        else if (obj.legs) {
-            const mid = legs[0].end / MILLI;
-            leg[0].end   = mid;
-            leg[1].start = mid;
+            obj.mid /= MILLI;                     // chart is MILLI x MILLI
+        else if (obj.legs) {                      // default Easy is 0 to 1
+            obj.legs[0].end /= MILLI;             // leg[1].start = leg[0].end
+            const legs = obj.legs;                //!!to-be-deleted: 6 lines, top brace
+            if (Is.def(legs[1].start)) {
+                delete legs[1].start;
+                console.log("leg start!");
+            }
         }
-        isMulti = !isEasy;
     }
-    let str = jsonToText(obj);
+    let txt = jsonToText(obj);
     for (const p of [TYPE, IO, "jump"])           // replace numbers with E.name
-        str = str.replace(rgxPropertyValue(p),    // e.g. "7" = "E.pow"
+        txt = txt.replace(rgxPropertyValue(p),    // e.g. "7" = "E.pow"
                           (m, v) => `${p}:${E.prefix}${Easy[p][v]}${m.at(-1)}`);
 
-    let txt = nameToText(varName, str);
-    if (!isEasy) {                                // multi, color
-        isSteps = isNamedSteps(str, true);
-        if (!isMulti)                             // color
-            txt += `${name}.newTarget(${jsonToText(obj)});\n`;
-    }
-    if (isSteps) {
+    txt = `const ${varName} = new Easy(${txt});\n`
+    if (isStp ?? isSteps(obj.type)) {
+        if (!isMulti)
+            ezNames.clear();
         for (const p of [TIMING, EASY])           // recursion only once because
             if (txt.includes(p + ":")) {          // <select>s are steps-free:
                 const val = txt.match(rgxPropertyValue(p))[1];
-                if (!val.startsWith("["))         // timing can be an array
-                    txt = easyToText(val, null, false) + txt;
+                if (!val.startsWith("[")) {       // timing can be an array
+                    varName = nameToJS(val);
+                    txt = txt.replace(val, varName);
+                    if (!ezNames.has(varName)) {  //      isMulti, isStp
+                        txt = easyToText(val, null, varName, true, false) + txt;
+                        ezNames.add(varName);
+                    }
+                }
             }
     }
-    return noObj ? txt : IMPORT + txt;
+    return isMulti ? txt : IMPORT + txt;
 }
 function multiToText(obj, fromObj) {
     let   txt  = IMPORT;
     const vars = [];
+    ezNames.clear();
     obj.easy.forEach(name => {
         if (!name)                  // DEFAULT_NAME = ""
             name = EZ;              // the variable must have a name
@@ -121,17 +124,21 @@ function multiToText(obj, fromObj) {
     });
     txt += `const easies = new Easies([${vars.join()}]);\n`
         +  "const measer = easies.newTarget("
-        +  jsonToText(fromObj(vars))
+        +  jsonToText(fromObj(vars), D)
         +  ");\nconst raf = new AFrame(easies);\n";
     return txt;
 }
 function rgxPropertyValue(p) {
     return new RegExp(`${p}:(.*?)[,|}]`);
 }
-//======================== not exported:
-function jsonToText(obj) {
-    return JSON.stringify(obj).replaceAll('"', '')
-                              .replaceAll(',', ', ');
+function jsonToText(obj, precision) {  // precision is for targets, not easys
+    const str = !Is.def(precision)
+              ? JSON.stringify(obj)
+              : JSON.stringify(obj, (_, v) =>
+                    v.toFixed ? Number(v.toFixed(precision)): v
+                );
+    return str.replaceAll('"', '')
+              .replaceAll(',', ', ');
 }
 // nameToJS() helps easyToText() convert a name to a JavaScript variable name
 function nameToJS(name) {
@@ -144,6 +151,11 @@ function nameToJS(name) {
     else
         return EZ;
 }
-function nameToText(name, str) { // ditto
-    return `const ${name} = new Easy(${str});\n`;
+// newRaf() consolidates these strings
+function newRaf(name, flag) {
+    const
+    start = `const raf = new AFrame({targets:new Easies(${name})`,
+      end = "});\n";
+
+    return flag ? {start, end} : start + end;
 }

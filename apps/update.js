@@ -74,7 +74,7 @@ function timeFrames(time = ns.getMsecs()) {
 // setDuration() is where the duration and frames separate from msecs/secs/time,
 //               called by timeFrames(t), changePlay(t, last), changeStop().
 function setDuration(t = secs, last) {
-    let dur = t
+    let dur = t;
     if (!last) {
         if (ns.calcDuration)
             dur = ns.calcDuration(t);

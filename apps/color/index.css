@@ -19,10 +19,12 @@ state-button[disabled] {
   fill   :#CCC;
   stroke :#CCC;
 }
-/* duplicated in multi/index.css */
-select, label, pre {
-  font-weight:400;
+
+select:hover:not(:disabled) {
+  background-color:white;
+  border-color:var(--line-gray);
 }
+
 #x {
   flex-grow: 1;
   width:auto;
@@ -144,11 +146,18 @@ input[type=text]:focus {
 #time {
   width: 3.5rem; /* was 7ch font-size increased, should be 5.833ch now */
   flex-grow: 1;
-  margin-left:0.5rem;
 }
 #type {
-  border: none;
-  outline:none;
+  border-color:transparent;
+  background:transparent;
+}
+#type:hover { /* dup of select:hover in common.css, but more specific */
+  background-color:white;
+  border-color:var(--line-gray);
+}
+#type:active:hover,
+select:active:hover {
+  color:black;
 }
 #share {
   font-size:calc(1.5rem - var(--8th));
@@ -164,10 +173,14 @@ input[type=text]:focus {
 .symBtn:disabled {
   background-color:transparent;
 }
-button:hover:not(:disabled),
-button:active:hover {
+button:hover:not(:disabled) {
   color:black; /* overwrites common.css for both selectors */
   background-color:#DDD;
+}
+button:active:hover {
+  color:black; /* overwrites common.css for both selectors */
+  background-color:white;
+  box-shadow: 1px 1px 1px var(--line-gray) inset;
 }
 /* <state-button> overrides - #play, #stop */
 state-button:hover {

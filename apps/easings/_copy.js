@@ -1,13 +1,15 @@
 export {copyCode, copyData};
 
 import {frames} from "../update.js";
-import {easyToText, copyByKey, copyFrameByKey, copyTime}
+import {elms}   from "../common.js";
+import {easyToText, newRaf, copyByKey, copyFrameByKey, copyTime}
                    from "../copy.js";
 
 import {rafChecks}    from "./_load.js";
 import {isInitZero}   from "./_update.js";
 import {shallowClone} from "./events.js";
-import {isSteps}      from "./steps.js";
+
+const rafDefaults = [false, true, false]; // see rafChecks() and copyCode()
 //==============================================================================
 function copyData(txt, keys) {
     txt += "\ty" + copyByKey(keys);
@@ -18,18 +20,21 @@ function copyData(txt, keys) {
 //==============================================================================
 // copyCode() does extra work for the AFrame properties on this page
 function copyCode(obj) {
+    let chkd, txt;
     const
     name = "easy",                  // already a valid javascript variable name
-    chks = isInitZero()
+    raf  = newRaf(name, true),
+    ids  = isInitZero()
          ? rafChecks.slice()
          : rafChecks.slice(0, -1)   // initZero doesn't apply
 
-    let txt = `const raf = new AFrame({targets:new Easies(${name})`;
-    for (const id of chks)          // add comma-separated properties
-        if (elms[id].checked)
-            txt += ", " + id + ":true";
-    txt += "});\n";                 // close the declaration
+    txt = raf.start;
+    ids.forEach((id, i) => {        // add comma-separated properties
+        chkd = elms[id].checked;
+        if (chkd != rafDefaults[i])
+            txt += `, ${id}:${chkd.toString()}`;
+    });
+    txt += raf.end;                 // close the declaration
 
-    return easyToText(name, shallowClone(obj), isSteps(obj.type), name)
-         + txt;
+    return easyToText(name, shallowClone(obj), name, false) + txt;
 }

@@ -174,7 +174,7 @@ function loadFinally(is, name, hasVisited, id) {
     //----------------
     ns.updateAll(obj);
     if (!is.multi)      // easings and color resize must follow updateAll()
-        window.dispatchEvent(new Event(RESIZE));
+        window.dispatchEvent(dummyEvent(RESIZE, "hasntVisited", !hasVisited));
 
     Object.seal(g);
     Object.seal(elms);  // can't freeze: color page elms.named is variable
@@ -197,8 +197,7 @@ function loadFinally(is, name, hasVisited, id) {
         time = 750,
         ez   = new Easy({time, type:E.expo}),
         ezs  = af.newEasies([ez]),
-        elm  = ns.easeFinally?.(af, ezs, ez, time, is)
-            ?? document.body;
+        elm  = ns.easeFinally?.(af, ezs, ez, time, is) ?? document.body;
         ez.newTarget({elm, prop:P.o});
         af.oneShot = true;
 
@@ -212,6 +211,7 @@ function loadFinally(is, name, hasVisited, id) {
             ;           // just for this one message:
             elms.msgBox.style.transitionDelay = "750ms";
             elms.msgBox.showModal();
+            elms.msgBox.style.width = "";
         }
         af.play()
           .catch(err => { // don't alert the user, just display the page
@@ -270,27 +270,29 @@ function loadFinally(is, name, hasVisited, id) {
 }
 //==============================================================================
 // logBaseline is not strictly necessary, but I think it's still useful
+const DECIMALS = 6; // milliseconds to 6 decimal places = nanoseconds, fwiw
 function logBaseline(fps, rounded) {
-    const rounding = rounded - fps.value;
-    const decimals = 6; // milliseconds to 6 decimal places = nanoseconds
-    const digits1  = fps.value >= 100 || rounded >= 100 ? 3 : 2;
-    const digits2  = digits1 + 1 + decimals;
-    const frames   = fps.times.length;
+    const
+    rounding = rounded - fps.value,
+    digits1  = fps.value >= 100 || rounded >= 100 ? 3 : 2,
+    digits2  = digits1 + 1 + DECIMALS,
+    frames   = fps.times.length;
+
     console.log(
         "frames:  ", formatNumber(frames,    digits1),
       "\nrounded: ", formatNumber(rounded,   digits1) + "fps",
-      "\nvalue:   ", formatNumber(fps.value, digits2, decimals),
-      "\nrounding:", formatNumber(rounding,  digits2, decimals),
+      "\nvalue:   ", formatNumber(fps.value, digits2, DECIMALS),
+      "\nrounding:", formatNumber(rounding,  digits2, DECIMALS),
       "\n-------------------",
-      "\nms/frame:", formatNumber(fps.msecs, digits2, decimals),
-      "\nmax diff:", formatNumber(fps.diff,  digits2, decimals),
-      "\nrange:   ", formatNumber(fps.range, digits2, decimals),
-      "\nsample:   ", fps.sample   .map(roundTo6),
-      "\ndiffs:    ", fps.diffs    .map(roundTo6),
-      "\nintervals:", fps.intervals.map(roundTo6),
-      "\ntimes:    ", fps.times    .map(roundTo6)
+      "\nms/frame:", formatNumber(fps.msecs, digits2, DECIMALS),
+      "\nmax diff:", formatNumber(fps.diff,  digits2, DECIMALS),
+      "\nrange:   ", formatNumber(fps.range, digits2, DECIMALS),
+      "\nsample:   ", fps.sample   .map(roundBaseline),
+      "\ndiffs:    ", fps.diffs    .map(roundBaseline),
+      "\nintervals:", fps.intervals.map(roundBaseline),
+      "\ntimes:    ", fps.times    .map(roundBaseline)
     );
 }
-function roundTo6(n) { // helps logBaseline()
-    return Number(n.toFixed(6));
+function roundBaseline(n) { // helps logBaseline()
+    return Number(n.toFixed(DECIMALS));
 }

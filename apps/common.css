@@ -123,19 +123,25 @@ select:focus, select:hover,
 input:focus,  input:hover {
   z-index:1; /* helps with overlapping or adjacent borders and outline */
 }
-button:focus-visible,
 select:focus-visible,
+button:focus-visible,
 input[type=color]:focus-visible {
   border-color: transparent;
   outline-style:solid;
 }
+select:active:hover,
 button:active:hover,
-select:active,
 input[type=color]:active:hover {
   color:var(--medium-blue);
-  background-color:#DDDDE7;
   border-color: var(--dark-blue);
   outline-style:none;
+}
+select:active:hover {
+  background-color:transparent;
+}
+button:active:hover,
+input[type=color]:active:hover {
+  background-color:#DDDDE7;
 }
 
 /* <input type=range> - does not apply to multi */
@@ -288,7 +294,7 @@ state-button.hi {
 .ml1ch  { margin-left:   1ch;  }
 .ml0    { margin-left:   0; }
 
-input.mt1px { margin-top: 1px; }
+.mt1px, input.mt1px { margin-top: 1px; }
 
 .pt5-8  { padding-top:   var(--5-8ths);  }
 .pt3-8  { padding-top:   var(--3-8ths);  }

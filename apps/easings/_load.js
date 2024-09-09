@@ -170,7 +170,7 @@ function updateAll() {  // called by loadFinally(), openNamed()
 //                weird anyway...
 //                Safari doesn't auto-size <svg> within <div>, gotta do it here.
 //                Resizing is stuttering in my tests. I should throttle it...
-function resizeWindow() {
+function resizeWindow(evt) {
     const
     innerW = window.innerWidth,
     innerH = window.innerHeight;
@@ -231,9 +231,9 @@ function resizeWindow() {
        - (elms.copied.offsetWidth / 2);
     elms.copied.style.left = n + U.px;
 
-    // Move #msgBox towards the top of the chart and limit its width
     const rect = chart.svg.getBoundingClientRect();
-    elm = elms.msgBox.style;
+    elm = elms.msgBox.style;                // Move #msgBox nearer top of chart
     elm.top = rect.top + (rect.height / 4) + U.px;
-    elm.width = rect.width / 2 + U.px;
+    if (evt.hasntVisited)                   // limit !hasVisited dialog width
+        elm.width = rect.width / 2 + U.px;
 }

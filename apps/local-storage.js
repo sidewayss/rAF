@@ -1,7 +1,7 @@
 // export everything
 export {getNamed, getNamedEasy, getNamedObj, getNamedString, getNamedBoth,
         getLocalNamed, getLocalByElm, getLocal, setLocal, setNamed,
-        storeCurrent, setLocalBool, isNamedSteps};
+        storeCurrent, setLocalBool};
 
 import {E, Is, Ez, Easy} from "../src/raf.js";
 
@@ -30,7 +30,7 @@ function getNamed(sel = elms.named, prefix = preClass, defText = DEFAULT,
     while ((key = localStorage.key(i++))) { // collect the local names:
         if (key.startsWith(prefix)) {         // localStorage has no querying
             val = localStorage.getItem(key);  // for a single prefix/document.
-            if (getAll || !isNamedSteps(val))
+            if (getAll || !val.includes('"type":9'))
                 local.push(key.slice(lenPre));
         }
     }
@@ -47,10 +47,6 @@ function getNamed(sel = elms.named, prefix = preClass, defText = DEFAULT,
     opt.text  = defText;        // DEFAULT or LINEAR
 //!!}
     return sel;
-}
-// isNamedSteps() searches a JSON or modified-JSON string for type:E.steps
-function isNamedSteps(str, isCopy) {
-    return str.includes(isCopy ? "type: 9" : '"type":9');
 }
 //==============================================================================
 // getNamedEasy() returns an Easy instance for a named item. Multi/color pages
@@ -69,7 +65,7 @@ function getNamedEasy(name, isMulti) {
 //                order, localStorage can override a preset of the same name.
 function getNamedObj(name, pre = preClass) {
     return JSON.parse(getLocalNamed(name, pre))
-                   ?? Ez.shallowClone(g.presets[pre][name]);
+                   ?? clonePreset(g.presets[pre][name]);
 }
 // getNamedString() returns a stringified JSON object, called by storeCurrent(),
 //                  loadFinally(), openNamed(), easyToText()
@@ -82,7 +78,7 @@ function getNamedBoth(name) {
     if (str)
         obj = JSON.parse(str);
     else {                      // presets = g.presets[preClass]
-        obj = Ez.shallowClone(presets[name]);
+        obj = clonePreset(presets[name]);
         str = JSON.stringify(obj);
     }
     return [str, obj];
@@ -103,6 +99,12 @@ function getLocalByElm(elms) {
         if (val !== null)
             elm.value = val;
     }
+}
+function clonePreset(obj) {
+    const clone = Ez.shallowClone(obj);
+    if (clone.legs)
+        clone.legs = clone.legs.map(leg => Ez.shallowClone(leg));
+    return clone;
 }
 //==============================================================================
 // setLocal() called by setLocalBool(), multi changeColor()

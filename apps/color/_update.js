@@ -2,7 +2,7 @@ export {refresh, initPseudo, newTargets, newTar, getMsecs, getFrame, updateX,
         setCounters, formatDuration, oneCounter};
 export const formatFrames = true;   // see setDuration()
 
-import {E, U, Is, F, Fn, P, Ez} from "../../src/raf.js";
+import {E, U, Is, F, P, Ez} from "../../src/raf.js";
 
 import {ezX}            from "../load.js";
 import {COUNT, elms, g} from "../common.js";

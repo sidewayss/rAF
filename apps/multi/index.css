@@ -32,9 +32,6 @@ p.lo, span.lo {
   p { line-height:calc(1rem + var(--8th)) }
 }
 
-select, label, pre {
-  font-weight:400;
-}
 select {
   color:var(--dark-blue);
 }
