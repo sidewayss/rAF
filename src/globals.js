@@ -22,8 +22,8 @@ const Is = {           // boolean functions wrapped in a const, very inlineable
     def     (v) { return v !== undefined;  },
     Number  (v) { return typeof v == "number"; },
     String  (v) { return typeof v == "string"; },
-    Element (v) { return v?.tagName  !== undefined; },
-    CSSRule (v) { return v?.styleMap !== undefined; },
+    Element (v) { return v?.tagName  !== undefined; },      //??avoiding instanceOf??
+    CSSRule (v) { return v?.selectorText !== undefined; },  //??is it worth it??
     SVG     (v) { return v instanceof SVGElement; },
     A       (v) { return Array.isArray(v); },
     A2      (v) { return Array.isArray(v) && v.some(a => Array.isArray(a)); },

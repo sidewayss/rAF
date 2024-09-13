@@ -8,7 +8,7 @@ import {ezX, raf}          from "../load.js";
 import {getLocal}          from "../local-storage.js";
 import {formatInputNumber} from "../input-number.js";
 import {pad, newEasies, updateTime, updateCounters}         from "../update.js";
-import {COUNT, CHANGE, INPUT, elms, dlg, g, is, dummyEvent} from "../common.js";
+import {COUNT, CHANGE, INPUT, elms, g, is, dummyEvent} from "../common.js";
 
 import {chart, range, refresh, syncZero}         from "./_update.js";
 import {initEzXY, updateTrip}                    from "./index.js";

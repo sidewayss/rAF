@@ -1,18 +1,64 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>rAF/test</title>
+    <title>rAF Apps</title>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <link rel="stylesheet" href="index.css"/>
   </head>
-  <body>
-    <h1>rAF Test/Demo Apps</h1>
-    <h3>There are three apps available:</h3>
-    <a class="bullet" href="./easings">Easings</a>
-    <a class="bullet" href="./multi"  >Multi-Ease</a>
-    <a class="bullet" href="./color"  >Color</a>
-    <h2>Easings</h2>
-    <h2>Multi-Ease</h2>
-    <h2>Color</h2>
+  <body style="display:flex; flex-direction:column; align-items:center;">
+<!--<h1><object data="/raf/rAFoffset.svg" type="image/svg+xml" style="width:180px; height:180px; border:none;"></object>Apps</h1>-->
+    <div style="display:flex; flex-direction:column; width:33%;">
+      <div style="display:flex; align-items:center;">
+        <object data="/raf/rAFoffset.svg" type="image/svg+xml" style="width:180px; height:180px;"></object>
+        <h1>Apps</h1>
+      </div>
+      <p>These apps were initially conceived for testing the library; then as a way to demonstrate the library; then as a way to generate JavaScript animation code to help fill in for the lack of formal documentation. They all contain Copy Data buttons that copy tabular animation data to the clipboard for analysis and testing. To the right of that button is the Copy Code button, which generates JavaScript code for user-configured animation and copies it to the clipboard.</p>
+      <h2>There are three apps available:</h2>
+      <p class="bullet">&#x25CF;&ensp;<a class="bullet" href="/raf/apps/easings">Easings</a><span>&#x2004;are timing functions that can be chained.</span></p>
+      <p class="bullet">&#x25CF;&ensp;<a class="bullet" href="/raf/apps/multi">Multi-Ease</a><span>&#x2004;is multiple easings applied to a single property.</span></p>
+      <p class="bullet">&#x25CF;&ensp;<a class="bullet" href="/raf/apps/color">Color</a><span>&#x2004;applies easings and multi-eases to CSS and Color.js colors.</span></p>
+
+      <h2 id="easings">Easings</h2>
+      <img src="/raf/img/easings.jpg"/>
+      <p>The Easings app is not for most mobile devices. At or below 675px wide by 749px tall it reduces its size to 75% and bottoms out there.</p>
+      <p>This app allows you to design one or two-legged timing patterns. Timing functions include standard CSS and JQuery functions, with several enhancements. Steps functions are significantly enhanced, with the ability to apply a non-steps easing function to the steps values, timing, or both.  Instead of the JQuery model of separate functions for exponents 2-5, rAF lets you specify any number that the <span class="code">Math.pow()</span> function accepts. And more...</p>
+      <p>The chart is a 1000 x 1000 SVG canvas. You'll note that the Start and End fields generally display either 0 or 1000, reflecting the Y axis value in the chart, the animated value. The X axis is time.</p>
+      <p>What follows is in the terminology of rAF, which is not the same as the labels in the app, but they are similar enough and the text is organized around the app's layout.</p>
+      <p>There are 4 Round Trip properties:
+        <br>&emsp;3 booleans: <span class="code">roundTrip flipTrip autoTrip</span>
+        <br>&emsp;1 number: <span class="code">tripWait</span>
+      </p>
+      <p><span class="code">roundTrip</span> turns the feature on or off and enables or disables the other 3 properties.</p>
+      <p><span class="code">flipTrip</span> defaults to true, wherein the return aka inbound trip follows the same line as the outbound trip. Setting flipTrip to false causes the inbound trip's line to mirror the outbound trip. Give it a try with any <span class="code">type</span> other than <span class="code">linear</span>, and the chart will illustrate it clearly. It has no effect on linear.</p>
+      <p><span class="code">autoTrip</span> also defaults to true, wherein the animation automatically executes the inbound trip after the outbound trip ends.  The more unusual setting is false, where the animation stops at the end of the outbound trip, but stays in that state so the user can initiate the return trip. You cannot combine <span class="code">autoTrip</span> = false with <span class="code">plays</span> = greater than 1.</p>
+      <p><span class="code">tripWait</span> is the number of milliseconds to wait between the end of the outbound trip and the start of the inbound trip.  It affects <span class="code">autoTrip</span> = false too, acting the same as the <span class="code">Easy.prototype.wait</span> property does for the outbound trip. (The <span class="code">wait</span> property is not included in this app as there are already too many inputs and it's easily tested.)</p>
+      <p><span class="code">plays</span> is the number of times the animation plays. It is a minimum of 1. The app limits it to a max of 3.</p>
+      <p><span class="code">plays</span> and <span class="code">loopByElm</span> share a drop-down and a property: <span class="code">loopWait</span> is the number milliseconds between plays or loops by element.</p>
+      <p><span class="code">loopByElm</span> is a boolean that causes the animation to loop one element at a time.</p>
+      <p><span class="code">frameZero</span> is in the app for testing only. It's a fine detail of a setting that I'm not going to explain here now. If you're really curious look at the code in <span class="code">aframe.js</span>, which has some explanatory comments.</p>
+      <p><span class="code">useNow</span> uses <span class="code">performance.now()</span> as its time source instead of the <span class="code">requestAnimationFrame()</span> timestamps and <span class="code">document.timeline.currentTime</span>.</p>
+
+      <h2 id="multi">Multi-Ease</h2>
+      <p>The Multi-Ease app is designed to be used on recent mobile devices as well as desktops. Baseline size is ....</p>
+      <p>This app allows you to configure animations where you choose a separate timing pattern for each argument in a CSS property or function. It is fixed at 3 timing patterns, which is enough to test, demonstrate, and create starting point code. It animates the CSS <span class="code">clip-path</span> property using the <span class="code">polygon()</span> function. Multi-eases can apply to properties/functions that have multiple arguments, or to "unstructured" properties/functions such as gradients and shapes.</p>
+
+      <h2 id="color">Color</h2>
+      <p>The Color app is designed to be used on recent mobile devices as well as desktops. Baseline size is ....</p>
+      <p>This app allows you to configure and view color animations using CSS and <a href="https://colorjs.io">Color.js</a> color spaces. You can assign any preset or user easing or multi-ease to the animation. In addition it offers a side-by-side comparison mode where you can compare the same animation for two color spaces.</p>
+
+      <h2 id="common-features">Common Features</h2>
+      <p>All the apps have tooltips for most of the controls. They are enabled by hovering the mouse pointer over the control. If you only have a touch interface then you'd be out of luck were it not for this bit of documentation. The tooltips are implemented in the standard way, as <span class="code">title</span> attribute values.</p>
+      <img src="/raf/img/playback.jpg"/>
+      <p>The playback and time navigation controls are quite standard. Two playback buttons that default to Play and Stop. They change icons during playback to Pause/Resume and Reset. The slider aka range control navigates time when playback is idle. During playback it animates, but is disabled for user control.</p>
+      <img src="/raf/img/named+copy.jpg" style="margin-top:0.75rem"/>
+      <p>All the apps have one or more drop-down lists for selecting a named easing or multi. In the Easings and Multi apps the primary one is labeled Name. For steps, Easings has two more such drop-downs, one for Timing, the other for Values. Multi has three of them labeled Easy.  In the Color app they are labeled Easy and Multi.</p>
+      <p>These drop-downs contain presets supplied by the app. In Easings and Multi you can and user-defined configurations as well. Those are saved to <span class="code">localStorage</span>. They are all available in Color, but Color does not have a save button to save its own settings.</p>
+      <p>In Easings and Multi, there are 4 buttons that accompany the primary dropdown: Save, Revert to last saved, Revert to preset value, Delete user configuration (can't delete presets).</p>
+      <p>There are two Copy buttons: Data and Code. Copy Data copies the currently displayed animation or pseudo-animation's data, by frame, to the clipboard. The clipboard data includes one row of text headers. The first column is always time. After that it varies by app. I use this feature to validate timing functions in a spreadsheet. I paste the data in and spread forumulas around to validate the numbers.</p>
+      <p>Copy Code generates starting point code for implementing the current animation, and copies it to the clipboard. I hope this helps users get started using and learning rAF. Custom examples is a nice way to get started, at least that's my hope.</p>
+
+      <p>If you're curious about the way rAF estimates the device/browser frame rate, open the Developer Tools console.  All the apps log the frame timing data and summaries used by  <span class="code">AFrame.prototype.fpsBaseline()</span> in the calculation. The JavaScript code that runs it is in <span class="code">/apps/load.js/loadFinally()</span>. I say "device/browser" frame rate because some devices don't make all their frame rates available to the browser.  My current Android phone is an example of that.</p>
+
+    </div>
   </body>
 </html>

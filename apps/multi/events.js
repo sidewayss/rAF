@@ -2,6 +2,7 @@ export {loadEvents, set};
 
 import {E, P} from "../../src/raf.js";
 
+import {updateTime} from "../update.js";
 import {storeCurrent, setLocal, getLocalByElm, getNamedEasy}
                     from "../local-storage.js";
 import {COUNT, CHANGE, LITE, elms, addEventsByElm, toggleClass}
@@ -30,37 +31,21 @@ function loadEvents() {
 }
 //==============================================================================
 const change = {
-    easy(evt) {
-        helpChange(evt);
-        objFromForm(true, true);
-        refresh();
-    },
-    plays(evt) {
-        helpChange(evt);
-        storeCurrent(objFromForm(true));
-    },
-    eKey(evt) {
-        helpChange(evt);
-        objFromForm();
-        refresh();
-    },
+    easy (evt) { helpChange(evt, true, true); },
+    plays(evt) { helpChange(evt, true); },
+    eKey (evt) { helpChange(evt); },
     trip(evt) {
-        const
-        tar = evt.target,
-        val = tar.value,
-        def = tar.default,
-        isNull = (val == null),
-
-        prev = (val == def) ? !def
-                   : isNull ?  def  // .checked prior to this event
-                            :  def; // null means use default
-        if (prev == val) {          // effectively no change
+        const                       // tar is a three-way toggle
+        tar = evt.target,           // .checked is bool
+        def = tar.default,          // .default is bool
+        val = tar.value,            // .value   is bool + null
+                                    // null means .checked = .default
+        prev = (val == def) ? !def : def;
+        if (prev != val)            // tar.checked changed
+            freshen(true);
+        else {                      // effectively no change
             storeCurrent(objFromForm());
-            measer.autoTrip = elseUndefined(!isNull, val);
-        }
-        else {                      // tar.checked changed
-            objFromForm(true);      // calls newTargets()
-            refresh();              // calls storeCurrent()
+            measer.autoTrip = elseUndefined(val !== null, val);
         }
     },
  // color() is the event handler for <input type="color">, purely cosmetic
@@ -71,12 +56,21 @@ const change = {
             setLocal(evt.target, evt.target.value);
     }
 };
-function helpChange(evt) { // helps change.easy/plays/eKey()
+// helpChange() helps change.easy/plays/eKey()
+function helpChange(evt, doTime, isEasy) {
     const
     tar = evt.currentTarget,
     id  = tar.id.slice(0, -1),
     i   = Number(tar.id.at(-1));
     set[id](i, tar.value);
+    freshen(doTime, isEasy);
+}
+// freshen() consolidates some code that bookends refresh()
+function freshen(doTime, isEasy) {
+    objFromForm(doTime, isEasy);    // calls newTargets()
+    refresh();                      // calls storeCurrent()
+    if (doTime)
+        updateTime();
 }
 //==============================================================================
  // "set" helpers for the change event handlers, exported for formFromObj()

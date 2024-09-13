@@ -15,7 +15,8 @@ export class AFrame {
         if (arg?.isEasies || arg?.isACues)
             this.targets = arg;
         else if (Is.Arrayish(arg))
-            this.targets = Ez.toArray(arg, "new AFrame(targets)", AFrame.#validTarget, false);
+            this.targets = Ez.toArray(arg, "new AFrame(targets)",
+                                      AFrame.#validTarget, false);
         else if (Ez._validObj(arg))
             for (const p of ["peri","post","keepPost","oneShot","useNow",
                              "targets","frameZero","initZero","syncZero"])

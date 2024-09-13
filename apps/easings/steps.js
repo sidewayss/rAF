@@ -75,7 +75,7 @@ function loadTV() { // called exclusively by getEasies() during page load
             sel.add(new Option(id));
 
         selNamed = selNamed?.cloneNode(true)   // only non-steps Easys: false
-                ?? getNamed(document.createElement(SELECT), undefined, false, false);
+                ?? getNamed(document.createElement(SELECT), ...[,,false]);
 
         selNamed.className = `${STEPS} named`;
         elms[Ez.toCamel(EASY, id)] = selNamed; // easyTiming, easyValues
@@ -89,10 +89,7 @@ function loadTV() { // called exclusively by getEasies() during page load
         userTV  = Ez.toCamel(USER, id);
         divUser = elms[Ez.toCamel(DIV, userTV)];
         arr  = [selNamed, divUser];
-        func = tvShowHide(isT);
         Ez.readOnly(sel, OTHER, arr);
-        for (elm of arr)                       // initial state is hidden
-            func(elm, false);
 
         elm = divUser.lastElementChild;        // userValues, userTiming
         arr = [elm];
@@ -116,6 +113,11 @@ function loadTV() { // called exclusively by getEasies() during page load
         listenInputNumber(arr);
         elms[userTV] = arr;                    // elms.userTiming, .userValues
     }
+    [TIMING, VALUES].forEach((nm, j) => {      // must be a separate loop
+        func = tvShowHide(!j);
+        for (elm of elms[nm][OTHER])
+            func(elm, false);                  // initial state is hidden
+    });
     addEventByClass(CHANGE, STEPS, null, changeSteps);
 
     lastUserTime = elms.userTiming.at(-1);
