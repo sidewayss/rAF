@@ -39,7 +39,7 @@ function formFromObj(obj) {
     elms.type.value = g.type;
     elms.io  .value = g.io;
 
-    val = obj.time || (leg0?.time + leg1?.time);
+    val = obj.time || (leg0?.time + leg1?.time + leg1?.wait);
     if (val)                   // steps: user time doesn't use obj.time
         elms.time.value = val;
     elms.time.dispatchEvent(new Event(INPUT)); // input.time()=>timeFrames()

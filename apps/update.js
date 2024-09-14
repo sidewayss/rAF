@@ -42,7 +42,7 @@ async function loadUpdate(isMulti, dir) {
         frames[0] = {t:0, x:Array.from({length:COUNT}, () => new Object)};
         pad.value = pad.milli;
     }
-    Object.freeze(pad);
+    Object.seal(pad);
 
     isContinuing = false;                 // not strictly necessary
     elms.x.addEventListener(INPUT, inputX, false);

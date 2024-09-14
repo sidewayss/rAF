@@ -52,18 +52,18 @@ async function loadCommon() {
         arr.push(document.getElementById(id));
 
     for (elm of arr)
-        dlg[elm.id] = elm;
+        Ez.readOnly(dlg, elm.id, elm);
 
     for (elm of byTag.flat())         // populate elms by id
         if (elm.id)                   // most <div>, <label>, <span>s have no id
-            elms[elm.id] = elm;
-                                      // elms.x doesn't disable the normal way
-    byTag[0].splice(byTag[0].indexOf(elms.x), 1);
-    Ez.readOnly(g, "buttons",  byTag[2]);          // <button>, see disablePlay()
-    Ez.readOnly(g, "playback", byTag.at(-3));      // <state-button> #play,#stop
+            elms[elm.id] =  elm;      // replaceWith(clone) in color: !readOnly
+
+    byTag[0].splice(byTag[0].indexOf(elms.x), 1);  // elms.x disables abnormally
     Ez.readOnly(g, "disables", [...byTag[0],       // <input>
                                 ...byTag[1],       // <select>
                                 ...byTag.at(-2)]); // <check-box>
+    Ez.readOnly(g, "buttons",  byTag[2]);          // <button>, see disablePlay()
+    Ez.readOnly(g, "playback", byTag.at(-3));      // <state-button> #play,#stop
     Ez.readOnly(g, "invalids", new Set);           // <input>s w/invalid values
 
     elm = elms.plays ?? elms.plays0;  // plays0 is multi

@@ -98,7 +98,7 @@ input[type=color] {
 .counter  {
   align-items:baseline;
   margin:0;
-  padding:var(--16th) var(--5-16ths) 0 var(--5-16ths);
+  padding:var(--16th) var(--5-16ths) 0 var(--3-8ths);
   color:var(--dark-blue);
   border-bottom: var(--border-gray);
 }

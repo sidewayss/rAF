@@ -13,7 +13,7 @@ import {E, U, F, P, Easy} from "../../src/raf.js";
 import {ezX}            from "../load.js";
 import {storeCurrent}   from "../local-storage.js";
 import {COUNT, elms, g} from "../common.js";
-import {frames, pad, formatNumber, eGet, pseudoAnimate}
+import {D, frames, pad, formatNumber, eGet, pseudoAnimate}
                         from "../update.js";
 
 import {clipEnd, clipStart} from "./_load.js";
@@ -51,7 +51,9 @@ function newTargets(isPseudo) {                 // isPseudo is always defined
 //==============================================================================
 // getMsecs() returns the full run-time in milliseconds
 function getMsecs() {
-    return measer.duration;
+    const md = measer.duration;
+    pad.secs = D + (md >= 10000 ? 3 : 2);
+    return md;
 //!!let first, t;
 //!!const
 //!!trips = elms.trip .map( elm => elm.checked && P.isVisible(elm)),

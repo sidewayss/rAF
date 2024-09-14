@@ -38,7 +38,11 @@
   src:url("/fonts/ShipporiAntique-Regular.ttf") format("truetype");
 }
 img {
+  align-self:center;
   margin-bottom:0.75rem;
+}
+img.scale {
+  align-self:unset;
 }
 h1 {
   font-family:"Averia";
@@ -52,21 +56,31 @@ h2, p.bullet {
   font-family:"Radio Canada Big";
   font-weight:500;
 }
-h2 {
-  margin:0.5rem 0;
-  font-size:22px;
+h2, img.sub{
+  margin:0.75rem 0 0.5rem;
+  font-size:23px;
 }
 p.bullet {
-  margin:0.5rem;
+  margin:0.25rem 0 0.5rem;
   font-size:18px;
 }
 p {
   font-family:"Shippori Antique";
   margin:0 0 0.25rem;
 }
+p + p {
+  margin-top: 0.5rem;
+}
 span {
-  font-family:"Radio Canada Big";
+  font-family:"Roboto Mono";
   font-weight:400;
+}
+span.bullet {
+  font-family:"Radio Canada Big";
+}
+.rAF {
+  font-family:"Roboto Mono";
+  font-weight:500;
 }
 a {
   color:black;
@@ -76,11 +90,11 @@ a.bullet {
   text-decoration:none;
 }
 a:hover {
-  color:blue;
+  color:rgb(0 0 204);
 }
 a:active:hover {
   color:purple;
 }
 .code {
-  font-family:"Roboto Mono"
+  font-family:"Roboto Mono";
 }
