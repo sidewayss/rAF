@@ -1,0 +1,168 @@
+body, #content {
+  display:flex;
+  flex-direction:column;
+}
+body {
+  align-items:center;
+}
+#content {
+  align-items:flex-start;
+}
+@media (aspect-ratio < 9/22) {
+  #content { width:96% }
+}
+@media (9/22 <= aspect-ratio < 9/21) {
+  #content { width:92% }
+}
+@media (9/21 <= aspect-ratio < 9/20) {
+  #content { width:90% }
+}
+@media (9/20 <= aspect-ratio < 9/19) { /* skipping 9/19.5 */
+  #content { width:88% }
+}
+@media (9/19 <= aspect-ratio < 9/18) {
+  #content { width:86% }
+}
+@media (9/18 <= aspect-ratio < 9/16) {
+  #content { width:84% }
+}
+@media (9/16 <= aspect-ratio < 3/4) {
+  #content { width:80% }
+}
+@media (3/4 <= aspect-ratio < 1/1) {
+  #content { width:65% }
+}
+@media (1/1 <= aspect-ratio < 4/3) {
+  #content { width:50% }
+}
+@media (4/3 <= aspect-ratio < 16/9) {
+  #content { width:40% }
+}
+@media (16/9 <= aspect-ratio < 18/9) {
+  #content { width:33% }
+}
+@media (18/9 <= aspect-ratio < 19/9) {
+  #content { width:32% }
+}
+@media (19/9 <= aspect-ratio < 20/9) { /* skipping 19.5/9 */
+  #content { width:31% }
+}
+@media (20/9 <= aspect-ratio < 21/9) { /* above here set for ultra-wide desktop monitors */
+  #content { width:30% }
+}
+@media (21/9 <= aspect-ratio < 22/9) {
+  #content { width:29% }
+}
+@media (aspect-ratio >= 22/9) {
+  #content { width:28% }
+}
+
+@font-face {
+  font-family:"Averia";
+  src:url("/fonts/AveriaSerifLibre-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family:"Material Symbols Rounded";
+  font-weight:400;
+  src:url("/fonts/MaterialSymbolsRounded.woff2") format("woff2");
+}
+@font-face {
+  font-family:"Roboto Mono";
+  font-weight:400;
+  src:url("/fonts/RobotoMono.ttf") format("truetype");
+}
+@font-face {
+  font-family:"Roboto Mono";
+  font-weight:500;
+  src:url("/fonts/RobotoMono.ttf") format("truetype");
+}
+@font-face {
+  font-family:"Radio Canada Big";
+  font-weight:400;
+  src:url("/fonts/RadioCanadaBig-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family:"Radio Canada Big";
+  font-weight:500;
+  src:url("/fonts/RadioCanadaBig-Medium.ttf") format("truetype");
+}
+@font-face {
+  font-family:"Shippori Antique";
+  font-weight:400;
+  src:url("/fonts/ShipporiAntique-Regular.ttf") format("truetype");
+}
+img {
+  min-width:60%;
+  max-width:100%;
+  margin-bottom:0.75rem;
+}
+#title {
+  display:flex;
+  align-items:center;
+}
+h1 {
+  font-family:"Averia";
+  font-size: 48px;
+  font-weight:normal;
+  margin:0 0 0 1rem;
+  padding:0;
+  vertical-align:middle;
+}
+h2, p.bullet {
+  font-family:"Radio Canada Big";
+  font-weight:500;
+}
+h2, img.sub{
+  margin:0.75rem 0 0.5rem;
+}
+p.bullet {
+  margin:0.25rem 0 0.5rem;
+  font-size:18px;
+}
+p {
+  font-family:"Shippori Antique";
+  margin:0 0 0.25rem;
+}
+p + p {
+  margin-top: 0.5rem;
+}
+span {
+  font-family:"Roboto Mono";
+  font-weight:400;
+}
+span.bullet {
+  font-family:"Radio Canada Big";
+}
+.rAF {
+  font-family:"Roboto Mono";
+  font-weight:500;
+}
+a {
+  color:black;
+}
+a:hover {
+  color:rgb(0 0 192);
+  text-decoration:underline;
+}
+a:active:hover {
+  color:purple;
+}
+.code {
+  font-family:"Roboto Mono";
+}
+.symbol {
+  font-family:"Material Symbols Rounded";
+  font-size:1.5rem;
+  line-height:1.5rem;
+  text-decoration:none;
+  vertical-align:text-bottom;
+  margin-left:0.125rem;
+  color:#333;
+}
+a.symbol {
+  letter-spacing:-0.25rem;
+}
+a.symbol:hover {
+  text-decoration:none;
+  color:rgb(0 0 192);
+}
