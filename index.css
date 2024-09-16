@@ -1,3 +1,38 @@
+@font-face {
+  font-family:"Averia";
+  src:url("fonts/AveriaSerifLibre-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family:"Material Symbols Rounded";
+  font-weight:400;
+  src:url("fonts/MaterialSymbolsRounded.woff2") format("woff2");
+}
+@font-face {
+  font-family:"Roboto Mono";
+  font-weight:400;
+  src:url("fonts/RobotoMono.ttf") format("truetype");
+}
+@font-face {
+  font-family:"Roboto Mono";
+  font-weight:500;
+  src:url("fonts/RobotoMono.ttf") format("truetype");
+}
+@font-face {
+  font-family:"Radio Canada Big";
+  font-weight:400;
+  src:url("fonts/RadioCanadaBig-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family:"Radio Canada Big";
+  font-weight:500;
+  src:url("fonts/RadioCanadaBig-Medium.ttf") format("truetype");
+}
+@font-face {
+  font-family:"Shippori Antique";
+  font-weight:400;
+  src:url("fonts/ShipporiAntique-Regular.ttf") format("truetype");
+}
+
 body, #content {
   display:flex;
   flex-direction:column;
@@ -57,40 +92,6 @@ body {
   #content { width:28% }
 }
 
-@font-face {
-  font-family:"Averia";
-  src:url("/fonts/AveriaSerifLibre-Regular.ttf") format("truetype");
-}
-@font-face {
-  font-family:"Material Symbols Rounded";
-  font-weight:400;
-  src:url("/fonts/MaterialSymbolsRounded.woff2") format("woff2");
-}
-@font-face {
-  font-family:"Roboto Mono";
-  font-weight:400;
-  src:url("/fonts/RobotoMono.ttf") format("truetype");
-}
-@font-face {
-  font-family:"Roboto Mono";
-  font-weight:500;
-  src:url("/fonts/RobotoMono.ttf") format("truetype");
-}
-@font-face {
-  font-family:"Radio Canada Big";
-  font-weight:400;
-  src:url("/fonts/RadioCanadaBig-Regular.ttf") format("truetype");
-}
-@font-face {
-  font-family:"Radio Canada Big";
-  font-weight:500;
-  src:url("/fonts/RadioCanadaBig-Medium.ttf") format("truetype");
-}
-@font-face {
-  font-family:"Shippori Antique";
-  font-weight:400;
-  src:url("/fonts/ShipporiAntique-Regular.ttf") format("truetype");
-}
 img {
   min-width:60%;
   max-width:100%;

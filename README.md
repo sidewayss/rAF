@@ -8,14 +8,14 @@
   <body>
     <div id="content">
       <div id="title">
-        <object data="/raf/img/rAFoffset.svg" type="image/svg+xml" style="width:180px; height:180px;"></object>
+        <object data="img/rAFoffset.svg" type="image/svg+xml" style="width:180px; height:180px;"></object>
         <h1>JavaScript Animation Library</h1>
       </div>
       <h2>What is it?</h2>
       <p>The name <span class="rAF">rAF</span> is a common abbreviation for the core JavaScript animation function: <span>requestAnimationFrame()</span>. It is a highly flexible animation library for HTMLElements, SVGElements, and CSSStyleRules. It includes 99% of CSS animation functionality, but also extends that functionality greatly.</p>
       <p> It is a solo open source project about to be released in its first public version 1.0. Hopefully others will contribute in the future.</p>
       <h2>Getting started</h2>
-      <p>If you want to skip the formalities and jump right in, the best place to start is the <a href="/raf/apps/">Three Apps</a> (web pages) that test/demonstrate the app and generate starting-point JavaScript code for the configured animation. I am hosting them on my personal site. GitHub Pages will be up when I learn how to fully disable Jekyll...</p>
+      <p>If you want to skip the formalities and jump right in, the best place to start is the <a href="apps/">Three Apps</a> (web pages) that test/demonstrate the app and generate starting-point JavaScript code for the configured animation. I am hosting them on my personal site. GitHub Pages will be up when I learn how to fully disable Jekyll...</p>
       <p>There are also animation examples in these collections on CodePen:</p>
       <p><i>...coming soon along with v1.0</i></p>
 
