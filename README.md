@@ -16,11 +16,11 @@
       <p> It is a solo open source project about to be released in its first public version 1.0. Hopefully others will contribute in the future.</p>
       <h2>Getting started</h2>
       <p>If you want to skip the formalities and jump right in, the best place to start is the <a href="/raf/apps/">Three Apps</a> (web pages) that test/demonstrate the app and generate starting-point JavaScript code for the configured animation. I am hosting them on my personal site. GitHub Pages will be up when I learn how to fully disable Jekyll...</p>
-      <p>There are also examples in these collections on CodePen:</p>
+      <p>There are also animation examples in these collections on CodePen:</p>
       <p><i>...coming soon along with v1.0</i></p>
 
       <h2>Setup</h2>
-      <p><span class="rAF">rAF</span> is modular. <i>There are currently no packages or minified file. Coming immediately post v1.0.</i> For most users <span>raf.js</span> provides all the exports you need. Here is a typical import statement:</p>
+      <p><span class="rAF">rAF</span> is modular. There are currently no packages or minified file. Coming immediately post v1.0. For most users <span>raf.js</span> provides all the exports you need. Here is a typical import statement:</p>
       <p><span>import {E, Ez, F, P, PFactory, Easy, Easies, AFrame}<br>from "https://sidewayss.com/raf/src/raf.js";</span></p>
       <p>To initializes constants, including the <span>F</span> and <span>P</span> objects containing all the built-in <span>Func</span> and <span>Prop</span> instances, you must run this line of code prior to using any other <span class="rAF">rAF</span> features:</p>
       <p><span>PFactory.init();</span></p>

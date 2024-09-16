@@ -7,7 +7,8 @@
             src:url("../../fonts/AveriaSerifLibre-Regular.ttf") format("truetype");
         }
         rect { stroke:none; }
-        text { font-size:404px; text-anchor:middle; fill:#FFF; filter:url(#glow); }
+        text { font-family:"Averia"; font-size:404px; text-anchor:middle;
+               fill:#FFF; filter:url(#glow); }
     </style>
     <defs>
         <clipPath id="clip" clipPathUnits="userSpaceOnUse">
@@ -37,8 +38,8 @@
         <rect width=  "40"   height="750" x="1010" y="225" fill="#000"/>
         <rect width="1474.2" height="150" x=  "-39.85" y="100" fill="url(#perforations)" clip-path="url(#clip)"/>
         <rect width="1474.2" height="150" x=  "-39.85" y="975" fill="url(#perforations)" clip-path="url(#clip)"/>
-        <text font-family="Averia" x="-260" y="767" clip-path="url(#clip)">rAF</text>
-        <text font-family="Averia" x= "600" y="737">rAF</text>
-        <text font-family="Averia" x="1460" y="707"  clip-path="url(#clip)">rAF</text>
+        <text x="-260" y="767" clip-path="url(#clip)">rAF</text>
+        <text x= "600" y="737">rAF</text>
+        <text x="1460" y="707"  clip-path="url(#clip)">rAF</text>
     </g>
 </svg>

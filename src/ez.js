@@ -39,11 +39,37 @@ export const Ez = {
     newArray2D(length, ...args) {
         return Array.from({length}, () => Array(...args));
     },
+//  swapDims() swaps 2D array's inner/outer dimensions, no longer used
+//             internally, but 2D arrays for Easers must all be the same,
+//             bAbE or bEbA, so users can use this to accomplish that.
+    swapDims(prm, l2) {
+        let i, j;
+        const l1   = prm.length;
+        const twoD = Ez.newArray2D(l2);
+
+        for (i = 0; i < l1; i++)    // swap sub-array elements, spread sub-value
+            if (Is.A(prm[i]))            // swap 'em
+                for (j = 0; j < l2; j++) // can iterate past prm[i].length
+                    if (Is.def(prm[i][j]))
+                        twoD[j][i] = prm[i][j];
+            else if (Is.def(prm[i]))     // spread it
+                for (j = 0; j < l2; j++)
+                    twoD[j][i] = prm[i];
+
+        while (!twoD[--l2].length)  // trim empty outer dim values
+            --twoD.length;
+
+        for (i = 0; i <= l2; i++) { // consolidate empty outer dim values
+            if (!twoD[i].length)
+                delete twoD[i];
+        }
+        return twoD;
+    },
+// =============================================================================
 //  clamp() clamps val between min and max limits
     clamp(min, val, max) {
         return Math.max(min, Math.min(val, max));
     },
-// =============================================================================
 //  comp() complements a unit (number 0-1), returning the complement: 1 - unit
     comp(unit) {
         return 1 - unit;
@@ -97,10 +123,6 @@ export const Ez = {
     },
 // =============================================================================
 // Conversion functions:
-//  defaultToTrue() converts undefined to true and everything else to boolean
-    defaultToTrue(val) {
-        return Is.def(val) ? Boolean(val) : true;
-    },
 //  toSum() is a callback for Array.prototype.reduce(), reduces to a sum.
     toSum(sum, v) {
         return sum + v;
@@ -211,6 +233,10 @@ export const Ez = {
                          ...this.okEmptyUndef);
         v.forEach((elm, i) => v[i] = this.toElement(elm, noRules, doc));
         return v;
+    },
+//  defaultToTrue() converts undefined to true and everything else to boolean
+    defaultToTrue(val) {
+        return Is.def(val) ? Boolean(val) : true;
     },
 //  noneToZero() converts null to zero for a Color.js color coordinates array.
 //               null is the numeric representation of CSS "none". The CSS rules
@@ -337,32 +363,5 @@ export const Ez = {
 //          returns max 2 even if array has >2 dimensions
     _dims(a) {
         return Is.def(a) ? (Is.A(a) ? (a.some(v => Is.A(v)) ? 2 : 1) : 0) : -1;
-    },
-// =============================================================================
-//  swapDims() swaps 2D array's inner/outer dimensions, no longer used
-//             internally, but 2D arrays for Easers must all be the same,
-//             bAbE or bEbA, so users can use this to accomplish that.
-    swapDims(prm, l2) {
-        let i, j;
-        const l1   = prm.length;
-        const twoD = Ez.newArray2D(l2);
-
-        for (i = 0; i < l1; i++)    // swap sub-array elements, spread sub-value
-            if (Is.A(prm[i]))            // swap 'em
-                for (j = 0; j < l2; j++) // can iterate past prm[i].length
-                    if (Is.def(prm[i][j]))
-                        twoD[j][i] = prm[i][j];
-            else if (Is.def(prm[i]))     // spread it
-                for (j = 0; j < l2; j++)
-                    twoD[j][i] = prm[i];
-
-        while (!twoD[--l2].length)  // trim empty outer dim values
-            --twoD.length;
-
-        for (i = 0; i <= l2; i++) { // consolidate empty outer dim values
-            if (!twoD[i].length)
-                delete twoD[i];
-        }
-        return twoD;
     }
 };
