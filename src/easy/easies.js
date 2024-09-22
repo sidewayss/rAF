@@ -12,11 +12,10 @@ export class Easies {
 //  Set.prototype properties and methods, so an Easies instance acts like a Set
 //  (except add() doesn't return a value because that value would be a reference
 //  to #easies, and I don't want users modifying it directly).
-    constructor(easies, post) {
+    constructor(easies) {
         const arr = Ez.toArray(easies, "new Easies(arg1, ...): arg1",
                                Easy._validate,
                             ...Ez.okEmptyUndef);
-        this.post = post;
         this.#easies     = new Set(arr);
         this.#targets    = new Set; // Set(MEaser)
         this.#easy2Plays = new Map; // Map(Easy,   Map(Easer, playings))

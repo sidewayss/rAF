@@ -7,9 +7,9 @@ const U  = {pct:"%"};  // units, e.g. "px", "deg"
 const M  = {};         // bitmasks for matrix() and matrix3d()
 const HD = {};         // bitmasks for CSS L4 (UHD) color functions
 const E  = {           // global constants, PFactory.init() adds enums
-    comsp:/[,\s]+/,    currentValue:null,   value:"value", // value, unit, comp
-     func:/[\(\)]/,              cV:null,   unit :"unit",  // are for easy.e
-  sepfunc:/[,\s\(\)]+/g,         lp:'(',    comp :"comp",  // access via string.
+    comsp:/[,\s]+/,    currentValue:null,
+     func:/[\(\)]/,              cV:null,
+  sepfunc:/[,\s\(\)]+/g,         lp:'(',
      caps:/[A-Z]/g,              rp:')',  // lp, rp, sp, comma because '(', ')',
      nums: /-?[\d\.]+/g,         sp:' ',  // ' ', and ',' are awkward in code.
    numBeg:/^-?[\d\.]+/ ,      comma:',',

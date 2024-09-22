@@ -12,9 +12,11 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
     static #separator = E.sp;  // only font-family separates w/comma, and
     #func; #units;             // it's non-numeric, so no value arrays.
 
+    // name is the CSS/SVG function name, key is a camelCase version of name
     // utype = isUn | _noU | _noUPct | _len | _lenPct | _lenPctN | _ang | _pct
-    constructor(name, units, utype, func, multiFunc) {
+    constructor(name, key, units, utype, func, multiFunc) {
         Ez.readOnly(this, "name", name);
+        Ez.readOnly(this, "key",  key);
         this.#units = units;
         this.#func  = func;
         if (multiFunc)                // filter & transform, see PFactory.init()
@@ -44,30 +46,24 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
                       "a String or an instance of one of the PBase subclasses");
     }
 //==============================================================================
-// this.cssName is the CSS kebab-case version of the camel case property name
-    get cssName() {
-        return this.isProp || this.isPrAtt ? Ez.camelToKebab(this.name)
-                                           : this.name;
-    }
-
 // this.func
     get func() { return this.#func; }
     set func(val) {
         if (Is.def(val) || this.needsFunc) {
             if (!val?.isFunc)
                 Ez._mustBeErr(
-                    `${this.name}.func`,
+                    `P.${this.key}.func`,
                     `an instance of Func ${this.needsFunc ? "" : " or undefined"}`
                 );
             else if (this.isColor && !val?.isCFunc)
-                Ez._invalidErr("func", val?.name ?? val, PFactory.funcC,
-                               `${this.name}.func`);
+                Ez._invalidErr("func", val?.key ?? val, PFactory.funcC,
+                               `P.${this.key}.func`);
         }
         this.#func = val;
     }
 // this.units
     get units()    { return this.#units; }
-    set units(val) { this.#units = PFactory._validUnits(val, this.name, this); }
+    set units(val) { this.#units = PFactory._validUnits(val, this.key, this); }
     set _u   (u)   { this.#units = u; } // backdoor avoids double-validation
 
 //  _unitz() gets the active units, which might be the func's units
@@ -94,13 +90,13 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
             return o.func._seps(o);
         //--------------
         o.numBeg = true;
-        o.numEnd = !o.u;             // o.u is string, but can be empty
+        o.numEnd = !o.u;            // o.u is string, but can be empty
         if (o.c == 1 && o.numEnd)
-            return;                  // 1 arg, no units, o.seps stays undefined
+            return;                 // 1 arg, no units, o.seps stays undefined
         //-------
         let c, i;
-        c = o.c - o.numEnd;          // c  = arg count
-        const us = Array(c--);   // us = combined units + separators
+        c = o.c - o.numEnd;         // c  = arg count
+        const us = Array(c--);      // us = combined units + separators
         for (i = 0; i < c; i++)
             us[i] = o.u + this.#separator;
         if (o.u)
@@ -138,7 +134,7 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
                 Ez._mustBeErr(name, `unique, no duplicates: ${mask}`);
             else if (mask.at(-1) >= c)
                 Ez._mustBeErr(name, `< ${c}, the max number of arguments for `
-                                  + `${this.name}: ${mask}`);
+                                  + `${this.key}: ${mask}`);
         }
         else {                                // generate the dense array
             let i;
@@ -267,7 +263,7 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
                 v = v.replace(/\s\s+/g, E.sp);
                 o.cv[i] = v.match(E.nums);
                 if (!o.cv[i])
-                    throw new Error(`P.${this.name}.getUnToObj(o): `
+                    throw new Error(`P.${this.key}.getUnToObj(o): `
                                   + `o.elms[${i}] contains no numbers: ${v}`);
                 //-----------------------------
                 o.seps[i] = v.split(E.nums);
@@ -296,7 +292,7 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
         if (this.isUn || f?.isUn)
             throw new Error("Prop.prototype.parse() is not designed for "
                 + `"unstructured" ${this.isUn ? "properties" : "functions"} `
-                + `such as ${this.isUn ? this.name : f.name + "()"}.`);
+                + `such as ${this.isUn ? this.key : f.key + "()"}.`);
         else if (this.isColor)      // function, #hex, or color name
             return fromColor(v, false, f, u);
         else if (v.at(-1) == E.rp)  // non-color function

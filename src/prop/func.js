@@ -6,8 +6,11 @@ import {E, Ez, Fn, Is, U} from "../raf.js";
 //==============================================================================
 class Func {                    //\ Func: CSS or SVG function
     #units; #separator;          // c = count, r = required, s = separator
-    constructor(name, units, utype, c, r, s = E.comma) {
+
+    // name is the CSS/SVG function name, key is a camelCase version of name
+    constructor(name, key, units, utype, c, r, s = E.comma) {
         Ez.readOnly(this, "name", name);
+        Ez.readOnly(this, "key",  key);
         Ez.readOnly(this, utype,  true);
         if (!Is.def(c)) {        // else called from sub-class constructor
             switch (name) {
@@ -53,7 +56,7 @@ class Func {                    //\ Func: CSS or SVG function
                                   : this.#units[0];
     }
     set units(val) {    // units arrays are a necessary hassle
-        val = PFactory._validUnits(val, this.name, this);
+        val = PFactory._validUnits(val, this.key, this);
         if (this.isCFunc)
             if (this.hasHue)
                 if (this.isHXX)
@@ -112,12 +115,12 @@ class Func {                    //\ Func: CSS or SVG function
 class CFunc extends Func {      //\ CFunc: CSS color functions
     static _funcs = {};          // see PFactory.alphaUnits(), hueUnits()
     static A = 3;                // alpha value index in arguments
-    constructor(name, units, utype) {
+    constructor(name, key, units, utype) {
         const u = (name[0] == "h")
                 ? [units, U.pct, U.pct, units]  // units = ""
                 : [units, units, units, units]; // alpha has its own get/setters
 
-        super(name, u, utype, CFunc.A + 1, CFunc.A, [E.sp, E.sp, " / "]);
+        super(name, key, u, utype, CFunc.A + 1, CFunc.A, [E.sp, E.sp, " / "]);
 
         CFunc._funcs[name] = this;
         Ez.is(this, "CFunc");
@@ -142,10 +145,10 @@ class ColorFunc extends CFunc { //\ ColorFunc: CSS color() function
     // colorspace is the first argument, and the raison d'être for this class
     static spaces  = ["srgb","srgb-linear","a98-rgb","prophoto-rgb",
                       "display-p3","rec2020","xyz-d65","xyz-d50"];
-    static aliases = [,"a98rgb","prophoto", "p3",,"xyz",];
+    static aliases = [,,"a98rgb","prophoto", "p3",,"xyz",];
     #space;
-    constructor(units, utype, space) {
-        super(Fn.color, units, utype);
+    constructor(key, units, utype, space) {
+        super(Fn.color, key, units, utype);
         this.#space = space; // no validation, called only by PFactory.init()
     }
     get space()  { return this.#space; }
@@ -153,7 +156,7 @@ class ColorFunc extends CFunc { //\ ColorFunc: CSS color() function
 }
 //==============================================================================
 class SRFunc extends Func {     //\ SRFunc: <shape-radius> = circle(), ellipse()
-    constructor(name, units, utype) {
+    constructor(name, key, units, utype) {
         let c, r, s, u;
         const at = " at ";
         if (name == Fn.circle) {
@@ -168,7 +171,7 @@ class SRFunc extends Func {     //\ SRFunc: <shape-radius> = circle(), ellipse()
             r = 2;
             s = [E.sp, at, E.sp];
         }
-        super(name, u, utype, c, r, s);
+        super(name, key, u, utype, c, r, s);
         Ez.is(this);
     }
 }

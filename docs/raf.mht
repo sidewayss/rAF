@@ -1,0 +1,1764 @@
+MIME-Version: 1.0
+X-Document-Type: Worksheet
+Content-Location: file:///C:/B1345486/raf.htm
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html; charset="windows-1252"
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office"
+xmlns:x=3D"urn:schemas-microsoft-com:office:excel"
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dwindows-125=
+2">
+<meta name=3DProgId content=3DExcel.Sheet>
+<meta name=3DGenerator content=3D"Microsoft Excel 14">
+<link rel=3DFile-List href=3D"raf_files/filelist.xml">
+<style id=3D"raf_10832_Styles">
+<!--table
+	{mso-displayed-decimal-separator:"\.";
+	mso-displayed-thousand-separator:"\,";}
+.xl1510832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:11.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"Franklin Gothic Medium", sans-serif;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl6910832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl7010832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:middle;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl7110832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:right;
+	vertical-align:bottom;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl7210832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:none;
+	border-right:.5pt hairline windowtext;
+	border-bottom:none;
+	border-left:.5pt hairline windowtext;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl7310832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:.5pt hairline windowtext;
+	border-right:none;
+	border-bottom:none;
+	border-left:none;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl7410832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:gray;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl7510832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:.5pt hairline windowtext;
+	border-right:none;
+	border-bottom:none;
+	border-left:none;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl7610832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:none;
+	border-right:.5pt hairline windowtext;
+	border-bottom:.5pt hairline #BFBFBF;
+	border-left:.5pt hairline windowtext;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl7710832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl7810832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:none;
+	border-right:.5pt hairline windowtext;
+	border-bottom:.5pt hairline #BFBFBF;
+	border-left:.5pt hairline windowtext;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl7910832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:center;
+	vertical-align:bottom;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl8010832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:.5pt hairline windowtext;
+	border-right:none;
+	border-bottom:none;
+	border-left:.5pt hairline windowtext;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl8110832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:"\@";
+	text-align:general;
+	vertical-align:bottom;
+	border-top:none;
+	border-right:.5pt hairline windowtext;
+	border-bottom:none;
+	border-left:.5pt hairline windowtext;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl8210832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#000099;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:.5pt hairline windowtext;
+	border-right:none;
+	border-bottom:.5pt hairline windowtext;
+	border-left:none;
+	background:#F8F8F8;
+	mso-pattern:black none;
+	white-space:nowrap;}
+.xl8310832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:.5pt hairline windowtext;
+	border-right:none;
+	border-bottom:none;
+	border-left:.5pt hairline windowtext;
+	background:#F8F8F8;
+	mso-pattern:black none;
+	white-space:nowrap;}
+.xl8410832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#000099;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:.5pt hairline windowtext;
+	border-right:.5pt hairline windowtext;
+	border-bottom:none;
+	border-left:none;
+	background:#F8F8F8;
+	mso-pattern:black none;
+	white-space:nowrap;}
+.xl8510832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:none;
+	border-right:.5pt hairline windowtext;
+	border-bottom:none;
+	border-left:.5pt hairline windowtext;
+	background:#F8F8F8;
+	mso-pattern:black none;
+	white-space:nowrap;}
+.xl8610832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:none;
+	border-right:none;
+	border-bottom:none;
+	border-left:.5pt hairline windowtext;
+	background:#F8F8F8;
+	mso-pattern:black none;
+	white-space:nowrap;}
+.xl8710832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:none;
+	border-right:.5pt hairline windowtext;
+	border-bottom:none;
+	border-left:none;
+	background:#F8F8F8;
+	mso-pattern:black none;
+	white-space:nowrap;}
+.xl8810832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:middle;
+	border-top:none;
+	border-right:.5pt hairline windowtext;
+	border-bottom:none;
+	border-left:none;
+	background:#F8F8F8;
+	mso-pattern:black none;
+	white-space:nowrap;}
+.xl8910832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:middle;
+	border-top:none;
+	border-right:.5pt hairline windowtext;
+	border-bottom:.5pt hairline windowtext;
+	border-left:none;
+	background:#F8F8F8;
+	mso-pattern:black none;
+	white-space:nowrap;}
+.xl9010832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:center;
+	vertical-align:bottom;
+	border-top:.5pt hairline windowtext;
+	border-right:none;
+	border-bottom:none;
+	border-left:none;
+	background:#F8F8F8;
+	mso-pattern:black none;
+	white-space:nowrap;}
+.xl9110832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#003300;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:.5pt hairline windowtext;
+	border-right:none;
+	border-bottom:.5pt hairline windowtext;
+	border-left:.5pt hairline windowtext;
+	background:#F8F8F0;
+	mso-pattern:black none;
+	white-space:nowrap;}
+.xl9210832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#003300;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:.5pt hairline windowtext;
+	border-right:none;
+	border-bottom:.5pt hairline windowtext;
+	border-left:none;
+	background:#F8F8F0;
+	mso-pattern:black none;
+	white-space:nowrap;}
+.xl9310832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#003300;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:.5pt hairline windowtext;
+	border-right:.5pt hairline windowtext;
+	border-bottom:.5pt hairline windowtext;
+	border-left:none;
+	background:#F8F8F0;
+	mso-pattern:black none;
+	white-space:nowrap;}
+.xl9410832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:none;
+	border-right:none;
+	border-bottom:none;
+	border-left:.5pt hairline windowtext;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl9510832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:.5pt hairline windowtext;
+	border-right:.5pt hairline windowtext;
+	border-bottom:none;
+	border-left:none;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl9610832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:none;
+	border-right:.5pt hairline windowtext;
+	border-bottom:none;
+	border-left:none;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl9710832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:none;
+	border-right:none;
+	border-bottom:.5pt hairline #BFBFBF;
+	border-left:.5pt hairline windowtext;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl9810832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:none;
+	border-right:.5pt hairline windowtext;
+	border-bottom:.5pt hairline #BFBFBF;
+	border-left:none;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl9910832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:.5pt hairline #BFBFBF;
+	border-right:none;
+	border-bottom:none;
+	border-left:.5pt hairline windowtext;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl10010832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:.5pt hairline #BFBFBF;
+	border-right:.5pt hairline windowtext;
+	border-bottom:none;
+	border-left:none;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl10110832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:none;
+	border-right:none;
+	border-bottom:.5pt hairline windowtext;
+	border-left:.5pt hairline windowtext;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+.xl10210832
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:#0D0D0D;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Consolas, monospace;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border-top:none;
+	border-right:.5pt hairline windowtext;
+	border-bottom:.5pt hairline windowtext;
+	border-left:none;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	white-space:nowrap;}
+-->
+</style>
+<title>Ez</title>
+</head>
+
+<body>
+<!--[if !excel]>&nbsp;&nbsp;<![endif]-->
+<!--The following information was generated by Microsoft Excel's Publish as=
+ Web
+Page wizard.-->
+<!--If the same item is republished from Excel, all information between the=
+ DIV
+tags will be replaced.-->
+<!----------------------------->
+<!--START OF OUTPUT FROM EXCEL PUBLISH AS WEB PAGE WIZARD -->
+<!----------------------------->
+
+<div id=3D"raf_10832" align=3Dcenter x:publishsource=3D"Excel">
+
+<h1 style=3D'color:black;font-family:"Franklin Gothic Medium";font-size:14.=
+0pt;
+font-weight:800;font-style:normal'>Ez</h1>
+
+<table border=3D0 cellpadding=3D0 cellspacing=3D0 width=3D772 style=3D'bord=
+er-collapse:
+ collapse;table-layout:fixed;width:580pt'>
+ <col class=3Dxl6910832 width=3D16 style=3D'mso-width-source:userset;mso-wi=
+dth-alt:
+ 455;width:12pt'>
+ <col class=3Dxl6910832 width=3D166 style=3D'mso-width-source:userset;mso-w=
+idth-alt:
+ 4721;width:125pt'>
+ <col class=3Dxl6910832 width=3D72 style=3D'mso-width-source:userset;mso-wi=
+dth-alt:
+ 2048;width:54pt'>
+ <col class=3Dxl6910832 width=3D502 style=3D'mso-width-source:userset;mso-w=
+idth-alt:
+ 14279;width:377pt'>
+ <col class=3Dxl7010832 width=3D16 style=3D'mso-width-source:userset;mso-wi=
+dth-alt:
+ 455;width:12pt'>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8310832 width=3D16 style=3D'height:16.5pt;width=
+:12pt'>&nbsp;</td>
+  <td colspan=3D3 class=3Dxl8210832 width=3D740 style=3D'width:556pt'>const=
+ Ez</td>
+  <td class=3Dxl8410832 width=3D16 style=3D'width:12pt'>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td colspan=3D3 class=3Dxl9110832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>Public properties</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>rad</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>float</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>Math.PI / 180</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>grad</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>float</td>
+  <td class=3Dxl8110832 style=3D'border-left:none'>10 / 9</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7610832 style=3D'border-left:none'>turn</td>
+  <td class=3Dxl7610832 style=3D'border-left:none'>float</td>
+  <td class=3Dxl7610832 style=3D'border-left:none'>1 / 360</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>defZero</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>array</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>arguments for Ez.toNumbe=
+r() in
+  array form</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>grThan0</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>array</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>&nbsp;</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>notNeg</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>array</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>&nbsp;</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>notZero</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>array</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>&nbsp;</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7610832 style=3D'border-left:none'>okEmptyUndef</td>
+  <td class=3Dxl7610832 style=3D'border-left:none'>array</td>
+  <td class=3Dxl7610832 style=3D'border-left:none'>for Ez.toArray()</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>undefGrThan0</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>array</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>created for toNumber() in
+  Pfactory.init()</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>undefNotZero</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>array</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>&nbsp;</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>defGrThan0</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>array</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>&nbsp;</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>defNotNeg</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>array</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>&nbsp;</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>intGrThan0</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>array</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>&nbsp;</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7610832 style=3D'border-left:none'>intNotNeg</td>
+  <td class=3Dxl7610832 style=3D'border-left:none'>array</td>
+  <td class=3Dxl7610832 style=3D'border-left:none'>&nbsp;</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>x</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>integer</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>bitmasks for masking SVG=
+ viewBox
+  attribute arguments</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>y</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>integer</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>they work for other prop=
+erties
+  too…</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>z</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>integer</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>&nbsp;</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>w</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>integer</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>&nbsp;</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>h</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>integer</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>&nbsp;</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>width</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>integer</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>&nbsp;</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>height</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>integer</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>&nbsp;</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7610832 style=3D'border-left:none'>angle</td>
+  <td class=3Dxl7610832 style=3D'border-left:none'>integer</td>
+  <td class=3Dxl7610832 style=3D'border-left:none'>bitmask for SVG rotate()=
+</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td colspan=3D3 class=3Dxl9110832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>Public methods</td>
+  <td class=3Dxl8810832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>is()</td>
+  <td colspan=3D2 class=3Dxl8010832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>assigns a read-only property to an object in the format:
+  isXXX</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>readOnly()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>assigns a read-only property to an object</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>shallowClone()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>returns a shallow clone of an object</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>newArray2D()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>returns a new 2D array, optionally filled</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>swapDims()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>swaps a 2D array's inner and outer dimensions</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>clamp()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>clamps a value between a min and a max</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>comp()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>complements a unit interval value =3D 1 - unit</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>compIf()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>conditional version of comp()</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>unitOutOfBounds()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>checks for out-of-bounds units in an array</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7810832 style=3D'border-left:none'>promise()</td>
+  <td colspan=3D2 class=3Dxl9710832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>instead of Promise.withResolvers()</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>initialCap()</td>
+  <td colspan=3D2 class=3Dxl9910832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>returns a new string with the first character in upper =
+case</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>toCamel()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>returns a camelCase string based on the arg supplied</t=
+d>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>camelToKebab()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>converts a camelCase string to kebab-case</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>kebabToCamel()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>converts a kebab-case string to camelCase</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7810832 style=3D'border-left:none'>kebabToSnake()</td>
+  <td colspan=3D2 class=3Dxl9710832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>converts a kebab-case string to snake_case</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>toSum()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>preset callback for Array.prototype.reduce() to sum num=
+bers</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>toNumby()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>soft numeric conversion, helps PBase and subclasses<span
+  style=3D'mso-spacerun:yes'> </span></td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>toNumber()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>numeric conversion with lots of options</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>toArray()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>converts to an array from any number of types, many opt=
+ions</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>toElement()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>validates elements and converts string to element by id=
+</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>toElements()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>converts to an array of elements</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>defaultToTrue()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>converts undefined to true and everything else to boole=
+an</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7610832 style=3D'border-left:none'>noneToZero()</td>
+  <td colspan=3D2 class=3Dxl10110832 style=3D'border-right:.5pt hairline bl=
+ack;
+  border-left:none'>converts null to zero for Color.js coordinate arrays</t=
+d>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td colspan=3D3 class=3Dxl9110832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>&quot;Protected&quot; methods</td>
+  <td class=3Dxl8810832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>_mustBe()</td>
+  <td colspan=3D2 class=3Dxl8010832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>error &amp; error message generating functions</td>
+  <td class=3Dxl8810832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>_mustBeErr()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>&nbsp;</td>
+  <td class=3Dxl8810832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>_cantBe()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>&nbsp;</td>
+  <td class=3Dxl8810832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>_cantBeErr()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>&nbsp;</td>
+  <td class=3Dxl8810832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>_cant()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>&nbsp;</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>_cantErr()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>&nbsp;</td>
+  <td class=3Dxl8810832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>_only()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>&nbsp;</td>
+  <td class=3Dxl8810832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>_onlyErr()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>&nbsp;</td>
+  <td class=3Dxl8810832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>_mustAscendErr()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>&nbsp;</td>
+  <td class=3Dxl8810832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7810832 style=3D'border-left:none'>_invalidErr()</td>
+  <td colspan=3D2 class=3Dxl9710832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>&nbsp;</td>
+  <td class=3Dxl8810832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>_isElmy()</td>
+  <td colspan=3D2 class=3Dxl9910832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>validation functions</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>_validObj()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>&nbsp;</td>
+  <td class=3Dxl8810832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7810832 style=3D'border-left:none'>_validFunc()</td>
+  <td colspan=3D2 class=3Dxl9710832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>&nbsp;</td>
+  <td class=3Dxl8810832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>_join()</td>
+  <td colspan=3D2 class=3Dxl9910832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>helps Func/Prop.prototype.join()</td>
+  <td class=3Dxl8810832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>_appendUnits()</td>
+  <td colspan=3D2 class=3Dxl9410832 style=3D'border-right:.5pt hairline bla=
+ck;
+  border-left:none'>validates as it applies string units to numbers</td>
+  <td class=3Dxl8810832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7210832 style=3D'border-left:none'>_dims()</td>
+  <td colspan=3D2 class=3Dxl10110832 style=3D'border-right:.5pt hairline bl=
+ack;
+  border-left:none'>counts array dimensions up to 2, non-array =3D 0, undef=
+ined =3D
+  -1</td>
+  <td class=3Dxl8710832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl8610832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td colspan=3D3 class=3Dxl9010832>&nbsp;</td>
+  <td class=3Dxl8910832>&nbsp;</td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl7510832 style=3D'height:16.5pt'>&nbsp;</td>
+  <td class=3Dxl7310832>&nbsp;</td>
+  <td class=3Dxl7310832>&nbsp;</td>
+  <td class=3Dxl7310832>&nbsp;</td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'page-break-before:always;height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7410832></td>
+  <td class=3Dxl7110832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7410832></td>
+  <td class=3Dxl7110832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7410832></td>
+  <td class=3Dxl7710832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7410832></td>
+  <td class=3Dxl7710832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7110832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7110832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl6910832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl6910832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl6910832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl6910832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl6910832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl6910832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td colspan=3D3 class=3Dxl7910832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td colspan=3D3 class=3Dxl7910832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td colspan=3D2 class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td colspan=3D2 class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td colspan=3D2 class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td colspan=3D2 class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td colspan=3D2 class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td colspan=3D2 class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl7710832></td>
+  <td colspan=3D2 class=3Dxl7710832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl7010832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <tr height=3D22 style=3D'height:16.5pt'>
+  <td height=3D22 class=3Dxl6910832 style=3D'height:16.5pt'></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl6910832></td>
+  <td class=3Dxl1510832></td>
+ </tr>
+ <![if supportMisalignedColumns]>
+ <tr height=3D0 style=3D'display:none'>
+  <td width=3D16 style=3D'width:12pt'></td>
+  <td width=3D166 style=3D'width:125pt'></td>
+  <td width=3D72 style=3D'width:54pt'></td>
+  <td width=3D502 style=3D'width:377pt'></td>
+  <td width=3D16 style=3D'width:12pt'></td>
+ </tr>
+ <![endif]>
+</table>
+
+</div>
+
+
+<!----------------------------->
+<!--END OF OUTPUT FROM EXCEL PUBLISH AS WEB PAGE WIZARD-->
+<!----------------------------->
+</body>
+
+</html>

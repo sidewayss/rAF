@@ -376,18 +376,6 @@ export class Easy {
              : 0;
     }
 
-// this.startTime is the relative start time, after all the waits
-    get startTime() { return this.#wait + this._firstLeg.wait; }
-
-// this.firsTime and this.loopTime return the duration of a single play within
-//               the context of plays > 1, including steps leftovers.
-    get firstTime() { return this.#playTime(this.#wait);     }
-    get loopTime()  { return this.#playTime(this.#loopWait); }
-
-// this.tripTime is the return trip time for roundTrip && !autotrip
-    get tripTime() {
-        return this.#time + this.#tripWait;
-    }
 // this.duration returns the run-time duration of a single play, trims time
 //               leftover by E.steps in the first or last play.
 //               duration < this.#time when:
@@ -399,6 +387,19 @@ export class Easy {
     _duration(t, isTripping) {
         return t - (isTripping ? this._firstLeg.wait
                                : (this.#lastLeg.leftover ?? 0));
+    }
+
+// this.delay is the relative start time, after all the waits
+    get delay() { return this.#wait + this._firstLeg.wait; }
+
+// this.firsTime and this.loopTime return the duration of a single play within
+//               the context of plays > 1, including steps leftovers.
+    get firstTime() { return this.#playTime(this.#wait);     }
+    get loopTime()  { return this.#playTime(this.#loopWait); }
+
+// this.tripTime is the return trip time for roundTrip && !autotrip
+    get tripTime() {
+        return this.#time + this.#tripWait;
     }
 //  #playTime() returns the duration of one play for get firstTime, loopTime
     #playTime(wait) {

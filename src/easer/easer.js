@@ -14,7 +14,8 @@ class EBase {
     #oneD; #onLoop; #onLoopByElm; #original; #peri; #plays; #prop; #setOne;
     #space; #twoD; #value;
 
-    _eVal; // run-time evaluate function
+    _eVal;  // run-time evaluate function
+    _set;   // run time assign and set property values
 
     constructor(o) {
         this.#mask = o.mask;        this.#cElms = o.l;
@@ -57,8 +58,9 @@ class EBase {
             this.#eKey = Array(o.lz);
             Ez.is(this, "MEaser");  // do it here so setters can use it:
         }                           // use setters for values not yet validated
-        this.plays = o.plays;   this.evaluate = o.evaluate;
-        this.eKey  = o.eKey;    this.autoTrip = o.autoTrip;
+        this.eKey   = o.eKey;     this.evaluator = o.evaluator;
+        this.plays  = o.plays;    this.autoTrip  = o.autoTrip;
+        this.onLoop = o.onLoop;
         Ez.is(this, "Easer");
     }
 //  static _validate() validates that obj is an instance an Easer class
@@ -94,8 +96,44 @@ class EBase {
 // this._isLooping is true when loopByElm loops by play, see Easies.proto._next()
     set _isLooping(b) { this.#isLooping = Boolean(b); }
 
-// this.eKey, this.autoTrip, this.plays are byEasy arrays for MEBase
-// this.eKey
+// this.autoTrip, this.plays, this.eKey are byEasy arrays for MEBase
+// this.autoTrip is a boolean or undefined = inherit from Easy
+    get autoTrip()  {
+        return this.isMEaser ? this.#autoTrip.slice() : this.#autoTrip;
+    }
+    set autoTrip(val) { // 3 states: true, false, undefined
+        const validate = EBase.#validTrip;
+        this.#autoTrip = this.isMEaser
+                       ? this.#tripPlays(val, "autoTrip", validate)
+                       : validate(val);
+    }
+    static #validTrip(val) {
+        return Is.def(val) ? Boolean(val) : val;
+    }
+    // _autoTripping computes a run-time autoTrip value, no this.autoTripping
+    // because getter can't have an ez argument, see Easies.proto._zero() and
+    _autoTripping(ez, val) {                      // MEaser.proto.autoTripping
+        return Is.def(val) ? val && ez.roundTrip
+                           : ez.autoTripping;     // ez.autoTrip && ez.roundTrip
+    }
+
+// this.plays is an int or undefined = inherit from Easy
+    get plays()    {
+        return this.isMEaser ? this.#plays.slice() : this.#plays;
+    }
+    set plays(val) {    // a positive integer or undefined
+        const validate = EBase.#validPlays;
+        this.#plays    = this.isMEaser
+                       ? this.#tripPlays(val, "plays", validate)
+                       : validate(val);
+    }
+    static #validPlays(val) {           // default, !neg,!zero,!float,!undef,!null
+        return Ez.toNumber(val, "plays", undefined, true, true, true, false, false);
+    }
+    // no this.playings because it requires ez and getters don't take args
+    _playings(ez, val) { return val ?? ez.plays; }
+
+// this.eKey is an int enumeration value: E.value, E.unit, or E.comp
     get eKey()    {
         return this.isMEaser ? this.#eKey.slice() : this.#eKey;
     }
@@ -142,46 +180,10 @@ class EBase {
             Ez._invalidErr(name, val, Easy._listE(name));
     }
 
-// this.autoTrip
-    get autoTrip()  {
-        return this.isMEaser ? this.#autoTrip.slice() : this.#autoTrip;
-    }
-    set autoTrip(val) { // 3 states: true, false, undefined
-        const validate = EBase.#validTrip;
-        this.#autoTrip = this.isMEaser
-                       ? this.#tripPlays(val, "autoTrip", validate)
-                       : validate(val);
-    }
-    static #validTrip(val) {
-        return Is.def(val) ? Boolean(val) : val;
-    }
-    // _autoTripping computes a run-time autoTrip value, no this.autoTripping
-    // because getter can't have an ez argument, see Easies.proto._zero() and
-    _autoTripping(ez, val) {                      // MEaser.proto.autoTripping
-        return Is.def(val) ? val && ez.roundTrip
-                           : ez.autoTripping;     // ez.autoTrip && ez.roundTrip
-    }
-
-// this.plays
-    get plays()    {
-        return this.isMEaser ? this.#plays.slice() : this.#plays;
-    }
-    set plays(val) {    // a positive integer or undefined
-        const validate = EBase.#validPlays;
-        this.#plays    = this.isMEaser
-                       ? this.#tripPlays(val, "plays", validate)
-                       : validate(val);
-    }
-    static #validPlays(val) {           // default, !neg,!zero,!float,!undef,!null
-        return Ez.toNumber(val, "plays", undefined, true, true, true, false, false);
-    }
-    // no this.playings because it requires ez and getters don't take args
-    _playings(ez, val) { return val ?? ez.plays; }
-
-// this.evaluate allows the user to do their own evaluation
-    get evaluate()    { return this.#evaluate; }
-    set evaluate(val) {
-        this.#evaluate = Ez._validFunc(val,  "evaluate");
+// this.evaluator allows the user to do their own evaluation
+    get evaluator()    { return this.#evaluate; }
+    set evaluator(val) {
+        this.#evaluate = Ez._validFunc(val,  "evaluator");
      // this._eVal is the public property used at run-time
         this._eVal = this.#evaluate
                 ?? (this.isMEaser ? this.#MEval : this.#Eval);

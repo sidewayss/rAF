@@ -68,16 +68,16 @@ class MEBase extends EBase { // M = multi E = Easer, the multi-ease base class
                  * (plays[i] - 1);               // plays[i] range is 1 to COUNT
         }));
     }
-// this.startTime is the start of animation, after the shortest ez.wait
-    get startTime() {
-        return Math.min(...this.#easies.map(ez => ez.startTime));
+// this.delay is the start of animation, after the shortest ez.wait
+    get delay() {
+        return Math.min(...this.#easies.map(ez => ez.delay));
     }
 //==============================================================================
 //  _zero()
     _zero() {
         super._zero();
-        const start = this.#easies[0].startTime;
-        if (this.#easies.some(ez => ez.startTime != start))
+        const start = this.#easies[0].delay;
+        if (this.#easies.some(ez => ez.delay != start))
             this.calcInitial(); // pre-populate #twoD or #oneD
     }
 //  init() calls super.init() with an array of ez.#e as the argument

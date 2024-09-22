@@ -18,6 +18,11 @@
   src:url("fonts/RobotoMono.ttf") format("truetype");
 }
 @font-face {
+  font-family:"Roboto";
+  font-weight:500;
+  src:url("fonts/Roboto-Medium.ttf") format("truetype");
+}
+@font-face {
   font-family:"Radio Canada Big";
   font-weight:400;
   src:url("fonts/RadioCanadaBig-Regular.ttf") format("truetype");
@@ -100,6 +105,9 @@ img {
 #title {
   display:flex;
   align-items:center;
+}
+.nudge-down {
+  margin-top:0.125rem;
 }
 h1 {
   font-family:"Averia";

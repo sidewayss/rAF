@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>rAF</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="../index.css"/>
+		<style>
+			table {
+				margin-top:2rem;
+				border-spacing:0;
+				border:2px #111 solid;
+			}
+			td {
+				font-family:"Roboto Mono";
+				font-size: 1rem;
+				vertical-align:top;
+				padding-left:0.25rem;
+				color:#0D0D0D;
+			}
+			.h1 {
+				font-size:1.25rem;
+				color:#002060;
+				background-color:#F8F8F8;
+				border-bottom: 2px #111 solid;
+			}
+			.h2 {
+				color:#003300;
+				background-color:#FBFBF0;
+				border-bottom: 1px #333 solid;
+			}
+			.h3 {
+				padding-left:1rem;
+				color:#3E1F00;
+				background-color:#F8F8F0;
+				border-bottom: 1px #555 solid;
+			}
+			.h4 {
+				padding-left:1rem;
+				font-style:italic;
+				color:#0D0D0D;
+				background-color:#EFEFE8;
+				border-bottom: 1px #555 solid;
+			}
+			td.subclass {
+				color:#002060;
+				background-color:#EAEAEA;
+				border-bottom: 1px #333 solid;
+			}
+			td.wrap {
+				padding-left:1rem
+			}
+			.border-top {
+				border-top:1px #555 solid;
+			}
+			.border-dotted {
+				border-bottom:1px #BFBFBF dotted;
+			}
+			.middle {
+				border-left: 1px #555 solid ; border-right: 1px #555 solid;
+			}
+			.right {
+				border-left: 1px #555 solid;
+			}
+			.centered {
+				padding:0;
+				text-align:center;
+			}
+			.mt0 {
+				margin-top:0;
+			}
+			.ml1 {
+				margin-left:1rem;
+			}
+			span {
+				cursor:default;
+				font-size:1.25rem;
+				align-self:flex-start;
+				margin-left:0.5rem;
+			}
+			span.subclass {
+				padding-left:1ch
+			}
+			span.subclass2 {
+				padding-left:2ch;
+			}
+			a {
+				text-decoration:none;
+			}
+			span::before {
+				content:"\25CF";
+				font-size:1rem;
+				padding-right:0.25rem;
+				color:#444;
+				position:relative;
+				top:-1px;
+			}
+			span.subclass::before {
+				content:"\25CB";
+			}
+			span.subclass2::before {
+				content:"\25CC";
+			}
+		</style>
+  </head>
+	<body>
+    <div id="content">
+      <div id="title">
+        <object data="../img/rAFoffset.svg" type="image/svg+xml" style="width:180px; height:180px;"></object>
+        <h1 class="nudge-down">Properties and Methods By Class</h1>
+      </div>
+			<span><a href="#aframe">class AFrame</a></span>
+			<span><a href="#acues">class ACues</a></span>
+			<span><a href="#easies">class Easies</a></span>
+			<span><a href="#easy">class Easy</a></span>
+			<span class="subclass"><a href="#obj">constructor(obj), the obj argument</a></span>
+			<span class="subclass"><a href="#leg">the leg object</a></span>
+			<span class="subclass"><a href="#e">const E: properties pertaining to Easy</a></span>
+			<span><a href="#ebase">class EBase</a></span>
+			<span class="subclass"><a href="#create">EFactory.js/create(obj), the obj argument</a></span>
+			<span class="subclass"><a href="#easer">class Easer</a></span>
+			<span class="subclass"><a href="#easer-by-elm">class EaserByElm</a></span>
+			<span class="subclass"><a href="#mebase">class MEBase</a></span>
+			<span class="subclass2"><a href="#measer">class MEaser</a></span>
+			<span class="subclass2"><a href="#measer-by-elm">class MEaserByElm</a></span>
+			<span><a href="#pbase">class PBase</a></span>
+			<span class="subclass"><a href="#prop">class Prop</a></span>
+			<span class="subclass"><a href="#bute">class Bute</a></span>
+			<span class="subclass"><a href="#pratt">class PrAtt</a></span>
+			<span class="subclass"><a href="#html-bute">class HtmlBute</a></span>
+			<span class="subclass"><a href="#p">const P: PBase instances by name</a></span>
+			<span><a href="#func">class Func</a></span>
+			<span class="subclass"><a href="#cfunc">class CFunc</a></span>
+			<span class="subclass2"><a href="#color-func">class ColorFunc</a></span>
+			<span class="subclass"><a href="#srfunc">class SRFunc</a></span>
+			<span class="subclass"><a href="#f">const F: Func instances by name</a></span>
+			<span>more const Objects</span>
+			<span class="subclass"><a href="#u">const U for Units</a></span>
+			<span class="subclass"><a href="#is">const Is, boolean functions</a></span>
+			<span class="subclass"><a href="#ez">const Ez, a factotem</a></span>
+			<span class="subclass"><a href="#bitmasks">bitmasks for argument masking</a></span>
+			<span class="subclass"><a href="#ease">const Ease, old-skool presets</a></span>
+			<span><a href="#ebezier">class EBezier</a></span>
+			<span><a href="#ecalc">class ECalc</a></span>
+		</div>
+<!----------------------------------------------------------------------------->
+<table id="aframe">
+			<colgroup><col width=141><col width=182><col width=488></colgroup>
+			<tr><td class="h1" colspan=3>class AFrame</td></tr>
+			<tr><td class="h2" colspan=3>Public</td></tr>
+			<tr><td class="h3" colspan=3>properties</td></tr>
+			<tr><td>targets</td><td class="middle">Set(Easies, ACues)</td><td>get returns shallow copy as array</td></tr>
+			<tr><td>zero</td><td class="middle">number, read-only</td><td>the animation zero-timestamp in milliseconds</td></tr>
+			<tr><td>now</td><td class="middle">number, read-only</td><td>the current, relative animation timestamp</td></tr>
+			<tr><td>elapsed</td><td class="middle">number, read-only</td><td>milliseconds elapsed since the start of animation</td></tr>
+			<tr><td>useNow</td><td class="middle">bool</td><td>use performance.now() instead of timeStamp</td></tr>
+			<tr><td class="border-dotted">oneShot</td><td class="border-dotted middle">bool</td><td class="border-dotted">true sets onArrival = E.empty</td></tr>
+			<tr><td>frameZero</td><td class="middle">bool</td><td>establish zero time in the first animation frame</td></tr>
+			<tr><td>initZero</td><td class="middle">bool</td><td>initialize elements when zero is established</td></tr>
+			<tr><td class="border-dotted">syncZero</td><td class="border-dotted middle">function</td><td class="border-dotted">runs when zero is established</td></tr>
+			<tr><td>peri</td><td class="middle">function</td><td>runs once per #animate()</td></tr>
+			<tr><td>post</td><td class="middle">function</td><td>runs on arrival</td></tr>
+			<tr><td class="border-dotted">keepPost</td><td class="border-dotted middle">bool</td><td class="border-dotted">default = false = one-shot this.post</td></tr>
+			<tr><td>status</td><td class="middle">bool, read-only</td><td>this.#status</td></tr>
+			<tr><td>atOrigin</td><td class="middle">bool, read-only</td><td>this.#status == E.original</td></tr>
+			<tr><td>atInitial</td><td class="middle">bool, read-only</td><td>this.#status == E.initial</td></tr>
+			<tr><td>hasArrived</td><td class="middle">bool, read-only</td><td>this.#status == E.arrived</td></tr>
+			<tr><td>isPausing</td><td class="middle">bool, read-only</td><td>this.#status == E.pausing</td></tr>
+			<tr><td>isPlaying</td><td class="middle">bool, read-only</td><td>this.#status == E.playing</td></tr>
+			<tr><td class="border-dotted">isEmpty</td><td class="border-dotted middle">bool, read-only</td><td class="border-dotted">this.#status == E.empty</td></tr>
+			<tr><td>fps</td><td class="middle">object, read-only</td><td>test results/data for baseline test</td></tr>
+			<tr><td>gpu</td><td class="middle">object, read-only</td><td>ditto for gpu test</td></tr>
+			<tr><td class="h2 border-top" colspan=3>methods</td></tr>
+			<tr><td>newCues()</td><td class="middle">ACues</td><td>adds a new ACues target</td></tr>
+			<tr><td>newEasies()</td><td class="middle">Easies</td><td>adds a new Easies target</td></tr>
+			<tr><td>addTarget()</td><td class="middle">undefined</td><td>adds a previously created target of either type</td></tr>
+			<tr><td>cutTarget()</td><td class="middle">bool</td><td>removes a target, returns true if deleted</td></tr>
+			<tr><td class="border-dotted">clearTargets()</td><td class="border-dotted middle">undefined</td><td class="border-dotted">clears all targets</td></tr>
+			<tr><td>play()</td><td class="middle">Promise</td><td>plays the animation</td></tr>
+			<tr><td>pause()</td><td class="middle">int status enum</td><td>pauses &nbsp;the animation, promise.resolve(E.pausing)</td></tr>
+			<tr><td>stop()</td><td class="middle">int status enum</td><td>cancels the animation, promise.resolve(E.original)</td></tr>
+			<tr><td>cancel()</td><td class="middle">int status enum</td><td>cancels the animation, promise.resolve(status)</td></tr>
+			<tr><td>arrive()</td><td class="middle">int status enum</td><td>jumps to the end of the animation, E.arrived</td></tr>
+			<tr><td class="border-dotted">init()</td><td class="border-dotted middle">int status enum</td><td class="border-dotted">initializes the animation, E.initial</td></tr>
+			<tr><td>fpsBaseline()</td><td class="middle">Promise</td><td>estimates a baseline browser frame rate</td></tr>
+			<tr><td>gpuTest()</td><td class="middle">Promise</td><td>runs a user-defined gpu stress test animation</td></tr>
+			<tr><td class="h3 border-top" colspan=3>static methods</td></tr>
+			<tr><td>fpsRound()</td><td class="middle">number</td><td>rounds to nearest &quot;commonly used&quot; frame rate</td></tr>
+		</table>
+<!----------------------------------------------------------------------------->
+		<table id="acues">
+			<colgroup><col width=110><col width=164><col width=404></colgroup>
+			<tr><td class="h1" colspan=3>class ACues</td></tr>
+			<tr><td class="h2" colspan=3>Public</td></tr>
+			<tr><td class="h3" colspan=3>properties</td></tr>
+			<tr><td class="border-dotted">cues</td><td class="border-dotted middle">array: [{}]</td><td class="border-dotted">read-write</td></tr>
+			<tr><td>pre</td><td class="middle">function</td><td></td></tr>
+			<tr><td>peri</td><td class="middle">function</td><td>alias callback, defaults to default()</td></tr>
+			<tr><td class="border-dotted">post</td><td class="border-dotted middle">function</td><td class="border-dotted">read-write</td></tr>
+			<tr><td>elms</td><td class="middle">array: [Element]</td><td>elements for default()</td></tr>
+			<tr><td class="border-dotted">prop</td><td class="border-dotted middle">Prop</td><td class="border-dotted">the property to set in default()</td></tr>
+			<tr><td>validate</td><td class="middle">bool</td><td>validate user cues or not, default = true</td></tr>
+			<tr><td>isACues</td><td class="middle">bool, read-only</td><td>always true</td></tr>
+			<tr><td class="h3 border-top" colspan=3>methods</td></tr>
+			<tr><td class="border-dotted">default()</td><td class="border-dotted middle">function</td><td class="border-dotted">the default callback/peri function</td></tr>
+			<tr><td>newCue()</td><td class="middle"></td><td></td></tr>
+			<tr><td>addCue()</td><td class="middle"></td><td></td></tr>
+			<tr><td>splice()</td><td class="middle"></td><td></td></tr>
+			<tr><td>push()</td><td class="middle"></td><td></td></tr>
+			<tr><td>unshift()</td><td class="middle"></td><td></td></tr>
+			<tr><td>insert()</td><td class="middle"></td><td></td></tr>
+			<tr><td class="h2 border-top" colspan=3>&quot;Protected&quot;</td></tr>
+			<tr><td class="h3" colspan=3>methods</td></tr>
+			<tr><td>_next()</td><td class="middle"></td><td></td></tr>
+			<tr><td>_resume()</td><td class="middle"></td><td></td></tr>
+			<tr><td>_zero()</td><td class="middle"></td><td></td></tr>
+			<tr><td>_reset()</td><td class="middle"></td><td></td></tr>
+			<tr><td>_runPost()</td><td class="middle"></td><td></td></tr>
+		</table>
+<!----------------------------------------------------------------------------->
+		<table id="easies">
+			<colgroup><col width=192><col width=158><col width=526></colgroup>
+			<tr><td class="h1" colspan=3>class Easies</td></tr>
+			<tr><td class="h2" colspan=3>Public</td></tr>
+			<tr><td>constructor(arr)</td><td class="middle">Easies</td><td>validates arr as arrayish, converts it to set</td></tr>
+			<tr><td class="h3 border-top" colspan=3>Set emulation</td></tr>
+			<tr><td class="border-dotted">size</td><td  class="border-dotted middle">int</td><td  class="border-dotted">this.#easies.size</td></tr>
+			<tr><td>has()</td><td class="middle">bool</td><td>this.#easies.has()</td></tr>
+			<tr><td>add()</td><td class="middle">undefined</td><td>this.#easies.add()</td></tr>
+			<tr><td>delete()</td><td class="middle">bool</td><td>this.#easies.delete() plus</td></tr>
+			<tr><td>clear()</td><td class="middle">undefined</td><td>clears #easies, #backup, #targets, #easy2Targets</td></tr>
+			<tr><td>values()</td><td class="middle">iterator</td><td>this.#easies.values()</td></tr>
+			<tr><td>[Symbol.iterator]()</td><td class="middle">iterator</td><td>this.#easies.values()</td></tr>
+			<tr><td class="h3 border-top" colspan=3>properties</td></tr>
+			<tr><td>easies</td><td class="middle">array</td><td >shallow copy of the internal set #easies</td></tr>
+			<tr><td>targets</td><td class="middle">array</td><td>shallow copy of the internal set #targets</td></tr>
+			<tr><td>status</td><td class="middle">int from enum</td><td>Math.max(...this.#easies.map(ez = ez.status))</td></tr>
+			<tr><td class="border-dotted">oneShot</td><td class="border-dotted middle">bool</td><td class="border-dotted"></td></tr>
+			<tr><td>peri</td><td class="middle">function</td><td>called once per frame</td></tr>
+			<tr><td class="border-dotted">post</td><td class="border-dotted middle">function</td><td class="border-dotted">called once the Easies has finished</td></tr>
+			<tr><td>isEasies</td><td class="middle">bool, read-only</td><td>always true</td></tr>
+			<tr><td class="h3 border-top" colspan=3>instance methods</td></tr>
+			<tr><td>newTarget()</td><td class="middle">Measer</td><td>creates new MEaser, adds it to #targets, easy2Targets</td></tr>
+			<tr><td>addTarget()</td><td class="middle">Measer</td><td>adds existing MEaser to #targets, easy2Targets</td></tr>
+			<tr><td>cutTarget()</td><td class="middle">bool</td><td>did the target exist? was it deleted?</td></tr>
+			<tr><td class="border-dotted">clearTargets()</td><td class="border-dotted middle">undefined</td><td class="border-dotted">clears #targets and the Sets in #easy2Targets.values()</td></tr>
+			<tr><td>init()</td><td class="middle">undefined</td><td></td></tr>
+			<tr><td>restore()</td><td class="middle">undefined</td><td></td></tr>
+			<tr><td class="h3 border-top" colspan=3>static methods</td></tr>
+			<tr><td>createFromTargets()</td><td class="middle">Easies</td><td>creates an Easies instance from [MEaser]</td></tr>
+			<tr><td class="h2 border-top" colspan=3>&quot;Protected&quot;</td></tr>
+			<tr><td class="h3" colspan=3>methods</td></tr>
+			<tr><td>_zero</td><td class="middle">undefined</td><td>write-only, initializes easies for fresh playback</td></tr>
+			<tr><td>_resume()</td><td class="middle">undefined</td><td>resumes after animation paused, AFrame.play()</td></tr>
+			<tr><td>_reset()</td><td class="middle">undefined</td><td></td></tr>
+			<tr><td class="border-dotted">_runPost()</td><td class="border-dotted middle">undefined</td><td class="border-dotted"></td></tr>
+			<tr><td>_next()</td><td class="middle">bool</td><td>runs every frame, returns (this.status != E.arrived)</td></tr>
+		</table>
+<!----------------------------------------------------------------------------->
+		<table id="easy">
+			<colgroup><col width=154><col width=178><col width=520></colgroup>
+			<tr><td class="h1" colspan=3>class Easy</td></tr>
+			<tr><td class="h2" colspan=3>Public</td></tr>
+			<tr><td class="h3" colspan=3>properties</td></tr>
+			<tr><td>time</td><td class="middle">int ms</td><td>the base duration of one one-way play</td></tr>
+			<tr><td>wait</td><td class="middle">int ms</td><td>time to wait before starting the clock</td></tr>
+			<tr><td>loopWait</td><td class="middle">int ms</td><td>time between end of play and start of next</td></tr>
+			<tr><td class="border-dotted">tripWait</td><td class="border-dotted middle">int ms</td><td class="border-dotted">time between outbound and auto-inbound</td></tr>
+			<tr><td>duration</td><td class="middle">int ms, read-only</td><td> full duration of one play, including round trip</td></tr>
+			<tr><td>delay</td><td class="middle">int ms, read-only</td><td> this.wait + this._firstLeg.wait</td></tr>
+			<tr><td>firstTime</td><td class="middle">int ms, read-only</td><td> the duration of the first play</td></tr>
+			<tr><td>loopTime</td><td class="middle">int ms, read-only</td><td> the duration of each play after the first</td></tr>
+			<tr><td class="border-dotted">tripTime</td><td class="border-dotted middle">int ms, read-only</td><td class="border-dotted">the duration of the return aka inbound trip</td></tr>
+			<tr><td>plays</td><td class="middle">int</td><td>min = 1, number of times to play animation</td></tr>
+			<tr><td>oneShot</td><td class="middle">bool</td><td>clears targets upon arrival</td></tr>
+			<tr><td>roundTrip</td><td class="middle">bool</td><td>enables flipTrip, autoTrip, tripWait</td></tr>
+			<tr><td>flipTrip</td><td class="middle">bool</td><td>defaults to true, flips the curve for inbound</td></tr>
+			<tr><td>autoTrip</td><td class="middle">bool</td><td>defaults to true, auto-return to start</td></tr>
+			<tr><td></td><td class="middle"></td><td>(!autoTrip &amp;&amp; roundTrip &amp;&amp; plays &gt; 1) is not allowed</td></tr>
+			<tr><td class="border-dotted">autoTripping</td><td class="border-dotted middle">bool, &nbsp;&nbsp;read-only</td><td class="border-dotted">returns (autoTrip &amp;&amp; roundTrip)</td></tr>
+			<tr><td>start</td><td class="middle">float, &nbsp;read-only</td><td>defaults to 0</td></tr>
+			<tr><td>end</td><td class="middle">float, &nbsp;read-only</td><td>defaults to 1</td></tr>
+			<tr><td>distance</td><td class="middle">float, &nbsp;read-only</td><td>unsigned distance between start and end</td></tr>
+			<tr><td class="border-dotted">targets</td><td class="border-dotted middle">array: [Easer]</td><td class="border-dotted">get returns a shallow copy</td></tr>
+			<tr><td>pre</td><td class="middle">function</td><td>called just prior start of animation</td></tr>
+			<tr><td>peri</td><td class="middle">function</td><td>called once per frame</td></tr>
+			<tr><td>post</td><td class="middle">function</td><td>called when animation arrives</td></tr>
+			<tr><td>onAutoTrip</td><td class="middle">function</td><td>called when inbound trip begins</td></tr>
+			<tr><td class="border-dotted">onLoop</td><td class="border-dotted middle">function</td><td class="border-dotted">called with next play begins</td></tr>
+			<tr><td>initial_e</td><td class="middle">object, read-only</td><td>the initial state of this.e</td></tr>
+			<tr><td>isEasy</td><td class="middle">bool, &nbsp;&nbsp;read-only</td><td>always true</td></tr>
+			<tr><td class="h3 border-top" colspan=3>methods</td></tr>
+			<tr><td>arrive()</td><td class="middle">undefined</td><td></td></tr>
+			<tr><td>restore()</td><td class="middle">undefined</td><td></td></tr>
+			<tr><td>init()</td><td class="middle">undefined</td><td></td></tr>
+			<tr><td class="border-dotted">initRoundTrip()</td><td class="border-dotted middle">undefined</td><td class="border-dotted"></td></tr>
+			<tr><td>newTarget()</td><td class="middle">EBase subclass</td><td>creates and optionally adds an Easer to #targets</td></tr>
+			<tr><td>addTarget()</td><td class="middle">undefined</td><td>adds an Easer to #targets</td></tr>
+			<tr><td>cutTarget()</td><td class="middle">bool</td><td>removes a target</td></tr>
+			<tr><td>clearTargets()</td><td class="middle">undefined</td><td>clears the targets collection</td></tr>
+			<tr><td class="h2 border-top" colspan=3>&quot;Protected&quot;</td></tr>
+			<tr><td class="h3" colspan=3>properties</td></tr>
+			<tr><td>_firstLeg</td><td class="middle">leg object</td><td>starting point for the linked list of legs</td></tr>
+			<tr><td>_leg</td><td class="middle">leg object</td><td>the currently animating leg</td></tr>
+			<tr><td>_now</td><td class="middle">number</td><td>the current relative time</td></tr>
+			<tr><td class="border-dotted">_value</td><td class="border-dotted middle">number</td><td class="border-dotted">for E.increment</td></tr>
+			<tr><td>_inbound</td><td class="middle">bool</td><td>shared shorthand for e.status == E.inbound</td></tr>
+			<tr><td class="h3 border-top" colspan=3>methods</td></tr>
+			<tr><td class="border-dotted">_validate()</td><td class="border-dotted middle">static bool</td><td class="border-dotted">validates that an object is of class Easy</td></tr>
+			<tr><td class="border-dotted">_duration()</td><td class="border-dotted middle">number</td><td>more flexible than, and used by, this.duration</td></tr>
+			<tr><td>_zero()</td><td class="middle">undefined</td><td>initializes prior to animation</td></tr>
+			<tr><td>_resume()</td><td class="middle">undefined</td><td>prepares to resume post-pause</td></tr>
+			<tr><td class="border-dotted">_reset()</td><td class="border-dotted middle">undefined</td><td>user-initiated reset or AFrame.prototype.stop()</td></tr>
+			<tr><td>_easeMe()</td><td class="middle">this.e.status</td><td>called by Easies.prototype._easeEm() during animation</td></tr>
+			<tr><td>_calc()</td><td class="middle">undefined</td><td>called by easeMe(), overridden in incremental.js</td></tr>
+			<tr><td>_nextLeg()</td><td class="middle">this._leg</td><td>called by easeMe(), shared with incremental.js</td></tr>
+			<tr><td class="border-dotted">_trip()</td><td class="border-dotted middle">undefined</td><td class="border-dotted">called by _nextLeg(), shared with incremental.js</td></tr>
+			<tr><td class="border-dotted">_listE</td><td class="border-dotted middle">string</td><td>returns lists of E.xxx constants for error messages</td></tr>
+			<tr><td>_finishLegs()</td><td class="middle">bool</td><td>shared with other constructor()-related modules</td></tr>
+			<tr><td>_setTimeCount()</td><td class="middle">number</td><td>shared with incremental.js</td></tr>
+		</table>
+		<table id="obj">
+			<colgroup><col width=108><col width=168><col width=560></colgroup>
+			<tr><td class="subclass" colspan=3>Easy.prototype.constructor(obj) - the obj argument</td></tr>
+			<tr><td class="h3" colspan=3>user properties</td></tr>
+			<tr><td>time</td><td class="middle">int ms</td><td>required for non-incremental</td></tr>
+			<tr><td>wait</td><td class="middle">int ms</td><td>default: 0</td></tr>
+			<tr><td>loopWait</td><td class="middle">int ms</td><td>wait time before starting a looped playback</td></tr>
+			<tr><td class="border-dotted">tripWait</td><td class="border-dotted middle">int ms</td><td class="border-dotted">auto-trip pause, before heading inbound</td></tr>
+			<tr><td>roundTrip</td><td class="middle">bool</td><td>default: 0</td></tr>
+			<tr><td>autoTrip</td><td class="middle">bool</td><td>wait time before starting a looped playback</td></tr>
+			<tr><td class="border-dotted">flipTrip</td><td class="border-dotted middle">bool</td><td class="border-dotted">auto-trip pause, before heading inbound</td></tr>
+			<tr><td>start</td><td class="middle">number</td><td>default: 0</td></tr>
+			<tr><td class="border-dotted">end</td><td class="border-dotted middle">number</td><td class="border-dotted">default: 1, no distance property: unlike Easer</td></tr>
+			<tr><td>mid</td><td class="middle">number</td><td>two-legged shorthand: mid-point value = leg1.end</td></tr>
+			<tr><td>split</td><td class="middle">int ms</td><td>mid-point in time = leg1.time</td></tr>
+			<tr><td class="border-dotted">gap</td><td class="border-dotted middle">int ms</td><td class="border-dotted">duration of pause at mid-point = leg2.wait</td></tr>
+			<tr><td>type</td><td class="middle">int: E.type</td><td>default: linear = leg.type, not an Easy property</td></tr>
+			<tr><td class="border-dotted">io</td><td class="border-dotted middle">int enum</td><td class="border-dotted">E.in, E.out, and all two-legged combinations thereof</td></tr>
+			<tr><td>pow</td><td class="middle">number</td><td>these four are mutually exclusive:</td></tr>
+			<tr><td>bezier</td><td class="middle">array or EBezier</td><td>[0-1, 0-1, 0-1, 0-1] 0-1 is a soft range for the y values</td></tr>
+			<tr><td>steps</td><td class="middle">array</td><td>in steps(): leg[&quot;steps&quot;].slice()</td></tr>
+			<tr><td class="border-dotted">increment</td><td class="border-dotted middle">number</td><td class="border-dotted">the amount to add to Easy.prototype._value every frame</td></tr>
+			<tr><td>jump</td><td class="middle">number</td><td>E.start .end .none .both, just like CSS, for steps</td></tr>
+			<tr><td>timing</td><td class="middle">int, array, Easy</td><td>duration, array of times per step, Easy for easing time</td></tr>
+			<tr><td>values</td><td class="middle">array</td><td>array of values per step, optional</td></tr>
+			<tr><td class="border-dotted">easy</td><td class="border-dotted middle">Easy</td><td class="border-dotted">Easy for easing values</td></tr>
+			<tr><td>legs</td><td class="middle">array: [{}]</td><td>user-specified legs</td></tr>
+			<tr><td>plays</td><td class="middle">int</td><td>defaults to .loops + 1 || .repeats + 1 || 1</td></tr>
+			<tr><td>oneShot</td><td class="middle">bool</td><td>clears targets upon arrival</td></tr>
+			<tr><td class="border-dotted">count</td><td class="border-dotted middle">int</td><td class="border-dotted">increment count (vs time)</td></tr>
+			<tr><td>pre</td><td class="middle">function</td><td>runs pre-animation</td></tr>
+			<tr><td>peri</td><td class="middle">function</td><td>runs every frame</td></tr>
+			<tr><td>post</td><td class="middle">function</td><td>runs post-animation</td></tr>
+			<tr><td>onLoop</td><td class="middle">function</td><td>runs upon starting a new play</td></tr>
+		</table>
+		<table id="leg">
+			<colgroup><col width=108><col width=168><col width=560></colgroup>
+			<tr><td class="subclass" colspan=3>the Easy leg object</td></tr>
+			<tr><td class="h3" colspan=3>user properties, a subset of obj user properties</td></tr>
+			<tr><td>time </td><td class="middle">int ms </td><td>required for non-incremental</td></tr>
+			<tr><td>wait </td><td class="middle">int ms </td><td>default: 0</td></tr>
+			<tr><td>start </td><td class="middle">number </td><td>default: 0</td></tr>
+			<tr><td class="border-dotted">end </td><td class="border-dotted middle">number </td><td class="border-dotted">default: 1, no distance property: unlike Easer</td></tr>
+			<tr><td>type </td><td class="middle">int: E.type </td><td>default: linear = leg.type, not an Easy property</td></tr>
+			<tr><td class="border-dotted">io </td><td class="border-dotted middle">int enum </td><td class="border-dotted">E.in and E.out only</td></tr>
+			<tr><td>pow </td><td class="middle">number </td><td>these four are mutually exclusive:</td></tr>
+			<tr><td>bezier </td><td class="middle">array or EBezier </td><td>[0-1, 0-1, 0-1, 0-1] 0-1 is a soft range for the y values</td></tr>
+			<tr><td>steps </td><td class="middle">array </td><td>in steps(): leg[&quot;steps&quot;].slice()</td></tr>
+			<tr><td class="border-dotted">increment </td><td class="border-dotted middle">number </td><td class="border-dotted">the amount to add to Easy.prototype._value every frame</td></tr>
+			<tr><td>jump </td><td class="middle">number </td><td>E.start .end .none .both, just like CSS, for steps</td></tr>
+			<tr><td>timing </td><td class="middle">int, array, Easy </td><td>duration, array of times per step, Easy for easing time</td></tr>
+			<tr><td>values </td><td class="middle">array </td><td>array of values per step, optional</td></tr>
+			<tr><td >easy </td><td class="middle">Easy </td><td >Easy for easing values</td></tr>
+			<tr><td class="h3 border-top" colspan=3>some of the system-defined properties</td></tr>
+			<tr><td>unit </td><td class="middle">number 0-1 </td><td>end unit interval for this leg, 0-1 is soft range</td></tr>
+			<tr><td>comp </td><td class="middle">number 0-1 </td><td>the complement of the unit = 1 - unit</td></tr>
+			<tr><td class="border-dotted">part </td><td class="border-dotted middle">number </td><td class="border-dotted">this leg's part of the whole, signed </td></tr>
+			<tr><td>prev </td><td class="middle">leg object </td><td>previous leg in list, dummied up for _firstLeg, #lastLeg </td></tr>
+			<tr><td class="border-dotted">next </td><td class="border-dotted middle">leg object </td><td class="border-dotted">next leg in list </td></tr>
+			<tr><td>ease </td><td class="middle">function </td><td>the easing function to call, see easings.js </td></tr>
+		</table>
+		<table id="e">
+			<colgroup><col width=836></colgroup>
+			<tr><td class="subclass">const E: values pertaining to Easy, generated by PFactory.init()</td></tr>
+			<tr><td class="h2">E.abc = &quot;abc&quot;</td></tr>
+			<tr><td class="h3">eKey</td></tr>
+			<tr><td class="wrap">E.value, E.unit, E.comp</td></tr>
+			<tr><td class="h2 border-top">Auto-generated enumeration of integers starting at 0</td></tr>
+			<tr><td class="h3">status (order significant for E.arrived = 0 = falsy and other &lt; and &gt; comparisons)</td></tr>
+			<tr><td class="wrap">E.arrived, E.tripped, E.waiting, E.inbound, E.outbound, E.initial, E.original, E.pausing, E.playing, E.empty</td></tr>
+			<tr><td class="h3 border-top">type (order significant only for E.linear = 0 = falsy)</td></tr>
+			<tr><td class="wrap">E.linear, E.sine, E.circ, E.expo, E.back, E.elastic, E.bounce, E.pow, E.bezier, E.steps, E.increment</td></tr>
+			<tr><td class="h3 border-top">io (order significant, combined with bitmasks)</td></tr>
+			<tr><td class="wrap">E.in, E.out, E.inIn, E.outIn, E.inOut, E.outOut</td></tr>
+			<tr><td class="h3 border-top">jump (order significant, combined with bitmasks)</td></tr>
+			<tr><td class="wrap">E.none, E.start, E.end, E.both</td></tr>
+			<tr><td class="h3 border-top">set</td></tr>
+			<tr><td class="wrap">E.let, E.set, E.net</td></tr>
+		</table>
+<!----------------------------------------------------------------------------->
+		<table id="ebase">
+			<colgroup><col width=154><col width=130><col width=454></colgroup>
+			<tr><td class="h1" colspan=3>class EBase</td></tr>
+			<tr><td class="h2" colspan=3>Public</td></tr>
+			<tr><td class="h3" colspan=3>properties</td></tr>
+			<tr><td>loopByElm</td><td class="middle">boolean</td><td>read-only, is feature on or off?</td></tr>
+			<tr><td>elmCount</td><td class="middle">int</td><td>read-only, number of elements</td></tr>
+			<tr><td class="border-dotted">elmIndex</td><td class="border-dotted middle">int</td><td class="border-dotted">read-only, current element index for loopByElm</td></tr>
+			<tr><td>autoTrip</td><td class="middle">boolean or array</td><td>or undefined or array with some undefined</td></tr>
+			<tr><td>plays</td><td class="middle">int or array</td><td>overrides Easy if not undefined, ditto array</td></tr>
+			<tr><td>eKey</td><td class="middle">int or array</td><td>E.value|unit|comp or array thereof for Measer</td></tr>
+			<tr><td class="border-dotted">evaluator</td><td class="border-dotted middle">function</td><td class="border-dotted">sets #evaluate, overrides built-in code</td></tr>
+			<tr><td>peri</td><td class="middle">function</td><td>every frame animation callback</td></tr>
+			<tr><td>onLoop</td><td class="middle">function</td><td>once per play animation callback</td></tr>
+			<tr><td class="border-dotted">onLoopByElm</td><td class="border-dotted middle">function</td><td class="border-dotted">once per element animation callback</td></tr>
+			<tr><td>isEaser</td><td class="middle">bool</td><td>read-only, always true</td></tr>
+			<tr><td>isMEaser</td><td class="middle">bool</td><td>true if instance of MEBase, else undefined</td></tr>
+			<tr><td class="h3 border-top" colspan=3>methods</td></tr>
+			<tr><td>meTrip()</td><td class="middle"></td><td>for MEaser only</td></tr>
+			<tr><td>mePlays()</td><td class="middle"></td><td></td></tr>
+			<tr><td class="border-dotted">meEKey()</td><td class="border-dotted middle"></td><td class="border-dotted"></td></tr>
+			<tr><td>restore()</td><td class="middle"></td><td></td></tr>
+			<tr><td>init()</td><td class="middle"></td><td></td></tr>
+			<tr><td>setInitial()</td><td class="middle"></td><td></td></tr>
+			<tr><td>calcInitial()</td><td class="middle"></td><td></td></tr>
+			<tr><td class="h2 border-top" colspan=3>&quot;Protected&quot;</td></tr>
+			<tr><td class="h3" colspan=3>properties</td></tr>
+			<tr><td>_eVal</td><td class="middle">function</td><td>this.#evaluate ?? this.#Eval or this.#MEval</td></tr>
+			<tr><td>_set</td><td class="middle">function</td><td>this.#setElm, this.#setElms, or this.#runPeri</td></tr>
+			<tr><td class="h3 border-top" colspan=3>methods</td></tr>
+			<tr><td class="border-dotted">_validate()</td><td class="border-dotted middle">static bool</td><td class="border-dotted">validates that an object is of class EBase</td></tr>
+			<tr><td>_zero()</td><td class="middle"></td><td>initializes the object prior to animation</td></tr>
+			<tr><td>_autoTripping()</td><td class="middle"></td><td>returns bool or array [bool]</td></tr>
+			<tr><td>_playings()</td><td class="middle"></td><td>returns int or array [int]</td></tr>
+			<tr><td>_nextElm()</td><td class="middle"></td><td>increments #iElm for loopByElm</td></tr>
+			<tr><td>_parseElm()</td><td class="middle"></td><td></td></tr>
+			<tr><td>_initByElm()</td><td class="middle"></td><td></td></tr>
+		</table>
+		<table id="create">
+			<colgroup><col width=136><col width=168><col width=566></colgroup>
+			<tr><td class="subclass" colspan=3">EFactory.js/create(obj): the obj argument</td></tr>
+			<tr><td class="h3" colspan=3>User properties</td></tr>
+			<tr><td>elms</td><td class="middle">element(s)</td><td>or string id(s), alias elm, elements, element</td></tr>
+			<tr><td>prop</td><td class="middle">PBase</td><td>the property to animate</td></tr>
+			<tr><td>func</td><td class="middle">Func</td><td>the function to use</td></tr>
+			<tr><td>units</td><td class="middle">string enum</td><td>optional, falls back to prop to func</td></tr>
+			<tr><td class="border-dotted">mask</td><td class="border-dotted middle">array: [int]</td><td class="border-dotted">argument mask: array of arg indexes, bitmask, etc.</td></tr>
+			<tr><td>easies</td><td class="middle">array: [Easy]</td><td>for MEBase and subclasses</td></tr>
+			<tr><td>eKey</td><td class="middle">string enum</td><td>the easy.e property to calculate: E.value, E.unit, E.comp</td></tr>
+			<tr><td class="border-dotted">evaluator</td><td class="border-dotted middle">function</td><td class="border-dotted">user evaluate() function</td></tr>
+			<tr><td>factor</td><td class="middle">Number, [Number]</td><td>alias f, distance, dist, end (see endToDist())</td></tr>
+			<tr><td>addend</td><td class="middle">Number, [Number]</td><td>alias a, start</td></tr>
+			<tr><td>max</td><td class="middle">Number, [Number]</td><td>maximum value(s)</td></tr>
+			<tr><td class="border-dotted">min</td><td class="border-dotted middle">Number, [Number]</td><td class="border-dotted">minimum value(s)</td></tr>
+			<tr><td>loopByElm</td><td class="middle">bool</td><td>toggles the loop by element feature</td></tr>
+			<tr><td>autoTrip</td><td class="middle">bool</td><td>alias bAbE, indicates 2D arrays are by argument by element</td></tr>
+			<tr><td class="border-dotted">plays</td><td class="border-dotted middle">int &gt; 1</td><td class="border-dotted"></td></tr>
+			<tr><td >peri</td><td class="middle">function</td><td>once per frame callback</td></tr>
+			<tr><td>onLoop</td><td class="middle">function</td><td>once per replay animation callback</td></tr>
+			<tr><td class="border-dotted">onLoopByElm</td><td class="border-dotted middle">function</td><td class="border-dotted">once per element animation callback</td></tr>
+			<tr><td>set</td><td class="middle">int enum</td><td>E.net = &quot;unstructured&quot;, E.set = override the current value, E.let or undefined = only override masked arguments</td></tr>
+			<tr><td>currentValue</td><td class="middle">[], [[]]</td><td>alias cV, user-supplied initial values for the elements</td></tr>
+			<tr><td class="border-dotted">dontGetValues</td><td class="border-dotted middle">bool</td><td class="border-dotted">do not get the current DOM values!</td></tr>
+			<tr><td>byElm</td><td class="middle">bool</td><td>alias byElement, indicates 1D arrays are by element</td></tr>
+			<tr><td class="border-dotted">byArgByElm</td><td class="border-dotted middle">bool</td><td class="border-dotted">alias bAbE, indicates 2D arrays are by argument by element</td></tr>
+			<tr><td>colorjs</td><td class="middle">Color</td><td>alias o.cjs, instance of Color.js class Color</td></tr>
+			<tr><td class="border-dotted">displaySpace</td><td class="border-dotted middle">string</td><td class="border-dotted">spaceId for color.display({space:spaceId})</td></tr>
+			<tr><td>pseudo</td><td class="middle">bool</td><td>for pseudo-animations without elements</td></tr>
+		</table>
+		<table id="easer">
+			<colgroup><col width=176><col width=166><col width=444></colgroup>
+			<tr><td class="subclass">class Easer</td><td class="subclass">extends EBase</td><td class="subclass">1 property, >1 elements</td></tr>
+			<tr><td>_apply()</td><td class="middle"></td><td></td></tr>
+			<tr><td>_calc()</td><td class="middle">ECalc</td><td></td></tr>
+		</table>
+		<table id="easer-by-elm">
+			<colgroup><col width=176><col width=166><col width=444></colgroup>
+			<tr><td class="subclass">class EaserByElm</td><td class="subclass">extends EBase</td><td class="subclass">1 element or loopByElm</td></tr>
+			<tr><td>_apply()</td><td class="middle"></td><td></td></tr>
+			<tr><td class="border-dotted">_calc()</td><td class="border-dotted middle">array: [ECalc]</td><td class="border-dotted">length = #cElms</td></tr>
+			<tr><td>isByElm</td><td class="middle">bool, read-only</td><td>always true</td></tr>
+		</table>
+		<table id="mebase">
+			<colgroup><col width=176><col width=166><col width=444></colgroup>
+			<tr><td class="subclass">class MEBase</td><td class="subclass">extends EBase</td><td class="subclass">the multi-ease Easer</td></tr>
+			<tr><td class="h2" colspan=3>Public</td></tr>
+			<tr><td class="h3" colspan=3>properties</td></tr>
+			<tr><td>easies</td><td class="middle">array: [Easy]</td><td>read-only</td></tr>
+			<tr><td>easy2Mask</td><td class="middle">map</td><td>read-only</td></tr>
+			<tr><td class="border-dotted">loopEasy</td><td class="border-dotted middle">Easy</td><td class="border-dotted">for looping, see Easies.prototype._next()</td></tr>
+			<tr><td>autoTripping</td><td class="middle">array: [Boolean]</td><td>read-only</td></tr>
+			<tr><td class="border-dotted">playings</td><td class="border-dotted middle">array: [Int]</td><td class="border-dotted">read-only</td></tr>
+			<tr><td>duration</td><td class="middle">Number</td><td>read-only, in milliseconds</td></tr>
+			<tr><td>delay</td><td class="middle">Number</td><td>Math.min(...this.#easies.map(ez =&gt; ez.delay))</td></tr>
+			<tr><td class="h3 border-top" colspan=3>methods</td></tr>
+			<tr><td>init()</td><td class="middle"></td><td></td></tr>
+			<tr><td class="h2 border-top" colspan=3>&quot;Protected&quot; methods</td></tr>
+			<tr><td>_validate()</td><td class="middle">static bool</td><td>validates that an object is of class EBase</td></tr>
+			<tr><td>_zero()</td><td class="middle"></td><td>initializes the object prior to animation</td></tr>
+		</table>
+		<table id="measer">
+			<colgroup><col width=176><col width=166><col width=444></colgroup>
+			<tr><td class="subclass">class MEaser</td><td class="subclass">extends MEBase</td><td class="subclass">1 prop, >1 elms, >1 Easys</td></tr>
+			<tr><td>_apply()</td><td class="middle"></td><td></td></tr>
+			<tr><td>_calc()</td><td class="middle">array: [ECalc]</td><td>length = o.lz aka o.easies.length</td></tr>
+		</table>
+		<table id="measer-by-elm">
+			<colgroup><col width=176><col width=166><col width=444></colgroup>
+			<tr><td class="subclass">class MEaserByElm</td><td class="subclass">extends MEBase</td><td class="subclass">1 element or loopByElm</td></tr>
+			<tr><td>_apply()</td><td class="middle"></td><td></td></tr>
+			<tr><td class="border-dotted">_calc()</td><td class="border-dotted middle">array: [[ECalc]]</td><td class="border-dotted">by element by ez of #easies: [elm[ez]]</td></tr>
+			<tr><td>isByElm</td><td class="middle">bool, read-only</td><td>always true</td></tr>
+		</table>
+<!----------------------------------------------------------------------------->
+		<table id="pbase">
+			<colgroup><col width=128><col width=178><col width=492></colgroup>
+			<tr><td class="h1" colspan=3>class PBase</td></tr>
+			<tr><td class="h2" colspan=3>Public</td></tr>
+			<tr><td class="h3" colspan=3>properties</td></tr>
+			<tr><td>name</td><td class="middle">string, read-only</td><td>CSS/SVG function name</td></tr>
+			<tr><td>key</td><td class="middle">string, read-only</td><td>camelCase name for obj.key notation and error msgs</td></tr>
+			<tr><td>func</td><td class="middle">Func</td><td>current default function for this property</td></tr>
+			<tr><td>units</td><td class="middle">string enum</td><td>current default units for this property</td></tr>
+			<tr><td class="h3 border-top" colspan=3>methods</td></tr>
+			<tr><td>join()</td><td class="middle">string</td><td></td></tr>
+			<tr><td class="border-dotted">joinUn()</td><td class="border-dotted middle">string</td><td class="border-dotted"></td></tr>
+			<tr><td>get()</td><td class="middle"></td><td></td></tr>
+			<tr><td>getMany()</td><td class="middle"></td><td></td></tr>
+			<tr><td>getOne()</td><td class="middle"></td><td></td></tr>
+			<tr><td>getn()</td><td class="middle">Number, [Number]</td><td></td></tr>
+			<tr><td>getUn()</td><td class="middle"></td><td></td></tr>
+			<tr><td>getUnToObj()</td><td class="middle"></td><td></td></tr>
+			<tr><td>computed()</td><td class="middle"></td><td></td></tr>
+			<tr><td class="border-dotted">parse()</td><td class="border-dotted middle"></td><td class="border-dotted"></td></tr>
+			<tr><td>set()</td><td class="middle"></td><td></td></tr>
+			<tr><td>setOne()</td><td class="middle"></td><td></td></tr>
+			<tr><td>setMany()</td><td class="middle"></td><td></td></tr>
+			<tr><td>setIt()</td><td class="middle"></td><td></td></tr>
+			<tr><td>setEm()</td><td class="middle"></td><td></td></tr>
+			<tr><td>setOneUn()</td><td class="middle"></td><td></td></tr>
+			<tr><td class="h2 border-top" colspan=3>&quot;Protected&quot;</td></tr>
+			<tr><td class="h3" colspan=3>properties</td></tr>
+			<tr><td>_u</td><td class="middle">string</td><td>write-only, backdoor to #units</td></tr>
+			<tr><td class="h3 border-top" colspan=3>methods</td></tr>
+			<tr><td>_unitz()</td><td class="middle"></td><td></td></tr>
+			<tr><td>_mask()</td><td class="middle"></td><td></td></tr>
+			<tr><td>_maskAll()</td><td class="middle"></td><td></td></tr>
+			<tr><td class="border-dotted">_2Num()</td><td class="border-dotted middle"></td><td class="border-dotted"></td></tr>
+			<tr><td>_validate()</td><td class="middle">static bool</td><td>validates that an object is of class PBase</td></tr>
+			<tr><td>_seps()</td><td class="middle">static array</td><td></td></tr>
+		</table>
+		<table id="prop">
+			<colgroup><col width=144><col width=162><col width=492></colgroup>
+			<tr><td class="subclass">class Prop</td><td class="subclass">extends PBase</td><td class="subclass">represents a CSS property</td></tr>
+			<tr><td>count()</td><td class="middle">unsigned int</td><td>argument count, falls back to this.func.count</td></tr>
+			<tr><td>required()</td><td class="middle">unsigned int</td><td>required arg count, falls back to func.required</td></tr>
+			<tr><td class="border-dotted">cut()</td><td class="border-dotted middle">alias remove()</td><td class="border-dotted">removes a property from element(s)</td></tr>
+			<tr><td>isProp</td><td class="middle">bool, read-only</td><td>always true</td></tr>
+		</table>
+		<table id="bute">
+			<colgroup><col width=144><col width=162><col width=492></colgroup>
+			<tr><td class="subclass">class Bute</td><td class="subclass">extends PBase</td><td class="subclass">represents an SVG attribute ("Attr" is taken)</td></tr>
+			<tr><td>count()</td><td class="middle">unsigned int</td><td>argument count, falls back to this.func.count</td></tr>
+			<tr><td>required()</td><td class="middle">unsigned int</td><td>required arg count, falls back to func.required</td></tr>
+			<tr><td class="border-dotted">cut()</td><td class="border-dotted middle">alias remove()</td><td class="border-dotted">removes an attribute from element(s)</td></tr>
+			<tr><td>getOne()</td><td class="middle">string</td><td>overrides of PBase:</td></tr>
+			<tr><td>setIt()</td><td class="middle">undefined</td><td></td></tr>
+			<tr><td>setEm()</td><td class="middle">undefined</td><td></td></tr>
+			<tr><td class="border-dotted">isDef()</td><td class="border-dotted middle">bool</td><td class="border-dotted"></td></tr>
+			<tr><td class="border-dotted">_unitz()</td><td class="border-dotted middle">string</td><td class="border-dotted"></td></tr>
+			<tr><td>isBute</td><td class="middle">bool, read-only</td><td>always true</td></tr>
+		</table>
+		<table id="pratt">
+			<colgroup><col width=144><col width=162><col width=492></colgroup>
+			<tr><td class="subclass">class PrAtt</td><td class="subclass">extends PBase</td><td class="subclass">for SVG attributes that are supported in CSS</td></tr>
+			<tr><td>count()</td><td class="middle">unsigned int</td><td>argument count, falls back to this.func.count</td></tr>
+			<tr><td>required()</td><td class="middle">unsigned int</td><td>required arg count, falls back to func.required</td></tr>
+			<tr><td class="border-dotted">cut()</td><td class="border-dotted middle">alias remove()</td><td class="border-dotted">removes property and/or attribute from element(s)</td></tr>
+			<tr><td>isPrAtt</td><td class="middle">bool, read-only</td><td>always true</td></tr>
+		</table>
+		<table id="html-bute">
+			<colgroup><col width=144><col width=162><col width=492></colgroup>
+			<tr><td class="subclass">class HtmlBute</td><td class="subclass">extends PBase</td><td class="subclass">represents an HTML attribute</td></tr>
+			<tr><td>count()</td><td class="middle">unsigned int</td><td>always returns 1</td></tr>
+			<tr><td>required()</td><td class="middle">unsigned int</td><td>ditto</td></tr>
+			<tr><td class="border-dotted">cut()</td><td class="border-dotted middle"></td><td class="border-dotted">n/a for now</td></tr>
+			<tr><td>getOne()</td><td class="middle"></td><td>overrides of PBase:</td></tr>
+			<tr><td>setIt()</td><td class="middle"></td><td></td></tr>
+			<tr><td class="border-dotted">setEm()</td><td class="border-dotted middle"></td><td class="border-dotted"></td></tr>
+			<tr><td>isHtmlBute</td><td class="middle">bool, read-only</td><td>always true</td></tr>
+		</table>
+		<table id="p">
+			<colgroup><col width=136><col width=104><col width=558></colgroup>
+			<tr><td class="h1" colspan=3">const P</td><tr>
+			<tr><td class="h2" colspan=3">Public methods</td><tr>
+			<tr><td>visible()</td><td class="middle">undefined</td><td>sets visibility as a boolean -<i> for 1 or more elements</i>:</td></tr>
+			<tr><td>displayed()</td><td class="middle">undefined</td><td>sets display as a boolean</td></tr>
+			<tr><td class="border-dotted">events()</td><td class="border-dotted middle">undefined</td><td class="border-dotted">sets pointer-events as a boolean</td></tr>
+			<tr><td>isVisible()</td><td class="middle">bool</td><td>gets visibility as a boolean -<i> for 1 element</i>:</td></tr>
+			<tr><td>isDisplayed()</td><td class="middle">bool</td><td>gets display as a boolean</td></tr>
+			<tr><td class="border-dotted">hasEvents()</td><td class="border-dotted middle">bool</td><td class="border-dotted">gets pointer-events as a boolean</td></tr>
+			<tr><td>enabled()</td><td class="middle">undefined</td><td>an inverted-pseudo-disable()</td></tr>
+			<tr><td class="h2 border-top" colspan=3">PBase instances by name (incomplete relative to CSS, SVG, HTML)</td><tr>
+			<tr><td class="h2" colspan=3>Prop - CSS properties</td></tr>
+			<tr><td class="h3" colspan=3>miscellaneous, some don't animate</td></tr>
+			<tr><td class="wrap" colspan=3>P.flex, P.flexFlow, P.alignItems, P.alignSelf, P.justifyContent, P.fontFamily, P.fontWeight, P.textAnchor, P.overflow, P.overflowX, P.overflowY, P.left, P.right, P.top, P.bottom, P.position, P.cursor, P.pointerEvents, P.display, P.mask, P.vectorEffect</td></tr>
+			<tr><td class="h3 border-top" colspan=3>background properties get aliases in format: bgName. for example: P.bgColor</td></tr>
+			<tr><td class="wrap" colspan=3>P.backgroundAttachment, P.backgroundClip, P.backgroundOrigin, P.backgroundBlendMode, P.backgroundRepeat</td></tr>
+			<tr><td class="h3 border-top" colspan=3>&quot;unstructured&quot;, no units, flexible arguments</td></tr>
+			<tr><td class="wrap" colspan=3>P.border, P.borderImage, P.boxShadow, P.clipPath, P.offsetPath, P.shapeOutside, P.background, P.backgroundImage, P.backgroundSize, P.backgroundPosition, P.backgroundPositionX, P.backgroundPositionY</td></tr>
+			<tr><td class="h3 border-top" colspan=3>filter and transform can take a single function, or multiple functions = &quot;unstructured&quot;</td></tr>
+			<tr><td class="wrap" colspan=3>P.filter, P.transform, P.transSVG (SVG transform is a separate object)</td></tr>
+			<tr><td class="h3 border-top" colspan=3>color properties, they use color functions and optionally Color.js</td></tr>
+			<tr><td class="wrap" colspan=3>P.color, P.accentColor, P.backgroundColor, P.borderColor, P.borderLeftColor, P.borderRightColor, P.borderTopColor, P.borderBottomColor</td></tr>
+			<tr><td class="h3 border-top" colspan=3>&lt;length-percentage&gt; properties</td></tr>
+			<tr><td class="wrap" colspan=3>P.transformOrigin, P.maxHeight, P.maxWidth, P.minHeight, P.minWidth, P.padding, P.margin, P.paddingTop, P.paddingBottom, P.paddingLeft, P.paddingRight, P.marginTop, P.marginBottom, P.marginLeft, P.marginRight, P.borderTop, P.borderBottom, P.borderLeft, P.borderRight, P.borderRadius, P.borderWidth, P.borderTopWidth, P.borderBottomWidth, P.borderLeftWidth, P.borderRightWidth</td></tr>
+			<tr><td class="h2 border-top" colspan=3>Bute - SVG attributes</td></tr>
+			<tr><td class="h3" colspan=3>miscellaneous, none animate</td></tr>
+			<tr><td class="wrap" colspan=3>P.class, P.href, P.lengthAdjust, P.preserveAspectRatio, P.type</td></tr>
+			<tr><td class="h3 border-top" colspan=3>&quot;unstructured&quot;, no units, flexible arguments</td></tr>
+			<tr><td class="wrap" colspan=3>P.d, P.points</td></tr>
+			<tr><td class="h3 border-top" colspan=3>&lt;number&gt; attributes</td></tr>
+			<tr><td class="wrap" colspan=3>P.viewBox, P.baseFrequency, P.stdDeviation, P.surfaceScale, P.azimuth, P.elevation, P.k1, P.k2, P.k3, P.rotate, P.scale, P.seed, P.values</td></tr>
+			<tr><td class="h3 border-top" colspan=3>&lt;length-percentage&gt; attributes</td></tr>
+			<tr><td class="wrap" colspan=3>P.dx, P.dy, P.startOffset, P.textLength, P.x1, P.x2, P.y1, P.y2</td></tr>
+			<tr><td class="h2 border-top" colspan=3>PrAtt - overlapping CSS/SVG properties/attributes</td></tr>
+			<tr><td class="h3" colspan=3>miscellaneous, none animate</td></tr>
+			<tr><td class="wrap" colspan=3>P.fontStyle, P.visibility</td></tr>
+			<tr><td class="h3 border-top" colspan=3>color properties, they use color functions and optionally Color.js</td></tr>
+			<tr><td class="wrap" colspan=3>P.fill, P.stroke, P.stopColor</td></tr>
+			<tr><td class="h3 border-top" colspan=3>numeric attributes of various types</td></tr>
+			<tr><td class="wrap" colspan=3>P.x, P.y, P.r, P.cx, P.cy, P.height, P.width, P.strokeWidth, P.opacity, P.fillOpacity, P.strokeOpacity, P.stopOpacity, P.fontSize, P.fontSizeAdjust, P.fontStretch</td></tr>
+			<tr><td class="h2 border-top" colspan=3>HtmlBute - HTML attributes</td></tr>
+			<tr><td class="wrap" colspan=3>P.value</td></tr>
+		</table>
+<!----------------------------------------------------------------------------->
+		<table id="func">
+			<colgroup><col width=108><col width=178><col width=558></colgroup>
+			<tr><td class="h1" colspan=3>class Func</td></tr>
+			<tr><td class="h2" colspan=3>Public</td></tr>
+			<tr><td class="h3" colspan=3>properties</td></tr>
+			<tr><td>name</td><td class="middle">string, read-only</td><td>CSS/SVG function name</td></tr>
+			<tr><td>key</td><td class="middle">string, read-only</td><td>camelCase name for obj.key notation and error msgs</td></tr>
+			<tr><td>units</td><td class="middle">string enum</td><td>read-write</td></tr>
+			<tr><td>prefix</td><td class="middle">string</td><td>read-only</td></tr>
+			<tr><td>count</td><td class="middle">int</td><td>read-only, argument count</td></tr>
+			<tr><td class="border-dotted">required</td><td class="border-dotted middle">int</td><td class="border-dotted">read-only, required argument count</td></tr>
+			<tr><td>&quot;UnitType&quot;</td><td class="middle">bool</td><td>isUn for &quot;unstructured&quot;, the rest are ._abC = &quot;protected&quot;</td></tr>
+			<tr><td>isFunc</td><td class="middle">bool</td><td>read-only, always true</td></tr>
+			<tr><td class="h3 border-top" colspan=3>methods</td></tr>
+			<tr><td>apply()</td><td class="middle">string</td><td>this.prefix + val + E.rp</td></tr>
+			<tr><td>join()</td><td class="middle">string</td><td>Ez._join(arr, u, this.#separator)</td></tr>
+			<tr><td class="h2 border-top" colspan=3>&quot;Protected&quot;</td></tr>
+			<tr><td class="h3" colspan=3>properties</td></tr>
+			<tr><td>_u</td><td class="middle">string</td><td>read-only, backdoor to #units</td></tr>
+			<tr><td class="h3 border-top" colspan=3>methods</td></tr>
+			<tr><td>_seps()</td><td class="middle">array</td><td>sets and returns an array of string argument-separators</td></tr>
+		</table>
+		<table id="cfunc">
+			<colgroup><col width=108><col width=178><col width=558></colgroup>
+			<tr><td class="h2 subclass" colspan=3>class CFunc extends Func for space-specific color functions like lab() and rgb()</td></tr>
+			<tr><td>A</td><td class="middle">static const int</td><td>3, the zero-based index of the color alpha argument</td></tr>
+			<tr><td>alphaUnits</td><td class="middle">string enum</td><td>units for color alpha argument</td></tr>
+			<tr><td>hueUnits</td><td class="middle">string enum</td><td>units for color functions with hue: hsl, hwb, lch, oklch</td></tr>
+		</table>
+		<table id="color-func">
+			<colgroup><col width=108><col width=178><col width=558></colgroup>
+			<tr><td class="subclass" colspan=3>class ColorFunc extends CFunc for the color() function</td></tr>
+			<tr><td>space</td><td class="middle">string</td><td>CSS color space id</td></tr>
+			<tr><td>prefix</td><td class="middle">overrides Func</td><td>extra leading argument: color(spaceId ...)</td></tr>
+		</table>
+		<table id="srfunc">
+			<colgroup><col width=108><col width=178><col width=558></colgroup>
+			<tr><td class="subclass" colspan=3>class SRFunc extends Func, for &lt;shape-radius&gt;: circle(), ellipse()</td></tr>
+			<tr><td colspan=3>read-only properties: units, count, required (and #separator) are set by constructor()</td></tr>
+		</table>
+		<table id="f">
+			<colgroup><col width=168><col width=118><col width=558></colgroup>
+			<tr><td class="h1" colspan=3">const F</td></tr>
+			<tr><td class="h2" colspan=3">Public methods</td></tr>
+			<tr><td>joinCSSpolygon()</td><td class="middle">string</td><td>joins an array of numbers into a CSS polygon() value</td></tr>
+			<tr><td class="h2 border-top" colspan=3">Func instances by name</td></tr>
+			<tr><td class="h2" colspan=3>Func</td></tr>
+			<tr><td class="h3" colspan=3">transform</td></tr>
+			<tr><td class="wrap" colspan=3>F.translate, F.translateX, F.translateY, F.translate3d, F.rotate, F.rotateX, F.rotateY, F.rotateZ, F.rotate3d, F.matrix, F.scale, F.matrix3d, F.scale3d, F.skew, F.skewX, F.skewY, F.perspective, F.translateZ</td></tr>
+			<tr><td class="h3 border-top" colspan=3">filter</td></tr>
+			<tr><td class="wrap" colspan=3>F.brightness, F.contrast, F.grayscale, F.invert, F.opacity, F.saturate, F.sepia, F.blur, F.dropShadow, F.hueRotate</td></tr>
+			<tr><td class="h3 border-top" colspan=3">&quot;unstructured&quot;: F.abc.isUn = true</td></tr>
+			<tr><td class="wrap" colspan=3>F.colorMix, F.inset, F.path, F.polygon, F.calc, F.linear, F.steps, F.linearGradient, F.radialGradient, F.conicGradient, F.repeatingLinearGradient, F.repeatingRadialGradient, F.repeatingConicGradient</td></tr>
+			<tr><td class="h2 border-top" colspan=3>CFunc</td></tr>
+			<tr><td class="wrap" colspan=3>F.rgb, F.hsl, F.hwb, F.lch, F.oklch, F.lab, F.oklab</td></tr>
+			<tr><td class="h2 border-top" colspan=3>ColorFunc <i>(w/aliases and alt-spellings including kebab-case CSS space id)</i></td></tr>
+			<tr><td class="wrap" colspan=3>F.srgb, F.srgbLinear, F.a98Rgb, F.prophotoRgb, F.displayP3, F.rec2020, F.xyzD65, F.xyzD50</td></tr>
+			<tr><td class="h2 border-top" colspan=3>SRFunc</td></tr>
+			<tr><td class="wrap" colspan=3>F.circle, F.ellipse</td></tr>
+		</table>
+<!----------------------------------------------------------------------------->
+		<table id="u">
+			<colgroup><col width=690></colgroup>
+			<tr><td class="h1">const U for units</td></tr>
+			<tr><td class="h3">&lt;length&gt;</td></tr>
+			<tr><td class="wrap">U.px, U.em, U.rem, U.vw, U.vh, U.vmin, U.vmax, U.pt, U.pc, U.mm, U.in</td></tr>
+			<tr><td class="h3 border-top">&lt;angle&gt;</td></tr>
+			<tr><td class="wrap">U.deg, U.rad, U.grad, U.turn</td></tr>
+			<tr><td class="h3 border-top">&lt;time&gt;</td></tr>
+			<tr><td class="wrap">U.ms, U.s</td></tr>
+			<tr><td class="h3 border-top">&lt;percentage&gt;</td></tr>
+			<tr><td class="wrap">U.pct = "%"</td></tr>
+		</table>
+<!----------------------------------------------------------------------------->
+		<table id="is">
+			<colgroup><col width=108><col width=444></colgroup>
+			<tr><td class="h1" colspan="2">const Is, boolean functions</td></tr>
+			<tr><td>def()</td><td class="right">is the argument defined?</td></tr>
+			<tr><td>Number()</td><td class="right">is the argument a Number?</td></tr>
+			<tr><td>String()</td><td class="right">is the argument a String?</td></tr>
+			<tr><td>Element()</td><td class="right">is the argument an HTMLElement or SVGElement?</td></tr>
+			<tr><td>CSSRule()</td><td class="right">is the argument a CSSStyleRule?</td></tr>
+			<tr><td>SVG()</td><td class="right">is the argument an SVGElement?</td></tr>
+			<tr><td>A()</td><td class="right">is the argument an Array?</td></tr>
+			<tr><td>A2()</td><td class="right">is the argument a 2D Array?</td></tr>
+			<tr><td>Arrayish()</td><td class="right">is the argument "array-like"?</td></tr>
+			<tr><td>A2ish()</td><td class="right">is the argument 2D "array-like"?</td></tr>
+		</table>
+<!----------------------------------------------------------------------------->
+		<table id="ez">
+			<colgroup><col width=172><col width=100><col width=538></colgroup>
+			<tr><td class="h1" colspan=3>const Ez, a factotem</td></tr>
+			<tr><td class="h2" colspan=3>Public</td></tr>
+			<tr><td class="h3" colspan=3>properties dynamically generated by PFactory.init()</td></tr>
+			<tr><td>rad</td><td class="middle">float</td><td>0.017453 = Math.PI / 180 -<i> converts to degrees</i>:</td></tr>
+			<tr><td>grad</td><td class="middle">float</td><td>1.111111 = 10 / 9</td></tr>
+			<tr><td class="border-dotted">turn</td><td class="border-dotted middle">float</td><td class="border-dotted">0.002778 = 1 / 360</td></tr>
+			<tr><td>x</td><td class="middle">integer</td><td>bitmasks for masking SVG viewBox arguments</td></tr>
+			<tr><td>y</td><td class="middle">integer</td><td>they work for other properties too&hellip;</td></tr>
+			<tr><td>z</td><td class="middle">integer</td><td>added for 3D, used outside of viewBox</td></tr>
+			<tr><td>w</td><td class="middle">integer</td><td></td></tr>
+			<tr><td>h</td><td class="middle">integer</td><td></td></tr>
+			<tr><td>width</td><td class="middle">integer</td><td>aliases:</td></tr>
+			<tr><td class="border-dotted">height</td><td class="border-dotted middle">integer</td><td class="border-dotted"></td></tr>
+			<tr><td class="border-dotted">angle</td><td class="border-dotted middle">integer</td><td class="border-dotted">bitmask for SVG rotate()</td></tr>
+			<tr><td>defZero</td><td class="middle">array</td><td>arguments for Ez.toNumber() in array form:</td></tr>
+			<tr><td>grThan0</td><td class="middle">array</td><td></td></tr>
+			<tr><td>notNeg</td><td class="middle">array</td><td></td></tr>
+			<tr><td>notZero</td><td class="middle">array</td><td></td></tr>
+			<tr><td class="border-dotted">okEmptyUndef</td><td class="border-dotted middle">array</td><td class="border-dotted">args for Ez.toArray()</td></tr>
+			<tr><td>undefGrThan0</td><td class="middle">array</td><td>args for Ez.toNumber(), created in Pfactory.init()</td></tr>
+			<tr><td>undefNotZero</td><td class="middle">array</td><td></td></tr>
+			<tr><td>defGrThan0</td><td class="middle">array</td><td></td></tr>
+			<tr><td>defNotNeg</td><td class="middle">array</td><td></td></tr>
+			<tr><td>intGrThan0</td><td class="middle">array</td><td></td></tr>
+			<tr><td>intNotNeg</td><td class="middle">array</td><td></td></tr>
+			<tr><td class="h3 border-top" colspan=3>methods</td></tr>
+			<tr><td class="border-dotted">promise()</td><td class="border-dotted middle">Promise</td><td class="border-dotted">instead of Promise.withResolvers()</td></tr>
+			<tr><td>is()</td><td class="middle">undefined</td><td>assigns a read-only isAbc property to an object</td></tr>
+			<tr><td class="border-dotted">readOnly()</td><td class="border-dotted middle">undefined</td><td class="border-dotted">assigns a read-only property to an object</td></tr>
+			<tr><td>shallowClone()</td><td class="middle">object</td><td>returns a shallow clone of an object</td></tr>
+			<tr><td>newArray2D()</td><td class="middle">2D array</td><td>returns a new 2D array, optionally filled</td></tr>
+			<tr><td class="border-dotted">swapDims()</td><td class="border-dotted middle">2D array</td><td class="border-dotted">swaps 2D inner and outer dimensions</td></tr>
+			<tr><td>clamp()</td><td class="middle">number</td><td>clamps a number between a min and a max</td></tr>
+			<tr><td>comp()</td><td class="middle">bool</td><td>complements a unit interval value = 1 - unit</td></tr>
+			<tr><td>compIf()</td><td class="middle">bool</td><td>conditional version of comp()</td></tr>
+			<tr><td class="border-dotted">unitOutOfBounds()</td><td class="border-dotted middle">bool</td><td class="border-dotted">checks for out-of-bounds units in an array</td></tr>
+			<tr><td>initialCap()</td><td class="middle">string</td><td>converts first character to upper case</td></tr>
+			<tr><td>toCamel()</td><td class="middle">string</td><td>converts string args into a single camelCase string</td></tr>
+			<tr><td>camelToKebab()</td><td class="middle">string</td><td>converts a camelCase string to kebab-case</td></tr>
+			<tr><td>kebabToCamel()</td><td class="middle">string</td><td>converts a kebab-case string to camelCase</td></tr>
+			<tr><td class="border-dotted">kebabToSnake()</td><td class="border-dotted middle">string</td><td class="border-dotted">converts a kebab-case string to snake_case</td></tr>
+			<tr><td>toSum()</td><td class="middle">number</td><td>sums numbers as a callback for Array.prototype.reduce()</td></tr>
+			<tr><td>toNumby()</td><td class="middle">number</td><td>soft numeric conversion, helps PBase and sub-classes </td></tr>
+			<tr><td>toNumber()</td><td class="middle">number</td><td>numeric conversion with lots of options</td></tr>
+			<tr><td>toArray()</td><td class="middle">array</td><td>more than a wrapper for Array.from(), lots of options</td></tr>
+			<tr><td>toElement()</td><td class="middle">element</td><td>validates an element, converts string to element by id</td></tr>
+			<tr><td class="border-dotted">toElements()</td><td class="border-dotted middle">array</td><td class="border-dotted">validates, converts to an array of elements</td></tr>
+			<tr><td>defaultToTrue()</td><td class="middle">bool</td><td>(arg === undefined) ? true : Boolean(arg)</td></tr>
+			<tr><td>noneToZero()</td><td class="middle">number</td><td>(arg === null) ? 0 : arg; for Color.js coordinates</td></tr>
+			<tr><td class="h2 border-top" colspan=3>&quot;Protected&quot;</td></tr>
+			<tr><td class="h3" colspan=3>methods</td></tr>
+			<tr><td>_mustBe()</td><td class="right" colspan=2>error &amp; error message generating functions</td></tr>
+			<tr><td>_mustBeErr()</td><td class="right" colspan=2></td></tr>
+			<tr><td>_cantBe()</td><td class="right" colspan=2></td></tr>
+			<tr><td>_cantBeErr()</td><td class="right" colspan=2></td></tr>
+			<tr><td>_cant()</td><td class="right" colspan=2></td></tr>
+			<tr><td>_cantErr()</td><td class="right" colspan=2></td></tr>
+			<tr><td>_only()</td><td class="right" colspan=2></td></tr>
+			<tr><td>_onlyErr()</td><td class="right" colspan=2></td></tr>
+			<tr><td>_mustAscendErr()</td><td class="right" colspan=2></td></tr>
+			<tr><td class="border-dotted">_invalidErr()</td><td class="border-dotted right" colspan=2></td></tr>
+			<tr><td>_isElmy()</td><td class="right" colspan=2>validation functions</td></tr>
+			<tr><td>_validObj()</td><td class="right" colspan=2></td></tr>
+			<tr><td class="border-dotted">_validFunc()</td><td class="border-dotted right" colspan=2></td></tr>
+			<tr><td>_join()</td><td class="right" colspan=2>helps Func/Prop.prototype.join()</td></tr>
+			<tr><td>_appendUnits()</td><td class="right" colspan=2>validates as it applies string units to numbers</td></tr>
+			<tr><td>_dims()</td><td class="right" colspan=2>counts array dimensions up to 2, non-array = 0, undefined = -1</td></tr>
+		</table>
+<!----------------------------------------------------------------------------->
+		<div id="bitmasks" style="display:flex; flex-direction:column; margin-top:2rem;">
+			<p style="width:100%; padding-left:0.25rem; font-size:1.125rem; font-family:'Roboto Mono'">bitmasks for argument masking</p>
+			<div style="display:flex;">
+				<table class="mt0">
+					<colgroup><col width=36><col width=19><col width=15><col width=56><col width=70></colgroup>
+					<tr><td class="subclass centered" colspan="5">C</td></tr>
+					<tr><td class="h3 centered" colspan="2">color</td><td class="subclass"></td><td class="h3 centered" colspan="2">feColorMatrix</td></tr>
+				</table>
+				<table class="mt0 ml1">
+					<colgroup><col width=79><col width=19></colgroup>
+					<tr><td class="subclass centered" colspan="2">HD</td></tr>
+				</table>
+				<table class="mt0 ml1">
+					<colgroup><col width=44><col width=28><col width=15><col width=44><col width=52></colgroup>
+					<tr><td class="subclass centered" colspan="5">M</td></tr>
+				</table>
+				<table class="mt0 ml1">
+					<colgroup><col width=86><col width=19></colgroup>
+					<tr><td class="subclass centered" colspan="2">Ez</td></tr>
+				</table>
+			</div>
+		</div>
+		<table>
+				<TR>
+					<TD STYLE="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=17 WIDTH=629>bitmasks for masking arguments</TD>
+				<TR>
+				<TR>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000" colspan=5 ALIGN=CENTER>C</TD>
+					<TD></TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=2 ALIGN=CENTER>HD</TD>
+					<TD></TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=5 ALIGN=CENTER>M</TD>
+					<TD></TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-right: 1px solid #000000" colspan=2 ALIGN=CENTER>Ez</TD>
+				<TR>
+				<TR>
+					<TD STYLE="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=2 ALIGN=CENTER>color</TD>
+					<TD ALIGN=CENTER></TD>
+					<TD STYLE="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=2 ALIGN=CENTER>feColorMatrix</TD>
+					<TD></TD>
+					<TD STYLE="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=2 ALIGN=CENTER>UHD color*</TD>
+					<TD></TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=2 ALIGN=CENTER>matrix</TD>
+					<TD ALIGN=CENTER></TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=2 ALIGN=CENTER>matrix3d</TD>
+					<TD ALIGN=CENTER></TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=2 ALIGN=CENTER>viewBox++</TD>
+				<TR>
+				<TR>
+					<TD STYLE="border-top: 1px solid #000000; border-left: 1px solid #000000">C.r</TD>
+					<TD STYLE="border-top: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" ALIGN=RIGHT SDVAL="1" SDNUM="1033;">1</TD>
+					<TD></TD>
+					<TD>C.RR</TD>
+					<TD ALIGN=RIGHT SDVAL="1" SDNUM="1033;">1</TD>
+					<TD></TD>
+					<TD STYLE="border-top: 1px solid #000000; border-left: 1px solid #000000">HD.l</TD>
+					<TD STYLE="border-top: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" ALIGN=RIGHT SDVAL="1" SDNUM="1033;">1</TD>
+					<TD></TD>
+					<TD>M.a</TD>
+					<TD STYLE="border-top: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" ALIGN=RIGHT SDVAL="1" SDNUM="1033;">1</TD>
+					<TD></TD>
+					<TD STYLE="border-top: 1px solid #000000; border-left: 1px solid #000000">M.a1</TD>
+					<TD STYLE="border-top: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" ALIGN=RIGHT SDVAL="1" SDNUM="1033;">1</TD>
+					<TD></TD>
+					<TD>Ez.x</TD>
+					<TD STYLE="border-top: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" ALIGN=RIGHT SDVAL="1" SDNUM="1033;">1</TD>
+				</TR>
+				<TR>
+					<TD>C.g</TD>
+					<TD ALIGN=RIGHT SDVAL="2" SDNUM="1033;">2</TD>
+					<TD></TD>
+					<TD>C.GR</TD>
+					<TD ALIGN=RIGHT SDVAL="2" SDNUM="1033;">2</TD>
+					<TD></TD>
+					<TD>HD.a</TD>
+					<TD ALIGN=RIGHT SDVAL="2" SDNUM="1033;">2</TD>
+					<TD></TD>
+					<TD>M.b</TD>
+					<TD ALIGN=RIGHT SDVAL="2" SDNUM="1033;">2</TD>
+					<TD></TD>
+					<TD>M.b1</TD>
+					<TD ALIGN=RIGHT SDVAL="2" SDNUM="1033;">2</TD>
+					<TD></TD>
+					<TD>Ez.y</TD>
+					<TD ALIGN=RIGHT SDVAL="2" SDNUM="1033;">2</TD>
+				</TR>
+				<TR>
+					<TD>C.b</TD>
+					<TD ALIGN=RIGHT SDVAL="4" SDNUM="1033;">4</TD>
+					<TD></TD>
+					<TD>C.BR</TD>
+					<TD ALIGN=RIGHT SDVAL="4" SDNUM="1033;">4</TD>
+					<TD></TD>
+					<TD class="border-dotted">HD.b</TD>
+					<TD class="border-dotted" ALIGN=RIGHT SDVAL="4" SDNUM="1033;">4</TD>
+					<TD></TD>
+					<TD>M.c</TD>
+					<TD ALIGN=RIGHT SDVAL="4" SDNUM="1033;">4</TD>
+					<TD></TD>
+					<TD>M.c1</TD>
+					<TD ALIGN=RIGHT SDVAL="4" SDNUM="1033;">4</TD>
+					<TD></TD>
+					<TD class="border-dotted">Ez.z</TD>
+					<TD class="border-dotted" ALIGN=RIGHT SDVAL="4" SDNUM="1033;">4</TD>
+				</TR>
+				<TR>
+					<TD class="border-dotted">C.a</TD>
+					<TD class="border-dotted" ALIGN=RIGHT SDVAL="8" SDNUM="1033;">8</TD>
+					<TD></TD>
+					<TD>C.AR</TD>
+					<TD ALIGN=RIGHT SDVAL="8" SDNUM="1033;">8</TD>
+					<TD></TD>
+					<TD>HD.c</TD>
+					<TD ALIGN=RIGHT SDVAL="2" SDNUM="1033;">2</TD>
+					<TD></TD>
+					<TD>M.d</TD>
+					<TD ALIGN=RIGHT SDVAL="8" SDNUM="1033;">8</TD>
+					<TD></TD>
+					<TD class="border-dotted">M.d1</TD>
+					<TD class="border-dotted" ALIGN=RIGHT SDVAL="8" SDNUM="1033;">8</TD>
+					<TD></TD>
+					<TD>Ez.width</TD>
+					<TD ALIGN=RIGHT SDVAL="4" SDNUM="1033;">4</TD>
+				</TR>
+				<TR>
+					<TD>C.h</TD>
+					<TD ALIGN=RIGHT SDVAL="1" SDNUM="1033;">1</TD>
+					<TD></TD>
+					<TD class="border-dotted">C.CR</TD>
+					<TD class="border-dotted" ALIGN=RIGHT SDVAL="16" SDNUM="1033;">16</TD>
+					<TD></TD>
+					<TD class="border-dotted">HD.h</TD>
+					<TD class="border-dotted" ALIGN=RIGHT SDVAL="4" SDNUM="1033;">4</TD>
+					<TD></TD>
+					<TD>M.e</TD>
+					<TD ALIGN=RIGHT SDVAL="16" SDNUM="1033;">16</TD>
+					<TD></TD>
+					<TD>M.a2</TD>
+					<TD ALIGN=RIGHT SDVAL="16" SDNUM="1033;">16</TD>
+					<TD></TD>
+					<TD>Ez.height</TD>
+					<TD ALIGN=RIGHT SDVAL="8" SDNUM="1033;">8</TD>
+				</TR>
+				<TR>
+					<TD>C.s</TD>
+					<TD ALIGN=RIGHT SDVAL="2" SDNUM="1033;">2</TD>
+					<TD></TD>
+					<TD>C.RG</TD>
+					<TD ALIGN=RIGHT SDVAL="32" SDNUM="1033;">32</TD>
+					<TD></TD>
+					<TD>HD.x</TD>
+					<TD ALIGN=RIGHT SDVAL="1" SDNUM="1033;">1</TD>
+					<TD></TD>
+					<TD class="border-dotted">M.f</TD>
+					<TD class="border-dotted" ALIGN=RIGHT SDVAL="32" SDNUM="1033;">32</TD>
+					<TD></TD>
+					<TD>M.b2</TD>
+					<TD ALIGN=RIGHT SDVAL="32" SDNUM="1033;">32</TD>
+					<TD></TD>
+					<TD>Ez.w</TD>
+					<TD ALIGN=RIGHT SDVAL="4" SDNUM="1033;">4</TD>
+				</TR>
+				<TR>
+					<TD>C.l</TD>
+					<TD ALIGN=RIGHT SDVAL="4" SDNUM="1033;">4</TD>
+					<TD></TD>
+					<TD>C.GG</TD>
+					<TD ALIGN=RIGHT SDVAL="64" SDNUM="1033;">64</TD>
+					<TD></TD>
+					<TD>HD.y</TD>
+					<TD ALIGN=RIGHT SDVAL="2" SDNUM="1033;">2</TD>
+					<TD></TD>
+					<TD>M.tx</TD>
+					<TD ALIGN=RIGHT SDVAL="16" SDNUM="1033;">16</TD>
+					<TD></TD>
+					<TD>M.c2</TD>
+					<TD ALIGN=RIGHT SDVAL="64" SDNUM="1033;">64</TD>
+					<TD></TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000">Ez.h</TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" ALIGN=RIGHT SDVAL="8" SDNUM="1033;">8</TD>
+				</TR>
+				<TR>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000">C.w</TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" ALIGN=RIGHT SDVAL="2" SDNUM="1033;">2</TD>
+					<TD></TD>
+					<TD>C.BG</TD>
+					<TD ALIGN=RIGHT SDVAL="128" SDNUM="1033;">128</TD>
+					<TD></TD>
+					<TD class="border-dotted">HD.z</TD>
+					<TD class="border-dotted" ALIGN=RIGHT SDVAL="4" SDNUM="1033;">4</TD>
+					<TD></TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000">M.ty</TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" ALIGN=RIGHT SDVAL="32" SDNUM="1033;">32</TD>
+					<TD></TD>
+					<TD class="border-dotted">M.d2</TD>
+					<TD class="border-dotted" ALIGN=RIGHT SDVAL="128" SDNUM="1033;">128</TD>
+					<TD></TD>
+					<TD STYLE="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=2 ALIGN=CENTER>SVG rotate</TD>
+				<TR>
+				<TR>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD>C.AG</TD>
+					<TD ALIGN=RIGHT SDVAL="256" SDNUM="1033;">256</TD>
+					<TD></TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000">HD.alpha</TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" ALIGN=RIGHT SDVAL="8" SDNUM="1033;">8</TD>
+					<TD></TD>
+					<TD STYLE="border-top: 1px solid #000000"></TD>
+					<TD STYLE="border-top: 1px solid #000000"></TD>
+					<TD></TD>
+					<TD>M.a3</TD>
+					<TD ALIGN=RIGHT SDVAL="256" SDNUM="1033;">256</TD>
+					<TD></TD>
+					<TD STYLE="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000">angle</TD>
+					<TD STYLE="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" ALIGN=RIGHT SDVAL="8" SDNUM="1033;">8</TD>
+				</TR>
+				<TR>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD class="border-dotted">C.CG</TD>
+					<TD class="border-dotted" ALIGN=RIGHT SDVAL="512" SDNUM="1033;">512</TD>
+					<TD></TD>
+					<TD STYLE="border-top: 1px solid #000000"></TD>
+					<TD STYLE="border-top: 1px solid #000000"></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD>M.b3</TD>
+					<TD ALIGN=RIGHT SDVAL="512" SDNUM="1033;">512</TD>
+					<TD></TD>
+					<TD STYLE="border-top: 1px solid #000000"></TD>
+					<TD STYLE="border-top: 1px solid #000000; border-right: 1px solid #000000"></TD>
+				</TR>
+				<TR>
+					<TD>rgb()</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD>C.RB</TD>
+					<TD ALIGN=RIGHT SDVAL="1024" SDNUM="1033;">1024</TD>
+					<TD></TD>
+					<TD colspan=2>lab()</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD>M.c3</TD>
+					<TD ALIGN=RIGHT SDVAL="1024" SDNUM="1033;">1024</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+				</TR>
+				<TR>
+					<TD>hsl()</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD>C.GB</TD>
+					<TD ALIGN=RIGHT SDVAL="2048" SDNUM="1033;">2048</TD>
+					<TD></TD>
+					<TD colspan=2>oklab()</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD class="border-dotted">M.d3</TD>
+					<TD class="border-dotted" ALIGN=RIGHT SDVAL="2048" SDNUM="1033;">2048</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+				</TR>
+				<TR>
+					<TD>hwb()</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD>C.BB</TD>
+					<TD ALIGN=RIGHT SDVAL="4096" SDNUM="1033;">4096</TD>
+					<TD></TD>
+					<TD colspan=2>lch()</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD>M.a4</TD>
+					<TD ALIGN=RIGHT SDVAL="4096" SDNUM="1033;">4096</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+				</TR>
+				<TR>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000"></TD>
+					<TD STYLE="border-bottom: 1px solid #000000"></TD>
+					<TD></TD>
+					<TD>C.AB</TD>
+					<TD ALIGN=RIGHT SDVAL="8192" SDNUM="1033;">8192</TD>
+					<TD></TD>
+					<TD colspan=2>oklch()</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD>M.b4</TD>
+					<TD ALIGN=RIGHT SDVAL="8192" SDNUM="1033;">8192</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+				</TR>
+				<TR>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD class="border-dotted">C.CB</TD>
+					<TD class="border-dotted" ALIGN=RIGHT SDVAL="16384" SDNUM="1033;">16384</TD>
+					<TD></TD>
+					<TD colspan=2>color()</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD>M.c4</TD>
+					<TD ALIGN=RIGHT SDVAL="16384" SDNUM="1033;">16384</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+				</TR>
+				<TR>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD>C.RA</TD>
+					<TD ALIGN=RIGHT SDVAL="32768" SDNUM="1033;">32768</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000">M.d4</TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" ALIGN=RIGHT SDVAL="32768" SDNUM="1033;">32768</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+				</TR>
+				<TR>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD>C.GA</TD>
+					<TD ALIGN=RIGHT SDVAL="65536" SDNUM="1033;">65536</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+				</TR>
+				<TR>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD>C.BA</TD>
+					<TD ALIGN=RIGHT SDVAL="131072" SDNUM="1033;">131072</TD>
+					<TD></TD>
+					<TD>* display-p3 and rec2020 use RGB nomenclature</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+				</TR>
+				<TR>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD>C.AA</TD>
+					<TD ALIGN=RIGHT SDVAL="262144" SDNUM="1033;">262144</TD>
+					<TD></TD>
+					<TD STYLE="border-bottom: 1px solid #000000"></TD>
+					<TD STYLE="border-bottom: 1px solid #000000"></TD>
+					<TD STYLE="border-bottom: 1px solid #000000"></TD>
+					<TD STYLE="border-bottom: 1px solid #000000"></TD>
+					<TD STYLE="border-bottom: 1px solid #000000"></TD>
+					<TD STYLE="border-bottom: 1px solid #000000"></TD>
+					<TD STYLE="border-bottom: 1px solid #000000"></TD>
+					<TD STYLE="border-bottom: 1px solid #000000"></TD>
+					<TD STYLE="border-bottom: 1px solid #000000"></TD>
+					<TD STYLE="border-bottom: 1px solid #000000"></TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-right: 1px solid #000000"></TD>
+				</TR>
+				<TR>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000">C.CA</TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" ALIGN=RIGHT SDVAL="524288" SDNUM="1033;">524288</TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+				</TR>
+				<TR>
+					<TD></TD>
+					<TD></TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000"></TD>
+					<TD STYLE="border-bottom: 1px solid #000000"></TD>
+					<TD STYLE="border-bottom: 1px solid #000000"></TD>
+					<TD STYLE="border-bottom: 1px solid #000000; border-right: 1px solid #000000"></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+					<TD></TD>
+				</TR>
+			</table>
+	<!----------------------------------------------------------------------------->
+		<table id="ebezier">
+			<colgroup><col width=110><col width=188><col width=368></colgroup>
+			<tr><td class="h1" colspan=3>class EBezier</td></tr>
+			<tr><td class="h2" colspan=3>Public</td></tr>
+			<tr><td colspan=3>constructor(x1, y1, x2, y2, time) <b>&#x2245;</b> CSS cubic-bezier(x1, y1, x2, y2)</td></tr>
+			<tr>
+				<td style="border-top-color:#999" class="border-top">solve(x)</td>
+				<td style="border-top-color:#999" class="border-top middle">float</td>
+				<td style="border-top-color:#999" class="border-top">solves the cubic bezier for x</td>
+			</tr>
+			<tr><td class="h3 border-top" colspan=3>properties</td></tr>
+			<tr><td>time</td><td class="middle">int ms, write-only</td><td>calculates #accuracy</td></tr>
+			<tr><td>array</td><td class="middle">array, &nbsp; read-only</td><td>gets the 4 coordinates as an array</td></tr>
+			<tr><td>reversed</td><td class="middle">EBezier, read-only</td><td>returns a flipped curve for roundTrip</td></tr>
+		</table>
+<!-- ************************************************************************** -->
+<HR>
+<table id="ecalc">
+	<colgroup><col width=103><col width=208><col width=436></colgroup>
+	<tbody>
+		<TR>
+			<TD STYLE="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=3 WIDTH=747">class ECalc</TD>
+		<TR>
+		<TR>
+			<TD STYLE="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=3>Public methods</TD>
+		<TR>
+		<TR>
+			<TD>calculate()</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD>static f()</TD>
+			<TD class="middle"></TD>
+			<TD>factor = multiply</TD>
+		</TR>
+		<TR>
+			<TD>static a()</TD>
+			<TD class="middle"></TD>
+			<TD>addend = add</TD>
+		</TR>
+		<TR>
+			<TD STYLE="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=3>Private</TD>
+		<TR>
+		<TR>
+			<TD STYLE="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=3>properties</TD>
+		<TR>
+		<TR>
+			<TD>#calcs</TD>
+			<TD class="middle">array: [calc object]</TD>
+			<TD>one per config, famm order is critical</TD>
+		</TR>
+		<TR>
+			<TD STYLE="border-top: 1px solid #bfbfbf; border-left: 1px solid #000000; border-right: 1px solid #000000">#oneD</TD>
+			<TD STYLE="border-top: 1px solid #bfbfbf; border-left: 1px solid #000000; border-right: 1px solid #000000"></TD>
+			<TD STYLE="border-top: 1px solid #bfbfbf; border-bottom: 1px solid #bfbfbf; border-left: 1px solid #000000; border-right: 1px solid #000000"></TD>
+		</TR>
+		<TR>
+			<TD STYLE="border-top: 1px solid #bfbfbf; border-left: 1px solid #000000; border-right: 1px solid #000000">#twoD</TD>
+			<TD STYLE="border-top: 1px solid #bfbfbf; border-left: 1px solid #000000; border-right: 1px solid #000000"></TD>
+			<TD STYLE="border-top: 1px solid #bfbfbf; border-left: 1px solid #000000; border-right: 1px solid #000000"></TD>
+		</TR>
+		<TR>
+			<TD>#value</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD STYLE="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=3>calc by dimensionality methods: cNN</TD>
+		<TR>
+		<TR>
+			<TD class="border-dotted">#noop()</TD>
+			<TD class="border-dotted middle"></TD>
+			<TD class="border-dotted"></TD>
+		</TR>
+		<TR>
+			<TD>#c00()</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD>#c01()</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD>#c01s()</TD>
+			<TD class="middle"></TD>
+			<TD>the &quot;s&quot; is for &quot;swap&quot; dimensions</TD>
+		</TR>
+		<TR>
+			<TD>#c02()</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD class="border-dotted">#c02s()</TD>
+			<TD class="border-dotted middle"></TD>
+			<TD class="border-dotted"></TD>
+		</TR>
+		<TR>
+			<TD STYLE="border-top: 1px solid #bfbfbf; border-left: 1px solid #000000; border-right: 1px solid #000000">#c10()</TD>
+			<TD STYLE="border-top: 1px solid #bfbfbf; border-left: 1px solid #000000; border-right: 1px solid #000000"></TD>
+			<TD STYLE="border-top: 1px solid #bfbfbf; border-left: 1px solid #000000; border-right: 1px solid #000000"></TD>
+		</TR>
+		<TR>
+			<TD>#c11()</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD>#c11s()</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD>#c12()</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD class="border-dotted">#c12s()</TD>
+			<TD class="border-dotted middle"></TD>
+			<TD class="border-dotted"></TD>
+		</TR>
+		<TR>
+			<TD>#c20()</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD>#c21()</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD>#c21s()</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD>#c22()</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD class="border-dotted">#c22s()</TD>
+			<TD class="border-dotted middle"></TD>
+			<TD class="border-dotted"></TD>
+		</TR>
+		<TR>
+			<TD STYLE="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=3>first alternative: f, a, max, min</TD>
+		<TR>
+		<TR>
+			<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000">#noop()</TD>
+			<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000"></TD>
+			<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000">still calls 1-4 functions every frame</TD>
+		</TR>
+		<TR>
+			<TD>#f()</TD>
+			<TD class="middle"></TD>
+			<TD>duplicate dimensionality code</TD>
+		</TR>
+		<TR>
+			<TD>#a()</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD>#max()</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD class="border-dotted">#min()</TD>
+			<TD class="border-dotted middle"></TD>
+			<TD class="border-dotted"></TD>
+		</TR>
+		<TR>
+			<TD STYLE="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=3>second alternative: famm (6 x f, 6 x a, 4 x m, 4 x mm)</TD>
+		<TR>
+		<TR>
+			<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000">#noop()</TD>
+			<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000"></TD>
+			<TD STYLE="border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000">one function call does it all</TD>
+		</TR>
+		<TR>
+			<TD>#f()</TD>
+			<TD class="middle"></TD>
+			<TD>duplicate dimensionality code in every one,</TD>
+		</TR>
+		<TR>
+			<TD>#a()</TD>
+			<TD class="middle"></TD>
+			<TD>and it's cross-param dimensionality which</TD>
+		</TR>
+		<TR>
+			<TD>#m()</TD>
+			<TD class="middle"></TD>
+			<TD>means the longer the function name, the</TD>
+		</TR>
+		<TR>
+			<TD STYLE="border-top: 1px solid #bfbfbf; border-left: 1px solid #000000; border-right: 1px solid #000000">#fa()</TD>
+			<TD STYLE="border-top: 1px solid #bfbfbf; border-left: 1px solid #000000; border-right: 1px solid #000000"></TD>
+			<TD STYLE="border-top: 1px solid #bfbfbf; border-left: 1px solid #000000; border-right: 1px solid #000000">more permutations, thus more code.</TD>
+		</TR>
+		<TR>
+			<TD>#fm()</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD>#am()</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD class="border-dotted">#mm()</TD>
+			<TD class="border-dotted middle"></TD>
+			<TD class="border-dotted"></TD>
+		</TR>
+		<TR>
+			<TD>#fam()</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD>#fmm()</TD>
+			<TD class="middle"></TD>
+			<TD></TD>
+		</TR>
+		<TR>
+			<TD class="border-dotted">#amm()</TD>
+			<TD class="border-dotted middle"></TD>
+			<TD class="border-dotted"></TD>
+		</TR>
+		<TR>
+			<TD class="border-dotted">#famm()</TD>
+			<TD class="border-dotted middle"></TD>
+			<TD class="border-dotted"></TD>
+		</TR>
+		<TR>
+			<TD STYLE="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" colspan=3 ALIGN=CENTER"></TD>
+		<TR>
+	</tbody>
+</table>
+<!-- ************************************************************************** -->
+</BODY>
+
+</HTML>

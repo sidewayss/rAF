@@ -16,7 +16,7 @@ const
 LENGTHS   = ["px","em","rem","vw","vh","vmin","vmax","pt","pc","mm","in"],
 ANGLES    = ["deg","rad","grad","turn"], // see CFunc.prototype.hueUnits
 TIMES     = ["ms","s"],
-EMPTY_PCT = ["", "U.pct"],                 // ditto .alphaUnits
+EMPTY_PCT = ["", "U.pct"],               // ditto .alphaUnits
 // functions:
 funcs   = ["url","var","cubic-bezier"],  //!!can any of these be animated??worth having here??
         // color funcs
@@ -38,24 +38,24 @@ funcTA2 = ["skew","skewX","skewY"],
 funcTL  = ["perspective","translateZ"],
 funcTLP = ["translate","translateX","translateY","translate3d"],
 // CSS properties, class Prop:
-css   = ["flexFlow","alignItems","alignSelf","justifyContent", //!!any of these animate??
-         "fontFamily","fontWeight","overflowX","overflowY",
-         "pointerEvents","vectorEffect","textAnchor"],
+css   = ["flex-flow","align-items","align-self","justify-content", //!!do any of these animate??
+         "font-family","font-weight","overflow-x","overflow-y",
+         "pointer-events","vector-effect","text-anchor"],
 css2  = ["left","right","top","bottom",  // r = <circle> radius, no abbreviations
          "cursor","display","flex","mask","overflow","position"], //!!not all of these animate
-cssUn = ["border","borderImage","box-shadow","clip-path","offset-path","shape-outside"],
-cssC  = ["color","accentColor","backgroundColor","borderColor","borderLeftColor",
-         "borderRightColor","borderTopColor","borderBottomColor"],
-cssLP = ["transformOrigin","maxHeight","maxWidth","minHeight","minWidth",
-         "padding",    "margin",         // border is in cssUn, above
-         "paddingTop", "paddingBottom","paddingLeft","paddingRight",
-          "marginTop",  "marginBottom", "marginLeft", "marginRight",
-          "borderTop",  "borderBottom", "borderLeft", "borderRight", "borderRadius",
-          "borderWidth","borderTopWidth","borderBottomWidth","borderLeftWidth","borderRightWidth"],
-bg    = ["backgroundAttachment","backgroundClip", "backgroundOrigin",
-         "backgroundBlendMode", "backgroundRepeat"], //!!none of these animate, maybe repeat...
-bgUn  = ["background","backgroundImage","backgroundSize",
-         "backgroundPosition","backgroundPositionX","backgroundPositionY"],
+cssUn = ["border","border-image","box-shadow","clip-path","offset-path","shape-outside"],
+cssC  = ["color","accent-color","background-color","border-color","border-left-color",
+         "border-right-color","border-top-color","border-bottom-color"],
+cssLP = ["transform-origin","max-height","max-width","min-height","min-width",
+         "padding","margin",             // border is in cssUn, above
+         "padding-top", "padding-bottom","padding-left","padding-right",
+          "margin-top",  "margin-bottom", "margin-left", "margin-right",
+          "border-top",  "border-bottom", "border-left", "border-right", "border-radius",
+          "border-width","border-top-width","border-bottom-width","border-left-width","border-right-width"],
+bg    = ["background-attachment","background-clip", "background-origin",
+         "background-blend-mode", "background-repeat"], //!!none of these animate, maybe repeat...
+bgUn  = ["background","background-image","background-size",
+         "background-position","background-position-x","background-position-y"],
 // CSS-SVG property-attributes, class PrAtt:
 csSvg = ["font-style","visibility"],
 csSvC = ["fill","stroke","stop-color"],
@@ -135,8 +135,8 @@ const PFactory = {
             this.funcC.push(id);
             Ez.readOnly(F, id, fp);
             if (id.includes("-")) {     // camelCase, snake_case aliases
-                Ez.readOnly(F, Ez.kebabToCamel(id), fp);     // standard js
-                Ez.readOnly(F, id.replaceAll("-", "_"), fp); // for Color.js
+                Ez.readOnly(F, Ez.kebabToCamel(id), fp); // standard js
+                Ez.readOnly(F, Ez.kebabToSnake(id), fp); // for Color.js
             }
             if (ColorFunc.aliases[i])   // aliases for Color.js + CSS xyz
                 Ez.readOnly(F, ColorFunc.aliases[i], fp);
@@ -396,7 +396,7 @@ const PFactory = {
             for (const obj of this._color)
                 obj.func = val;
         else
-            Ez._invalidErr("colorFunc", val?.name ?? val, this.funcC);
+            Ez._invalidErr("colorFunc", val?.key ?? val, this.funcC);
     },
  // -----------------------------------
  // These two are for class CFunc only:
@@ -437,12 +437,13 @@ function keys2Objects(objs, keys) {
 //   func  - the Prop's func
 //   names - an array for storing names
 function add(vals, minLen, strings, fp, units, utype, cls, func, names) {
-    let i, ln, sn, setShort;         // ln = long name, sn = short name
+    let i, isKebab, ln, sn, setShort; // ln = long name, sn = short name
     for (const v of vals) {
         if (v.length >= minLen)
             sn = v[0];
-        if (v.includes("-")) {       // convert kebab-case to camelCase
-            let cap, i;              // function names are kebab-case only
+        isKebab = v.includes("-");
+        if (isKebab) {                // convert kebab-case to camelCase
+            let cap, i;               // function names are kebab-case only
             const arr = v.split("-");
             ln = arr[0];
             for (i = 1; i < arr.length; i++) {
@@ -452,9 +453,9 @@ function add(vals, minLen, strings, fp, units, utype, cls, func, names) {
                     sn += cap;
             }
         }
-        else {                       // v is one word or camelCase
-            ln = v;                  // property names are all camelCase here
-            if (sn) {                // non-CSS SVG attributes are all camelCase
+        else {                        // v is one word or camelCase
+            ln = v;
+            if (sn) {
                 const m = v.match(/[A-Z]|\d/g);
                 if (m)               // match caps or number
                     for (i of m)     // i is one uppercase or numeric char
@@ -466,7 +467,9 @@ function add(vals, minLen, strings, fp, units, utype, cls, func, names) {
         if (setShort)
             Ez.readOnly(strings, sn, v);
         if (fp) {
-            Ez.readOnly(fp, ln, new cls(v, units, utype, func));
+            Ez.readOnly(fp, ln, new cls(v, ln, units, utype, func));
+            if (isKebab)
+                Ez.readOnly(fp, v,  fp[ln]);
             if (setShort)
                 Ez.readOnly(fp, sn, fp[ln]);
         }

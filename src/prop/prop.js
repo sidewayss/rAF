@@ -33,7 +33,7 @@ class Prop extends PBase {
 //  cut() aka remove() removes this property from one or more elements.
 //  removeProperty() requires a kebab-case name.
     cut(elms) {
-        const name = this.cssName;
+        const name = this.name;
         for (const elm of Ez.toElements(elms))
             elm.style.removeProperty(name);
     }
@@ -114,7 +114,7 @@ class PrAtt extends PBase {
 //  attribute. The both argument allows you to remove both at once.
 //  removeProperty() and removeAttribute() both require a kebab-case name.
     cut(elms, both) {
-        const name = this.cssName;
+        const name = this.name;
         for (const elm of Ez.toElements(elms)) {
             elm.style.removeProperty(name);
             if (both)
