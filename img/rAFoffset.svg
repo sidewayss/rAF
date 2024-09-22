@@ -15,17 +15,17 @@
             <rect x="-32" y="0" width="1370" height="1200"/>
         </clipPath>
         <pattern id="perforations" viewBox="0,0,122.85,150" width="8.333333333333%" height="100%">
-            <rect width="51" height="75" fill="#FCFCFC" y="25" rx="15" ry="15" filter="url(#glow)"/>
+            <rect width="51" height="75" fill="#FCFCFC" y="25" rx="15" ry="15"/>
         </pattern>
         <filter id="static"> <!-- baseFrequency, seed, k3 -->
-            <feTurbulence  type="fractalNoise" baseFrequency="0.35,0.35"/>
+            <feTurbulence  type="fractalNoise" baseFrequency="0.05, 0.1"/>
             <feColorMatrix type="saturate"/> <!-- type, values -->
-            <feComposite   operator="arithmetic" k3="0.2"/>
+            <feComposite   operator="arithmetic" k3="0.25"/>
             <feBlend       in2="SourceGraphic"/>
             <feComposite   in2="SourceGraphic" operator="in"/>
         </filter>
         <filter id="glow" style="color-interpolation-filters:sRGB;">
-          <feGaussianBlur in="SourceGraphic" result="r1" stdDeviation="1.5"/>
+          <feGaussianBlur in="SourceGraphic" result="r1" stdDeviation="2"/>
           <feColorMatrix  in="SourceGraphic" result="r2"
                       values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 " />
           <feComposite operator="in" in="r1" in2="r2"/>
