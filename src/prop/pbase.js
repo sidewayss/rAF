@@ -4,9 +4,17 @@ import {fromColor} from "./color-convert.js";
 
 import {E, Ez, F, Fn, Is, P} from "../raf.js";
 
-// const arrays for style/attribute values that require getComputedStyle()
-const listOfValues = ["auto","inherit","initial","revert","revert-layer","unset"];
-const listOfFuncs  = [Fn.calc,"var","attr","max","min","clamp"];
+const Rx = {        // regular expressions:
+    comsp:/[,\s]+/,
+     func:/[\(\)]/,
+  sepfunc:/[,\s\(\)]+/g,
+     caps:/[A-Z]/g,
+     nums: /-?[\d\.]+/g,
+   numBeg:/^-?[\d\.]+/,
+   numEnd: /-?[\d\.]+$/
+},                  // style/attribute values that require getComputedStyle():
+listOfValues = ["auto","inherit","initial","revert","revert-layer","unset"],
+listOfFuncs  = [Fn.calc,"var","attr","max","min","clamp"];
 
 export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
     static #separator = E.sp;  // only font-family separates w/comma, and
@@ -196,7 +204,7 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
                 const isFunc = listOfFuncs.some(v => value.includes(v + E.lp));
                 if (isFunc || listOfValues.includes(value)) {
                     if (isCSS) {        // var() is the only one that's gettable
-                        const split = isFunc ? value.split(E.func) : [value];
+                        const split = isFunc ? value.split(Rx.func) : [value];
                         if (split[0] != Fn.var)
                             Ez._cantErr("You", `get a numeric value from a CSSStyleRule if the property uses ${split[0]}().`
                                             +  "You must use an HTMLElement instead.");
@@ -242,10 +250,10 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
 
         const arr = Array.from({length:vals.length}, (_, i) => {
             v = vals[i];
-            return v ? { seps:   v.split(E.nums),         // string separators
-                         vals:   v.match(E.nums) ?? [""], // numbers as strings
-                         numBeg: E.numBeg.test(v),        // begins with number
-                         numEnd: E.numEnd.test(v) }       // ends   with number
+            return v ? { seps:   v.split(Rx.nums),         // string separators
+                         vals:   v.match(Rx.nums) ?? [""], // numbers as strings
+                         numBeg: Rx.numBeg.test(v),         // begins with number
+                         numEnd: Rx.numEnd.test(v) }        // ends   with number
                      : v;
          });
         return isAVals ? arr : arr[0];
@@ -261,15 +269,15 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
         cv.forEach((v, i) => {  // 1D array of strings by elm
             if (v) {            // consolidate whitespace:
                 v = v.replace(/\s\s+/g, E.sp);
-                o.cv[i] = v.match(E.nums);
+                o.cv[i] = v.match(Rx.nums);
                 if (!o.cv[i])
                     throw new Error(`P.${this.key}.getUnToObj(o): `
                                   + `o.elms[${i}] contains no numbers: ${v}`);
                 //-----------------------------
-                o.seps[i] = v.split(E.nums);
+                o.seps[i] = v.split(Rx.nums);
                 o.lens[i] = o.cv[i].length;
-                o.numBeg[i] = E.numBeg.test(v);
-                o.numEnd[i] = E.numEnd.test(v);
+                o.numBeg[i] = Rx.numBeg.test(v);
+                o.numEnd[i] = Rx.numEnd.test(v);
             }
         });
     }
@@ -296,9 +304,9 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
         else if (this.isColor)      // function, #hex, or color name
             return fromColor(v, false, f, u);
         else if (v.at(-1) == E.rp)  // non-color function
-            return v.split(E.sepfunc).slice(1, -1);
+            return v.split(Rx.sepfunc).slice(1, -1);
         else                        // property or attribute value(s)
-            return v.split(E.comsp);
+            return v.split(Rx.comsp);
     }
 //==============================================================================
 // The set() functions: TODO!!repair, remodel, and restore let() and net()!!

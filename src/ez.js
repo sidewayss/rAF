@@ -1,5 +1,6 @@
-import {E, Is} from "./raf.js";
+import {Is} from "./raf.js";
 
+import {Rx}        from "./prop/pbase.js"
 import {fromColor} from "./prop/color-convert.js";
 
 // Ez is a factotem object. Many of its functions are eminently inlineable.
@@ -107,7 +108,7 @@ export const Ez = {
     },
 //  camelToKebab() converts a camelCase string to kebab-case
     camelToKebab(str) {
-        return str.replace(E.caps, cap => "-" + cap.toLowerCase());
+        return str.replace(Rx.caps, cap => "-" + cap.toLowerCase());
     },
 //  kebabToCamel() converts a kebab-case string to camelCase
     kebabToCamel(str) {

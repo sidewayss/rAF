@@ -1,5 +1,6 @@
 export {PFactory, ANGLES, EMPTY_PCT}; // ANGLES, EMPTY_PCT for func.js:CFunc
 
+import {Rx} from "./pbase.js"
 import {Func, CFunc, ColorFunc, SRFunc} from "./func.js"
 import {Prop, Bute, PrAtt, HtmlBute}    from "./prop.js"
 
@@ -11,72 +12,11 @@ import {C, HD, M, U, E, Ez, F, Fn, P, Pn, Is, Ease, Easy} from "../raf.js";
 // N = <number>; P  = <percentage>;
 // T = transform funcions; Tm = <time> default units:ms;
 // F = filter functions;    2 = no abbreviated name created;
-// units:
-const
+const     // units:
 LENGTHS   = ["px","em","rem","vw","vh","vmin","vmax","pt","pc","mm","in"],
 ANGLES    = ["deg","rad","grad","turn"], // see CFunc.prototype.hueUnits
 TIMES     = ["ms","s"],
-EMPTY_PCT = ["", "U.pct"],               // ditto .alphaUnits
-// functions:
-funcs   = ["url","var","cubic-bezier"],  //!!can any of these be animated??worth having here??
-        // color funcs
-funcC   = ["rgb","hsl","hwb","lch","oklch","lab","oklab"],
-        // isUn funcs
-funcUn  = ["color-mix","inset","path","polygon","calc","linear","steps"], //!!calc, linear, steps...
-funcGr  = ["linear-gradient","radial-gradient","conic-gradient",
-           "repeating-linear-gradient","repeating-radial-gradient",
-           "repeating-conic-gradient"],
-funcSR  = ["circle", "ellipse"],         // SR = <shape-radius>
-        // filter funcs
-funcF   = ["brightness","contrast","grayscale","invert","opacity","saturate","sepia"],
-funcFA  = ["hue-rotate"],
-funcFL  = ["blur","drop-shadow"],
-        // transform funcs
-funcT   = ["matrix","scale","matrix3d","scale3d"],
-funcTA  = ["rotate","rotateX","rotateY","rotateZ","rotate3d"],
-funcTA2 = ["skew","skewX","skewY"],
-funcTL  = ["perspective","translateZ"],
-funcTLP = ["translate","translateX","translateY","translate3d"],
-// CSS properties, class Prop:
-css   = ["flex-flow","align-items","align-self","justify-content", //!!do any of these animate??
-         "font-family","font-weight","overflow-x","overflow-y",
-         "pointer-events","vector-effect","text-anchor"],
-css2  = ["left","right","top","bottom",  // r = <circle> radius, no abbreviations
-         "cursor","display","flex","mask","overflow","position"], //!!not all of these animate
-cssUn = ["border","border-image","box-shadow","clip-path","offset-path","shape-outside"],
-cssC  = ["color","accent-color","background-color","border-color","border-left-color",
-         "border-right-color","border-top-color","border-bottom-color"],
-cssLP = ["transform-origin","max-height","max-width","min-height","min-width",
-         "padding","margin",             // border is in cssUn, above
-         "padding-top", "padding-bottom","padding-left","padding-right",
-          "margin-top",  "margin-bottom", "margin-left", "margin-right",
-          "border-top",  "border-bottom", "border-left", "border-right", "border-radius",
-          "border-width","border-top-width","border-bottom-width","border-left-width","border-right-width"],
-bg    = ["background-attachment","background-clip", "background-origin",
-         "background-blend-mode", "background-repeat"], //!!none of these animate, maybe repeat...
-bgUn  = ["background","background-image","background-size",
-         "background-position","background-position-x","background-position-y"],
-// CSS-SVG property-attributes, class PrAtt:
-csSvg = ["font-style","visibility"],
-csSvC = ["fill","stroke","stop-color"],
-csSvN = ["font-size-adjust"],
-csSvP = ["font-stretch"],
-csSNP = ["opacity","fill-opacity","stroke-opacity","stop-opacity"],
-csSLP = ["x","y","r","cx","cy","height","width","stroke-width","font-size"],
-// SVG attributes, class Bute:
-svg   = ["class","href","lengthAdjust","preserveAspectRatio","type"], //!!any of these animate??
-svgUn = ["d","points"], // CSS.supports("d","path('')")
-svgN  = ["viewBox","baseFrequency","stdDeviation","surfaceScale"],
-svgN2 = ["azimuth","elevation","k1","k2","k3","rotate","scale","seed","values"],
-svgLP = ["dx","dy","startOffset","textLength","x1","x2","y1","y2"],
-// HTML attributes, class HtmlBute:
-html  = ["value"],      // for <input type="range">
-// Miscellaneous:
-vB = ["x","y","w","h"], // SVG viewBox
-presets = [             // for Ease, see globals.js
-    ["",1.685], ["Quad",2], ["Cubic",3], ["Quart",4], ["Quint",5],
-    ["Sine"], ["Expo"], ["Circ"], ["Back"], ["Elastic"], ["Bounce"]
-];
+EMPTY_PCT = ["", "U.pct"];               // ditto .alphaUnits
 //==============================================================================
 const PFactory = {
  // init() populates U, F, Fn, P, Pn, C, HD, Ease, E, Ez, and freezes all but P,
@@ -85,10 +25,76 @@ const PFactory = {
         if (this.initialized) {
             console.info(Ez._only("PFactory", "initialized once per session"));
             return;
-        }
-        // Fill collections, order is critical: U, Fn, F, Pn, P:
-        const FA = [], FL = [], CSSVC = [];
+        } //-------------------------------
+        const FA = [], FL = [], CSSVC = [],
 
+        // functions:
+        funcs   = ["url","var","cubic-bezier"],  //!!can any of these be animated??worth having here??
+                  // color funcs
+        funcC   = ["rgb","hsl","hwb","lch","oklch","lab","oklab"],
+                  // isUn funcs
+        funcUn  = ["color-mix","inset","path","polygon","calc","linear","steps"], //!!calc, linear, steps...
+        funcGr  = ["linear-gradient","radial-gradient","conic-gradient",
+                   "repeating-linear-gradient","repeating-radial-gradient",
+                   "repeating-conic-gradient"],
+        funcSR  = ["circle", "ellipse"],         // SR = <shape-radius>
+                  // filter funcs
+        funcF   = ["brightness","contrast","grayscale","invert","opacity","saturate","sepia"],
+        funcFA  = ["hue-rotate"],
+        funcFL  = ["blur","drop-shadow"],
+                  // transform funcs
+        funcT   = ["matrix","scale","matrix3d","scale3d"],
+        funcTA  = ["rotate","rotateX","rotateY","rotateZ","rotate3d"],
+        funcTA2 = ["skew","skewX","skewY"],
+        funcTL  = ["perspective","translateZ"],
+        funcTLP = ["translate","translateX","translateY","translate3d"],
+
+        // CSS properties, class Prop:
+        css   = ["flex-flow","align-items","align-self","justify-content", //!!do any of these animate??
+                 "font-family","font-weight","overflow-x","overflow-y",
+                 "pointer-events","vector-effect","text-anchor"],
+        css2  = ["left","right","top","bottom",  // r = <circle> radius, no abbreviations
+                 "cursor","display","flex","mask","overflow","position"], //!!not all of these animate
+        cssUn = ["border","border-image","box-shadow","clip-path","offset-path","shape-outside"],
+        cssC  = ["color","accent-color","background-color","border-color","border-left-color",
+                 "border-right-color","border-top-color","border-bottom-color"],
+        cssLP = ["transform-origin","max-height","max-width","min-height","min-width",
+                 "padding","margin",             // border is in cssUn, above
+                 "padding-top", "padding-bottom","padding-left","padding-right",
+                  "margin-top",  "margin-bottom", "margin-left", "margin-right",
+                  "border-top",  "border-bottom", "border-left", "border-right", "border-radius",
+                  "border-width","border-top-width","border-bottom-width","border-left-width","border-right-width"],
+        bg    = ["background-attachment","background-clip", "background-origin",
+                 "background-blend-mode", "background-repeat"], //!!none of these animate, maybe repeat...
+        bgUn  = ["background","background-image","background-size",
+                 "background-position","background-position-x","background-position-y"],
+
+        // CSS-SVG property-attributes, class PrAtt:
+        csSvg = ["font-style","visibility"],
+        csSvC = ["fill","stroke","stop-color"],
+        csSvN = ["font-size-adjust"],
+        csSvP = ["font-stretch"],
+        csSNP = ["opacity","fill-opacity","stroke-opacity","stop-opacity"],
+        csSLP = ["x","y","r","cx","cy","height","width","stroke-width","font-size"],
+
+        // SVG attributes, class Bute:
+        svg   = ["class","href","lengthAdjust","preserveAspectRatio","type"], //!!any of these animate??
+        svgUn = ["d","points"], // CSS.supports("d","path('')")
+        svgN  = ["viewBox","baseFrequency","stdDeviation","surfaceScale"],
+        svgN2 = ["azimuth","elevation","k1","k2","k3","rotate","scale","seed","values"],
+        svgLP = ["dx","dy","startOffset","textLength","x1","x2","y1","y2"],
+
+        // HTML attributes, class HtmlBute:
+        html  = ["value"],      // for <input type="range">
+
+        // Miscellaneous:
+        vB = ["x","y","w","h"], // SVG viewBox
+        eases = [               // for Ease, see globals.js
+            ["",1.685], ["quad",2], ["cubic",3], ["quart",4], ["quint",5],
+            ...Easy.type.slice(1, 7).map(v => [v,])
+        ];
+
+        // Fill collections, order is critical: U, Fn, F, Pn, P:
         add(LENGTHS, 99, U); // 99 prevents abbreviated names
         add(ANGLES,  99, U);
         add(TIMES,   99, U);          // noUnits
@@ -204,7 +210,7 @@ const PFactory = {
         for (full of bg) {
             short = "bg";
             long  = "";
-            while (caps = E.caps.exec(full)) {
+            while (caps = Rx.caps.exec(full)) {
                 if (!long) {
                     long = short + full.substring(caps.index);
                     Pn[long] = full;    // long abbreviation, e.g. bgColor
@@ -284,12 +290,13 @@ const PFactory = {
 
         // Ease: a collection of preset easy.legs
         let inn, obj, out;              // "in" is a reserved word, thus "inn"
-        for (const [name, pow] of presets) {
-            inn = pow ? {pow:pow} : {type:E[name.toLowerCase()]};
+        for (const [name, pow] of eases) {
+            inn = pow ? {pow:pow} : {type:E[name]};
             out = {...inn, io:E.out};
             inn.io = E.in;              // explicit default value
-            [[inn],[out],[inn, out],[out, inn],[inn, {...inn}],[out, {...out}]]
-                .forEach((v, i) => Ease[Easy.io[i] + name] = v);
+            arr = [[inn],[out],[inn, out],[out, inn],[inn, {...inn}],[out, {...out}]];
+            name ? arr.forEach((v, i) => Ease[name + Ez.initialCap(Easy.io[i])] = v)
+                 : arr.forEach((v, i) => Ease[Easy.io[i]] = v);
         }
 
         // Lock up as much as is plausible, P and Pn are extensible

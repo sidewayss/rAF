@@ -3,17 +3,14 @@ export {E, Ease, F, Fn, HD, Is, M, P, Pn, U};
 import {Ez} from "./raf.js";
 
 // All consts, except Is, are fully or partially populated by PFactory.init():
-const U  = {pct:"%"};  // units, e.g. "px", "deg"
-const M  = {};         // bitmasks for matrix() and matrix3d()
-const HD = {};         // bitmasks for CSS L4 (UHD) color functions
-const E  = {           // global constants, PFactory.init() adds enums
-    comsp:/[,\s]+/,    currentValue:null,
-     func:/[\(\)]/,              cV:null,
-  sepfunc:/[,\s\(\)]+/g,         lp:'(',
-     caps:/[A-Z]/g,              rp:')',  // lp, rp, sp, comma because '(', ')',
-     nums: /-?[\d\.]+/g,         sp:' ',  // ' ', and ',' are awkward in code.
-   numBeg:/^-?[\d\.]+/ ,      comma:',',
-   numEnd: /-?[\d\.]+$/,     prefix:"E."  // prefix for accessing E via string
+const U  = {pct:"%"};   // units, e.g. "px", "deg"
+const M  = {};          // bitmasks for matrix() and matrix3d()
+const HD = {};          // bitmasks for CSS L4 (UHD) color functions
+const E  = {            // Easy-related constants, PFactory.init() adds enums
+    cV:null, currentValue:null,
+    prefix:"E.",        // prefix for accessing E via string
+    lp:'(',  rp:')',    // lp, rp, sp, comma because '(', ')',  ' ', and ','
+    sp:' ',  comma:','  // are awkward in code.
 };
 const Ease = {         // preset easing names/values
     ease:[{bezier:[0.25, 0.1, 0.25, 1.0]}]// I can't think of a better name
@@ -38,7 +35,7 @@ const Is = {           // boolean functions wrapped in a const, very inlineable
     A2ish(v, ish) {     // shorter than Arrayish2D()
       return (ish ?? Is.Arrayish(v)) && v.some(a => Is.Arrayish(a));
     }
-}
+};
 Object.freeze(Is);     // not populated by PFactory.init()
 //==============================================================================
 const Fn = {};         // function names
