@@ -117,30 +117,36 @@ h1 {
   padding:0;
   vertical-align:middle;
 }
-h2, p.bullet {
+h2, h3 {
   font-family:"Radio Canada Big";
   font-weight:500;
 }
-h2, img.sub{
-  margin:0.75rem 0 0.5rem;
+h2, img.sub {
+  margin:0.75rem 0 0.375rem;
 }
-p.bullet {
-  margin:0.25rem 0 0.5rem;
-  font-size:18px;
+h3 {
+  margin:0.75rem 0 00rem;
 }
-p {
+ul {
+  margin:0.25rem 0 0 1.5rem;
+  padding:0;
+}
+p, li {
   font-family:"Shippori Antique";
-  margin:0 0 0.25rem;
+  margin:0 0 0.1875rem;
 }
 p + p {
   margin-top: 0.5rem;
 }
+p.bullet {
+  margin:0.125rem 0 0 0.625rem;
+}
+li::marker {
+  content:"\0335\2002";
+}
 span {
   font-family:"Roboto Mono";
   font-weight:400;
-}
-span.bullet {
-  font-family:"Radio Canada Big";
 }
 .rAF {
   font-family:"Roboto Mono";
