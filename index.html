@@ -18,27 +18,16 @@
       <p>If you want to skip the formalities and jump right in, the best place to start is the <a href="apps/">Three Apps</a> (web pages) that test/demonstrate the app and generate starting-point JavaScript code for the configured animation. I am hosting them on my personal site. GitHub Pages will be up when I learn how to fully disable Jekyll...</p>
       <p>There are also animation examples in these collections on CodePen:</p>
       <p><i>...coming soon along with v1.0</i></p>
+      <p><a href="docs/raf-by-class.html">Properties and Methods by Class</a> catalogs classes and constants you might want to use. The current state of documentation is like a sparse array. Hopefully the examples, apps, and app instructions will help to fill in the gaps.</p>
 
       <h2>Setup</h2>
-      <p><span class="rAF">rAF</span> is modular. There are currently no packages or minified file. Coming immediately post v1.0. For most users <span>raf.js</span> provides all the exports you need. Here is a typical import statement:</p>
+      <p><span class="rAF">rAF</span> is modular. There are currently no packages or minified file. Should be coming your way soon after v1.0. For most users <span>raf.js</span> provides all the exports you need. Here is a typical import statement:</p>
       <p><span>import {E, Ez, F, P, PFactory, Easy, Easies, AFrame}<br>from "https://sidewayss.com/raf/src/raf.js";</span></p>
       <p>To initializes constants, including the <span>F</span> and <span>P</span> objects containing all the built-in <span>Func</span> and <span>Prop</span> instances, you must run this line of code prior to using any other <span class="rAF">rAF</span> features:</p>
       <p><span>PFactory.init();</span></p>
 
       <h2>Features</h2>
-      <p></p>
-
-      <h2>Structure</h2>
-      <p>The outermost class is <span>AFrame</span>. It has the <span>play()</span> method and contains all the animations in its <span>targets</span> property.</p>
-      <p>Targets are instances of <span>Easies</span> or <span>ACues</span>.</p>
-      <p><span>class Easies</span> contains a <span>Set</span> of <span>Easy</span> instances. <span>Easies</span> emulates a <span>Set</span> of <span>Easy</span>s for the iterator, <span>has()</span>, <span>add()</span>, <span>delete()</span>, <span>clear()</span>, <span>values()</span>, and <span>size</span>. Each <span>Easy</span> has a linked list of legs, each with its own timing function.</p>
-      <p><span>Easies.prototype.targets</span> is an array of <span>MEaser</span> instances. <span>M</span> is for "multi". Each <span>MEaser</span> has an <span>easies</span> property filled with references to <span>Easy</span>s within this <span>Easies.prototype.easies</span>.</p>
-      <p><span>Easy.prototype.targets</span> is a <span>Set</span> of <span>Easer</span>s.</p>
-      <p><span>class Easer</span> runs the calculations and applies the values during animation. <span>MEaser</span> is the multi-ease sub-class.</p>
-      <p><span>Easer</span> inherits from <span>EBase</span>.</p>
-      <p><span>MEaser</span> inherits from <span>MEBase</span>, which inherits from <span>EBase</span>.</p>
-      <p>The <span>Prop</span>, <span>Bute</span>, <span>HtmlBute</span>, <span>PrAtt</span>, and <span>Func</span> classes wrap CSS properties, SVG/HTML attributes, and CSS/SVG functions.</p>
-      <p><span>Ez</span> is a factotem object filled with useful methods and a few properties. The <span>globals.js</span> module has some other useful constant objects, like <span>E</span>.</p>
+      <p><i>...coming soon along with v1.0</i></p>
 
       <h2>Why bother?</h2>
       <p>I originally got interested in web animations through animating SVG sheet music scores created and exported to SVG by <a href="https://musescore.org">MuseScore</a> (github repo <a href="https://github.com/musescore/MuseScore">here</a>). I then decided to create a heavily animated personal web site. In that process I consolidated a bunch of common animation code and created the initial version of <span class="rAF">rAF</span>.</p>

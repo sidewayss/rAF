@@ -88,7 +88,8 @@
 			.ml1 {
 				margin-left:1rem;
 			}
-			span {
+			span.bullet, span.subclass, span.subclass2 {
+				font-family:"Roboto Mono";
 				cursor:default;
 				font-size:1.25rem;
 				align-self:flex-start;
@@ -103,13 +104,15 @@
 			a {
 				text-decoration:none;
 			}
-			span::before {
-				content:"\25CF";
+			span.bullet::before, span.subclass::before, span.subclass2::before {
 				font-size:1rem;
-				padding-right:0.25rem;
+				padding-right:0.375rem;
 				color:#444;
 				position:relative;
 				top:-1px;
+			}
+			span.bullet::before {
+				content:"\25CF";
 			}
 			span.subclass::before {
 				content:"\25CB";
@@ -125,39 +128,54 @@
         <object data="../img/rAFoffset.svg" type="image/svg+xml" style="width:180px; height:180px;"></object>
         <h1 class="nudge-down">Properties and Methods By Class</h1>
       </div>
-			<span><a href="#aframe">class AFrame</a></span>
-			<span><a href="#acues">class ACues</a></span>
-			<span><a href="#easies">class Easies</a></span>
-			<span><a href="#easy">class Easy</a></span>
+			<span class="bullet"><a href="#structure">introduction</a></span>
+			<span class="bullet"><a href="#aframe">class AFrame</a></span>
+			<span class="bullet"><a href="#acues">class ACues</a></span>
+			<span class="bullet"><a href="#easies">class Easies</a></span>
+			<span class="bullet"><a href="#easy">class Easy</a></span>
 			<span class="subclass"><a href="#obj">constructor(obj), the obj argument</a></span>
 			<span class="subclass"><a href="#leg">the leg object</a></span>
 			<span class="subclass"><a href="#e">const E: values pertaining to Easy</a></span>
-			<span><a href="#ebase">class EBase</a></span>
+			<span class="bullet"><a href="#ebase">class EBase</a></span>
 			<span class="subclass"><a href="#create">EFactory.js/create(obj), the obj argument</a></span>
 			<span class="subclass"><a href="#easer">class Easer</a></span>
 			<span class="subclass"><a href="#easer-by-elm">class EaserByElm</a></span>
 			<span class="subclass"><a href="#mebase">class MEBase</a></span>
 			<span class="subclass2"><a href="#measer">class MEaser</a></span>
 			<span class="subclass2"><a href="#measer-by-elm">class MEaserByElm</a></span>
-			<span><a href="#pbase">class PBase</a></span>
+			<span class="bullet"><a href="#pbase">class PBase</a></span>
 			<span class="subclass"><a href="#prop">class Prop</a></span>
 			<span class="subclass"><a href="#bute">class Bute</a></span>
 			<span class="subclass"><a href="#pratt">class PrAtt</a></span>
 			<span class="subclass"><a href="#html-bute">class HtmlBute</a></span>
 			<span class="subclass"><a href="#p">const P: PBase instances by name</a></span>
-			<span><a href="#func">class Func</a></span>
+			<span class="bullet"><a href="#func">class Func</a></span>
 			<span class="subclass"><a href="#cfunc">class CFunc</a></span>
 			<span class="subclass2"><a href="#color-func">class ColorFunc</a></span>
 			<span class="subclass"><a href="#srfunc">class SRFunc</a></span>
 			<span class="subclass"><a href="#f">const F: Func instances by name</a></span>
-			<span>more const Objects</span>
+			<span class="bullet">more const Objects</span>
 			<span class="subclass"><a href="#u">const U: &nbsp;units</a></span>
 			<span class="subclass"><a href="#is">const Is: boolean functions</a></span>
 			<span class="subclass"><a href="#ez">const Ez: a factotem</a></span>
 			<span class="subclass"><a href="#bitmasks">bitmasks for argument masking</a></span>
 			<span class="subclass"><a href="#ease">const Ease: CSS and jQuery-style presets</a></span>
-			<span><a href="#ebezier">class EBezier</a></span>
-			<span><a href="#ecalc">class ECalc</a></span>
+			<span class="bullet"><a href="#ebezier">class EBezier</a></span>
+			<span class="bullet"><a href="#ecalc">class ECalc</a></span>
+
+			<h2 id="structure">Intro: Basic Class Structure</h2>
+			<p><b>Note:</b> <span>ACues</span> and <span>Incremental</span> are not fully functional as of release 1.0. Look for them in a 1.1 release. For examples of cue-based and incremental animations, visit my homepage at <a href="https://sidewayss.com"><u>sidewayss.com</u></a>. Cue-based animations are for first-time visitors only.</p>
+			<p>The outermost class is <span>AFrame</span>. It has the <span>play()</span> method and contains the animation objects in its <span>targets</span> property.</p>
+			<p><span>targets</span> contains instances of <span>Easies</span> or <span>ACues</span>.</p>
+			<p><span>class Easies</span> contains a <span>Set</span> of <span>Easy</span> instances. <span>Easies</span> emulates a <span>Set</span> of <span>Easy</span>s for the iterator, <span>has()</span>, <span>add()</span>, <span>delete()</span>, <span>clear()</span>, <span>values()</span>, and <span>size</span>. Each <span>Easy</span> has a linked list of legs, each with its own timing function.</p>
+			<p><span>Easies.prototype.targets</span> is an array of <span>MEaser</span> instances. <span>M</span> is for "multi". Each <span>MEaser</span> has an <span>easies</span> property filled with references to <span>Easy</span>s contained in <span>this.easies</span>.</p>
+			<p><span>Easy.prototype.targets</span> is a <span>Set</span> of <span>Easer</span>s.</p>
+			<p><span>class EBase</span> and its subclasses run the calculations and apply the values during animation.
+			<p><span>Easer</span> and <span>EaserByElm</span> inherit from <span>EBase</span>. The "ByElm" class is for single elements and <span>loopByElm</span></p>
+			<p><span>class MEBase</span> inherits from <span>EBase</span>. It is the multi-ease subclass</p>
+			<p><span>class MEaser</span> and <span>MEaserByElm</span> inherit from <span>MEBase</span>.</p>
+			<p><span>class PBase</span> and its sub-classes: <span>Prop</span>, <span>Bute</span>, and <span>HtmlBute</span> <span>PrAtt</span> wrap CSS properties and SVG/HTML attributes.</p>
+			<p><span>class Func</span> and its sub-classes: <span>Func</span>, <span>ColorFunc</span>, and <span>SRFunc</span> wrap CSS/SVG functions</p>
 		</div>
 <!----------------------------------------------------------------------------->
 <table id="aframe">
@@ -177,7 +195,7 @@
 			<tr><td>peri</td><td class="middle">function</td><td>runs once per #animate()</td></tr>
 			<tr><td>post</td><td class="middle">function</td><td>runs on arrival</td></tr>
 			<tr><td class="border-dotted">keepPost</td><td class="border-dotted middle">bool</td><td class="border-dotted">default = false = one-shot this.post</td></tr>
-			<tr><td>status</td><td class="middle">bool, read-only</td><td>this.#status</td></tr>
+			<tr><td>status</td><td class="middle">int, &nbsp;read-only</td><td>this.#status, int enum generated from Easy.status</td></tr>
 			<tr><td>atOrigin</td><td class="middle">bool, read-only</td><td>this.#status == E.original</td></tr>
 			<tr><td>atInitial</td><td class="middle">bool, read-only</td><td>this.#status == E.initial</td></tr>
 			<tr><td>hasArrived</td><td class="middle">bool, read-only</td><td>this.#status == E.arrived</td></tr>
