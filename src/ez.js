@@ -1,6 +1,5 @@
-import {Is} from "./raf.js";
+import {Is, Rx} from "./raf.js";
 
-import {Rx}        from "./prop/pbase.js"
 import {fromColor} from "./prop/color-convert.js";
 
 // Ez is a factotem object. Many of its functions are eminently inlineable.

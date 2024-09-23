@@ -1,18 +1,8 @@
 // Not exported by raf.js
-export const Rx = { // regular expressions:
-    comsp:/[,\s]+/,
-     func:/[\(\)]/,
-  sepfunc:/[,\s\(\)]+/g,
-     caps:/[A-Z]/g,
-     nums: /-?[\d\.]+/g,
-   numBeg:/^-?[\d\.]+/,
-   numEnd: /-?[\d\.]+$/
-};
-
 import {PFactory}  from "./pfactory.js";
 import {fromColor} from "./color-convert.js";
 
-import {E, Ez, F, Fn, Is, P} from "../raf.js";
+import {E, Ez, F, Fn, Is, P, Rx} from "../raf.js";
 
 const               // style/attribute values that require getComputedStyle():
 listOfValues = ["auto","inherit","initial","revert","revert-layer","unset"],

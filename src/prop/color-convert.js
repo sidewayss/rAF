@@ -6,10 +6,9 @@
 // be called for gradients, so you must set o.currentValue for HSL/HWB there.
 export {fromColor, rgbToHxx, rgbToHsl, rgbToHwb};
 
-import {C, U, E, Ez, F, Fn} from "../raf.js";
+import {C, U, Rx, E, Ez, F, Fn} from "../raf.js";
 
 import {CFunc} from "./func.js";
-import {Rx}    from "./pbase.js"
 //==============================================================================
 // fromColor() parses a DOM value, converts hex to rgb() and color names to
 //             rgb(), hsl(), or hwb(), returns an array of 3 or 4 function

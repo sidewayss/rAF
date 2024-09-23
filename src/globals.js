@@ -1,4 +1,4 @@
-export {E, Ease, F, Fn, HD, Is, M, P, Pn, U};
+export {E, Ease, F, Fn, HD, Is, M, P, Pn, Rx, U};
 
 import {Ez} from "./raf.js";
 
@@ -12,10 +12,19 @@ const E  = {            // Easy-related constants, PFactory.init() adds enums
     lp:'(',  rp:')',    // lp, rp, sp, comma because '(', ')',  ' ', and ','
     sp:' ',  comma:','  // are awkward in code.
 };
-const Ease = {         // preset easing names/values
+const Ease = {          // preset easing names/values
     ease:[{bezier:[0.25, 0.1, 0.25, 1.0]}]// I can't think of a better name
 };
-const Is = {           // boolean functions wrapped in a const, very inlineable
+const Rx = {            // regular expressions
+    comsp:/[,\s]+/,
+     func:/[\(\)]/,
+  sepfunc:/[,\s\(\)]+/g,
+     caps:/[A-Z]/g,
+     nums: /-?[\d\.]+/g,
+   numBeg:/^-?[\d\.]+/,
+   numEnd: /-?[\d\.]+$/
+};
+const Is = {            // boolean functions wrapped in a const, very inlineable
     def     (v) { return v !== undefined;  },
     Number  (v) { return typeof v == "number"; },
     String  (v) { return typeof v == "string"; },

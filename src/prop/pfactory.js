@@ -1,10 +1,9 @@
 export {PFactory, ANGLES, EMPTY_PCT}; // ANGLES, EMPTY_PCT for func.js:CFunc
 
-import {Rx} from "./pbase.js"
 import {Func, CFunc, ColorFunc, SRFunc} from "./func.js"
 import {Prop, Bute, PrAtt, HtmlBute}    from "./prop.js"
 
-import {C, HD, M, U, E, Ez, F, Fn, P, Pn, Is, Ease, Easy} from "../raf.js";
+import {C, HD, M, U, Is, Rx, E, Ez, F, Fn, P, Pn, Ease, Easy} from "../raf.js";
 
 // PFactory.init() populates the U, F, Fn, P, Pn objects using these arrays:
 // C = <color>;  Un = gradients and other "unstructured" functions;

@@ -1,4 +1,4 @@
-export * from "./globals.js";           // E, Ease, F, Fn, HD, Is, P, Pn, U
+export * from "./globals.js";           // E, Ease, F, Fn, HD, Is, P, Pn, U, Rx
 export * from "./ez.js";                // Ez
 export * from "./prop/color-names.js";  // C
 export * from "./prop/pfactory.js";     // PFactory initializes everything
