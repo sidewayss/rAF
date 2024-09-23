@@ -9,6 +9,7 @@ export {fromColor, rgbToHxx, rgbToHsl, rgbToHwb};
 import {C, U, E, Ez, F, Fn} from "../raf.js";
 
 import {CFunc} from "./func.js";
+import {Rx}    from "./pbase.js"
 //==============================================================================
 // fromColor() parses a DOM value, converts hex to rgb() and color names to
 //             rgb(), hsl(), or hwb(), returns an array of 3 or 4 function
@@ -26,7 +27,7 @@ function fromColor(v, toNum, f = F.rgb, u = f._u) {
     const A = CFunc.A;
 
     if (v.at(-1) == E.rp) {     // v == function string
-        arr = v.split(E.sepfunc);
+        arr = v.split(Rx.sepfunc);
         arr.length--;           // trailing "" array element
 
         let err;

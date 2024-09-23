@@ -1,4 +1,4 @@
-# <img src="img/rAFgithub.svg" type="image/svg+xml" style="width:180px; height:180px;"></img> &emsp;JavaScript Animation Library
+# <img src="img/rAFgithub.svg" type="image/svg+xml" style="width:180px;"></img> &emsp;JavaScript Animation Library
 
 # What is it?
 The name **rAF** is a common abbreviation for the core JavaScript animation function: `requestAnimationFrame()`. It is a highly flexible animation library for HTMLElements, SVGElements, and CSSStyleRules. It includes 99% of CSS animation functionality, but also extends that functionality greatly.
