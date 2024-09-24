@@ -63,8 +63,8 @@ const PFactory = {
                   "margin-top",  "margin-bottom", "margin-left", "margin-right",
                   "border-top",  "border-bottom", "border-left", "border-right", "border-radius",
                   "border-width","border-top-width","border-bottom-width","border-left-width","border-right-width"],
-        bg    = ["background-attachment","background-clip", "background-origin",
-                 "background-blend-mode", "background-repeat"], //!!none of these animate, maybe repeat...
+        bg    = ["background-attachment","background-origin",  //!!none of these animate, maybe repeat...
+                 "background-blend-mode","background-repeat"], //!!background-clip removed because bgC = bgColor!!
         bgUn  = ["background","background-image","background-size",
                  "background-position","background-position-x","background-position-y"],
 
@@ -130,17 +130,19 @@ const PFactory = {
         add(svgLP,   99, Pn, P, "",    "_lenPctN",  Bute);
         add(html,     0, Pn, P, "",    "_noU",      HtmlBute);
 
-        let fp, keys;
+        let fp, isKebab, key, keys;
         const colorFuncs = [];
         Ez.readOnly(Fn, "color", "color");
         this.funcC = funcC.slice();     // for Ez._invalidErr(, validList)
         ColorFunc.spaces.forEach((id, i) => {
-            fp = new ColorFunc("", "_noUPct", id);
+            isKebab = id.includes("-");
+            key = isKebab ? Ez.kebabToCamel(id) : id;
+            fp  = new ColorFunc(id, key, "", "_noUPct");
             colorFuncs.push(fp);        // a ColorFunc for each color() space
             this.funcC.push(id);
             Ez.readOnly(F, id, fp);
-            if (id.includes("-")) {     // camelCase, snake_case aliases
-                Ez.readOnly(F, Ez.kebabToCamel(id), fp); // standard js
+            if (isKebab) {              // camelCase, snake_case aliases
+                Ez.readOnly(F, key, fp);                 // standard js
                 Ez.readOnly(F, Ez.kebabToSnake(id), fp); // for Color.js
             }
             if (ColorFunc.aliases[i])   // aliases for Color.js + CSS xyz
@@ -204,28 +206,26 @@ const PFactory = {
         Pn.xhref = "xlink:href";        // deprecated
         P.xhref  = new Prop(Pn.xhref, false);
 
-        let caps, full, short, long;    // background abbreviations are special
-        bg.unshift(Pn.backgroundColor); // bgC = bgColor not bgClip
-        for (full of bg) {
+        let full, short, long,          // background abbreviations are special
+        len = Pn.background.length + 1;
+        bg.push(Pn.backgroundColor);    // color properties grouped elsewhere
+        bgUn.shift();                   // "background" is the one without a "-"
+        P .bg = P .background;
+        Pn.bg = Pn.background;
+        for (full of [...bg, ...bgUn]) {
             short = "bg";
-            long  = "";
-            while (caps = Rx.caps.exec(full)) {
-                if (!long) {
-                    long = short + full.substring(caps.index);
-                    Pn[long] = full;    // long abbreviation, e.g. bgColor
-                    P [long] = P[full];
-                }
-                short += caps[0];
-            }
+            long  = short + Ez.initialCap(Ez.kebabToCamel(full.slice(len)));
+            Pn[long] = full;            // long abbreviation, e.g. bgColor
+            P [long] = P[full];
+
+            short += long.match(Rx.caps).join("");
             Pn[short] = full;           // short abbreviation, e.g. bgC
             P [short] = P[full];
         }
 
         // Bitmasks, color functions first:
-        let
-        arr = ["R","G","B","A","C"],
+        let arr = ["R","G","B","A","C"];
         len = arr.length;               // feColorMatrix has the most args at 20
-
         const RGBC = Array.from(
             {length:len * (len - 1)},
             (_, i) => arr[i % len] + arr[Math.floor(i / len)]
@@ -266,7 +266,7 @@ const PFactory = {
         C .alpha  = C.a;                // a more readable alias, aligns with HD
 
         // E object, enumerations and string constants:
-        let j, key;
+        let j;
         for (keys of [vB, Easy.status, Easy.type, Easy.io, Easy.jump, Easy.set]) {
             j = 0;
             for (key of keys)

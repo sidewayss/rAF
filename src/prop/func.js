@@ -147,9 +147,9 @@ class ColorFunc extends CFunc { //\ ColorFunc: CSS color() function
                       "display-p3","rec2020","xyz-d65","xyz-d50"];
     static aliases = [,,"a98rgb","prophoto", "p3",,"xyz",];
     #space;
-    constructor(key, units, utype, space) {
+    constructor(name, key, units, utype) {
         super(Fn.color, key, units, utype);
-        this.#space = space; // no validation, called only by PFactory.init()
+        this.#space = name; // no validation, called only by PFactory.init()
     }
     get space()  { return this.#space; }
     get prefix() { return `${this.name}(${this.space} `; }
