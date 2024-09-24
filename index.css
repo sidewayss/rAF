@@ -139,10 +139,25 @@ p + p {
   margin-top: 0.5rem;
 }
 p.bullet {
-  margin:0.125rem 0 0 0.625rem;
+  font-size:1.125rem;
+  margin:0.125rem 0 0 0.5rem;
+}
+div.bullet {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  align-self:stretch;
+  padding-right:0.5rem;
 }
 li::marker {
   content:"\0335\2002";
+}
+li.asterisk {
+  font-style:italic;
+}
+li.asterisk::marker {
+  content:"\2A\202A";
+  font-style:normal;
 }
 span {
   font-family:"Roboto Mono";

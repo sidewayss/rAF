@@ -40,6 +40,7 @@
         <li>Eased steps, for timing and values separately</li>
         <li>Max and min limits by argument by element</li>
         <li>Animate the same property differently across elements in a single animation</li>
+        <li><a href="https://colorjs.io">Color.js</a> integration</li>
         <li><i>...what else?</i></li>
       </ul>
 
@@ -49,17 +50,17 @@
         <li>Allow for the animation of every property/attribute and function in full detail</li>
         <li>Create a minimal syntax that is both flexible and forgiving</li>
         <li>Make it fully object-oriented within the confines of JavaScript</li>
-        <li>Assume a “modern browser” that supports ES6*</li>
+        <li>Assume a &quot;modern browser&quot; that supports ES6*</li>
         <li>Provide callbacks for flexibility and meeting as-yet-unknown requirements</li>
         <li>Create a way to test user GPU power and develop methods for handling low-end vs high-end GPUs</li>
+        <li class="asterisk">The biggest browser compatibility issue for rAF is <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_properties">private properties</a>, which have <a href="https://caniuse.com/?search=private%20class">limited support</a> in pre-2021 browser versions. I have considered converting all the <span>#</span> to <span>_</span>, but the more time that passes, the less it matters. Maybe it's something for a minified/transpiled version.</li>
       </ul>
-      <p>* <i>The biggest browser compatibility issue for rAF is <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_properties">private properties</a>, which have <a href="https://caniuse.com/?search=private%20class">limited support</a> in pre-2021 browser versions. I have considered converting all the <span>#</span> to <span>_</span>, but the more time that passes, the less it matters. Maybe it's something for a minified/transpiled version.</i></p>
 
       <h2>Why bother?</h2>
-      <p>I originally got interested in web animations through animating SVG sheet music scores created and exported to SVG by <a href="https://musescore.org">MuseScore</a> (github repo <a href="https://github.com/musescore/MuseScore">here</a>, my fork is <a href="https://github.com/sidewayss/MuseScore">here</a>). I then decided to create a heavily animated personal web site. In that process I consolidated a bunch of common animation code and created the initial version of <span class="rAF">rAF</span>.</p>
+      <p>I originally got interested in web animations through animating SVG sheet music scores, created and exported to SVG by <a href="https://musescore.org">MuseScore</a> (github repo <a href="https://github.com/musescore/MuseScore">here</a>, my fork is <a href="https://github.com/sidewayss/MuseScore">here</a>). I then decided to create a heavily animated personal web site. In that process I consolidated a bunch of common animation code and created the initial version of <span class="rAF">rAF</span>.</p>
       <p>Soon thereafter I stepped away from programming for the next five years. Upon my return in April, 2023 I started to update my personal site. I soon realized that CSS had evolved notably and that my core design for <span class="rAF">rAF</span> was outdated and not as clean or complete as I had thought. I was considering seeking gainful employment in programming again, and updating <span class="rAF">rAF</span> seemed like a good way to freshen up my skills and produce a result that would fill in for the gap in my CV.</p>
-      <p>I don't expect to see a lot of interest in <span class="rAF">rAF</span>. It's a now obscure niche, and there have been many animation libraries produced since Velocity.js took the web by storm over a decade ago. I was mostly animating SVG, and Velocity doesn't do SVG gradients, among other things. So I built my own stuff.</p>
-      <p>These days animated video is much more common than web animations, and I can understand why: more tools for creation and more reliable results. The one advantage that web animations have is their interactivity, but how many interactive animations have you seen? <i>see my <a href="https://sidewayss.com">homepage</a>'s interactive greeting</i></p>
+      <p>I don't expect to see a lot of interest in <span class="rAF">rAF</span>. It's a now-obscure niche, and there have been many animation libraries produced since Velocity.js took the web by storm over a decade ago. I was mostly animating SVG, and Velocity doesn't do SVG gradients, among other things. So I built my own stuff.</p>
+      <p>These days animated video is much more common online than all but the most basic web animations. Why? More tools for creation and more reliable results. The one advantage that web animations have is interactivity, but how many interactive animations have you seen? <i>see my <a href="https://sidewayss.com">homepage</a>'s interactive greeting</i></p>
       <p>Running a digital video stream through a codec is a lot more reliable than running a JavaScript animation. Browser differences can mostly be ignored. The code has been supremely optimized. Loss of resolution due to bandwidth is friendlier than a stuttering or otherwise malfunctioning animation, and users are more familiar with it. They understand what's to blame.</p>
       <p>I built this library for personal satisfaction & education, a goofy homepage, and to demonstrate that I can still write solid code. I figure there might be a few other people out there who want to do more extreme animations, and maybe they'll find it useful. Maybe I'll even get a few people interested in contributing...</p>
     </div>
