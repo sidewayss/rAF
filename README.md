@@ -5,7 +5,7 @@ The name **rAF** is a common abbreviation for the core JavaScript animation func
 It is a solo open source project about to be released in its first public version 1.0. Hopefully others will contribute in the future.
 
 ## Getting started
-If you want to skip the formalities and jump right in, the best place to start are the <a href="https://sidewayss.github.io/rAF/apps/">3 Apps</a> (on GitHub Pages) that test & demonstrate the library and generate starting-point JavaScript code for the configured animation. I am also hosting them on my <a href="https://sidewayss.com/raf/apps/">homepage</a>.
+If you want to skip the formalities and jump right in, the best place to start are the <a href="https://sidewayss.github.io/rAF/apps/">3 Apps</a> (latest code on GitHub Pages) that test & demonstrate the library and generate starting-point JavaScript code for the configured animation. They are also available in a more stable form on my <a href="https://sidewayss.com/raf/apps/">homepage</a>.
 
 There are also animation examples in these collections on CodePen:
 
@@ -50,12 +50,12 @@ Goals, Assumptions, and Approach:
 ## Why bother?
 I originally got interested in web animations through animating SVG sheet music scores, created and exported to SVG by <a href="https://musescore.org">MuseScore</a> (github repo <a href="https://github.com/musescore/MuseScore">here</a>, my fork is <a href="https://github.com/sidewayss/MuseScore">here</a>). I then decided to create a heavily animated personal web site. In that process I consolidated a bunch of common animation code and created the initial version of **rAF**.
 
-Soon thereafter I stepped away from programming for the next five years. Upon my return in April, 2023 I started to update my personal site. I soon realized that CSS had evolved notably and that my core design for **rAF** was outdated and not as clean or complete as I had thought. I was considering seeking gainful employment in programming again, and updating **rAF** seemed like a good way to freshen up my skills and produce a result that would fill in for the gap in my CV.
+Soon thereafter I stepped away from programming for the next five years. Upon my return in April, 2023 I started to update my personal site. I soon realized that CSS had evolved notably and that my core design for **rAF** was outdated and not as clean or complete as I had thought. I was considering seeking gainful employment in programming again, and updating **rAF** seemed like a good way to freshen my skills and produce a result that would fill in for the gap in my CV.
 
 I don't expect to see a lot of interest in **rAF**. It's a now-obscure niche, and there have been many animation libraries produced since Velocity.js took the web by storm over a decade ago. I was mostly animating SVG, and Velocity doesn't do SVG gradients, among other things. So I built my own stuff.
 
 These days animated video is much more common online than all but the most basic web animations. Why? More tools for creation and more reliable results. The one advantage that web animations have is interactivity, but how many interactive animations have you seen? *see <a href="https://sidewayss.com">my homepage's interactive greeting</a>*
 
-Running a digital video stream through a codec is a lot more reliable than running a JavaScript animation. Browser differences can mostly be ignored. The code has been supremely optimized. Loss of resolution due to bandwidth is friendlier than a stuttering or otherwise malfunctioning animation, and users are more familiar with it. They understand what's to blame.
+Running a digital video stream through a codec is a lot more reliable than running a JavaScript animation. Browser differences are minimal. The code is supremely optimized. Loss of resolution due to bandwidth is friendlier than a stuttering or otherwise malfunctioning animation, and users are more familiar with it. They understand what's to blame.
 
-I built this library for personal satisfaction & education, a goofy homepage, and to demonstrate that I can still write solid code. I figure there might be a few other people out there who want to do more extreme animations, and maybe they'll find it useful. Maybe I'll even get a few people interested in contributing...
+I built this library for personal satisfaction & education, a goofy homepage, and to demonstrate that I can still design and build solid software. I figure there might be a few other people out there who want to do more extreme animations and could find it useful. Maybe some people will even want to contribute...

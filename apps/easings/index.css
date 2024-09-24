@@ -159,7 +159,7 @@ circle {
 }
 #triptych {
   display:grid;
-  grid-template-columns:1fr 1fr 1fr;
+  grid-template-columns:1fr min-content 1fr;
   padding-top:0.25rem;
 }
 #left  {

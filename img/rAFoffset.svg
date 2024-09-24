@@ -4,7 +4,7 @@
     <style>
         @font-face {
             font-family:"Averia";
-            src:url("../../fonts/AveriaSerifLibre-Regular.ttf") format("truetype");
+            src:url("/fonts/AveriaSerifLibre-Regular.ttf") format("truetype");
         }
         rect { stroke:none; }
         text { font-family:"Averia"; font-size:404px; text-anchor:middle;
