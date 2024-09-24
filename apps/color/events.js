@@ -1,7 +1,7 @@
 export {loadEvents, timeFactor, outOfGamut, getCase};
 export let isMulti;
 
-import {E, Ez, Fn, Is, P} from "../../src/raf.js";
+import {E, Ez, Fn, Is, P, Rx} from "../../src/raf.js";
 
 import {ezX}                    from "../load.js";
 import {setPrefix}              from "../named.js";
@@ -103,7 +103,7 @@ const change = {
             refresh();
         }
         const                           // get the CSS func or space id
-        display = lr.color.display().split(E.func),
+        display = lr.color.display().split(Rx.func),
         space   = (display[0] == Fn.color) ? display[1].split(E.sp)[0]
                                            : display[0];
 

@@ -31,6 +31,20 @@ function initPseudo() {
     newTargets(true);
 }
 //==============================================================================
+// updateX() is called exclusively by inputX()
+function updateX(frm) {
+    let coords, lr, space;
+    for (lr of getSides()) {
+        space  = lr.spaces.value;
+        coords = frm[lr.id];
+        lr.color.coords = coords;
+        if (isCSSSpace(space))
+            P.bgColor.setOne(lr.canvas, coords, F[space]);
+        else
+            P.bgColor.setIt(lr.canvas, lr.color.display());
+    }
+}
+//==============================================================================
 // newTargets() clears ez.targets adds 1 or 2 new targets (left and/or right)
 function newTargets(isPseudo) {
     const
@@ -112,20 +126,6 @@ function getFrame(t) {
     for (const key of keys)
         frm[key] = data[key];
     return frm;
-}
-//==============================================================================
-// updateX() is called exclusively by inputX()
-function updateX(frm) {
-    let coords, lr, space;
-    for (lr of getSides()) {
-        space  = lr.spaces.value;
-        coords = frm[lr.id];
-        lr.color.coords = coords;
-        if (isCSSSpace(space))
-            P.bgColor.setOne(lr.canvas, coords, F[space]);
-        else
-            P.bgColor.setIt(lr.canvas, lr.color.display());
-    }
 }
 //==============================================================================
 // setCounters() is called exclusively by updateCounters()
