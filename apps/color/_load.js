@@ -27,15 +27,16 @@ import {isMulti, loadEvents, timeFactor, getCase} from "./events.js";
 let collapsed, controlsWidth, expanded, padding;
 const postIts = [];
 //==============================================================================
-// loadIt() is called by loadCommon()
+// loadIt() is called by loadCommon(), sRGB255 is a custom color space for the
+//          original rgb() range of 0-255.
 function loadIt(_, hasVisited) {
     let bw, css, elm, id, max, min, obj, opt, rng, space, txt;
     const
-    ColorSpace = Color.Space,
-    registry   = Color.spaces,
+    ColorSpace = Color.Space,           // the ColorSpace class
+    registry   = Color.spaces,          // all the registered color spaces
     sRGBLinear = registry[Fn.srgbLinear],
     sRGB       = registry[Fn.srgb],
-    sRGB255    = new ColorSpace({
+    sRGB255    = new ColorSpace({       // new custom space
         id:    "rgb255",
         name:  "sRGB (0-255)",
         base:   sRGBLinear,
@@ -62,9 +63,12 @@ function loadIt(_, hasVisited) {
     range  = {range:[0, 255]};
 
     [...Fn.rgb].forEach(char => coords[char] = range);
-    ColorSpace.register(sRGB255);
-
-    const sorted = Object.values(registry).sort((a, b) => a.id < b.id ? -1 : 1);
+    ColorSpace.register(sRGB255);       // now it's in registry, which we sort
+                                        // alphabetically for the <select>s:
+    const sorted = Object.entries(registry)
+                         .filter(([key, sp]) => key == sp.id)   // no aliases
+                         .map(([_, sp]) => sp)                  // spaces only
+                         .sort((a, b) => a.id < b.id ? -1 : 1); // alpha sort
     elm = elms.leftSpaces;
     for (space of sorted) {             // populate leftSpaces <select>
         id  = space.id;
@@ -96,8 +100,7 @@ function loadIt(_, hasVisited) {
             return obj;
         });
     }
-//!!refRange[Fn.rgb] = Array(COUNT).fill({min:0, max:255, func:format.zero});
-    plugRange("--acescg",      format.positiveThree); //!!"fixes"
+    plugRange("--acescg",      format.positiveThree);
     plugRange("--xyz-abs-d65", format.one);
 
     const                   // clone leftSpaces to create rightSpaces
@@ -146,6 +149,7 @@ function loadIt(_, hasVisited) {
     pad.frame = 4;
     return loadEvents();
 }
+// format = display formats by color space coordinate range (assigned above)
 const format = {
     zero (n) { return n.toFixed(0); },
     one  (n) { return n.toFixed(1); },
@@ -160,10 +164,13 @@ const format = {
                            : format.negativeThree(n); // should never happen...
     }
 }
+// isCSSSpace() separates CSS-supported spaces from Color.js
+function isCSSSpace(val) { return val in F; }
+
+// plugRange() is for non-conforming color spaces, special cases
 function plugRange(id, func) {
     refRange[id].forEach((_, i, arr) => arr[i].func = func);
 }
-function isCSSSpace(val) { return val in F; }
 //==============================================================================
 // getEasies() is called exclusively by loadJSON()
 function getEasies(hasVisited) {

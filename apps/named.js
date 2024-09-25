@@ -11,10 +11,10 @@ import {getNamedBoth, setNamed, storeCurrent} from "./local-storage.js";
 import {CHANGE, CLICK, EASY_, MEASER_, dlg, elms, g, addEventsByElm,
         boolToString, messageBox}             from "./common.js";
 /*
-import(_named.js): formFromObj, updateNamed - objFromForm unused
-import(_load.js) : updateAll via loadNamed(..., _load) { ns_load = _load; }
+import(_named.js): formFromObj, updateNamed; ok() for easings only.
+import(_load.js) : updateAll via loadNamed(..., _load)
 */
-let ns_load;                        // for openNamed()
+let ns_load;                        // = import(_load.js) for openNamed()
 //==============================================================================
 // loadNamed() called by loadCommon()
 async function loadNamed(isMulti, dir, _load) {

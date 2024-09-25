@@ -1,7 +1,7 @@
 export let
-FPS = 60,    // assumes 60hz, but adjusts to reality at run-time
-ezX, raf,    // Easy, AFrame
-preDoc;      // prefix for this document, see local-storage.js
+FPS = 60,  // assumes 60hz, but adjusts to reality at run-time
+ezX, raf,  // Easy, AFrame
+preDoc;    // prefix for this document, see local-storage.js
 
 import {E, Ez, P, PFactory, Easy, Easies, AFrame} from "../src/raf.js";
 
@@ -12,8 +12,8 @@ import {DEFAULT_NAME, loadNamed, disableSave, disablePreset, disableDelete}
 import {MILLI, COUNT, ONE, INPUT, SELECT, BUTTON, DIV, LABEL, dlg, elms, g,
         dummyEvent, errorAlert, errorLog}              from "./common.js";
 /*
-import(_load.js): loadIt, getEasies, initEasies, updateAll, resizeWindow;
-                  and showControls for color page.
+import(_load.js): loadIt, getEasies, initEasies, updateAll, easeFinally,
+                  resizeWindow
 */
 let awaitNamed, awaitUpdate, ns, ns_named;
 const RESIZE = "resize";

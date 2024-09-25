@@ -142,6 +142,10 @@ p.bullet {
   font-size:1.125rem;
   margin:0.125rem 0 0 0.5rem;
 }
+p.italic {
+  font-style:italic;
+  color:#333;
+}
 div.bullet {
   display:flex;
   justify-content:space-between;
@@ -151,9 +155,11 @@ div.bullet {
 }
 li::marker {
   content:"\0335\2002";
+  color:#000;
 }
 li.asterisk {
   font-style:italic;
+  color:#333
 }
 li.asterisk::marker {
   content:"\2A\202A";
@@ -167,32 +173,33 @@ span {
   font-family:"Roboto Mono";
   font-weight:500;
 }
-a {
-  color:black;
-}
-a:hover {
-  color:rgb(0 0 192);
-  text-decoration:underline;
-}
-a:active:hover {
-  color:purple;
-}
-.code {
-  font-family:"Roboto Mono";
-}
 .symbol {
   font-family:"Material Symbols Rounded";
   font-size:1.5rem;
   line-height:1.5rem;
   text-decoration:none;
   vertical-align:text-bottom;
-  margin-left:0.125rem;
   color:#333;
+}
+.symbol.bullet {
+  position:relative;
+  top:0.0625rem;
+}
+.symbol-list {
+  display:grid;
+  grid-template-columns:2rem 1fr;
+  grid-row-gap:0.125rem;
+  margin:0.25rem 0 0.5rem 0.25rem;
+}
+a {
+  color:black;
+}
+a:hover {
+  color:rgb(0 0 192);
+}
+a:active:hover {
+  color:purple;
 }
 a.symbol {
   letter-spacing:-0.25rem;
-}
-a.symbol:hover {
-  text-decoration:none;
-  color:rgb(0 0 192);
 }

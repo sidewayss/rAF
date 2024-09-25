@@ -26,9 +26,9 @@ import {loadPlay, changeStop} from "./play.js";
 import {MILLI, COUNT, INPUT, elms, g, errorAlert}
                               from "./common.js";
 /*
-import(_update.js): formatDuration, formatFrames, getFrame, getMsecs,
-                    initPseudo, isInitZero, setCounters, updateX;
-                    postPlay and loopFrames for easings only.
+import(_update.js): calcDuration, drawLine, formatDuration, formatFrames,
+                    getFrame, getMsecs, initPseudo, isInitZero, setCounters,
+                    updateX; loopFrames for easings only.
 */
 let ns,           // _update.js namespace
     lastFrame,    // frames.length - 1
