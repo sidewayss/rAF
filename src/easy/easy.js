@@ -64,8 +64,8 @@ export class Easy {
             o.legs = [leg];
             if (ios.length == 2) {
                 if (!Is.def(o[t]))  // assignment above allows undefined for now
-                    Ez._mustErr("You", `define obj.${t} or each leg.${t}`);
-                //-------------------------------------------------------------
+                    throw new Error(`You must define obj.${t} or each leg.${t}`);
+                //--------------------------------------------------------------
                 const
                 split = Ez.toNumber(o.split, "split", o[t] / 2, ...Ez.grThan0),
                 wait  = this.#setWait(o.gap, "gap");

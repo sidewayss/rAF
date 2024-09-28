@@ -23,7 +23,7 @@ const number = {
         formatInputNumber(tar, maxMin(tar, tar.valueAsNumber));
     },
     mousedown() {
-        isSpinning = true; // input, change only fire if spinning
+        isSpinning = true; // input, change only fires if spinning
     },
     keydown(evt) {
         if (evt.key == "ArrowDown" || evt.key == "ArrowUp")

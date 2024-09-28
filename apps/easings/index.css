@@ -19,6 +19,11 @@ p.hi { font-weight:500; }
   position:relative;
   top:var(--8th);
 }
+#time {
+  width:100%;
+  accent-color:var(--green-blue);
+}
+
 .symBtn {
   margin-left:var(--5-8ths);
 }
@@ -47,14 +52,8 @@ p.hi { font-weight:500; }
 #loopByElm { margin-right:0.75rem }
 #steps {
   text-align:right;
-  margin-left:var(--9-16ths);
-}
-#v0, #v1, #v2 {
-  width:calc(3ch + 1.75rem);
-}
-#time {
-  width:100%;
-  accent-color:var(--green-blue);
+  margin-left: var(--9-16ths);
+  margin-right:var(--1-16ths);
 }
 #unit, #comp {
   margin-left:calc(4ch + var(--5-16ths));
@@ -63,43 +62,72 @@ p.hi { font-weight:500; }
   margin-top: 0.25rem;
   padding-top:var(--8th);
 }
+
+/* Numeric inputs are messy */
+input[type=number] {
+  text-align:right;
+  padding-left: 0;
+  padding-right:0;
+  caret-color:black;
+}
+#v0, #v1, #v2 {
+  width:calc(3ch + 1.75rem);
+}
 #mid {
   padding-top:0;
   margin-left:1ch;
   font-weight:500;
 }
+.w5ch { width:5ch;  } /* for #pow, #pow2, #mid */
+.w6ch { width:6ch; }  /* bezier x */
+.w7ch { width:7ch; }  /* bezier y */
+
+/* time inputs: the "s" units labels hide when the spinners show */
+.secs { /* #t0, #t1, #t1, #split, #gap */
+  width:calc(5ch + 1.25rem);
+}
 #split, #gap {
   width:4.25rem;
   margin-left:var(--8th);
-  font-weight:500;  /* matches sidebar */
-}
-@-moz-document url-prefix() {
-  #split:not(:hover, :focus), #gap:not(:hover, :focus) {
-    -moz-appearance:textfield;
-    width:calc(4.25rem - 1.25rem + var(--8th));
-    margin-right:1.25rem;
-  }
-}
-#split + label, #gap + label {
-  padding:0;
   font-weight:500;
-  color:var(--dark-blue);
 }
-#split + label, #gap + label,
-.secs  + label {
-  position:absolute;
-}
-.secs + label {
-  padding-right:var(--7-16ths);
-}
-input.secs { /* #t0, #t1, #t1 */
-  width:calc(5ch + 1.25rem);
-}
-#split:hover + label, #gap:hover + label, .secs:hover + label,
-#split:focus + label, #gap:focus + label, .secs:focus + label  {
+.secs:hover + label,
+.secs:focus + label  {
   visibility:hidden;
 }
+/* Hide the spin buttons in Firefox and Safari, show on hover/focus */
+@supports (selector(::-moz-range-thumb)) {
+  .w5ch { width:5.35ch; } /* .35 for #mid alignment at font-size:100% */
+  .w6ch { width:6.5ch; }
+  .w7ch { width:7.5ch; }
+  input[type=number].secs {
+    text-align:left;
+    padding-left:0.3125rem;
+  }
+  input[type=number].secs:not(:hover, :focus) {
+    -moz-appearance:textfield;
+  }
+  input[type=number].secs + label{
+    left:-0.6875rem;
+  }
+}
+@supports (hanging-punctuation:first) and (font:-apple-system-body)
+                                      and (-webkit-appearance:none) {
+  input[type=number].secs {
+    text-align:left;
+    padding-left:0.3125rem;
+  }
+  input[type=number].secs:not(:hover, :focus)::-webkit-outer-spin-button,
+  input[type=number].secs:not(:hover, :focus)::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+  }
+  input[type=number].secs + label{
+    left:-0.6875rem;
+  }
+}
 
+/* <svg> */
 #chart {
   stroke:black;
   stroke-width:2px;
@@ -283,9 +311,6 @@ circle {
 .pl1-8  { padding-left:var(--8th);  }
 .pl1-16 { padding-left:var(--16th); }
 
-.w3 { width:3rem; }
-.w4 { width:4.1rem; } /* .1 is for Firefox, doesn't hurt Chome */
-
 .lbl-paren {
   font-size: calc(1rem + var(--3-8ths));
   margin: 0;
@@ -293,4 +318,13 @@ circle {
   line-height: 25px;  /* vertical alignment scales better w/fixed px units */
   position: relative;
   top: calc(var(--16th) * -2);
+}
+/* This one is last to make it easier to locate in javascript */
+/* right-margin set to negative label width in resizeWindow() */
+.secs + label {
+  position:relative;
+  left:-1rem;
+  padding:0;
+  font-weight:500;
+  color:var(--dark-blue);
 }

@@ -16,7 +16,7 @@ import {FORMAT_END, stepsFromObj, stepsFromForm, wasIsSteps, isSteps, toggleUser
                                        from "./steps.js";
 //==============================================================================
 // formFromObj() populates the form, sets globals, <= loadFinally(), openNamed()
-function formFromObj(obj) {
+function formFromObj(obj, hasVisited) {
     let elm, val;
     for (elm of g.trips) {     // roundTrip and related elements
         val = obj[elm.id];
@@ -48,7 +48,7 @@ function formFromObj(obj) {
     isStp = isSteps(),
     start = obj.start ?? leg0?.start ?? 0,
     func  = isStp ? stepsFromObj : easingFromObj,
-    [isUT, isUV, wasUT, wasUV] = func(obj, leg0, leg1);
+    [isUT, isUV, wasUT, wasUV] = func(obj, hasVisited, leg0, leg1);
 
     swapIt(Boolean(start));
     formatNumber(start, ...FORMAT_START);

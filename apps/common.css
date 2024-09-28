@@ -89,17 +89,11 @@ select, input[type=number] {
   background-color:var(--sidebar-white);
   border:var(--border-gray);
 }
-input[type=number] {
-  text-align:right;
-  padding-left: 0;
-  padding-right:0;
-  caret-color:black;
-}
 input[type=text] {
   caret-color:black;
 }
 input.invalid {
-  background-color:rgb(139 0 0 / 0.1);
+  background-color:rgb(139 0 0 / 0.1); /* background-opacity does not exist */
   border-color: darkred;
   outline-color:darkred;
 }

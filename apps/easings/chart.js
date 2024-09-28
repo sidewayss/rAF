@@ -83,17 +83,9 @@ const change = {
 
         if (not2 || elms.linkType.value) {
             g.type = n;         // user changed #type or type is linked
-            if (not2) {         // user changed #type
+            if (not2) {         // user changed #type (no bez|steps for linked)
                 wasBS = isBS;
                 [isBez, isStp, isBS] = isBezierOrSteps();
-                if (wasStp || isStp) {        // null ignored because of false
-                    const isUT = isUserTV(elms.timing);
-                    wasIsSteps(isStp, [isUT, isUserTV(elms.values)]);
-                    infoZero  (isStp && isUT);
-                    if (isUT)
-                        updateTime();
-                    elms.initZero.dispatchEvent(dummyEvent(CHANGE, "changeType"));
-                }
             }
         }
         has2 = twoLegs();
@@ -103,6 +95,15 @@ const change = {
             g.io = Number(elms.io.value);
 
         has2 = updateTypeIO(false, [isBez, isStp, isBS]);
+
+        if (not2 && (wasStp || isStp)) {
+            const isUT = isUserTV(elms.timing);
+            wasIsSteps(isStp, [isUT, isUserTV(elms.values)]);
+            infoZero  (isStp && isUT); // infoZero() must follow updateTypeIO()
+            if (isUT)
+                updateTime();
+            elms.initZero.dispatchEvent(dummyEvent(CHANGE, "changeType"));
+        }
         refresh(tar, 0, has2);
     }
 };

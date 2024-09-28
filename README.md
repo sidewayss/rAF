@@ -5,23 +5,25 @@ The name **rAF** is a common abbreviation for the core JavaScript animation func
 It is a solo open source project about to be released in its first public version 1.0. Hopefully others will contribute in the future.
 
 ## Getting started
-If you want to skip the formalities and jump right in, the best place to start are the <a href="https://sidewayss.github.io/rAF/apps/">3 Apps</a> (latest code on GitHub Pages) that test & demonstrate the library and generate starting-point JavaScript code for the configured animation. They are also available in a more stable form on my <a href="https://sidewayss.com/raf/apps/">homepage</a>.
+If you want to skip the formalities and jump right in, the best place to start are the <a href="https://sidewayss.github.io/rAF/apps/">3 Apps</a> (latest code on GitHub Pages) that test & demonstrate the library and generate starting-point JavaScript code. They are also available in a more stable form on my <a href="https://sidewayss.com/raf/apps/">homepage</a>.
 
 There are also animation examples in these collections on CodePen:
 
 <i>...coming soon along with v1.0</i>
 
-<a href="https://sidewayss.github.io/rAF/docs/raf-by-class.html">Properties and Methods by Class</a> catalogs classes and constants you might want to use. The current state of documentation is like a sparse array. Hopefully the examples, apps, and app instructions will help to fill in the gaps.
+<a href="https://sidewayss.github.io/rAF/docs/raf-by-class.html">Properties and Methods by Class</a> catalogs classes and constants you might want to use. The current state of documentation is skeletal. Hopefully the examples, apps, and app instructions will help to fill to fill things in.
 
 ## Setup
-**rAF** is modular. There are currently no packages or minified file. Should be coming your way soon after v1.0. For most users `raf.js` provides all the exports you need. Here is a typical import statement:
+**rAF** is modular. There are currently no packages or minified file. Should be coming your way soon after v1.0. For most users, `raf.js` provides all the exports you need. Here is a typical import statement:
 ```
 import {E, Ez, F, P, PFactory, Easy, Easies, AFrame} from "https://sidewayss.com/raf/src/raf.js";
 ```
-To initializes constants, including the `F` and `P` objects containing all the built-in `Func` and `Prop` instances, you must run this line of code prior to using any other **rAF** features:
+You must execute this method prior to using any other rAF features:
 ```
 PFactory.init();
 ```
+It initializes constants that are used internally, many of which you will use too. Among those are the `E`, `Ez`, `F`, and `P` objects listed in the `import` example above.
+
 ## Features
 **rAF** provides a flexible, structured, and compact way to create and execute CSS or SVG animations of two types:
 - Gradual value changes controlled by timing patterns
@@ -56,6 +58,6 @@ I don't expect to see a lot of interest in **rAF**. It's a now-obscure niche, an
 
 These days animated video is much more common online than all but the most basic web animations. Why? More tools for creation and more reliable results. The one advantage that web animations have is interactivity, but how many interactive animations have you seen? *see <a href="https://sidewayss.com">my homepage's interactive greeting</a>*
 
-Running a digital video stream through a codec is a lot more reliable than running a JavaScript animation. Browser differences are minimal. The code is supremely optimized. Loss of resolution due to bandwidth is friendlier than a stuttering or otherwise malfunctioning animation, and users are more familiar with it. They understand what's to blame.
+Running digital video through a codec is a lot more reliable than running a JavaScript animation. Browser differences are minimal. The code is supremely optimized. Loss of resolution due to bandwidth is friendlier than a stuttering or otherwise malfunctioning animation, and users are more familiar with it. They understand what's to blame.
 
-I built this library for personal satisfaction & education, a goofy homepage, and to demonstrate that I can still design and build solid software. I figure there might be a few other people out there who want to do more extreme animations and could find it useful. Maybe some people will even want to contribute...
+I built this library for personal satisfaction / education, a goofy homepage, and to demonstrate that I can still design and build solid software. I figure there might be a few other people out there who want to do more extreme animations and could find it useful. Maybe some will even want to contribute.

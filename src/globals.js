@@ -69,14 +69,14 @@ const P  = {           // Prop, Bute, PrAtt, HtmlBute instances by name
             P.visibility.setOne(elm, val);
     },
     isVisible(elm) { // one element at a time
-        return elm.style.visibility == "visible";
+        return P.visibility.getOne(elm) == "visible";
     },
  // displayed does something similar for display
     displayed(elms, b, value) {
         boolNone(Pn.display, elms, b, value);
     },
     isDisplayed(elm) { // one element at a time
-        return elm.style.display != "none";
+        return P.display.getOne(elm) != "none";
     },
  // events does something similar for pointer-events
     events(elms, b, value) {

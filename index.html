@@ -15,16 +15,18 @@
       <p>The name <span class="rAF">rAF</span> is a common abbreviation for the core JavaScript animation function: <span>requestAnimationFrame()</span>. It is a highly flexible animation library for HTMLElements, SVGElements, and CSSStyleRules. It includes 99% of CSS animation functionality, but also extends that functionality greatly.</p>
       <p> It is a solo open source project about to be released in its first public version 1.0. Hopefully others will contribute in the future.</p>
       <h2>Getting started</h2>
-      <p>If you want to skip the formalities and jump right in, the best place to start are the <a href="apps/">3 Apps</a> that test & demonstrate the library and generate starting-point JavaScript code for the configured animation. Also available on <a href="https://sidewayss.github.io/rAF/apps/">GitHub Pages</a> in a less stable, but more up-to-date state.</p>
+      <p>If you want to skip the formalities and jump right in, the best place to start are the <a href="apps/">3 Apps</a> that test & demonstrate the library and generate starting-point JavaScript code.   They are also available on <a href="https://sidewayss.github.io/rAF/apps/">GitHub Pages</a>, in a less stable but more up-to-date state.</p>
       <p>There are also animation examples in these collections on CodePen:</p>
       <p><i>...coming soon along with v1.0</i></p>
-      <p><a href="docs/raf-by-class.html">Properties and Methods by Class</a> catalogs classes and constants you might want to use. The current state of documentation is like a sparse array. Hopefully the examples, apps, and app instructions will help to fill in the gaps.</p>
+      <p><a href="docs/raf-by-class.html">Properties and Methods by Class</a> catalogs classes and constants you might want to use. The current state of documentation is skeletal. Hopefully the examples, apps, and app instructions will help to fill things in.</p>
+      <p>The GitHub repository is here: <a href="https://github.com/sidewayss/rAF">github.com/sidewayss/rAF</a></p>
 
       <h2>Setup</h2>
-      <p><span class="rAF">rAF</span> is modular. There are currently no packages or minified file. Should be coming your way soon after v1.0. For most users <span>raf.js</span> provides all the exports you need. Here is a typical import statement:</p>
+      <p><span class="rAF">rAF</span> is modular. There are currently no packages or minified file. Should be coming your way soon after v1.0. For most users, <span>raf.js</span> provides all the exports you need. Here is a typical import statement:</p>
       <p><span>import {E, Ez, F, P, PFactory, Easy, Easies, AFrame}<br>from "https://sidewayss.com/raf/src/raf.js";</span></p>
-      <p>To initializes constants, including the <span>F</span> and <span>P</span> objects containing all the built-in <span>Func</span> and <span>Prop</span> instances, you must run this line of code prior to using any other <span class="rAF">rAF</span> features:</p>
+      <p>You must execute this method prior to using any other <span class="rAF">rAF</span> features:</p>
       <p><span>PFactory.init();</span></p>
+      <p>It initializes constants that are used internally, many of which you will use too. Among those are the <span>E</span>, <span>Ez</span>, <span>F</span>, and <span>P</span> objects listed in the <span>import</span> example above.</p>
 
       <h2>Features</h2>
       <p><span class="rAF">rAF</span> provides a flexible, structured, and compact way to create and execute CSS, SVG, and HTML animations of two types:</p>
@@ -48,9 +50,10 @@
       <ul>
         <li>Normalize all things similar across CSS and SVG</li>
         <li>Allow for the animation of every property/attribute and function in full detail</li>
-        <li>Create a minimal syntax that is both flexible and forgiving</li>
+        <li>Minimize the amount of code that runs during each animation frame</li>
+        <li>Allow for different coding styles with lenient syntax and shorthand aliases</li>
         <li>Make it fully object-oriented within the confines of JavaScript</li>
-        <li>Assume a &quot;modern browser&quot; that supports ES6*</li>
+        <li>Assume a &quot;modern browser&quot; that supports ES7*</li>
         <li>Provide callbacks for flexibility and meeting as-yet-unknown requirements</li>
         <li>Create a way to test user GPU power and develop methods for handling low-end vs high-end GPUs</li>
         <li class="asterisk">The biggest browser compatibility issue for rAF is <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_properties">private properties</a>, which have <a href="https://caniuse.com/?search=private%20class">limited support</a> in pre-2021 browser versions. I have considered converting all the <span>#</span> to <span>_</span>, but the more time that passes, the less it matters. Maybe it's something for a minified/transpiled version.</li>
@@ -60,9 +63,8 @@
       <p>I originally got interested in web animations through animating SVG sheet music scores, created and exported to SVG by <a href="https://musescore.org">MuseScore</a> (github repo <a href="https://github.com/musescore/MuseScore">here</a>, my fork is <a href="https://github.com/sidewayss/MuseScore">here</a>). I then decided to create a heavily animated personal web site. In that process I consolidated a bunch of common animation code and created the initial version of <span class="rAF">rAF</span>.</p>
       <p>Soon thereafter I stepped away from programming for the next five years. Upon my return in April, 2023 I started to update my personal site. I soon realized that CSS had evolved notably and that my core design for <span class="rAF">rAF</span> was outdated and not as clean or complete as I had thought. I was considering seeking gainful employment in programming again, and updating <span class="rAF">rAF</span> seemed like a good way to freshen my skills and produce a result that would fill in for the gap in my CV.</p>
       <p>I don't expect to see a lot of interest in <span class="rAF">rAF</span>. It's a now-obscure niche, and there have been many animation libraries produced since Velocity.js took the web by storm over a decade ago. I was mostly animating SVG, and Velocity doesn't do SVG gradients, among other things. So I built my own stuff.</p>
-      <p>These days animated video is much more common online than all but the most basic web animations. Why? More tools for creation and more reliable results. The one advantage that web animations have is interactivity, but how many interactive animations have you seen? <i>see my <a href="https://sidewayss.com">homepage</a>'s interactive greeting</i></p>
-      <p>Running a digital video stream through a codec is a lot more reliable than running a JavaScript animation. Browser differences are minimal. The code is supremely optimized. Loss of resolution due to bandwidth is friendlier than a stuttering or otherwise malfunctioning animation, and users are more familiar with it. They understand what's to blame.</p>
-      <p>I built this library for personal satisfaction & education, a goofy homepage, and to demonstrate that I can still design and build solid software. I figure there might be a few other people out there who want to do more extreme animations and could find it useful. Maybe some people will even want to contribute...</p>
+      <p>These days animated video is much more common online than all but the most basic web animations. Why? More tools for creation and more reliable results. The one advantage that web animations have is interactivity, but how many interactive animations have you seen? <i>see <a href="https://sidewayss.com">my homepage</a>'s interactive greeting</i></p>
+      <p>I built this library for personal satisfaction / education, a goofy homepage, and to demonstrate that I can still design and build solid software. I figure there might be a few other people out there who want to do more extreme animations and could find it useful. Maybe some will even want to contribute.</p>
     </div>
   </body>
 </html>

@@ -306,9 +306,9 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
 //!!It should probably validate units, v gets validated in Ez._appendUnits()
 //!!I never validate func here, only in animation classes
     set(elms, v, f, u) {
-        return Ez._isElmy(elms)
-             ? this.setOne (Ez.toElement (elms), v, f, u)
-             : this.setMany(Ez.toElements(elms), v, f, u);
+        Ez._isElmy(elms)
+        ? this.setOne (Ez.toElement (elms), v, f, u)
+        : this.setMany(Ez.toElements(elms), v, f, u);
     }
 //  setOne() - elm must be Element, v must be Number, String, or Array
     setOne(elm, v, f = this.func, u = this._unitz(f)) { // what about arrays for multi-arg properties?

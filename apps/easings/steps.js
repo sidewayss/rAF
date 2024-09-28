@@ -1,5 +1,6 @@
 export {loadSteps, loadTV, stepsFromObj, stepsFromForm, initSteps, isSteps,
-        wasIsSteps, toggleUser, isUserTV, tvFromElm, setInfo, infoZero};
+        wasIsSteps, toggleUser, isUserTV, tvFromElm, setInfo, infoZero,
+        displayJump};
 
 export let FORMAT_END;
 export const
@@ -14,9 +15,9 @@ import {getNamed, getNamedEasy}                             from "../local-stora
 import {MILLI, COUNT, SELECT, DIV, LABEL, INPUT, CHANGE,
         elms, g, addEventByClass}                           from "../common.js";
 
-import {wasStp, refresh} from "./_update.js";
-import {changeTime}      from "./chart.js"
-import {OTHER}           from "./index.js";
+import {range, wasStp, refresh} from "./_update.js";
+import {changeTime}             from "./chart.js"
+import {OTHER}                  from "./index.js";
 
 let STEPS, lastUserTime, wasUT;
 const
@@ -234,7 +235,7 @@ function changeSteps(evt) { // #values/timing.other[0], elms.userValues/Timing.
 }
 //==============================================================================
 // stepsFromObj() called exclusively by formFromObj()
-function stepsFromObj(obj) {
+function stepsFromObj(obj, hasVisited) {
     let j, sel, val;
     const
     isUser  = [false, false],
@@ -265,7 +266,7 @@ function stepsFromObj(obj) {
     if (Is.def(obj.jump))                    // user timing, eased values means
         elms.jump.value = obj.jump;          // obj.jump is ignored.
 
-    updateTV(...isUser);                     // relies on sel.selectedIndex
+    updateTV(...isUser, hasVisited);         // relies on sel.selectedIndex
     wasUT = isUser[0];
 //!!g.type = E.steps;
 //!!g.io   = E.in;
@@ -300,11 +301,14 @@ function stepsFromForm(obj) {
 }
 //==============================================================================
 // updateTV() called by stepsFromObj(), changeSteps()
-function updateTV(isUT = isUserTV(elms[TIMING]), isUV = isUserTV(elms[VALUES])) {
+function updateTV(isUT = isUserTV(elms[TIMING]),
+                  isUV = isUserTV(elms[VALUES]),
+                  hasVisited)
+{
     let func, idx, sel;
     const isUTV = isUT || isUV;
 
-    infoZero(isUT);
+    infoZero(isUT, false, hasVisited);
     P.visible(elms[STEPS], !isUTV);
     if (!isUTV && !elms[STEPS].selectedIndex && !elms.jump.selectedIndex)
         elms[STEPS].selectedIndex = 1;  // {steps:1, jump:E.none} is not valid
@@ -351,7 +355,7 @@ function setInfo(lastStep) {
                     + "when the last step occurs.";
 }
 // infoZero() displays elms.info, disables elms.initZero, which are steps-only
-function infoZero(isUT, isLastTime) { // isLastTime = changeSteps(lastUserTime)
+function infoZero(isUT, isLastTime, hasVisited) {
     const
     isEV = elms[VALUES].selectedIndex == IDX_EASY,
     not2 = !isUT && !isEV,
@@ -360,8 +364,22 @@ function infoZero(isUT, isLastTime) { // isLastTime = changeSteps(lastUserTime)
     P.displayed(elms.info, (not2 && jump < E.end)
                         || (isUT && lastUserTime.value < secs));
 
-    if (!isLastTime) {
+    if (!isLastTime) {     // isLastTime = changeSteps(lastUserTime)
         elms.initZero.disabled = isUT || !(jump & E.start);
         P.displayed(elms.jump.parentNode.children, not2);
+        if (!Is.def(hasVisited))
+            displayJump(not2);
     }                      // parentNode is in elms.divSteps, see updateTypeIO()
+}
+// displayJump() hides the "Jump:" label when the window is not wide enough
+function displayJump(isDisplayed) {
+    if (isDisplayed) {
+        const
+        j = elms.jump,
+        y = range.svg,
+        b = y.getBoundingClientRect().right
+          - j.getBoundingClientRect().right
+          > 0;
+        P.displayed(j.labels[0], b);
+    }
 }

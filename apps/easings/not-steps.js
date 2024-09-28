@@ -15,7 +15,7 @@ import {LINK, TYPE, IO, POW, twoLegs, isBezier, bezierArray}
 //==============================================================================
 // easingFromObj() creates an object from localStorage and updates controls,
 //                 called exclusively by formFromObj().
-function easingFromObj(obj, leg0, leg1) {
+function easingFromObj(obj, _, leg0, leg1) {
     const isBez = isBezier();
     if (isBez)
         for (let i = 0; i < 4; i++)
