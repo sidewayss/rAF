@@ -87,7 +87,7 @@ function getNamedBoth(name) {
 function getLocalNamed(name, pre = preClass) {
     return localStorage.getItem(pre + name);
 }
-// getLocal() called by loadIt()
+// getLocal() called by load()
 function getLocal(elm) {
     return localStorage.getItem(preDoc + elm.id);
 }

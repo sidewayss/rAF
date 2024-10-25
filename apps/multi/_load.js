@@ -1,4 +1,4 @@
-export {loadIt, getEasies, initEasies, updateAll, resizeWindow};
+export {load, getEasies, initEasies, updateAll, resizeWindow};
 export let clipEnd, clipStart;
 
 import {U, Is} from "../../src/raf.js";
@@ -14,8 +14,8 @@ import {loadEvents} from "./events.js";
 import {MASK_X, clip, easys, refresh, setClipPair, setClipPath, newTargets}
                     from "./_update.js";
 //==============================================================================
-// loadIt() is called by loadCommon()
-function loadIt() {
+// load() is called by loadCommon()
+function load() {
     let opt, val;
     opt = new Option(DEFAULT_NAME, DEFAULT_NAME, true, true);
     opt.innerHTML = "&mdash;";  // must be set this way

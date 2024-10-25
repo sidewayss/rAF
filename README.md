@@ -36,7 +36,12 @@ Features CSS doesn't have:
 - Max and min limits by argument by element
 - Animate the same property differently across elements in a single animation
 - <a href="https://github.com/color-js/color.js">Color.js</a> integration
-- *...what else?*
+- For two-legged easings:
+    - Not just `inOut`, there are `outIn`, `inIn`, and `outOut` settings
+    - Adjustable mid point for the value
+    - Adjustable split point for time
+    - Adjustable gap in time between the two legs
+- *and more...*
 
 Goals, Assumptions, and Approach:
 - Normalize all things similar across CSS and SVG

@@ -3,7 +3,7 @@
 // inputting numbers as text. Exports everything except isSpinning and number.
 import {Ez} from "../src/raf.js";
 
-import {INPUT, CHANGE, elms, g, toggleClass} from "./common.js";
+import {INPUT, CHANGE, elms, g} from "./common.js";
 
 let isSpinning;
 //==============================================================================
@@ -20,7 +20,7 @@ const number = {
     },
     change(evt) {
         const tar = evt.target;
-        formatInputNumber(tar, maxMin(tar, tar.valueAsNumber));
+        formatInputNumber(tar, maxMin(tar, tar.valueAsNumber ?? tar.value));
     },
     mousedown() {
         isSpinning = true; // input, change only fires if spinning
@@ -61,7 +61,7 @@ export function listenInputNumber(elements) {
 // invalidInput() helps number.input(), input.color(), click.clear(), more than
 //                one input can be invalid, #x and #play only enabled if none.
 export function invalidInput(elm, b) {
-    toggleClass(elm, "invalid", b);
+    elm.classList.toggle("invalid", b);
     g.invalids[b ? "add" : "delete"](elm);
     b = Boolean(g.invalids.size);
     elms.x   .disabled = b;

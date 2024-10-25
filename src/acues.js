@@ -157,8 +157,8 @@ export class ACues {
         this.#i   = i;
         return (i == this.#last);   // return true = finished
     }
-//  _zero() helps AFrame.prototype.play() zero out before first call to _next()
-    _zero(now) {
+//  _zeroOut() helps AFrame.proto.play() zero out before first call to _next()
+    _zeroOut(now) {
         this.#zero = now;
         this.#now  = 0;
         this.#i    = 0;

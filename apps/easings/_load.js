@@ -1,14 +1,15 @@
-export {loadIt, getEasies, initEasies, updateAll, resizeWindow};
+export {load, getEasies, initEasies, updateAll, resizeWindow};
 
 export const rafChecks = ["useNow","frameZero","initZero"];
 
-import {E, U, Is, P, Pn, Ease, Ez, Easy} from "../../src/raf.js";
+import {E, U, P, Pn, Ease, Ez, Easy} from "../../src/raf.js";
+
+import {BaseElement} from "/html-elements/base-element.js"
 
 import {ezX, raf}          from "../load.js";
 import {getLocal}          from "../local-storage.js";
-import {formatInputNumber} from "../input-number.js";
-import {pad, newEasies, updateTime, updateCounters}    from "../update.js";
-import {COUNT, CHANGE, INPUT, elms, g, is, dummyEvent} from "../common.js";
+import {pad, newEasies, updateTime, updateCounters} from "../update.js";
+import {COUNT, CHANGE, elms, g, is, dummyEvent}     from "../common.js";
 
 import {chart, range, refresh, syncZero}                    from "./_update.js";
 import {initEzXY, updateTrip}                               from "./index.js";
@@ -24,15 +25,15 @@ sizes   = [
     {w:855, h:941, factor:1, size:"100%"  },  // 16px
     {w:806, h:896, factor:1, size:"93.75%"},  // 15px
     {w:759, h:841, factor:1, size:"87.5%" },  // 14px
-    {w:720, h:799, factor:0, size:"81.25%"},  // 13px - factor set in loadIt()
+    {w:720, h:799, factor:0, size:"81.25%"},  // 13px - factor set in load()
     {w:675, h:749, factor:0, size:"75%"   }   // 12px - ditto
 ];
 let borderW, boxStyle, checkH, checkW, factorW, iSize, lefties, leftW, minW,
     oobRatio, padLeft, subtraH, subtraW, topBott;
 //==============================================================================
-// loadIt() is called by loadCommon()
-function loadIt(byTag, hasVisited) {
-    let cr, elm, i;
+// load() is called by loadCommon()
+function load(byTag, hasVisited) {
+    let elm, i, obj;
     ++pad.unit;                         // an extra leading space for -0.123
     ++pad.comp;                         // ditto
 
@@ -56,9 +57,9 @@ function loadIt(byTag, hasVisited) {
     Ez.readOnly(chart, Pn.vB, P.viewBox.getn(chart.svg));
     Ez.readOnly(range, Pn.vB, P.viewBox.getn(range.svg));
 
-    for (cr of [chart, range])
-        for (elm of cr.svg.children)    // they all have ids
-            Ez.readOnly(cr, elm.id, elm);
+    for (obj of [chart, range])
+        for (elm of obj.svg.children)   // they all have ids
+            Ez.readOnly(obj, elm.id, elm);
 
     const LENGTH = {length:COUNT};
     Ez.readOnly(chart, "dots", Array.from(LENGTH, (_, i) => chart["dot"  + i]));
@@ -81,27 +82,34 @@ function loadIt(byTag, hasVisited) {
     Ez.readOnly(g, "trips", checks.filter(e => e.id.endsWith("Trip")));
     g.trips.push(clone);
 
-    const
-    shadow = checks[0].shadowRoot,
-    check  = shadow.getElementById("check"),
-    box    = shadow.getElementById("box");
-    checkW = P.w.getn(check);           // pseudo-constants for resizeWindow()
-    checkH = P.h.getn(check);
-    minW   = P.minWidth.getn(chart.svg);
-    i = P.w.getn(box);                  // scaling factor for small checkboxes
-    i = (i - 1) / i;                    // 12/13
-    sizes.filter(sz => !sz.factor).forEach(obj => obj.factor = i);
-
-    elm = document.styleSheets[1].cssRules;
-    g.sRule = elm[elm.length - 1];      // CSSRule for the "s" label
-
     loadEvents(checks);
     loadSteps();                	    // type == E.steps
     loadMSG();                  	    // mid, split, gap
     if (hasVisited)                     // return visitor to this page
         for (elm of [elms.drawAsSteps, ...rafChecks.map(id => elms[id])])
             elm.checked = getLocal(elm);
-    return is();
+
+    elm = checks[0];
+    obj = is();                         // to support pre-await-module-top-level:
+    obj.promise = BaseElement.promises.get(elm);
+    if (obj.promise)
+        obj.promise.then(() => checkWH(elm));
+    else
+        checkWH(elm);
+
+    return obj;
+}
+function checkWH(elm) {
+    const
+    shadow = elm.shadowRoot,
+    shapes = shadow.getElementById("shapes"),
+    box    = shadow.getElementById("box");
+    checkW = P.w.getn(shapes);          // pseudo-constants for resizeWindow()
+    checkH = P.h.getn(shapes);
+    minW   = P.minWidth.getn(chart.svg);
+    let i  = P.w.getn(box);             // scaling factor for small checkboxes
+    i = (i - 1) / i;                    // = 12/13
+    sizes.filter(sz => !sz.factor).forEach(obj => obj.factor = i);
 }
 //==============================================================================
 // getEasies() is called exclusively by loadJSON()
@@ -122,19 +130,16 @@ function getEasies(_, json) {
     const titles = json.titles;
     elms.beziers = Array(size);            // the 4 <input>s
     for (i = 0; i < size; i++) {
-        elm    = divs[i].getElementsByTagName(INPUT)[0];
-        elm.id = id + i;                   // #bezier0 to #bezier3
-        formatInputNumber(elm, ease[i]);   // default value is CSS "ease" curve
+        elm = divs[i].getElementsByTagName("input-num")[0];
+        elm.id    = id + i;                // #bezier0 to #bezier3
+        elm.value = ease[i];               // default value is CSS "ease" curve
         if (i % 2) {                       // y values can be out of bounds
-            elm.min ="-0.9";               // moved to elm.dataset later
-            elm.max = "1.9";               // ditto
-            elm.classList.add("w7ch");     // preceding minus sign adds a char
+            elm.min ="-0.9";
+            elm.max = "1.9";
         }
         else {                             // x values are clamped within bounds
             elm.min = "0";
             elm.max = "1";
-            elm.classList.add
-            elm.classList.add("w6ch");
         }
         elm.title = `${titles[elm.id]}: range ${elm.min} to ${elm.max}`;
         elms.beziers[i] = elm;
@@ -244,10 +249,9 @@ function resizeWindow(evt) {
     elm = elms.shadow.style;                // size box-shadow background
     elm.left  = l + U.px;
     elm.width = innerW - r - l + U.px;
-                                            // #split always displayed
-    g.sRule.style.marginRight = -elms.split.labels[1].offsetWidth + U.px;
-    if (P.isDisplayed(elms.jump)) {         // #jump is not
-        P.displayed(elms.jump.labels[0], true); // messy, but it works...
+
+    if (P.isDisplayed(elms.jump)) {         // messy, but it works:
+        P.displayed(elms.jump.labels[0], true);
         displayJump(true);
     }
                                             // center #copied notification

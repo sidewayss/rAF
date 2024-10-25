@@ -8,13 +8,13 @@ button, select, span, input[type=text], label, .lbl-right {
 .emphasis {
   color:black;
 }
-state-button {
+state-btn {
   opacity:1;
   fill  :var(--pitch);
   stroke:var(--pitch);
   stroke-width:2px;
 }
-state-button[disabled] {
+state-btn[disabled] {
   opacity:1;
   fill   :#CCC;
   stroke :#CCC;
@@ -182,12 +182,12 @@ button:active:hover {
   background-color:white;
   box-shadow: 1px 1px 1px var(--line-gray) inset;
 }
-/* <state-button> overrides - #play, #stop */
-state-button:hover {
+/* <state-btn> overrides - #play, #stop */
+state-btn:hover {
   fill  :black;
   stroke:black; /* necessary to override common.css */
   stroke-width:4px;
 }
-state-button:active {
+state-btn:active {
   stroke-width:3px;
 }

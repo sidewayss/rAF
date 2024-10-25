@@ -93,9 +93,6 @@ class EBase {
 // this.elmIndex is for loopByElm
     get elmIndex() { return this.#iElm;  }
 
-// this._isLooping is true when loopByElm loops by play, see Easies.proto._next()
-    set _isLooping(b) { this.#isLooping = Boolean(b); }
-
 // this.autoTrip, this.plays, this.eKey are byEasy arrays for MEBase
 // this.autoTrip is a boolean or undefined = inherit from Easy
     get autoTrip()  {
@@ -111,7 +108,7 @@ class EBase {
         return Is.def(val) ? Boolean(val) : val;
     }
     // _autoTripping computes a run-time autoTrip value, no this.autoTripping
-    // because getter can't have an ez argument, see Easies.proto._zero() and
+    // because getter can't have an ez argument, see Easies.proto._zeroOut() and
     _autoTripping(ez, val) {                      // MEaser.proto.autoTripping
         return Is.def(val) ? val && ez.roundTrip
                            : ez.autoTripping;     // ez.autoTrip && ez.roundTrip
@@ -219,8 +216,8 @@ class EBase {
     }
 //==============================================================================
 // "Protected" methods:
-//  _zero() resets stuff before playback
-    _zero() {
+//  _zeroOut() resets stuff before playback
+    _zeroOut() {
         if (this.#loopByElm)
             this.#iElm = 0;
     }
@@ -289,7 +286,7 @@ class EBase {
         elm = this.#elms[i];
         this.#setOne(this.#prop, elm, this._parseElm(i));
         if (this.#isLooping) {  // loopByElm is looping by plays
-            this._initByElm();  // initialize the rest of the elements
+            this._initElms();   // initialize the rest of the elements
             this.#isLooping = false;
         }
         this.#peri?.(this.#oneD, e, elm);
@@ -301,11 +298,14 @@ class EBase {
         this.#mask.forEach((m, i) => val[m] = oneD[i]);
         return val;
     }
-//  _initByElm() initializes all but the first element, for loopByElm
-    _initByElm() { // called by setElm(), Easies.proto._next()
+//  _initElms() initializes all but the first element, for loopByElm
+    _initElms() { // called by setElm(), Easies.proto._next()
         this.#prop.setEm(this.#loopElms, this.#initByElm);
     //++this.#onLoop?.(this); //++run callback after wait, not on arrival
     }
+//  setLooping() helps Easies.proto._next() set #isLooping
+    setLooping(b) { this.#isLooping = Boolean(b); }
+
 //==============================================================================
 // The two #setOne functions:
     #setIt(prop, elm, arr) {  // could be static
@@ -345,7 +345,7 @@ class EBase {
             for (let i = 0, l = this.#cElms; i < l; i++)
                 this.#initial[i] = arr.map((_, i) => this._parseElm(i).join(""));
         }
-        this.#initByElm = this.#initial.slice(1); // see _initByElm()
+        this.#initByElm = this.#initial.slice(1); // see _initElms()
         this.#loopElms  = this.#elms   .slice(1); // ditto
     }
 //  calcInitial() pre-populates #twoD or #oneD with initial values, necessary
@@ -362,11 +362,11 @@ class EBase {
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
-class Easer extends EBase {      // basic Easer
-    #calc;
+class Easer extends EBase { // basic Easer
+    #calcs;                 // plural is to avoid transpiling it into _calc
     constructor(o) {
         super(o);
-        this.#calc = new ECalc(o);
+        this.#calcs = new ECalc(o);
         Object.seal(this);
     }
     _apply(e) {
@@ -374,7 +374,7 @@ class Easer extends EBase {      // basic Easer
         this._set (e);
     }
     _calc(e) {
-        this.#calc.calculate(this._eVal(e));
+        this.#calcs.calculate(this._eVal(e));
     }
 }
 ////////////////////////////////////////////////////////////////////////////////

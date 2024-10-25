@@ -2,11 +2,10 @@ export {loadEvents, set};
 
 import {E, P} from "../../src/raf.js";
 
-import {updateTime} from "../update.js";
+import {updateTime}                                from "../update.js";
+import {COUNT, CHANGE, LITE, elms, addEventsByElm} from "../common.js";
 import {storeCurrent, setLocal, getLocalByElm, getNamedEasy}
-                    from "../local-storage.js";
-import {COUNT, CHANGE, LITE, elms, addEventsByElm, toggleClass}
-                    from "../common.js";
+                                                   from "../local-storage.js";
 
 import {measer, easys, refresh}               from "./_update.js";
 import {idsPerEasy, defsPerEasy, objFromForm} from "./_named.js";
@@ -87,20 +86,20 @@ function freshen(doTime, isEasy) {
         return name;
     },
     plays(i, val = defsPerEasy[1]) {  // val = "", "1", "2", or "3"
-        toggleClass(elms.ez_plays[i], LO, Boolean(val))
+        elms.ez_plays[i].classList.toggle(LO, Boolean(val));
         return val;
     },
     eKey(i, val = defsPerEasy[2]) {
         const
-        selected = elms[val][i],                  // selected key's <span>
+        selected = elms[val][i],                      // selected key's <span>
         parent   = selected.parentNode.parentNode,
         other    = elms[val == E.comp ? E.unit : E.comp][i];
 
-        parent.removeChild(other.parentNode);     // reorder by moving
-        parent.appendChild(other.parentNode);     // other to the bottom.
-        [selected, other].forEach((span, j) => {  // j acts as a boolean
-            toggleClass(span, LO, j);             // <span> has content
-            toggleClass(span.parentNode, LO, j);  // <p>    is the label
+        parent.removeChild(other.parentNode);         // reorder by moving
+        parent.appendChild(other.parentNode);         // other to the bottom.
+        [selected, other].forEach((span, j) => {      // j acts as a boolean
+            span.classList.toggle(LO, j);             // <span> has content
+            span.parentNode.classList.toggle(LO, j);  // <p>    is the label
         });
         return val;
     },

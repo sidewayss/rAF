@@ -2,9 +2,8 @@ export {loadTIOPow, setLink, updateTypeIO, isPow, isBezierOrSteps};
 
 import {E, Ez, P, Easy} from "../../src/raf.js";
 
-import {formatInputNumber, isInvalid} from "../input-number.js";
-import {TWO, CLICK, INPUT, elms, g, addEventByClass, pairOfOthers, toggleClass,
-        boolToString}                 from "../common.js";
+import {TWO, CLICK, INPUT, CHANGE, elms, g, addEventByClass, addEventToElms,
+        pairOfOthers, boolToString} from "../common.js";
 
 import {chart, refresh} from "./_update.js";
 import {loadChart}      from "./chart.js";
@@ -12,9 +11,9 @@ import {setSplitGap}    from "./msg.js";
 import {isSteps}        from "./steps.js";
 import {LINK, TYPE, POW, twoLegs, isBezier} from "./index.js";
 //==============================================================================
-// loadTIOPow() is called by easings.loadIt(), once per session
+// loadTIOPow() is called by easings.load(), once per session
 function loadTIOPow() {
-    let id, opt, sel;
+    let evt, id, opt, sel, two;
     Ez.readOnly(g, "links", ["link_off", LINK]); // boolean acts as 0|1 index
 
     for (sel of [elms.type, elms.io])      // populate the <select>s: #type, #io
@@ -34,12 +33,13 @@ function loadTIOPow() {
     elms.divType2.appendChild(sel);
     g.disables.push(sel);
 
-    for (id of [TYPE, POW])                // each one is the other's other
-        pairOfOthers(elms[id], elms[id + TWO]);
-
-    loadChart(); // chart events must follow cloning and precede addEvent(INPUT)
-    addEventByClass(INPUT, `${TYPE}-${POW}`, null, inputTypePow);
-    addEventByClass(CLICK, LINK,             null, inputTypePow);
+    for ([id, evt] of [[TYPE, INPUT], [POW, CHANGE]]) {
+        two = [elms[id], elms[id + TWO]];
+        pairOfOthers(...two);              // each one is the other's other
+        addEventToElms (evt, two, inputTypePow);
+    }
+    loadChart();
+    addEventByClass(CLICK, LINK, null, inputTypePow);
 }
 //==============================================================================
 // inputTypePow() is the input event handler for class="type-pow"
@@ -48,12 +48,8 @@ function loadTIOPow() {
 function inputTypePow(evt) {
     let refreshIt;
     const
-    tar = evt.target,
-    isP = tar.id.includes("ow");        // pow, pow2, linkPow
-    if (isP && isInvalid(tar))
-        return;
-    //----------------------
-    const
+    tar  = evt.target,
+    isP  = tar.id.includes("ow"),           // pow, pow2, linkPow
     id   = isP ? POW : TYPE,
     suff = tar.id.endsWith(TWO) ? [TWO,""] : ["",TWO],
     link = elms[Ez.toCamel(LINK, id)],
@@ -64,7 +60,7 @@ function inputTypePow(evt) {
         setLink(tar);                       // toggles link.value, so that
     if (link.value && two.value != val) {   // if (isLink) two.value can == val.
         if (isP)
-            formatInputNumber(two, val);
+            two.value = val;
         else {                              // type, type2, linkType
             two.value = val;
             if (isLink) {
@@ -80,7 +76,7 @@ function inputTypePow(evt) {
 function setLink(btn, b = !btn.value) {
     btn.value       = boolToString(b);
     btn.textContent = g.links[Number(b)]; // symbol font characters
-    toggleClass(btn, "linked", b);
+    btn.classList.toggle("linked", b);
 }
 //==============================================================================
 // updateTypeIO() updates the form based on current values

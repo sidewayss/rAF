@@ -73,9 +73,9 @@ class MEBase extends EBase { // M = multi E = Easer, the multi-ease base class
         return Math.min(...this.#easies.map(ez => ez.delay));
     }
 //==============================================================================
-//  _zero()
-    _zero() {
-        super._zero();
+//  _zeroOut()
+    _zeroOut() {
+        super._zeroOut();
         const start = this.#easies[0].delay;
         if (this.#easies.some(ez => ez.delay != start))
             this.calcInitial(); // pre-populate #twoD or #oneD

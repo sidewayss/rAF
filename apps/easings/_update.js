@@ -40,7 +40,7 @@ function refresh(tar, n, has2 = twoLegs()) {
             if (!obj) return;
             //---------------
             if (ezX.e.status)    // not E.arrived
-                ezX.init();      // required for Easy.proto._zero()
+                ezX.init();      // required for Easy.proto._zeroOut()
         }
         storeIt(obj);            // save obj to localStorage
     }

@@ -11,23 +11,26 @@ import {objEz}              from "./_named.js";
 
 let data;
 //==============================================================================
-// multiFromObj() creates/returns the object passed to Easies.proto.newTarget().
+// multiFromObj() creates/returns the object passed to Easies.proto.newTarget()
 //                Converts 3 Easys to 3 pairs of Easys for the masked args:
 //                    [0, 1, 2] becomes [0, 0, 1, 1, 2, 2]
-//                MEBase.#easies is an Array of Easy. Illustrates an (obscure?)
-//                inefficiency: every masked value is calculated even if it's
-//                the same as another one. Called by newTargets(), clickCode(),
-//                which passes an array of strings (local storage keys) as ezs,
-function multiFromObj(ezs, isPseudo) {          // and does not define isPseudo.
+// Illustrates an inefficiency in rAF:
+//   Every masked value is calculated even if it's the same as another one.
+// Called by newTargets() and clickCode(), which passes an array of strings
+// (local storage keys) for the ezs argument and does not define isPseudo.
+function multiFromObj(ezs, isPseudo) {
     if (isPseudo)
         g.easies.peri = pseudoUpdate;
     else {
         g.easies.peri = update;                 // spread 3 to 6:
         ezs = Array.from({length:COUNT * 2}, (_, i) => ezs[Math.floor(i / 2)]);
     }
-    const me = {easies:ezs, eKey:objEz.eKey,
-                addend:clipStart,
-                factor:clipEnd - clipStart};
+    const me = {
+        easies:ezs,
+        eKey:  objEz.eKey,
+        addend:clipStart,
+        factor:clipEnd - clipStart
+    };
     if (isPseudo)                               // initPseudo()
         Object.assign(me, {peri:pseudoMe, pseudo:true});
     else {

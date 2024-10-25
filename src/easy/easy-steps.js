@@ -189,7 +189,7 @@ function easeSteps(ez, nows, time, start, dist, name) {
             );
     } while((leg = leg.next));
     //------------------------------------------// validation complete
-    ez._zero(0);                                // prep for pseudo-animation
+    ez._zeroOut(0);                             // prep for pseudo-animation
     const d    = time / ez.time;                // d for divisor
     const prop = ezDown ? E.comp : E.unit;      // nows always ascends
     return nows.map(v => {

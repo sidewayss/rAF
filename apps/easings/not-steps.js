@@ -4,7 +4,6 @@ import {Is, Ez}  from "../../src/raf.js";
 import {splitIO} from "../../src/easy/easy-construct.js";
 
 import {msecs}             from "../update.js";
-import {formatInputNumber} from "../input-number.js";
 import {MILLI, TWO, elms, g, orUndefined, elseUndefined}
                            from "../common.js";
 
@@ -19,12 +18,12 @@ function easingFromObj(obj, _, leg0, leg1) {
     const isBez = isBezier();
     if (isBez)
         for (let i = 0; i < 4; i++)
-            formatInputNumber(elms.beziers[i], obj.bezier[i]);
+            elms.beziers[i].value = obj.bezier[i];
     else if (isPow())
-        formatInputNumber(elms.pow, obj.pow ?? leg0.pow);
+        elms.pow.value = obj.pow ?? leg0.pow;
 
     if (leg1?.pow)
-        formatInputNumber(elms.pow2, leg1.pow);
+        elms.pow2.value = leg1.pow;
     else
         elms.pow2.value = elms.pow.value;
 
@@ -38,7 +37,7 @@ function easingFromObj(obj, _, leg0, leg1) {
         isDefN = Is.def(n)
         val    = isDefN ? n / getDF(id)  // default value
                         : elm.default(); // fallback
-        formatInputNumber(elm, val);
+        elm.value = val;
         disableClear(elm, val, isDefN);
     });
     if (!isBez) {                        // bezier has only one leg here
@@ -63,10 +62,10 @@ function easingFromForm(obj) {
     if (has2)
         [mid, split, gap] = MSG.map(id =>
             elseUndefined(useLegs || !elms[id].clear.disabled,
-                          elms[id].valueAsNumber * getDF(id)));
+                          elms[id].value * getDF(id)));
 
     if (isP)
-        pow = elms.pow.valueAsNumber;
+        pow = elms.pow.value;
 
     if (useLegs) {
         let pow2, type2;
@@ -74,7 +73,7 @@ function easingFromForm(obj) {
         ios   = splitIO(g.io, true).map(v => orUndefined(v)),
         time2 = msecs - split - gap;
         type2 = Number(elms.type2.value);
-        pow2  = elseUndefined(isPow(type2), elms.pow2.valueAsNumber);
+        pow2  = elseUndefined(isPow(type2), elms.pow2.value);
         type2 = orUndefined(type2);         // can't be undefined for isPow()
 
         for (let id of ["time", TYPE, IO])  // set by each leg instead

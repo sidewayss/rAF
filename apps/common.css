@@ -13,9 +13,6 @@
   --dark-gray:    #444;
   --medium-gray:  #777;
   --line-gray:    #ACACAC;
-  --border-gray:  1px solid #0002;
-  --border-hidden:1px solid transparent;
-  --btn-size: 1.75rem;
 
   --8th: calc(1rem / 8);
   --3-8ths: calc(3 * var(--8th));
@@ -29,6 +26,11 @@
   --9-16ths: calc(9 * var(--16th));
   --11-16ths:calc(11 * var(--16th));
   --15-16ths:calc(1rem - var(--16th));
+
+  --border-gray:  var(--16th) solid #0002;
+  --border-hidden:var(--16th) solid transparent;
+
+  --btn-size: 1.75rem;
 }
 html * {
   font-family:"Roboto Mono", monospace;
@@ -78,7 +80,6 @@ input[type=range] {
 button, input[type=color],
 select, input[type=number] {
   color:var(--dark-blue);
-  border-radius:0.25rem;
 }
 button, input[type=color] {
   appearance:none;          /* else iOS pads a lot, no way to control it */
@@ -180,8 +181,8 @@ check-box, check-tri {
   stroke:var(--charcoal);
   color: var(--charcoal);
 }
-check-box[disabled],
-check-tri[disabled],
+check-box[disabled], check-box[disabled][checked],
+check-tri[disabled], check-tri[disabled][checked],
 label[disabled],
 select:disabled {
   stroke:var(--medium-gray);
@@ -212,8 +213,8 @@ check-tri[value]::part(default) {
   stroke:var(--medium-gray);
 }
 
-/* <state-button> - #play, #stop */
-state-button {
+/* <state-btn> - #play, #stop */
+state-btn {
   opacity:0.9;
   stroke-width:3px;
   fill   :var(--dark-blue);
@@ -221,22 +222,22 @@ state-button {
   stroke-linejoin:round;
   stroke-linecap :round;
 }
-state-button:hover {
+state-btn:hover {
   opacity:1;
   stroke-width:4px;
   fill   :var(--accent-blue);
   stroke :var(--accent-blue);
 }
-state-button:active {
+state-btn:active {
   stroke-width:3px;
   fill:none;
 }
-state-button[disabled] {
+state-btn[disabled] {
   opacity:0.15;
   fill   :var(--pitch);
   stroke :var(--pitch);
 }
-state-button.hi {
+state-btn.hi {
   opacity:1;
 }
 

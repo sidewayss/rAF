@@ -10,7 +10,6 @@ TIMING = "timing";
 import {E, Is, Ez, P, Easy} from "../../src/raf.js";
 
 import {D, pad, secs, formatNumber, timeFrames, updateTime} from "../update.js";
-import {listenInputNumber, formatInputNumber, isInvalid}    from "../input-number.js";
 import {getNamed, getNamedEasy}                             from "../local-storage.js";
 import {MILLI, COUNT, SELECT, DIV, LABEL, INPUT, CHANGE,
         elms, g, addEventByClass}                           from "../common.js";
@@ -27,7 +26,7 @@ IDX_LINEAR = 0,
 IDX_EASY   = 1,
 IDX_USER   = 2;
 //==============================================================================
-// loadSteps() called by easings.loadIt()
+// loadSteps() called by easings.load()
 function loadSteps() {
     let i, sel, str;
     FORMAT_END = [pad.milli, 0, elms.end];
@@ -105,13 +104,10 @@ function loadTV() { // called exclusively by getEasies() during page load
         for (i = 0; i < COUNT; i++) {          // arr = [<input type="number">]
             elm      = arr[i];
             elm.id   = id[0] + i;              // "v0-2" or "t0-2"
-            elm.min  = min;                    // listenInputNumber() converts
-            elm.max  = max;                    // .min/max to .dataset.min/max
+            elm.min  = min;
+            elm.max  = max;
             elm.step = step;
-            if (isT)
-                elm.nextElementSibling.htmlFor = elm.id;
         }
-        listenInputNumber(arr);
         elms[userTV] = arr;                    // elms.userTiming, .userValues
     }
     [TIMING, VALUES].forEach((nm, j) => {      // must be a separate loop
@@ -122,28 +118,26 @@ function loadTV() { // called exclusively by getEasies() during page load
     addEventByClass(CHANGE, STEPS, null, changeSteps);
 
     lastUserTime = elms.userTiming.at(-1);
-    lastUserTime.addEventListener(INPUT,  inputLastTime);
+    lastUserTime.addEventListener(CHANGE, changeLastTime);
     lastUserTime.addEventListener(CHANGE, changeTime);
 
-    elms.userValues.at(-1).addEventListener(INPUT, inputLastValue);
+    elms.userValues.at(-1).addEventListener(CHANGE, changeLastValue);
 }
 // tvShowHide() helps loadTV() and updateTV(). isT = isTiming vs Values
 function tvShowHide(isT) { return isT ? P.visible : P.displayed; }
 //==============================================================================
-// inputLastTime() is the input event handler for lastUserTime
-function inputLastTime(evt) {
-    if (!isInvalid(evt.target))
-        timeFrames(evt.target.valueAsNumber * MILLI);
+// changeLastTime() is the change event handler for lastUserTime
+function changeLastTime(evt) {
+    timeFrames(evt.target.value * MILLI);
 }
-// inputLastValue() is the input event handler for elms.userValues.at(-1)
-function inputLastValue(evt) {
-    if (!isInvalid(evt.target))
-        formatNumber(evt.target.valueAsNumber, ...FORMAT_END);
+// changeLastValue() is the change event handler for elms.userValues.at(-1)
+function changeLastValue(evt) {
+    formatNumber(evt.target.value, ...FORMAT_END);
 }
 // defUserInputs() populates elms.userValues|Timing with default values
 function defUserInputs([key, val]) {
     elms[Ez.toCamel(USER, key)].forEach((elm, i) =>
-        formatInputNumber(elm, val * (i + 1))
+        elm.value = val * (i + 1)
     );
 }
 // initSteps() is called exclusively by initEasies()
@@ -170,32 +164,21 @@ function wasIsSteps(is, isU) {           // isU = [isUT, isUV], order critical
 // toggleUser() helps wasIsSteps(), changeSteps(), formFromObj() handle toggling
 //              to/from user timing and values, is and was are independent.
 //              was argument is wasSteps or wasUser, depending on the caller.
-//              If you enter an invalid value then switch to not userValues and
-//              back again, the invalid valid will not be displayed.
 function toggleUser(sel, isT, is  = isUserTV(sel),
                               was = P.isDisplayed(sel[OTHER][1])) {
-    let invalid, val;
-    if (is) {
-        const elm = elms[Ez.toCamel(USER, sel.id)].at(-1);
-        invalid = isInvalid(elm);
-        if (!invalid)
-            val = elm.valueAsNumber;
-    }
-    else if (was) {
-        if (!isT)                              // TIMING: undefined = getMsecs()
-            val = elms.swap.value ? 0 : MILLI; // VALUES: system end value
-    }
+    let val;
+    if (is)
+        val = elms[Ez.toCamel(USER, sel.id)].at(-1).value;
+    else if (was)
+        val = isT ? undefined : (elms.swap.value ? 0 : MILLI);
     else
         return false;
-    //--------
+    //----------------------------
     if (isT) {
-        P.visible(elms.time, was);
-        if (!is)
-            timeFrames();
-        else if (!invalid)
-            timeFrames(val * MILLI);
+        P.visible(elms.time, was); // undefined = getMsecs()
+        timeFrames(is ? val * MILLI : undefined);
     }
-    else if (!invalid)
+    else
         formatNumber(val, ...FORMAT_END);
 
     return is;
@@ -210,7 +193,7 @@ function changeSteps(evt) { // #values/timing.other[0], elms.userValues/Timing.
         isUT = isUserTV(tar);
         if (isUT && !lastUserTime.value) {
             defUserInputs([TIMING, secs / COUNT]);  // defaults for userTiming[]
-            setInfo(lastUserTime.valueAsNumber);    // depend on variable secs.
+            setInfo(lastUserTime.value);    // depend on variable secs.
         }
         toggleUser(tar, true, isUT);
         updateTV();
@@ -224,12 +207,10 @@ function changeSteps(evt) { // #values/timing.other[0], elms.userValues/Timing.
         updateTV(isUT, isUV);
         break;
     case lastUserTime:
-        setInfo(tar.valueAsNumber);
+        setInfo(tar.value);
         infoZero(true, true);
         break;
     default:
-        if (isInvalid(tar))     // <input type="number"> invalid user value
-            return;
     }
     refresh(tar);
 }
@@ -249,7 +230,7 @@ function stepsFromObj(obj, hasVisited) {
             const inputs  = elms[Ez.toCamel(USER, sel.id)],
                   divisor = getDF(sel);
             for (j = 0; j < COUNT; j++)
-                formatInputNumber(inputs[j], val[j] / divisor);
+                inputs[j].value = val[j] / divisor;
             sel.selectedIndex = IDX_USER;
             isUser[i] = true;
         }
@@ -335,7 +316,7 @@ function tvFromElm(sel, useName) {
 
         tv = Array(COUNT);                    // an array of numbers
         for (let i = 0; i < COUNT; i++)
-            tv[i] = inputs[i].valueAsNumber * factor;
+            tv[i] = inputs[i].value * factor;
     }
     else if (sel.selectedIndex == IDX_EASY) { // easyValues or easyTiming:
         const name = sel[OTHER][0].value;

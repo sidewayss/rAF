@@ -478,8 +478,8 @@ export class Easy {
 //  clearTargets() clears #targets
     clearTargets() { this.#targets.clear(); }
 //==============================================================================
-//  _zero() and _resume() help AFrame.prototype.play() via Easies
-    _zero(now = 0) {
+//  _zeroOut() and _resume() help AFrame.prototype.play() via Easies
+    _zeroOut(now = 0) {
         const        // these two blocks similar to end of Easies.proto._next()
         isTr = (this.e.status == E.tripped),
         wait = isTr ? this.#lastLeg .wait + this.#tripWait
@@ -490,7 +490,7 @@ export class Easy {
                       : isTr ? E.inbound : E.outbound; //$$
 
         for (const t of this.#targets)
-            t._zero(this);
+            t._zeroOut(this);
     }
     _resume(now) {
         if (this.e.status) // E.arrived == 0

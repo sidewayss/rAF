@@ -130,7 +130,7 @@ function formatDuration(val, d) {
 }
 // formatPlayback() helps changePlay(), changeStop()
 function formatPlayback(isPlaying) {
-    elms.clip.style.opacity = g.clipOpacity[Number(isPlaying)]; // see loadIt()
+    elms.clip.style.opacity = g.clipOpacity[Number(isPlaying)]; // see load()
     P.visible(elms.easyDivs.map(div => div.firstElementChild), !isPlaying);
 
     if (isPlaying)                      // element visibility overrides parent

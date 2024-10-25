@@ -75,7 +75,7 @@ input[type=number] {
 }
 #mid {
   padding-top:0;
-  margin-left:1ch;
+  margin-left:calc(1ch + var(--8th));
   font-weight:500;
 }
 .w5ch { width:5ch;  } /* for #pow, #pow2, #mid */
@@ -87,44 +87,8 @@ input[type=number] {
   width:calc(5ch + 1.25rem);
 }
 #split, #gap {
-  width:4.25rem;
-  margin-left:var(--8th);
+  margin-left:var(--5-16ths);
   font-weight:500;
-}
-.secs:hover + label,
-.secs:focus + label  {
-  visibility:hidden;
-}
-/* Hide the spin buttons in Firefox and Safari, show on hover/focus */
-@supports (selector(::-moz-range-thumb)) {
-  .w5ch { width:5.35ch; } /* .35 for #mid alignment at font-size:100% */
-  .w6ch { width:6.5ch; }
-  .w7ch { width:7.5ch; }
-  input[type=number].secs {
-    text-align:left;
-    padding-left:0.3125rem;
-  }
-  input[type=number].secs:not(:hover, :focus) {
-    -moz-appearance:textfield;
-  }
-  input[type=number].secs + label{
-    left:-0.6875rem;
-  }
-}
-@supports (hanging-punctuation:first) and (font:-apple-system-body)
-                                      and (-webkit-appearance:none) {
-  input[type=number].secs {
-    text-align:left;
-    padding-left:0.3125rem;
-  }
-  input[type=number].secs:not(:hover, :focus)::-webkit-outer-spin-button,
-  input[type=number].secs:not(:hover, :focus)::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-  }
-  input[type=number].secs + label{
-    left:-0.6875rem;
-  }
 }
 
 /* <svg> */
@@ -248,6 +212,9 @@ circle {
   margin-right:var(--8th);
   color:#700;
 }
+#clearMid {
+  margin-right:0;
+}
 .lock {
   align-self:flex-start;
   color:var(--dark-gray);
@@ -319,12 +286,29 @@ circle {
   position: relative;
   top: calc(var(--16th) * -2);
 }
-/* This one is last to make it easier to locate in javascript */
-/* right-margin set to negative label width in resizeWindow() */
-.secs + label {
-  position:relative;
-  left:-1rem;
-  padding:0;
-  font-weight:500;
-  color:var(--dark-blue);
+/* Browser-specific stuff after everything else */
+@supports (selector(::-moz-range-thumb)) {
+  .w5ch { width:5.35ch; } /* .35 for #mid alignment at font-size:100% */
+  .w6ch { width:6.5ch; }
+  .w7ch { width:7.5ch; }
+  input[type=number].secs {
+    text-align:left;
+    padding-left:0.3125rem;
+  }
+  input[type=number].secs:not(:hover, :focus) {
+    -moz-appearance:textfield;
+  }
+}
+@supports (hanging-punctuation:first) and (font:-apple-system-body)
+                                      and (-webkit-appearance:none) {
+  input[type=number].secs {
+    text-align:left;
+    padding-left:0.3125rem;
+  }
+  input[type=number].secs:not(:hover, :focus)::-webkit-outer-spin-button,
+  input[type=number].secs:not(:hover, :focus)::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+  }
+  .clear { font-weight:normal; }
 }

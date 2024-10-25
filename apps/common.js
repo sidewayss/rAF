@@ -85,10 +85,6 @@ export function pairOfOthers(...pair) {
     for (var i = 0; i < 2; i++)
         pair[i].other = pair[Ez.comp(i)];
 }
-// toggleClass() adds or removes a class from classList, optionally toggling
-export function toggleClass(elm, className, b = !elm.classList.contains(className)) {
-    elm.classList[b ? "add" : "remove"](className);
-}
 // orUndefined() helps undefine default values for JSON/localStorage
 export function orUndefined(val) {
     return val || undefined;
@@ -98,10 +94,11 @@ export function elseUndefined(b, val) {
     if (b) return val; // else return undefined.
 }
 // isTag() deals with the allegedly unreliable case of HTMLElement.tagName
-export function isTag(elm, tag) { // only called by easings.loadIt()
+export function isTag(elm, tag) { // only called by easings.load()
     return elm.tagName.toLowerCase() == tag;
 }
 export function is(obj = {}) {
     obj[document.documentElement.id] = true;
-    return Object.freeze(obj);
+    return obj;
+//##return Object.freeze(obj); // commented out for pre-await is.promise
 }

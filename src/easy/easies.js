@@ -139,8 +139,8 @@ export class Easies {
 //!!}
 //==============================================================================
 // "Protected" methods, called by AFrame instances:
-//  _zero() helps AFrame.prototype.play() zero out before first call to _next()
-    _zero(now = 0, noTargets = false) {
+//  _zeroOut() helps AFrame.prototype.play() zero out before first call to _next()
+    _zeroOut(now = 0, noTargets = false) {
         let easy;
         this.#easy2Plays.clear();             // Easies
         this.#easy2Trips.clear();             // Easies
@@ -148,7 +148,7 @@ export class Easies {
         this.#noTargets = noTargets;          // pseudo-animation
         this.#active = new Set(this.#easies); // the "live" set
         for (easy of this.#active)
-            easy._zero(now);                  // cascade the zeroing-out down
+            easy._zeroOut(now);               // cascade the zeroing-out down
 
         if (noTargets) return;                // pseudo-animation = no targets
         //-------------------------------------- but there is target-pseudo too
@@ -168,7 +168,7 @@ export class Easies {
         e2M = this.#easy2ME;                  // Map(Easy, Set(MEaser))
         e2M.clear();
         for (t of this.#targets) {            // this.targets: class MEaser
-            t._zero();                        // cascade it down
+            t._zeroOut();                     // cascade it down
             t.easies.forEach(ez =>            // fall back to ez.plays
                 e2M.has(ez) ? e2M.get(ez).add(t)
                             : e2M.set(ez, new Set([t]))
@@ -203,7 +203,7 @@ export class Easies {
 //   AFrame.prototype.#animate() runs it once per frame. It runs easy._easeMe()
 //   to get eased values, and t._apply() to calc/apply those values to #targets.
 //   #noTargets does not apply values: #easy2Plays, #me2Plays are empty, see
-//   _zero(). Returns true upon arrival, else false. No easies means no targets.
+//   _zeroOut(). Returns true upon arrival, else false. No easies == no targets.
     _next(timeStamp) {
         let byElm, e, e2, easers, easy, map, nextElm, noWait, plays, set, sts,
             t, trips, tripping, val, val2;
@@ -251,9 +251,9 @@ export class Easies {
                                     : map.delete(t);
                             if (byElm && plays)    // init the rest of the elms:
                                 if (noWait)        // do it now
-                                    t._initByElm();
+                                    t._initElms();
                                 else               // post-wait, next apply()
-                                    t._isLooping = true;
+                                    t._setLooping(true);
                         }
                         else if (noWait)   // loopByElm w/o wait, next elm
                             t._apply(e2);
@@ -312,7 +312,7 @@ export class Easies {
                     t._apply(val);
             }
             else {                          // looping by elm, maybe by plays
-                val2 = [];                  //!!_initByElm and _isLooping!!
+                val2 = [];                  //!!_initElms and _isLooping!!
                 plays.forEach((_, i) => {
                     easy = t.easies[i];
                     e    = easy.e;
@@ -349,7 +349,7 @@ export class Easies {
             }
             else {
                 sts = e.status;
-                if (e.waitNow) {            // similar to Easy.proto._zero():
+                if (e.waitNow) {            // similar to Easy.proto._zeroOut():
                     e.status  = E.waiting;  //$$
                     e.waitNow = false;
                 }

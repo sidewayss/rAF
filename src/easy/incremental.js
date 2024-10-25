@@ -145,7 +145,7 @@ export class Incremental extends Easy {
                     leg = leg.next;
                     if (leg.time) {
                         this._now = 0;
-                        this._zero(now);
+                        this._zeroOut(now);
                     }
                     this.#nextInc(leg, true);
                     this._leg = leg;

@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="index.css"/>
   </head>
   <body>
-    <div id="content">
+    <main id="content">
       <div id="title">
         <object data="img/rAFoffset.svg" type="image/svg+xml" style="width:180px; height:180px;"></object>
         <h1 class="nudge-down">JavaScript Animation Library</h1>
@@ -43,7 +43,14 @@
         <li>Max and min limits by argument by element</li>
         <li>Animate the same property differently across elements in a single animation</li>
         <li><a href="https://colorjs.io">Color.js</a> integration</li>
-        <li><i>...what else?</i></li>
+        <li>For two-legged easings:</li>
+        <ul>
+          <li class="sub">Not just `inOut`, there are `outIn`, `inIn`, and `outOut` settings</li>
+          <li class="sub">Adjustable mid point for the value</li>
+          <li class="sub">Adjustable split point for time</li>
+          <li class="sub">Adjustable gap in time between the two legs</li>
+        </ul>
+        <li><i>and more...</i></li>
       </ul>
 
       <h3>Goals, Assumptions, and Approach:</h3>
@@ -65,6 +72,6 @@
       <p>I don't expect to see a lot of interest in <span class="rAF">rAF</span>. It's a now-obscure niche, and there have been many animation libraries produced since Velocity.js took the web by storm over a decade ago. I was mostly animating SVG, and Velocity doesn't do SVG gradients, among other things. So I built my own stuff.</p>
       <p>These days animated video is much more common online than all but the most basic web animations. Why? More tools for creation and more reliable results. The one advantage that web animations have is interactivity, but how many interactive animations have you seen? <i>see <a href="https://sidewayss.com">my homepage</a>'s interactive greeting</i></p>
       <p>I built this library for personal satisfaction / education, a goofy homepage, and to demonstrate that I can still design and build solid software. I figure there might be a few other people out there who want to do more extreme animations and could find it useful. Maybe some will even want to contribute.</p>
-    </div>
+    </main>
   </body>
 </html>

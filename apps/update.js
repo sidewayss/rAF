@@ -37,7 +37,7 @@ let ns,           // _update.js namespace
     isContinuing; // isLooping || isAutoTripping during animation
 //==============================================================================
 // loadUpdate() is called by loadCommon()
-async function loadUpdate(isMulti, dir) {
+function loadUpdate(isMulti, dir) {
     if (isMulti) {                        // can't do: () => {}
         frames[0] = {t:0, x:Array.from({length:COUNT}, () => new Object)};
         pad.value = pad.milli;
@@ -177,7 +177,7 @@ function pseudoAnimate(noTargets) { // Easies.proto.#noTargets = noTargets
 
     changeStop(null);               // resets stuff if pausing or arrived
     ns.initPseudo();                // page-specific init, calls newTargets()
-    ezs._zero(0, noTargets);        // pre-play initialization
+    ezs._zeroOut(0, noTargets);     // pre-play initialization
     frameIndex = 0;                 // see frames[++frameIndex] above
 
     i = ns.isInitZero?.() ? 0       // steps && (jump & E.start)

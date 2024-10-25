@@ -1,4 +1,4 @@
-export {loadIt, getEasies, initEasies, updateAll, easeFinally, resizeWindow,
+export {load, getEasies, initEasies, updateAll, easeFinally, resizeWindow,
         isCSSSpace, Color};
 
 export let ezColor;
@@ -27,9 +27,9 @@ import {isMulti, loadEvents, timeFactor, getCase} from "./events.js";
 let collapsed, controlsWidth, expanded, padding;
 const postIts = [];
 //==============================================================================
-// loadIt() is called by loadCommon(), sRGB255 is a custom color space for the
+// load() is called by loadCommon(), sRGB255 is a custom color space for the
 //          original rgb() range of 0-255.
-function loadIt(_, hasVisited) {
+function load(_, hasVisited) {
     let bw, css, elm, id, max, min, obj, opt, rng, space, txt;
     const
     ColorSpace = Color.Space,           // the ColorSpace class
@@ -233,7 +233,7 @@ function initEasies(obj, hasVisited) {  // event handlers populate the form and
         if (hasVisited) {               // only when called by loadFinally()
             const evt = dummyEvent(CLICK, LOADING);
             for (const elm of g.boolBtns)
-                elm.dispatchEvent(evt); // loadIt()=>getLocal() previously
+                elm.dispatchEvent(evt); // load()=>getLocal() previously
         }
     }
     return b;

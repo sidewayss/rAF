@@ -17,7 +17,7 @@ import(_load.js) : updateAll via loadNamed(..., _load)
 let ns_load;                        // = import(_load.js) for openNamed()
 //==============================================================================
 // loadNamed() called by loadCommon()
-async function loadNamed(isMulti, dir, _load) {
+function loadNamed(isMulti, dir, _load) {
     ns_load = _load;
     LINEAR  = Easy.type[E.linear];        // #easies[0].text, see click.ok()
     setPrefix(isMulti ? MEASER_ : EASY_); // prefix by class

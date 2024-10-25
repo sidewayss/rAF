@@ -4,7 +4,6 @@ export let FORMAT_START;
 import {E} from "../../src/raf.js";
 
 import {msecs, pad, formatNumber, timeFrames, updateTime} from "../update.js";
-import {listenInputNumber, isInvalid} from "../input-number.js";
 import {CHANGE, INPUT, CLICK, MILLI, elms, g, boolToString,
         addEventsByElm, dummyEvent}   from "../common.js";
 
@@ -15,12 +14,9 @@ import {updateSplitGap, setSplitGap, isUnlocked} from "./msg.js";
 import {FORMAT_END, isSteps, wasIsSteps, isUserTV, infoZero} from "./steps.js";
 //==============================================================================
 function loadChart() { // called by loadTIOPow() so cloning is finished prior
-    let elements = document.getElementsByClassName("chart");
-    addEventsByElm(CHANGE, elements, change, true);
-
-    elements = document.getElementsByClassName("chart-number");
-    listenInputNumber(elements);  // must precede next line
-    addEventsByElm(INPUT, [elms.time, ...elms.beziers], input, true);
+    const elements = document.getElementsByClassName("chart");
+    addEventsByElm(CHANGE, elements, change, true);                   //!!true??
+    addEventsByElm(INPUT, [elms.time, ...elms.beziers], input, true); //!!ditto
 
     elms.swap.addEventListener(CLICK, clickSwap);
     FORMAT_START = [pad.milli, 0, elms.start];
@@ -46,8 +42,7 @@ function swapIt(b) { // true means swapped: start > end
 // input event handlers
 const input = {
     bezier(evt) { // #bezier0-3
-        if (!isInvalid(evt.target))
-            refresh(evt.target);
+        refresh(evt.target);
     },
     time() {      // called indirectly by formFromObj(), evt always defined
         const prev = msecs;

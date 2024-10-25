@@ -12,10 +12,10 @@ import {DEFAULT_NAME, loadNamed, disableSave, disablePreset, disableDelete}
 import {MILLI, COUNT, ONE, INPUT, SELECT, BUTTON, DIV, LABEL, dlg, elms, g,
         dummyEvent, errorAlert, errorLog}              from "./common.js";
 /*
-import(_load.js): loadIt, getEasies, initEasies, updateAll, easeFinally,
+import(_load.js): load, getEasies, initEasies, updateAll, easeFinally,
                   resizeWindow
 */
-let awaitNamed, awaitUpdate, ns, ns_named;
+let awaitCustom, awaitNamed, awaitUpdate, ns, ns_named;
 const RESIZE = "resize";
 
 const awaitFonts = [            // start loading fonts asap
@@ -34,13 +34,11 @@ const awaitFonts = [            // start loading fonts asap
 awaitFonts.forEach(f => document.fonts.add(f));
 //==============================================================================
 document.addEventListener("DOMContentLoaded", loadCommon, false);
-async function loadCommon() {
-    PFactory.init();                  // raf.js infrastructure init
-
+function loadCommon() {
     let elm, i, id;                   // collect HTMLElements by tag, then by id
     const
     tags  = [INPUT, SELECT, BUTTON, "dialog", DIV, LABEL,"span",
-                   "state-button","check-box","check-tri"],
+             "input-num","state-btn","check-box","check-tri"],
     byTag = tags.map(tag => [...document.body.getElementsByTagName(tag)]),
 
     arr = byTag[0].at(-1).id == "name"
@@ -63,37 +61,44 @@ async function loadCommon() {
                                 ...byTag[1],       // <select>
                                 ...byTag.at(-2)]); // <check-box>
     Ez.readOnly(g, "buttons",  byTag[2]);          // <button>, see disablePlay()
-    Ez.readOnly(g, "playback", byTag.at(-3));      // <state-button> #play,#stop
-    Ez.readOnly(g, "invalids", new Set);           // <input>s w/invalid values
+    Ez.readOnly(g, "playback", byTag.at(-3));      // <state-btn> #play,#stop
 
     elm = elms.plays ?? elms.plays0;  // plays0 is multi
     if (elm)
         for (i = 1; i <= COUNT; i++)
             elm.add(new Option(i));
+                                      // import page's _load.js and run load():
+    PFactory.init();                  // must init raf.js infrastructure first
+    id = document.documentElement.id;
+    const dir = `./${id}/`;           // directory path relative to this module
+    import(`${dir}_load.js`).then(namespace => {
+        ns = namespace;
+        preDoc = `${id}-`;            // prefix by document, see local-storage.js
+        Ez.readOnly(g, "keyName", `${preDoc}name`);
 
-    const msg = "Error fetching common.json: presets & tooltips are unavailable";
-    id  = document.documentElement.id;
-    const dir = `./${id}/`;          // directory path relative to this module
-    preDoc    = `${id}-`;            // prefix by document, see local-storage.js
+        const name = localStorage.getItem(g.keyName),
+        hasVisited = (name !== null),
+        is = ns.load(byTag, hasVisited),
+                                      // the rest of the async processes:
+        msg = "Error fetching common.json: presets & tooltips are unavailable";
+        awaitNamed  = Ez.promise();   // these two resolve in loadJSON()
+        awaitUpdate = Ez.promise();
+        fetch("../common.json")
+          .then (rsp => loadJSON(rsp, is.multi, dir, ns, hasVisited, msg))
+          .catch(err => errorAlert(err, msg));
 
-    Ez.readOnly(g, "keyName", `${preDoc}name`);
-    let name = localStorage.getItem(g.keyName);
-    const hasVisited = (name !== null);
+        awaitCustom = byTag.slice(-4) // the custom elements
+                           .filter(v => v.length) // remove unused tags
+                           .map(v => customElements.whenDefined(v[0].localName));
+        if (is.promise)
+            awaitCustom.push(is.promise);         // for easings pre-await-top
 
-    ns = await import(`${dir}_load.js`).catch(errorAlert);
-    const is = ns.loadIt(byTag, hasVisited);
+        Promise.all([document.fonts.ready, awaitNamed, awaitUpdate, ...awaitCustom])
+               .then (()  => loadFinally(is, name, hasVisited, id))
+               .catch(err => errorAlert(err));
 
-    awaitNamed  = Ez.promise();       // resolves in loadJSON()
-    awaitUpdate = Ez.promise();       // ditto
-    fetch("../common.json")
-      .then (rsp => loadJSON(rsp, is.multi, dir, ns, hasVisited, msg))
-      .catch(err => errorAlert(err, msg));
-
-    Promise.all([document.fonts.ready, awaitNamed, awaitUpdate])
-      .then (()  => loadFinally(is, name, hasVisited, id))
-      .catch(err => errorAlert(err));
-
-    window.addEventListener(RESIZE, ns.resizeWindow, false);
+        window.addEventListener(RESIZE, ns.resizeWindow, false);
+    }).catch(errorAlert);
 }
 //==============================================================================
 // loadJSON() executes on fetch(common.json).then(), could be inlined & indented
@@ -171,11 +176,17 @@ function loadFinally(is, name, hasVisited, id) {
     ezX = new Easy({time:msecs, end:MILLI}); //*05
     if (!ns.initEasies(obj, hasVisited))
         return;
-    //----------------
+    //-------------
+    if (is.easings) {   // only easings has <input-num>, must precede updateAll()
+        for (obj of document.getElementsByTagName("input-num")) {
+            obj.autoResize = true; // this module loads after the <input-num>'s
+            obj.resize();          // connectedCallback(), and it adds fonts.
+        }
+    }
     ns.updateAll(obj);
-    if (!is.multi)      // easings and color resize must follow updateAll()
+    if (!is.multi) {    // easings and color resize must follow updateAll()
         window.dispatchEvent(dummyEvent(RESIZE, "hasntVisited", !hasVisited));
-
+    }
     Object.seal(g);
     Object.seal(elms);  // can't freeze: color page elms.named is variable
 

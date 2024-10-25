@@ -5,7 +5,7 @@ import {E, P} from "../src/raf.js";
 import {raf} from "./load.js";
 import {frameIndex, updateCounters, updateTime, setDuration, prePlay}
              from "./update.js";
-import {MILLI, ZERO, ONE, TWO, LITE, CHANGE, elms, g, toggleClass, errorAlert}
+import {MILLI, ZERO, ONE, TWO, LITE, CHANGE, elms, g, errorAlert}
              from "./common.js";
 
 let ns; // _update.js namespace
@@ -16,7 +16,7 @@ let ns; // _update.js namespace
 // pausing: RESUME STOP  = hiLite, re-enable everything else
 // arrived: PLAY   RESET = play disabled
 
-// <state-button>.value
+// <state-btn>.value
 const PLAY   = ZERO; // #play
 const PAUSE  = ONE;
 const RESUME = TWO;
@@ -91,14 +91,14 @@ function resetPlay(isPausing) {
     disablePlay(false, isPausing);
     elms.play.value = isPausing ? RESUME : PLAY;
     if (elms.mid)
-        toggleClass(elms.mid, LITE[0], false); // easings only
+        elms.mid.classList.toggle(LITE[0], false); // easings only
     return isPausing;
 }
 // formatPlay() helps changePlay(), resetPlay()
 function formatPlay(isPlaying) { // isPlaying is true or false, never undefined
     const lite = LITE[1];        // "hi"
     for (var elm of g.playback)  // [#play, #stop]
-        toggleClass(elm, lite, isPlaying);
+        elm.classList.toggle(lite, isPlaying);
 }
 // disablePlay() helps changePlay(), changeStop() via resetPlay()
 function disablePlay(isPlaying, isPausing) {

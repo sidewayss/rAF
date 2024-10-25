@@ -7,7 +7,6 @@ import {ezX}                    from "../load.js";
 import {setPrefix}              from "../named.js";
 import {changeStop}             from "../play.js";
 import {setLocal, setLocalBool} from "../local-storage.js";
-import {invalidInput}           from "../input-number.js";
 import {msecs, frames, timeFrames, updateTime}       from "../update.js";
 import {CHANGE, CLICK, INPUT, MEASER_, elms, g, is, boolToString,
         addEventToElms, addEventsByElm, orUndefined} from "../common.js";
@@ -15,13 +14,16 @@ import {CHANGE, CLICK, INPUT, MEASER_, elms, g, is, boolToString,
 import {Color, ezColor, refRange, resizeWindow} from "./_load.js";
 import {refresh, oneCounter}                    from "./_update.js";
 
-const btnText = { // textContent: boolean as number is index into each array
+
+const
+invalids = new Set,
+btnText  = { // textContent: boolean as number is index into each array
     compare: ["switch_left", "switch_right"],
     roundT:  ["repeat",      "repeat_on"   ],
     collapse:["expand_less", "expand_more" ]
 };
 //==============================================================================
-// loadEvents() is called exclusively by loadIt(), helps keep stuff private
+// loadEvents() is called exclusively by load(), helps keep stuff private
 function loadEvents() {
     addEventsByElm(CLICK,  g.boolBtns,  click);
     addEventsByElm(INPUT,  [elms.time], input);
@@ -198,6 +200,16 @@ const click = {
     }
 };
 //==============================================================================
+// invalidInput() helps input.text(), more than one input can be invalid,
+//                #x and #play disabled if any are invalid.
+function invalidInput(elm, b) {
+    elm.classList.toggle("invalid", b);
+    invalids[b ? "add" : "delete"](elm);
+
+    b = Boolean(invalids.size);
+    elms.x   .disabled = b;
+    elms.play.disabled = b;
+}
 // updateOne() helps input.color() and change.space(), updates one of the
 //             4 pairs of coordinates & text: start|end x left|right.
 // arguments:  se = g.start|end, lr = g.left|right
@@ -208,12 +220,10 @@ function updateOne(se, lr) {
     se[lr.id] = coords;
     oneCounter(coords, lr, se.id);
 }
-
 // timeFactor() helps change.time() and initEasies(), only if (isMulti)
 function timeFactor(arr) {
     return msecs / Math.max(...arr.map(obj => obj.time));
 }
-
 // outOfGamut() helps change.gamut(), oneCounter() format out-of-gamut labels
 function outOfGamut(id, color, gamut = elms.gamut.value,
                              inGamut = color.inGamut(gamut)) { // see collapse()
