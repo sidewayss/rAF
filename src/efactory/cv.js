@@ -2,8 +2,7 @@ export {getCV, parseUn, current};
 
 import {cjsTo} from "./color.js";
 
-import {CFunc}      from "../prop/func.js";
-import {Ez, Fn, Is} from "../raf.js"
+import {C, Ez, Fn, Is} from "../raf.js"
 //==============================================================================
 function getCV(o, hasElms) {
     let cv = o.currentValue ?? o.cV;
@@ -132,7 +131,7 @@ function current(o, cv) {
     else {                   // parse the DOM values into numeric arrays
         o.cv = cv.map(v => { // color values might need a default alpha = "1"
             v = o.prop.parse(v, o.func, o.u);
-            if (o.prop.isColor && v.length == CFunc.A && o.mask.at(-1) == CFunc.A)
+            if (o.prop.isColor && v.length == C.a && o.mask.at(-1) == C.a)
                 v.push("1");
             return v;
         });

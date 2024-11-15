@@ -7,8 +7,6 @@
 export {fromColor, rgbToHxx, rgbToHsl, rgbToHwb};
 
 import {C, U, Rx, E, Ez, F, Fn} from "../raf.js";
-
-import {CFunc} from "./func.js";
 //==============================================================================
 // fromColor() parses a DOM value, converts hex to rgb() and color names to
 //             rgb(), hsl(), or hwb(), returns an array of 3 or 4 function
@@ -23,7 +21,7 @@ function fromColor(v, toNum, f = F.rgb, u = f._u) {
         Ez._invalidErr("color function", f.name, PFactory.funcC);
     //-------------------
     let arr, canConvert;
-    const A = CFunc.A;
+    const A = C.a;
 
     if (v.at(-1) == E.rp) {     // v == function string
         arr = v.split(Rx.sepfunc);
@@ -86,7 +84,7 @@ function fromColor(v, toNum, f = F.rgb, u = f._u) {
             else {              // hue is in degrees
                 const uHue = u[f.hueIndex];
                 if (uHue && uHue != U.deg)
-                    arr[f.hueIndex] *= Ez[uHue];
+                    arr[f.hueIndex] *= E[uHue];
             }
         }
         else                    // v is probably a user value (vs. a DOM value)
@@ -105,7 +103,7 @@ function fromColor(v, toNum, f = F.rgb, u = f._u) {
 function toPercent(arr, u, skipAlpha) {
     let i = 0;
     if (skipAlpha)
-        u = u.slice(0, CFunc.A);
+        u = u.slice(0, C.a);
     while ((i = u.indexOf(U.pct, i)) >= 0)
         arr[i] /= 2.55;
 }
@@ -140,7 +138,7 @@ function rgbToHwb(rgb, u) {
 // toHxx() helps rgbToHsl() and rgbToHwb() convert hue and max/min/diff
 function toHxx(arr, u) {
     const R = 0, G = 1, B = 2,    // arr can contain numeric strings w/o units
-    rgb = arr.slice(0, CFunc.A)   // strip alpha
+    rgb = arr.slice(0, C.a)       // strip alpha
              .map(v => v / 255),  // convert 0-255 to 0-1
     obj = minMaxDiff(rgb);        // without arr.slice() this could be a problem
 
@@ -158,7 +156,7 @@ function toHxx(arr, u) {
         }
         hue = constrainAngle(hue * 60);
         if (u && u != U.deg)
-            hue *= Ez[u];         // convert degrees to grad, rad, or turn
+            hue *= E[u];          // convert degrees to grad, rad, or turn
         obj.hue = hue;            // H
     }
     return obj;

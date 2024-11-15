@@ -1,16 +1,12 @@
-import {Is, Rx} from "./raf.js";
+import {E, Is, Rx} from "./raf.js";
 
 import {fromColor} from "./prop/color-convert.js";
 
-// Ez is a factotem object. Many of its functions are eminently inlineable.
-// PFactory.init() adds bitmask & argument array properties, then freezes it.
+// Ez is a factotem collection of functions. Some are general purpose and others
+// are unlikely to be used outside of rAF. rafInit() adds more toNumber() arg
+// array properties, then freezes it.
 export const Ez = {
-    rad : Math.PI / 180, // non-bitmask values for <angle> to
-    grad: 10 / 9,        // convert from degrees to other units.
-    turn: 1 / 360,
-
     // Popular arguments for Ez.toNumber() and Easy.legNumber()
-    // See bottom of PFactory.init() for more of these defined dynamically
     defZero: [0, true],         // arguments[2,3]  : >=0, default:0
     grThan0: [   true,  true],  // arguments[  3,4]: > 0
     notNeg : [   true,  false],                   // >=0
@@ -35,7 +31,7 @@ export const Ez = {
         return Object.assign(clone, obj);
     },
 //  newArray2D() creates a 2D array of length, filled with arrays of args[0]
-//               new Array(undefined) !== new Array(), but ... syntax fixes it
+//               Array(undefined) !== Array(), but ... syntax fixes it
     newArray2D(length, ...args) {
         return Array.from({length}, () => Array(...args));
     },
@@ -65,6 +61,20 @@ export const Ez = {
         }
         return twoD;
     },
+// =============================================================================
+// splitIO() splits two-legged io values into a 2 element array
+//           first leg = in:0, out:1, second leg = _in:2, _out:4
+    splitIO(io, fillTwo) {
+        return io > E.out ? [io % 2, (io & 4) / 4] // 4 = _out = 2nd leg E.out
+            : fillTwo    ? [io, io]
+                        : [io];
+    },
+// joinIO() joins two one-legged io values into a two-legged io value
+//          either or both arguments can be undefined
+    joinIO(io1, io2) {
+        return (io1 ? 1 : 0) + (io2 ? 4 : 2);
+    },
+
 // =============================================================================
 //  clamp() clamps val between min and max limits
     clamp(min, val, max) {
@@ -119,7 +129,7 @@ export const Ez = {
 //                 converting color1.spaceId to color2.prop_name for alt coords.
 //                 Doesn't do a lot, but the function name is informative.
     kebabToSnake(str) {
-        return str.replaceAll("-", "_");
+        return str.replace(/-/g, "_");
     },
 // =============================================================================
 // Conversion functions:

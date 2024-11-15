@@ -18,7 +18,8 @@ LEFT  = "left",
 RIGHT = "right",
 data  = {[LEFT]:null, [RIGHT]:null};
 //==============================================================================
-// redraw() called by updateAll(), changeStop(), input.color(), change.space()
+// refresh() called by updateAll(), input.text(), change.time(), change.space(),
+//           and click.compare().
 function refresh() {
     pseudoAnimate();
     inputX();

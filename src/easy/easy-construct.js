@@ -1,7 +1,7 @@
 // Not exported by raf.js
 // export everything
 export {prepLegs, override, spreadToEmpties, legText, legNumber, legUnit,
-        getType, getIO, splitIO, joinIO, toBezier, toNumberArray};
+        getType, getIO, toBezier, toNumberArray};
 
 import {E, Is, Ez, Easy} from "../raf.js";
 
@@ -174,18 +174,6 @@ function getIO(io, defaultEase = E.in) {
         default:
             Ez._invalidErr(name, io, Easy._listE(name));
     }
-}
-// splitIO() splits two-legged io values into a 2 element array
-//           first leg = in:0, out:1, second leg = _in:2, _out:4
-function splitIO(io, fillTwo) {
-    return io > E.out ? [io % 2, (io & 4) / 4] // 4 = _out = 2nd leg E.out
-         : fillTwo    ? [io, io]
-                      : [io];
-}
-// joinIO() joins two one-legged io values into a two-legged io value
-//          either or both arguments can be undefined
-function joinIO(io1, io2) {
-    return (io1 ? 1 : 0) + (io2 ? 4 : 2);
 }
 //==============================================================================
 function toBezier(val, time, name = Easy.type[E.bezier]) {

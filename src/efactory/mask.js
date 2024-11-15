@@ -1,14 +1,13 @@
 export {mask};
 
-import {PBase}    from "../prop/pbase.js";
-import {Ez, Easy} from "../raf.js"
+import {PBase}        from "../prop/pbase.js";
+import {Is, Ez, Easy} from "../raf.js"
 //==============================================================================
 // mask() sets o.mask to a dense array of sorted argument indexes.
 //        Also processes o.easies, which must align with o.mask.
 //        For all user mask types except dense array, o.mask is code-generated.
 //        Valid user mask types are:
-//         - dense array:  user-generated, validated by PBase.prototype._mask())
-//         - bitmask int:  Ez defines them for specific func/prop arguments
+//         - dense array:  user-generated, validated by PBase.prototype._mask()
 //         - sparse array: non-empty slots = masked indexes
 //         - o.config:     sequential indexes 0 to array.length - 1
 //         - undefined:    sequential indexes 0 to o.r - 1
@@ -16,7 +15,7 @@ function mask(o) {
     let n;
     const count = o.isNet ? Math.min(...o.cv.map(arr => arr.length))
                           : o.c;
-    if (o.mask) {                   // user mask: validate/format it
+    if (Is.def(o.mask)) {           // user mask: validate/format it
         if (o.prop)
             o.mask = o.prop._mask(o.mask, o.func, count);
         else                        // prop optional for pseudo-animation
@@ -46,7 +45,7 @@ function mask(o) {
     const easies = "easies";        // o.easies cannot be sparse and must be
     if (o[easies])                  // the same length as o.mask.
         o[easies] = Ez.toArray(o[easies], easies, Easy._validate)
-    //------------
+
     if (!o.mask) {                  // undefined and/or pseudo without prop
         if (!o.r) {
             if (!n)

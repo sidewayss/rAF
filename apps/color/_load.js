@@ -11,7 +11,6 @@ import Color from "https://colorjs.io/dist/color.js";
 //import Color from "./dist/color.js";
 
 import {C, U, E, Fn, F, P, Is, Ez, Easy} from "../../src/raf.js";
-import {CFunc} from "../../src/prop/func.js"; //!!need better way to access CFunc.A!!
 
 import {LINEAR} from "../named.js";
 import {msecs, pad, newEasies, updateTime, updateCounters}  from "../update.js";
@@ -30,7 +29,7 @@ const postIts = [];
 // load() is called by loadCommon(), sRGB255 is a custom color space for the
 //          original rgb() range of 0-255.
 function load(_, hasVisited) {
-    let bw, css, elm, id, max, min, obj, opt, rng, space, txt;
+    let css, elm, id, max, min, obj, opt, rng, space, txt;
     const
     ColorSpace = Color.Space,           // the ColorSpace class
     registry   = Color.spaces,          // all the registered color spaces
@@ -136,16 +135,7 @@ function load(_, hasVisited) {
     pairOfOthers(g.left, g.right);  //!!is g.left|right.other referenced anywhere??
     g.leftRight = [g.left,  g.right];
     g.startEnd  = [g.start, g.end];
-    for (id of START_END) {
-        css = g[id].color.style;                // <input type="color">:absolute
-        elm = g[id].canvas;                     // <div>
-        bw  = P.borderWidth.getn(elm);          // border-width offset
-        obj = elm.getBoundingClientRect();      // move color to cover canvas
-        css.width  = obj.width  + U.px;         // canvas always visible
-        css.height = obj.height + U.px;         // color has opacity:0
-        css.left   = obj.left + bw + U.px;      // except on :hover and :active
-        css.top    = obj.top  + bw + bw + U.px; // bw x 2 for margin-top:-1px??
-    }
+
     pad.frame = 4;
     return loadEvents();
 }
@@ -215,7 +205,7 @@ function initEasies(obj, hasVisited) {  // event handlers populate the form and
 
     evt = dummyEvent(INPUT, LOADING);
     for (lrse of g.startEnd)            // dispatchEvent() avoids im/exports
-        lrse.text.dispatchEvent(evt);   // call input.color() for both
+        lrse.text.dispatchEvent(evt);   // call input.text() for both
 
     const b = newEasies();              // instantiate a new, empty g.easies
     if (b) {                            // ezX added/deleted in newTargets()
@@ -355,7 +345,7 @@ function easeFinally(af, ezs, ez, wait, is) {
     prop = P.borderColor;                   // alpha = borderOpacity
     mask = C.alpha;                         // mask as bitmask integer
     elm  = Array.from(document.getElementsByClassName("border-gray"));
-    end  = prop.getn(elm[0])[CFunc.A];      // --border-gray: #0002;
+    end  = prop.getn(elm[0])[C.alpha];      // --border-gray: #0002;
     elm.push(elms.named);
     ez.newTarget({end, prop, elm, mask});   // start:0
     postIts.push(...elm.map(lm => [prop, lm]));
@@ -377,12 +367,12 @@ function postFinally() {
 //==============================================================================
 // resizeWindow() additionally called by click.collapse()
 function resizeWindow(_, isCollapsed) {
-    let prop;
     const
-        div    = elms.controls,
-        canvas = elms.canvas.style,
-        BORDER = "1px solid black"
-    ;
+    div    = elms.controls,
+    canvas = elms.canvas.style,
+    BORDER = "1px solid black";
+
+    let prop;
     if (window.innerWidth > controlsWidth + padding + padding + 2) {
         canvas.top = "";
         div.style.border = BORDER;
@@ -400,5 +390,16 @@ function resizeWindow(_, isCollapsed) {
         canvas.borderTop = BORDER;              // 1 for border width
         for (prop of [P.pL, P.pR, P.border])
             prop.set(div, "");
+    }
+
+    let css, id, elm, obj;                  // <input type="color"> both have
+    for (id of START_END) {                 // position:absolute, their size and
+        css = g[id].picker.style;           // position match their canvas, the
+        elm = g[id].canvas;                 // canvas is always visible and the
+        obj = elm.getBoundingClientRect();  // <input> has opacity:0, except on
+        css.width  = obj.width  + U.px;     // :hover and :active.
+        css.height = obj.height + U.px;
+        css.left   = obj.left   + U.px;     // width, height, left are the same
+        css.top    = obj.top    + U.px;     // for both elements...
     }
 }

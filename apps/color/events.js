@@ -29,9 +29,9 @@ function loadEvents() {
     addEventsByElm(INPUT,  [elms.time], input);
     addEventsByElm(CHANGE, [elms.time, elms.type, elms.gamut], change);
 
-    addEventToElms(INPUT,  [elms.startText,  elms.endText],     input .text);
-    addEventToElms(CHANGE, [elms.startColor, elms.endColor],    change.color);
-    addEventToElms(CHANGE, [elms.leftSpaces, elms.rightSpaces], change.space);
+    addEventToElms(INPUT,  [elms.startText,   elms.endText],     input .text);
+    addEventToElms(CHANGE, [elms.startPicker, elms.endPicker],   change.color);
+    addEventToElms(CHANGE, [elms.leftSpaces,  elms.rightSpaces], change.space);
 
     change.type();              // sets isMulti
     return is({multi:isMulti});
@@ -129,12 +129,12 @@ const change = {
             elms.named.dispatchEvent(new Event(CHANGE)); // calls openNamed()
         }
     },
-    color(evt) {  // <input type="color"> g.startEnd.color, value = hex notation
+    color(evt) { // <input type="color"> g.startEnd.picker, value = hex notation
         const
         tar = evt.target,
         txt = g[getCamel(tar)].text;
         txt.value = tar.value;
-        input.color({target:txt});
+        input.text({target:txt});
     },
     gamut(evt) {  // <select id="gamut"> runs outOfGamut() for start, end, value
         const
@@ -210,7 +210,7 @@ function invalidInput(elm, b) {
     elms.x   .disabled = b;
     elms.play.disabled = b;
 }
-// updateOne() helps input.color() and change.space(), updates one of the
+// updateOne() helps input.text() and change.space(), updates one of the
 //             4 pairs of coordinates & text: start|end x left|right.
 // arguments:  se = g.start|end, lr = g.left|right
 // se[lr.id] = g.start|end.left|right = color coordinates, Array

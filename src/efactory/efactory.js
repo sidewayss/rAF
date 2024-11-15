@@ -1,15 +1,7 @@
-// Not exported by raf.js
-// This module is its create() function, literally. Everything else is called
-// exclusively by create(), so the module is effectively one huge function.
-// It is broken out into sub-functions to make it more manageable and readable.
-// It could be broken into sub-modules, but the sub-module functions will still
-// only be imported into, and called from, here. This way at least you know the
-// scope & size of the code in one place, instead of having to dig through
-// however many modules it might occupy. Maybe there should be a separate
-// easer/ folder and each sub-function of create() could be a module...
-export {create};
-
-// local imports, in order of use by create()
+export {create};  // not exported by raf.js
+// The sum of this directory's modules is one large function: create().
+// All the other modules and their exported functions are a just way to break
+// it up into manageable chunks for readability/navigation. In run-time order:
 import {getCV, parseUn, current}  from "./cv.js";
 import {color}                    from "./color.js";
 import {getFunc, urcfa, optional} from "./urcfa.js";
@@ -18,16 +10,13 @@ import {mask}                     from "./mask.js";
 import {maskCV}                   from "./maskCV.js";
 import {endToDist}                from "./endToDist.js";
 import {plugCV}                   from "./plugCV.js";
-import {calcEaser, calcMEaser, calcByElm, calcNoElms} from "./calcs.js";
+import {calcEaser, calcMEaser,
+        calcByElm, calcNoElms}    from "./calcs.js";
 
 import {PBase}     from "../prop/pbase.js";
 import {E, Ez, Is} from "../raf.js"
 //==============================================================================
-// create() instantiates a subclass of EBase and returns it. Internally, the b
-//          arg is always defined and is the initial error check for Easer vs
-//          MEaser. The q and cls args are purely for error messaging. b is set
-//          to true by default to allow external clients to call create with
-//          only the o and set args (or only o) and w/o the error check.
+// create() instantiates a bottom-level subclass of EBase and returns it.
 function create(o, set, isEasies) { // start by validating o.properties:
     if (Is.def(set) && (isEasies ? !o.easies : Boolean(o.easies))) {
         const arr = isEasies ? ["single", "Easy",   "Easies"]
@@ -59,7 +48,7 @@ function create(o, set, isEasies) { // start by validating o.properties:
     if (o.bAbE  || o.byArgByElm)    // 2D arrays are [arg[elm]]
         o.bAbE  = true;
                                     // compute and assign values, params, etc.:
-    cv = getCV(o, hasElms);         // gotta get o.cv early for arg count, etc.
+    cv = getCV(o, hasElms);         // gotta get o.cv early for arg count
     color  (o);                     // o.cjs defined = ignore o.func
     getFunc(o, cv);                 // getFunc() can set o.func
     urcfa  (o);                     // addend, factor, count, required, units
@@ -111,11 +100,11 @@ function create(o, set, isEasies) { // start by validating o.properties:
 //==============================================================================
 // Factor is well validated if it passes through endToDist(). Other than that,
 // config params are not as well validated, and maybe it could be centralized...
-// validateParams() validates that all cfg.param values are numeric and
-//  forcibly converts them to numbers. It balks at infinite values, as even
-//  for max and min they are pointless. For factor, it balks at zero values.
-//  Should be called after maskCV(), when all the params are finally set.
-//  It would prevent the need to call isNaN() in defaultToZero().
+// validateParams() validates that all cfg.param values are numeric and forcibly
+// converts them to numbers. It balks at infinite values, as even for max and
+// min they are pointless. For factor, it balks at zero values.
+// It should be called after maskCV(), when all the params are finally set.
+// It would prevent the need to call isNaN() in defaultToZero().
 //!!To be evaluated and maybe completed!!
 //!!function validateParams(o) {
 //!!    let cfg, val;

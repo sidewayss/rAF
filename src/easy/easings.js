@@ -1,6 +1,6 @@
 // Not exported by raf.js, easings is the only export, no imports.
 //==============================================================================
-// Easing calculators, all static:
+// Easing calculators:
 // #powIn(), #powOut(), and #bezier() all refer to *this* as a leg object.
 // Except for #powIn(), #powOut(), and #bezier(), these methods are based on:
 // https://github.com/ai/easings.net/blob/master/src/easings/easingsFunctions.ts

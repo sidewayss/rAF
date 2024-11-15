@@ -1,7 +1,6 @@
 export {getFunc, urcfa, optional, faDelete};
 
-import {CFunc}        from "../prop/func.js";
-import {E, Ez, F, Is} from "../raf.js"
+import {C, E, Ez, F, Is} from "../raf.js"
 //==============================================================================
 function getFunc(o, cv) {
     if (!o.prop || o.cjs)
@@ -43,9 +42,9 @@ function urcfa(o) {
     if (o.prop && !o.isNet) {
         o.u = o.units               // o.u = units, prop provides default
            ?? o.prop._unitz(o.func);
-        o.r = o.cjs ? CFunc.A       // o.r = required arg count, constant
+        o.r = o.cjs ? C.a           // o.r = required arg count, constant
                     : o.prop.required(o.func);
-        o.c = o.cjs ? CFunc.A + 1   // o.c = total arg count, variable
+        o.c = o.cjs ? C.a + 1       // o.c = total arg count, variable
                     : o.prop.count(o.func);
         o.maxArgs = o.c;            // in case o.c changes
     }
@@ -138,11 +137,11 @@ function faDelete(arr, isAddend) {
 // optional() sets o.c to the actual number of arguments provided, adjusting it
 //            downward if optional arguments are not masked. current() can
 //            adjust it back up if current values includes more arguments.
-function optional(o) { // not for o.isNet
+function optional(o) { // not used by o.isNet
     // (count == required || count = mask.length)
     if (o.c == o.r || o.c == o.lm) return;
     //-------------------------------------
-    o.c = Math.max(o.r, o.mask.at(-1) + 1);
+    o.c = Math.max(o.r, 1 + (o.mask?.at(-1) ?? 0));
     if (o.c == o.lm)
         o.maskAll = true;
 }

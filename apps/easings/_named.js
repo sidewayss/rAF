@@ -1,8 +1,7 @@
 export {formFromObj, objFromForm, updateNamed, ok};
 export let objEz;
 
-import {E, Is}  from "../../src/raf.js"
-import {joinIO} from "../../src/easy/easy-construct.js";
+import {E, Ez, Is}  from "../../src/raf.js"
 
 import {formatNumber} from "../update.js";
 import {INPUT, elms, g, orUndefined, elseUndefined} from "../common.js";
@@ -35,7 +34,7 @@ function formFromObj(obj, hasVisited) {
     leg0 = obj.legs?.[0],
     leg1 = obj.legs?.[1];
     g.type = obj.type ?? leg0?.type ?? E.linear;
-    g.io   = obj.io   ?? (leg0 ? joinIO(leg0.io, leg1.io) : E.in);
+    g.io   = obj.io   ?? (leg0 ? Ez.joinIO(leg0.io, leg1.io) : E.in);
     elms.type.value = g.type;
     elms.io  .value = g.io;
 

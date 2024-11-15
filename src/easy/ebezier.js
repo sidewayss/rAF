@@ -1,6 +1,11 @@
-// This module is based on ...links - I had them and now they're gone!!//!!
-// and thus requires this header:
-/*
+/* This module is based on:
+ *  https://chromium.googlesource.com/chromium/blink/+/master/Source/platform/animation/UnitBezier.h
+ * and the last function in this file, accuracyForDuration():
+ *  https://chromium.googlesource.com/chromium/blink/+/refs/heads/main/Source/platform/animation/AnimationUtilities.h
+ * which I assume is all based on:
+ *  https://github.com/WebKit/WebKit/blob/main/Source/WebCore/platform/graphics/UnitBezier.h
+ * and thus requires this header:
+ ****************************************************
  * Copyright (C) 2008 Apple Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without

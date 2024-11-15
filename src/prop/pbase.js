@@ -106,28 +106,30 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
     }
 //==============================================================================
 //  _mask() returns an argument mask as a dense array of argument indexes.
-//   The m argument can be a dense or sparse array, or an integer bitmask. If
-//   it is a dense array, _mask() validates the contents to prevent obscure
-//   errors later. Otherwise it auto-generates the mask from the m argument,
-//   ensuring that the returned mask is correctly formatted.
-//   0 is not a valid bitmask value. {mask:0} is ignored and calculate() will
-//   spread the eased value across arguments. If you want to mask only the
-//   first arg of a prop|func that has no Ez.bitmask values, use {mask:[0]}.
+//   The m argument can be a dense array of indexes, a sparse array of values,
+//   or a single number. Numbers are wrapped in an array. Sparse arrays are
+//   converted to dense arrays of the defined indexes. Dense arrays have their
+//   contents validated to prevent obscure errors later.
     _mask(m, f = this.func, c = this.count(f)) {
-        let   name = "mask";
-        const isAm = Is.A(m);
-        if (!isAm)
-            try {
-                m = Ez.toNumber(m, name, ...Ez.intGrThan0, true);
+        let name = "mask";
+        if (!Is.A(m))
+            try {                             // m can't be undefined
+                m = [Ez.toNumber(m, name, ...Ez.intGrThan0, true)];
             } catch {
                 Ez._mustBeErr(name, "a positive integer or an Array");
             }
         //-------
         let mask;
-        if (isAm && !m.includes(undefined)) { // m is a dense array
+        if (m.includes(undefined)) {          // m is a sparse array of whatever
+            mask = [];
+            for (i = 0; i < c; i++)           // convert it to dense mask array
+                if (Is.def(m[i]))
+                    mask.push(i);
+        }
+        else {                                // m is already a dense array
             mask = Ez.toArray(m, name, (val, nm) => {
                 return Ez.toNumber(val, nm, 0, ...Ez.intNotNeg, true);
-            });                               // defaultValue = 0 is meaningless
+            });                               // defaultValue 0 is meaningless
             name += " values";
             Ez._mustAscendErr(mask, name);
             if (new Set(mask).size != mask.length)
@@ -135,26 +137,6 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
             else if (mask.at(-1) >= c)
                 Ez._mustBeErr(name, `< ${c}, the max number of arguments for `
                                   + `${this.key}: ${mask}`);
-        }
-        else {                                // generate the dense array
-            let i;
-            mask = [];
-            if (isAm) {                       // m is a sparse array
-                for (i = 0; i < c; i++)
-                    if (Is.def(m[i]))
-                        mask.push(i);
-            }
-            else {                            // m is a bitmask
-                if (this === P.transSVG && f === F.r) {
-                    if (m & Ez.y)     m += Ez.y; // SVG rotate() is funky
-                    if (m & Ez.x)     m += Ez.x;
-                    if (m & Ez.angle) m -= Ez.angle - 1;
-                }
-                let j;
-                for (i = 0, j = 1; i < c && j <= m; i++, j *= 2)
-                    if (m & j)
-                        mask.push(i);
-            }
         }
         return mask;
     }
@@ -293,7 +275,7 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
             throw new Error("Prop.prototype.parse() is not designed for "
                 + `"unstructured" ${this.isUn ? "properties" : "functions"} `
                 + `such as ${this.isUn ? this.key : f.key + "()"}.`);
-        else if (this.isColor)      // function, #hex, or color name
+        else if (this.isColor)      // function, "#hex", or color name
             return fromColor(v, false, f, u);
         else if (v.at(-1) == E.rp)  // non-color function
             return v.split(Rx.sepfunc).slice(1, -1);

@@ -2,7 +2,7 @@
 export {Func, CFunc, ColorFunc, SRFunc};
 
 import {PFactory, ANGLES, EMPTY_PCT} from "./pfactory.js";
-import {E, Ez, Fn, Is, U} from "../raf.js";
+import {C, E, Ez, Fn, Is, U} from "../raf.js";
 //==============================================================================
 class Func {                    //\ Func: CSS or SVG function
     #units; #separator;          // c = count, r = required, s = separator
@@ -62,9 +62,9 @@ class Func {                    //\ Func: CSS or SVG function
                 if (this.isHXX)
                     this.#units[0] = val;
                 else    // lch, oklch
-                    this.#units.fill(val, 0, CFunc.A - 1);
+                    this.#units.fill(val, 0, C.a - 1);
             else
-                this.#units.fill(val, 0, CFunc.A);
+                this.#units.fill(val, 0, C.a);
         else
             this.isSRFunc     ? this.#units.fill(val)
           : this.isDropShadow ? this.#units.fill(val, 0, 3)
@@ -113,22 +113,21 @@ class Func {                    //\ Func: CSS or SVG function
 }
 //==============================================================================
 class CFunc extends Func {      //\ CFunc: CSS color functions
-    static _funcs = {};          // see PFactory.alphaUnits(), hueUnits()
-    static A = 3;                // alpha value index in arguments
+    static _funcs = {}; // see PFactory.alphaUnits(), hueUnits()
     constructor(name, key, units, utype) {
         const u = (name[0] == "h")
                 ? [units, U.pct, U.pct, units]  // units = ""
                 : [units, units, units, units]; // alpha has its own get/setters
 
-        super(name, key, u, utype, CFunc.A + 1, CFunc.A, [E.sp, E.sp, " / "]);
+        super(name, key, u, utype, C.a + 1, C.a, [E.sp, E.sp, " / "]);
 
         CFunc._funcs[name] = this;
         Ez.is(this, "CFunc");
     }
 // this.alphaUnits are the units for the alpha argument: "" or U.pct
-    get alphaUnits() { return this._u[CFunc.A]; }
+    get alphaUnits() { return this._u[C.a]; }
     set alphaUnits(val) {
-        this._u[CFunc.A] = PFactory._validUnits(val, "alphaUnits", EMPTY_PCT);
+        this._u[C.a] = PFactory._validUnits(val, "alphaUnits", EMPTY_PCT);
     }
 // this.hueUnits are the units for the hue argument in hsl, hwb, lch, oklch
     get hueUnits() {

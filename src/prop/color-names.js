@@ -1,4 +1,4 @@
-export const C = { // PFactory.init() adds bitmasks for argument indexes
+export const C = { // PFactory.init() adds enums for function argument indexes
     aliceblue           : {rgb:[240,248,255], hsl:[208.0,100.0, 97.1], hwb:[208.0, 94.1,  0.0]},
     antiquewhite        : {rgb:[250,235,215], hsl:[ 34.3, 77.8, 91.2], hwb:[ 34.3, 84.3,  2.0]},
     aqua                : {rgb:[  0,255,255], hsl:[180.0,100.0, 50.0], hwb:[180.0,  0.0,  0.0]},

@@ -59,7 +59,7 @@ body {
   opacity:1;
   filter:saturate(1.5) contrast(1.5);
 }
-input[type=text] { /* #startColor, #endColor */
+input[type=text] {
   flex-grow: 1;
   align-self:stretch;
   border:var(--border-gray);
@@ -129,15 +129,15 @@ input[type=text]:focus {
   width:calc(1rem + var(--9-16ths)); /* same as <select> height */
   border:1px solid black;
 }
-#startColor, #endColor {
+#startPicker, #endPicker {
   position:absolute;
   opacity:0;
   border-radius:0;
 }
-#startColor:hover, #endColor:hover {
+#startPicker:hover, #endPicker:hover {
   opacity:0.6;
 }
-#startColor:active, #endColor:active {
+#startPicker:active, #endPicker:active {
   opacity:1;
 }
 #leftCanvas, #rightCanvas { /* children of #canvas */

@@ -3,7 +3,7 @@ FPS = 60,  // assumes 60hz, but adjusts to reality at run-time
 ezX, raf,  // Easy, AFrame
 preDoc;    // prefix for this document, see local-storage.js
 
-import {E, Ez, P, PFactory, Easy, Easies, AFrame} from "../src/raf.js";
+import {E, Ez, P, Easy, Easies, AFrame, rAFInit} from "../src/raf.js";
 
 import {getNamed, getNamedObj, getNamedBoth, setNamed} from "./local-storage.js";
 import {msecs, loadUpdate, formatNumber}               from "./update.js";
@@ -68,7 +68,7 @@ function loadCommon() {
         for (i = 1; i <= COUNT; i++)
             elm.add(new Option(i));
                                       // import page's _load.js and run load():
-    PFactory.init();                  // must init raf.js infrastructure first
+    rAFInit();                        // must init raf.js infrastructure first
     id = document.documentElement.id;
     const dir = `./${id}/`;           // directory path relative to this module
     import(`${dir}_load.js`).then(namespace => {

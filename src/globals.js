@@ -2,15 +2,21 @@ export {E, Ease, F, Fn, HD, Is, M, P, Pn, Rx, U};
 
 import {Ez} from "./raf.js";
 
-// All consts, except Is, are fully or partially populated by PFactory.init():
+// All the consts objects except Rx and Is are populated in PFactory.init()
 const U  = {pct:"%"};   // units, e.g. "px", "deg"
-const M  = {};          // bitmasks for matrix() and matrix3d()
-const HD = {};          // bitmasks for CSS L4 (UHD) color functions
+const M  = {};          // enum of arg indexes for matrix() and matrix3d()
+const HD = {};          // enum of arg indexes for CSS L4 (UHD) color functions
 const E  = {            // Easy-related constants, PFactory.init() adds enums
     cV:null, currentValue:null,
     prefix:"E.",        // prefix for accessing E via string
     lp:'(',  rp:')',    // lp, rp, sp, comma because '(', ')',  ' ', and ','
-    sp:' ',  comma:','  // are awkward in code.
+    sp:' ',  comma:',', // are awkward in code.
+    rad :Math.PI / 180, // multipliers to convert from degrees to other units
+    grad:10 / 9,
+    turn:1 / 360,
+    svgRotX: 0,         // SVG rotate() has its own argument order
+    svgRotY: 1,         // CSS rotate shares arg order with rotate3d(), but it
+    svgRotAngle: 2      // has "unstructured" alternate args and arg order.
 };
 const Ease = {          // preset easing names/values
     ease:[{bezier:[0.25, 0.1, 0.25, 1.0]}]// I can't think of a better name
@@ -24,7 +30,9 @@ const Rx = {            // regular expressions
    numBeg:/^-?[\d\.]+/,
    numEnd: /-?[\d\.]+$/
 };
-const Is = {            // boolean functions wrapped in a const, very inlineable
+Object.seal(Rx);
+
+const Is = {            // boolean functions, highly inlineable
     def     (v) { return v !== undefined;  },
     Number  (v) { return typeof v == "number"; },
     String  (v) { return typeof v == "string"; },
@@ -37,7 +45,7 @@ const Is = {            // boolean functions wrapped in a const, very inlineable
         try {           // Array.from() converts iterables and "array-like"
             return (Symbol.iterator in v || v.length >= 0)
                 && !Is.String(v) && !(v instanceof HTMLSelectElement);
-        } catch {       // Strings and <select>s are iterable, but not array-ish
+        } catch {       // String and <select> are iterable, but not arrayish
             return false;
         }
     },
@@ -45,8 +53,9 @@ const Is = {            // boolean functions wrapped in a const, very inlineable
       return (ish ?? Is.Arrayish(v)) && v.some(a => Is.Arrayish(a));
     }
 };
-Object.freeze(Is);     // not populated by PFactory.init()
+Object.seal(Is);
 //==============================================================================
+// The prime targets of PFactory.init():
 const Fn = {};         // function names
 const Pn = {};         // property and attribute names
 const F  = {           // Func, CFunc, ColorFunc, SRFunc instances by name
@@ -85,13 +94,16 @@ const P  = {           // Prop, Bute, PrAtt, HtmlBute instances by name
     hasEvents(elm) {
         return elm.style.pointerEvents != "none";
     },
- // enable() is an anti-pseudo-disable() with a clearly different name
+ // enable() is an inverted pseudo-disabled attribute for SVG and other elements
+ //          that don't have a disabled attribute. It sets pointer-events:none
+ //          and tabIndex = -1 instead. The name is inverted to avoid confusion.
     enable(elms, b, value, i = b ? 0 : -1) {
         P.events(elms, b, value);
         for (const elm of Ez.toElements(elms))
             elm.tabIndex = i;
     }
 };
+// boolNone helps P.displayed() and P.events()
 function boolNone(name, elms, b, value) {
     const val = b ? (value ?? "") : "none";
     for (const elm of Ez.toElements(elms))

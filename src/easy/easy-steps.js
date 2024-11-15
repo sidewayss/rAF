@@ -160,7 +160,7 @@ function stepsToLegs(o, leg, legDist, dist, idx, last, keys) {
     }
     return obj;
 }
-//  static easeSteps() helps stepsToLegs() use an Easy to set the timing or
+//  easeSteps() helps stepsToLegs() use an Easy to set the timing or
 //         values for E.steps. ez cannot be E.increment here because it has
 //         either no end, or no duration; and its legs cannot be E.steps, to
 //         avoid infinite easeSteps loops and because not-eased is linear or

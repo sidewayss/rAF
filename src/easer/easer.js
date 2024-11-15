@@ -3,8 +3,7 @@ export {EBase, Easer, EaserByElm};
 
 import {ECalc} from "./ecalc.js";
 
-import {E, Ez, Is, Easy} from "../raf.js";
-import {CFunc}           from "../prop/func.js"
+import {C, E, Ez, Is, Easy} from "../raf.js";
 
 // A whole lot of crap ends up in this base class because javascript has no
 // multiple inheritance and there are two forks: ME and ByElm.
@@ -13,9 +12,6 @@ class EBase {
     #initByElm; #initial; #isLooping; #isSDE; #loopByElm; #loopElms; #lz; #mask;
     #oneD; #onLoop; #onLoopByElm; #original; #peri; #plays; #prop; #setOne;
     #space; #twoD; #value;
-
-    _eVal;  // run-time evaluate function
-    _set;   // run time assign and set property values
 
     constructor(o) {
         this.#mask = o.mask;        this.#cElms = o.l;
@@ -177,18 +173,15 @@ class EBase {
             Ez._invalidErr(name, val, Easy._listE(name));
     }
 
+// this._eVal is the public property used to evaluate at run-time
 // this.evaluator allows the user to do their own evaluation
     get evaluator()    { return this.#evaluate; }
     set evaluator(val) {
         this.#evaluate = Ez._validFunc(val,  "evaluator");
-     // this._eVal is the public property used at run-time
         this._eVal = this.#evaluate
-                ?? (this.isMEaser ? this.#MEval : this.#Eval);
+                  ?? (this.isMEaser ? (e, i) => e[this.#eKey[i]]
+                                    : (e)    => e[this.#eKey]);
     }
-
-//  eval functions return the correct e.property's value at run-time
-    #Eval (e)    { return e[this.#eKey];    }
-    #MEval(e, i) { return e[this.#eKey[i]]; }
 
 //  MEaser only:
     #tripPlays(val, name, validate) {
@@ -312,9 +305,9 @@ class EBase {
         prop.setIt(elm, arr.join(""));
     }
     #setCjs(prop, elm, arr) { // could be static if this.#cjs passed as argument
-        this.#cjs.coords = arr; // .slice(0, CFunc.A) appears to be unnecessary
-        if (arr[CFunc.A])       // color.js ignores but preserves extra elements
-            this.#cjs.alpha = arr[CFunc.A];
+        this.#cjs.coords = arr; // .slice(0, C.a) appears to be unnecessary
+        if (arr[C.a])           // color.js ignores but preserves extra elements
+            this.#cjs.alpha = arr[C.a];
         prop.setIt(elm, this.#cjs.display(this.#space));
     //!!if (elm.selectorText?.endsWith("abled]") && prop.name == "fill")
     //!!    console.log(prop.name, arr.map(n => n.toFixed(2)));

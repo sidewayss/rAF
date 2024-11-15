@@ -3,7 +3,7 @@ export {PFactory, ANGLES, EMPTY_PCT}; // ANGLES, EMPTY_PCT for func.js:CFunc
 import {Func, CFunc, ColorFunc, SRFunc} from "./func.js"
 import {Prop, Bute, PrAtt, HtmlBute}    from "./prop.js"
 
-import {C, HD, M, U, Is, Rx, E, Ez, F, Fn, P, Pn, Ease, Easy} from "../raf.js";
+import {C, HD, M, U, Is, Rx, E, Ez, F, Fn, P, Pn} from "../raf.js";
 
 // PFactory.init() populates the U, F, Fn, P, Pn objects using these arrays:
 // C = <color>;  Un = gradients and other "unstructured" functions;
@@ -18,8 +18,8 @@ TIMES     = ["ms","s"],
 EMPTY_PCT = ["", "U.pct"];               // ditto .alphaUnits
 //==============================================================================
 const PFactory = {
- // init() populates U, F, Fn, P, Pn, C, HD, Ease, E, Ez, and freezes all but P,
- // Pn. Call it once per session prior to using any of those objects or classes.
+ // init() populates U, F, Fn, P, Pn, C, HD, and freezes all but P, Pn
+ //        call it once per session prior to using any of those objects
     init() {
         if (this.initialized) {
             console.info(Ez._only("PFactory", "initialized once per session"));
@@ -27,7 +27,7 @@ const PFactory = {
         } //-------------------------------
         const FA = [], FL = [], CSSVC = [],
 
-        // functions:
+        // Functions
         funcs   = ["url","var","cubic-bezier"],  //!!can any of these be animated??worth having here??
                   // color funcs
         funcC   = ["rgb","hsl","hwb","lch","oklch","lab","oklab"],
@@ -48,7 +48,7 @@ const PFactory = {
         funcTL  = ["perspective","translateZ"],
         funcTLP = ["translate","translateX","translateY","translate3d"],
 
-        // CSS properties, class Prop:
+        // CSS properties, class Prop
         css   = ["flex-flow","align-items","align-self","justify-content", //!!do any of these animate??
                  "font-family","font-weight","overflow-x","overflow-y",
                  "pointer-events","vector-effect","text-anchor"],
@@ -68,7 +68,7 @@ const PFactory = {
         bgUn  = ["background","background-image","background-size",
                  "background-position","background-position-x","background-position-y"],
 
-        // CSS-SVG property-attributes, class PrAtt:
+        // CSS-SVG property-attributes, class PrAtt
         csSvg = ["font-style","visibility"],
         csSvC = ["fill","stroke","stop-color"],
         csSvN = ["font-size-adjust"],
@@ -76,59 +76,60 @@ const PFactory = {
         csSNP = ["opacity","fill-opacity","stroke-opacity","stop-opacity"],
         csSLP = ["x","y","r","cx","cy","height","width","stroke-width","font-size"],
 
-        // SVG attributes, class Bute:
+        // SVG attributes, class Bute
         svg   = ["class","href","lengthAdjust","preserveAspectRatio","type"], //!!any of these animate??
         svgUn = ["d","points"], // CSS.supports("d","path('')")
         svgN  = ["viewBox","baseFrequency","stdDeviation","surfaceScale"],
         svgN2 = ["azimuth","elevation","k1","k2","k3","rotate","scale","seed","values"],
         svgLP = ["dx","dy","startOffset","textLength","x1","x2","y1","y2"],
 
-        // HTML attributes, class HtmlBute:
+        // HTML attributes, class HtmlBute
         html  = ["value"],      // for <input type="range">
 
-        // Miscellaneous:
+        // Miscellaneous
         vB = ["x","y","w","h"], // SVG viewBox
-        eases = [               // for Ease, see globals.js
-            ["",1.685], ["quad",2], ["cubic",3], ["quart",4], ["quint",5],
-            ...Easy.type.slice(1, 7).map(v => [v,])
-        ];
+
+        _ang = "_ang",    isUn = "isUn",
+        _len = "_len",    _lenPct  = "_lenPct",
+        _pct = "_pct",    _lenPctN = "_lenPctN",
+        _noU = "_noU",    _noUPct  = "_noUPct";
 
         // Fill collections, order is critical: U, Fn, F, Pn, P:
-        add(LENGTHS, 99, U); // 99 prevents abbreviated names
+        add(LENGTHS, 99, U);    // 99 prevents abbreviated names
         add(ANGLES,  99, U);
         add(TIMES,   99, U);          // noUnits
-        add(funcs,    5, Fn, F, "",    "_noU",      Func);
-        add(funcUn,   8, Fn, F, "",    "isUn",      Func);
-        add(funcGr,   8, Fn, F, "",    "isUn",      Func);
-        add(funcC,   99, Fn, F, "",    "_noUPct",  CFunc);
-        add(funcSR,  99, Fn, F, U.px,  "_lenPct", SRFunc);
-        add(funcF,   99, Fn, F, "",    "_noUPct",   Func);
-        add(funcFA,   5, Fn, F, U.deg, "_ang",      Func, undefined, FA);
-        add(funcFL,   5, Fn, F, U.px,  "_len",      Func, undefined, FL);
-        add(funcT,    5, Fn, F, "",    "_noU",      Func);
-        add(funcTA,   5, Fn, F, U.deg, "_ang",      Func);
-        add(funcTA2, 99, Fn, F, U.deg, "_ang",      Func);
-        add(funcTL,   5, Fn, F, U.px,  "_len",      Func);
-        add(funcTLP,  5, Fn, F, U.px,  "_lenPct",   Func);
-        add(css,      7, Pn, P, "",    "_noU",      Prop);
-        add(css2,    99, Pn, P, "",    "_noU",      Prop);
-        add(cssUn,   99, Pn, P, "",    "isUn",      Prop);
-        add(cssC,     0, Pn, P, "",    "_noU",      Prop, F.rgb);
-        add(cssLP,    0, Pn, P, U.px,  "_lenPct",   Prop);
-        add(bg,      99, Pn, P, "",    "_noU",      Prop);
-        add(bgUn,    99, Pn, P, "",    "_noU",      Prop);
-        add(csSvg,   99, Pn, P, "",    "_noU",      PrAtt);
-        add(csSvC,    0, Pn, P, "",    "_noU",      PrAtt, F.rgb, CSSVC);
-        add(csSvN,    0, Pn, P, "",    "_noU",      PrAtt);
-        add(csSvP,    0, Pn, P, U.pct, "_pct",      PrAtt);
-        add(csSNP,    0, Pn, P, "",    "_noUPct",   PrAtt);
-        add(csSLP,    0, Pn, P, U.px,  "_lenPct",   PrAtt);
-        add(svg,      7, Pn, P, "",    "_noU",      Bute);
-        add(svgUn,   99, Pn, P, "",    "isUn",      Bute);
-        add(svgN,     7, Pn, P, "",    "_noU",      Bute);
-        add(svgN2,   99, Pn, P, "",    "_noU",      Bute);
-        add(svgLP,   99, Pn, P, "",    "_lenPctN",  Bute);
-        add(html,     0, Pn, P, "",    "_noU",      HtmlBute);
+        add(funcs,    5, Fn, F, "",    _noU,      Func);
+        add(funcUn,   8, Fn, F, "",    isUn,      Func);
+        add(funcGr,   8, Fn, F, "",    isUn,      Func);
+        add(funcC,   99, Fn, F, "",    _noUPct,  CFunc);
+        add(funcSR,  99, Fn, F, U.px,  _lenPct, SRFunc);
+        add(funcF,   99, Fn, F, "",    _noUPct,   Func);
+        add(funcFA,   5, Fn, F, U.deg, _ang,      Func, undefined, FA);
+        add(funcFL,   5, Fn, F, U.px,  _len,      Func, undefined, FL);
+        add(funcT,    5, Fn, F, "",    _noU,      Func);
+        add(funcTA,   5, Fn, F, U.deg, _ang,      Func);
+        add(funcTA2, 99, Fn, F, U.deg, _ang,      Func);
+        add(funcTL,   5, Fn, F, U.px,  _len,      Func);
+        add(funcTLP,  5, Fn, F, U.px,  _lenPct,   Func);
+        add(css,      7, Pn, P, "",    _noU,      Prop);
+        add(css2,    99, Pn, P, "",    _noU,      Prop);
+        add(cssUn,   99, Pn, P, "",    isUn,      Prop);
+        add(cssC,     0, Pn, P, "",    _noU,      Prop, F.rgb);
+        add(cssLP,    0, Pn, P, U.px,  _lenPct,   Prop);
+        add(bg,      99, Pn, P, "",    _noU,      Prop);
+        add(bgUn,    99, Pn, P, "",    _noU,      Prop);
+        add(csSvg,   99, Pn, P, "",    _noU,      PrAtt);
+        add(csSvC,    0, Pn, P, "",    _noU,      PrAtt, F.rgb, CSSVC);
+        add(csSvN,    0, Pn, P, "",    _noU,      PrAtt);
+        add(csSvP,    0, Pn, P, U.pct, _pct,      PrAtt);
+        add(csSNP,    0, Pn, P, "",    _noUPct,   PrAtt);
+        add(csSLP,    0, Pn, P, U.px,  _lenPct,   PrAtt);
+        add(svg,      7, Pn, P, "",    _noU,      Bute);
+        add(svgUn,   99, Pn, P, "",    isUn,      Bute);
+        add(svgN,     7, Pn, P, "",    _noU,      Bute);
+        add(svgN2,   99, Pn, P, "",    _noU,      Bute);
+        add(svgLP,   99, Pn, P, "",    _lenPctN,  Bute);
+        add(html,     0, Pn, P, "",    _noU,      HtmlBute);
 
         let fp, isKebab, key, keys;
         const colorFuncs = [];
@@ -137,7 +138,7 @@ const PFactory = {
         ColorFunc.spaces.forEach((id, i) => {
             isKebab = id.includes("-");
             key = isKebab ? Ez.kebabToCamel(id) : id;
-            fp  = new ColorFunc(id, key, "", "_noUPct");
+            fp  = new ColorFunc(id, key, "", _noUPct);
             colorFuncs.push(fp);        // a ColorFunc for each color() space
             this.funcC.push(id);
             Ez.readOnly(F, id, fp);
@@ -163,13 +164,13 @@ const PFactory = {
         propLP = [...svgLP,  ...cssLP];
 
         keys = [[...funcLP, ...funcF,  ...funcC],  propLP];
-        Ez.readOnly(this, "_pct", [...colorFuncs, ...keys2Objects([F, P], keys)]);
+        Ez.readOnly(this, _pct, [...colorFuncs, ...keys2Objects([F, P], keys)]);
 
         keys = [[...funcLP, ...funcTL, ...FL], propLP];
-        Ez.readOnly(this, "_len", keys2Objects([F, P], keys));
+        Ez.readOnly(this, _len, keys2Objects([F, P], keys));
 
         keys = [[...funcTA, ...funcTA2, ...FA, Fn.hsl, Fn.hwb]];
-        Ez.readOnly(this, "_ang", keys2Objects([F], keys));
+        Ez.readOnly(this, _ang, keys2Objects([F], keys));
 
         keys = [[...cssC, ...CSSVC]];
         Ez.readOnly(this, "_color", keys2Objects([P], keys));
@@ -193,9 +194,9 @@ const PFactory = {
 
         Pn.filter    = "filter";        // filter & transform are multi-function
         Pn.transform = "transform";     // transform has CSS and SVG variants
-        P .filter    = new Prop(Pn.filter,    "", "_noU", F.saturate,  true);
-        P .transform = new Prop(Pn.transform, "", "_noU", F.translate, true);
-        P .transSVG  = new Bute(Pn.transform, "", "_noU", F.translate, true);
+        P .filter    = new Prop(Pn.filter,    "", _noU, F.saturate,  true);
+        P .transform = new Prop(Pn.transform, "", _noU, F.translate, true);
+        P .transSVG  = new Bute(Pn.transform, "", _noU, F.translate, true);
         for (const p of [...this._color, P.filter, P.transform, P.transSVG])
             Ez.readOnly(p, "needsFunc", true);
 
@@ -223,85 +224,51 @@ const PFactory = {
             P [short] = P[full];
         }
 
-        // Bitmasks, color functions first:
-        let arr = ["R","G","B","A","C"];
-        len = arr.length;               // feColorMatrix has the most args at 20
-        const RGBC = Array.from(
+        // Enumerations for argument indexes in masks
+        keys = ["R","G","B","A","C"];
+        len  = keys.length;             // feColorMatrix has 20 args
+        const RGBC = Array.from(        // RR - CA
             {length:len * (len - 1)},
-            (_, i) => arr[i % len] + arr[Math.floor(i / len)]
+            (_, i) => keys[i % len] + keys[Math.floor(i / len)]
         ),
-        rgb = arr.slice(0, -1).map(v => v.toLowerCase()),
-        hsl = ["h","s","l"],            // the rest look better in lower case
+        rgb = keys.slice(0, -1).map(v => v.toLowerCase()),
+        hsl = ["h","s","l"],            // color functions have 3 args + alpha
         hwb = [,"w"],
         lab = ["l","a","b","alpha"],
         lch = [,"c","h"],
         xyz = ["x","y","z"];
 
-        arr = ["a","b","c","d"];        // matrix3d() has 16 args
-        len = arr.length;
-        const abcd = Array.from(
+        keys = ["a","b","c","d"];       // matrix3d() has 16 args
+        len  = keys.length;             // a1 - d4
+        const m3d = Array.from(
             {length:len * len},
-            (_, i) => arr[i % len] + Math.floor(i / len + 1)
+            (_, i) => keys[i % len] + Math.floor(i / len + 1)
         );
-        arr.push("e","f");              // SVG matrix()
+        keys.push("e","f");             // for SVG matrix() - 2D has 6 args
 
-        let src, tar, n = 0.5;          // create the bitmask values up front
-        const
-        bits  = Array.from({length:RGBC.length}, () => n *= 2),
-        pairs = [[C,  [RGBC, rgb, hsl, hwb]],
-                 [HD, [lab, lch, xyz]],
-                 [M,  [arr, abcd]],
-                 [Ez, [vB]]];
-
-        for ([tar, src] of pairs)       // create the bitmask properties
-            for (arr of src)
-                arr.forEach((v, i) => tar[v] = bits[i]);
+        let arr, obj;
+        const pairs = [                 // create the properties and aliases
+            [C,  [RGBC, rgb, hsl, hwb]],
+            [HD, [lab, lch, xyz]],
+            [M,  [keys, m3d]],
+            [E,  [vB]]
+        ];
+        for ([obj, arr] of pairs)
+            for (keys of arr)           // forEach() excludes empty, includes i
+                keys.forEach((v, i) => obj[v] = i);
 
         M.tx = M.e;                     // for CSS matrix()
         M.ty = M.f;
-        Ez.z      = Ez.w;               // for transform3d
-        Ez.width  = Ez.w;               // for convenience, consistency with P
-        Ez.height = Ez.h;
-        Ez.angle  = Ez.h;               // for rotate3d()
-        C .alpha  = C.a;                // a more readable alias, aligns with HD
-
-        // E object, enumerations and string constants:
-        let j;
-        for (keys of [vB, Easy.status, Easy.type, Easy.io, Easy.jump, Easy.set]) {
-            j = 0;
-            for (key of keys)
-                E[key] = j++;
-        }
-        for (key of Easy.eKey)
-            E[key] = key;
-
-        // Popular arguments for Ez.toNumber() and Easy.legNumber():
-        // Can't define these inside const Ez because ...Ez.foo not available
-                           // arguments[2, 3, 4]:
-        Ez.undefGrThan0 = [, ...Ez.grThan0];            // > 0, undefined ok
-        Ez.undefNotZero = [, ...Ez.notZero];            // !=0, undefined ok
-                           // arguments[2, 3, 4, 5, 6]:
-        Ez.defGrThan0   = [...Ez.undefGrThan0, , true]; // > 0, !undefined
-        Ez.defNotNeg    = [    , ...Ez.notNeg, , true]; // >=0, !undefined
-                           // arguments   [3, 4, 5]:
-        Ez.intGrThan0   = [...Ez.grThan0, true];        // > 0, int or undefined
-        Ez.intNotNeg    = [...Ez.notNeg,  true];        // >=0, int or undefined
-
-        // Ease: a collection of preset easy.legs
-        let inn, obj, out;              // "in" is a reserved word, thus "inn"
-        for (const [name, pow] of eases) {
-            inn = pow ? {pow:pow} : {type:E[name]};
-            out = {...inn, io:E.out};
-            inn.io = E.in;              // explicit default value
-            arr = [[inn],[out],[inn, out],[out, inn],[inn, {...inn}],[out, {...out}]];
-            name ? arr.forEach((v, i) => Ease[name + Ez.initialCap(Easy.io[i])] = v)
-                 : arr.forEach((v, i) => Ease[Easy.io[i]] = v);
-        }
+        C.alpha  = C.a;                 // a more readable alias, aligns with HD
+        E.z      = E.w;                 // for transform3d()
+        E.width  = E.w;                 // for convenience, consistency with P
+        E.height = E.h;
+        E.angle  = E.h;                 // for rotate3d()
 
         // Lock up as much as is plausible, P and Pn are extensible
         for (obj of [F, P])
             Object.values(obj).forEach(o => Object.seal(o));
-        for (obj of [C, E, Ease, Ez, F, Fn, HD, U, CFunc._funcs])
+        for (obj of [C, F, Fn, HD, U, CFunc._funcs])
             Object.freeze(obj);
 
         this.initialized = true;
@@ -333,7 +300,7 @@ const PFactory = {
             return val;
         });
         attrs.forEach((v, i) => attrs[i] = "data-" + v);
-        add(attrs, 99, Pn, P, "", "_noU", Bute);
+        add(attrs, 99, Pn, P, "", _noU, Bute);
     },
  // --------------------------------------------------------------------------
  // _validUnits() helps Func and PBase validate units, obj can be an array of
@@ -409,7 +376,7 @@ const PFactory = {
     set alphaUnits(val) {
         val = this._validUnits(val, "alphaUnits", EMPTY_PCT);
         for (const f of Object.values(CFunc._funcs))
-            f._u[CFunc.A] = val;
+            f._u[C.a] = val;
     },
     set hueUnits(val) {
         val = this._validUnits(val, "hueUnits", ANGLES);

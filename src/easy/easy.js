@@ -1,5 +1,5 @@
-import {prepLegs, override, legUnit, spreadToEmpties, getType, getIO, splitIO,
-        toBezier}    from "./easy-construct.js"
+import {prepLegs, override, legUnit, spreadToEmpties, getType, getIO, toBezier}
+                     from "./easy-construct.js"
 import {stepsToLegs} from "./easy-steps.js"
 import {easings}     from "./easings.js";
 
@@ -58,7 +58,7 @@ export class Easy {
 
         if (!o.legs) {              // create default legs
             const
-            ios = splitIO(io, Is.def(o.split) || Is.def(o.gap)),
+            ios = Ez.splitIO(io, Is.def(o.split) || Is.def(o.gap)),
             leg = {type, io:ios[0], bezier:o.bezier};
 
             o.legs = [leg];

@@ -1,8 +1,7 @@
 export {plugCV};
 
-import {CFunc} from "../prop/func.js";
 import {PBase} from "../prop/pbase.js";
-import {Ez}    from "../raf.js"
+import {C, Ez}    from "../raf.js"
 //==============================================================================
 // plugCV() creates o.value[elm[arg]] and plugs it with unmasked current
 //          values and separators. Plug contents derive from these two arrays:
@@ -17,9 +16,9 @@ function plugCV(o, hasElms, is1Elm) {
     let i;
     if (o.cjs) {             // colorjs is all numbers, no units or separators
         const                // add alpha as a plug if it varies across elements
-        a0 = o.cv[0][CFunc.A],
-        l  = o.c + (!is1Elm && o.mask.at(-1) != CFunc.A
-                            && o.cv.some(arr => arr[CFunc.A] != a0));
+        a0 = o.cv[0][C.a],
+        l  = o.c + (!is1Elm && o.mask.at(-1) != C.a
+                            && o.cv.some(arr => arr[C.a] != a0));
 
         o.value = Ez.newArray2D(o.l, l);
         if (!o.maskAll) {
