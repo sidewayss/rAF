@@ -46,14 +46,14 @@ function loadSteps() {
 
     sel.value = E.end;  // the CSS default jump value
 
-//!!elms.info.addEventListener("click", (evt) => {
-//!!    evt.stopImmediatePropagation();
-//!!    evt.stopPropagation();
-//!!    evt.preventDefault();
-//!!    // none of those prevent the click, which prevents the hiding of the
-//!!    // title/toolsip. Maybe I should pop up something like "Copied!". That
-//!!    // would probably mean eliminating the title for hover.
-//!!}, false);
+//@@elms.info.addEventListener("click", (evt) => {
+//@@    evt.stopImmediatePropagation();
+//@@    evt.stopPropagation();
+//@@    evt.preventDefault();
+//@@    // none of those prevent the click, which prevents the hiding of the
+//@@    // title/toolsip. Maybe I should pop up something like "Copied!". That
+//@@    // would probably mean eliminating the title for hover.
+//@@}, false);
 }
 function loadTV() { // called exclusively by getEasies() during page load
     let arr, clone, div, divUser, elm, func, i, id, isT, last, lbl, max, min,

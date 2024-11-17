@@ -27,10 +27,9 @@ function loadNamed(isMulti, dir, _load) {
         elms.multis.addEventListener(CHANGE, openNamed, false);
     else if (elms.save) {
         elms.revert.addEventListener(CLICK,  openNamed, false);
-        addEventsByElm(
-            CLICK,
-            [elms.save, elms.preset, elms.delete, dlg.ok, dlg.cancel, dlg.close],
-            click);
+        const btns = [elms.save, elms.preset, elms.delete,
+                      dlg.ok, dlg.cancel, dlg.close];
+        addEventsByElm(CLICK, btns, click);
     }
     return import(`${dir}_named.js`).then(namespace => {
         ns = namespace;

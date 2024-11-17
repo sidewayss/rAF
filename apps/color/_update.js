@@ -142,7 +142,7 @@ function oneCounter(coords, lr, id, isComp = elms.compare.value) {
     lr[id].textContent = vals.join(E.sp);
     if (!isComp) {
         lr.color.coords = coords;
-        outOfGamut(id, lr.color);
+        outOfGamut(id, lr.id, lr.color);
     }
 }
 // formatDuration() is called exclusively by setDuration()

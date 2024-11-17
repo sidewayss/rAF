@@ -124,12 +124,35 @@ input[type=text]:focus {
   align-items:stretch;
   opacity:0;
 }
-#startCanvas, #endCanvas {
-  align-self:stretch;
-  width:calc(1rem + var(--9-16ths)); /* same as <select> height */
-  border:1px solid black;
+#startSwatch, #endSwatch {
+  width: var(--13-16ths);
+  height:0.75rem;
+  border: 1px solid black;
+  visibility:hidden;
 }
-#startPicker, #endPicker {
+#startButton, #endButton {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  align-self: stretch;
+  width:calc(1rem + var(--11-16ths));
+  padding:0;
+  border: 1px solid black;
+}
+#startButton:hover, #endButton:hover {
+  background-color:#DDD !important;
+}
+#startButton:hover #startSwatch, #endButton:hover #endSwatch {
+  visibility:visible;
+}
+#startButton:active, #endButton:active {
+  background-color:#BBB !important;
+}
+#startButton:active #startSwatch, #endButton:active #endSwatch {
+  visibility:visible;
+  filter:contrast(1.5) saturate(1.5);
+}
+/*#startPicker, #endPicker {
   position:absolute;
   opacity:0;
   border-radius:0;
@@ -139,7 +162,7 @@ input[type=text]:focus {
 }
 #startPicker:active, #endPicker:active {
   opacity:1;
-}
+}*/
 #leftCanvas, #rightCanvas { /* children of #canvas */
   width:50%;
 }
@@ -190,4 +213,12 @@ state-btn:hover {
 }
 state-btn:active {
   stroke-width:3px;
+}
+
+#lblStart, #lblEnd {
+  font-variation-settings:'FILL' 1;
+}
+#ok, #cancel {
+  align-self:stretch;
+  border-radius:2px;
 }

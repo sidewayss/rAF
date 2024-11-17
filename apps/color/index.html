@@ -19,6 +19,7 @@
 
     <link rel="stylesheet" href="../common.css"/>
     <link rel="stylesheet" href="index.css"/>
+    <script src="https://elements.colorjs.io/src/color-picker/color-picker.js" type="module"></script>
     <script src="/html-elements/state-btn.js" type="module"></script>
     <script src="../load.js" type="module"></script>
   </head>
@@ -41,12 +42,16 @@
       <div class="row collapse">
         <label for="startText">Start:</label>
         <input  id="startText"  type="text"  value="darkred" class="border-gray" spellcheck="false"/>
-        <div    id="startCanvas" class="canvas"></div>
+        <button id="startButton">
+          <div  id="startSwatch"></div>
+        </button>
       </div>
       <div class="row mb3-8 collapse" style="margin-top:-1px">
         <label for="endText">End:&nbsp;&nbsp;</label>
         <input  id="endText"  type="text"  value="color(--lchuv 86.8 42.9 230)" class="border-gray" spellcheck="false"/>
-        <div    id="endCanvas" class="canvas"></div>
+        <button id="endButton">
+          <div  id="endSwatch"></div>
+        </button>
       </div>
       <div id="triptych" class="collapse">
         <button id= "compare" class="symBtn boolBtn emphasis" value="true">switch_right</button>
@@ -103,8 +108,8 @@
         </div>
       </div>
     </div>
-    <input id="startPicker" type="color" class="collapse"/> <!-- position:absolute -->
-    <input id="endPicker"   type="color" class="collapse"/>
+<!--    <input id="startPicker" type="color" class="collapse"/> --> <!-- position:absolute -->
+<!--    <input id="endPicker"   type="color" class="collapse"/> -->
     <span  id="copied">Copied!</span>
     <!-- Error/Warning/Info Dialog -->
     <dialog id="msgBox">
@@ -117,6 +122,18 @@
           </div>
         </div>
         <button id="close">Close</button>
+      </div>
+    </dialog>
+    <!----------------->
+    <dialog id="picker">
+      <color-picker></color-picker>
+      <div class="row between" style="margin-top:1rem">
+        <div class="row" id="divSpaces">
+          <label for="spaces">Space:</label>
+          <select id="spaces"></select>
+        </div>
+        <button id="ok"    >OK</button>
+        <button id="cancel">Cancel</button>
       </div>
     </dialog>
   </body>

@@ -182,19 +182,12 @@ function pseudoAnimate(noTargets) { // Easies.proto.#noTargets = noTargets
 
     i = ns.isInitZero?.() ? 0       // steps && (jump & E.start)
                           : MILLI;  // everything else
-//!!if (isEasies)
     do {
         t = i / FPS;                // time in milliseconds
         s = ezs._next(t);           // ezs.#active.size()
         frames[frameIndex].t = t;   // the one common property across pages
         i += MILLI;                 // unnecessary in last iteration
     } while(s);
-//!!else
-//!!    for (l = lastFrame * MILLI; i <= l; i += MILLI) {
-//!!        t = i / FPS;              // derive t and execute the next frame
-//!!        ezs._next(t);
-//!!        frames[frameIndex].t = t; // EBase.proto.peri() doesn't have time
-//!!    }
     raf.init();                       // reset properties set by final frame
 }                                     //!!must it be E.original for jump:start??
 //==============================================================================

@@ -41,15 +41,21 @@ function loadCommon() {
              "input-num","state-btn","check-box","check-tri"],
     byTag = tags.map(tag => [...document.body.getElementsByTagName(tag)]),
 
-    arr = byTag[0].at(-1).id == "name"
-        ? [...byTag[0].splice(-1, 1), // break out <dialog> sub-elements by id
-           ...byTag[2].splice(-3, 3)]
-        : byTag[2].splice(-1, 1);     // color page only has msgBox
+    arr = byTag[2].splice(-3, 3);     // break out <dialog> sub-elements by id
+    if (byTag[0].at(-1).id == "name")
+        arr.push(...byTag[0].splice(-1, 1)); // Save Named <input>
+    else             // id == "spaces"
+        arr.push(...byTag[1].splice(-1, 1)); // Color Picker <select>
+
+//!!arr = byTag[0].at(-1).id == "name"
+//!!    ? [...byTag[0].splice(-1, 1), // break out <dialog> sub-elements by id
+//!!       ...byTag[2].splice(-3, 3)]
+//!!    : byTag[2].splice(-1, 1);     // color page has no Saved Named dialog
 
     for (id of ["icon","title","msg"])
         arr.push(document.getElementById(id));
 
-    for (elm of arr)
+    for (elm of arr)                  // each element is a property of dlg
         Ez.readOnly(dlg, elm.id, elm);
 
     for (elm of byTag.flat())         // populate elms by id

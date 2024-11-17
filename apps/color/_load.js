@@ -15,7 +15,7 @@ import {C, U, E, Fn, F, P, Is, Ez, Easy} from "../../src/raf.js";
 import {LINEAR} from "../named.js";
 import {msecs, pad, newEasies, updateTime, updateCounters}  from "../update.js";
 import {getLocalByElm, getNamed, getNamedObj, getNamedEasy} from "../local-storage.js";
-import {MILLI, COUNT, CHANGE, CLICK, INPUT, EASY_, MEASER_, elms, g,
+import {MILLI, COUNT, CHANGE, CLICK, INPUT, EASY_, MEASER_, elms, dlg, g,
         pairOfOthers, orUndefined, dummyEvent, errorAlert}  from "../common.js";
 
 import {EASY, TIMING} from "../easings/steps.js";
@@ -68,6 +68,9 @@ function load(_, hasVisited) {
                          .filter(([key, sp]) => key == sp.id)   // no aliases
                          .map(([_, sp]) => sp)                  // spaces only
                          .sort((a, b) => a.id < b.id ? -1 : 1); // alpha sort
+
+    dlg.picker = elms.picker.firstElementChild; // <color-picker>
+
     elm = elms.leftSpaces;
     for (space of sorted) {             // populate leftSpaces <select>
         id  = space.id;
@@ -98,18 +101,18 @@ function load(_, hasVisited) {
                                         : format.zero;
             return obj;
         });
+        dlg.spaces.add(new Option(id));
     }
     plugRange("--acescg",      format.positiveThree);
     plugRange("--xyz-abs-d65", format.one);
 
     const                   // clone leftSpaces to create rightSpaces
     sib   = elm.nextElementSibling,
-    clone = elm.cloneNode(true),
-    idx   = g.disables.indexOf(sib);
+    clone = elm.cloneNode(true);
     clone.id = sib.id       // dummy element contains id and keeps the grid
     elms[sib.id] = clone;   // from reflowing via replaceWith().
     clone.style.marginLeft = sib.style.marginLeft;
-    g.disables.splice(idx, 1, clone);
+    g.disables.splice(g.disables.indexOf(sib), 1, clone);
     sib.replaceWith(clone);
                             // initialize elms:
     [EASY_, MEASER_].forEach((v, i) => elms.type.options[i].value = v);
@@ -202,6 +205,11 @@ function initEasies(obj, hasVisited) {  // event handlers populate the form and
 
     for (lrse of g.leftRight)           // lr must precede se
         lrse.spaces.dispatchEvent(evt); // call change.space() for both
+
+    if (Is.def(hasVisited)) {
+        dlg.spaces.selectedIndex = g.left.spaces.selectedIndex;
+        dlg.spaces.dispatchEvent(evt);
+    }
 
     evt = dummyEvent(INPUT, LOADING);
     for (lrse of g.startEnd)            // dispatchEvent() avoids im/exports
@@ -335,7 +343,7 @@ function easeFinally(af, ezs, ez, wait, is) {
 
     time -= 150;
     ez2 = new Easy({wait, time, type:E.sine, io:E.out});
-    ez2.newTarget({cjs, start, end, prop:P.bgColor, elms:endCanvas});
+    ez2.newTarget({cjs, start, end, prop:P.bgColor, elm:elms.endSwatch});
 
     prop = P.accentColor;                   // #time, #x again
     end  = Color.to(prop.getOne(elm[0]), space).coords;
@@ -350,7 +358,7 @@ function easeFinally(af, ezs, ez, wait, is) {
     ez.newTarget({end, prop, elm, mask});   // start:0
     postIts.push(...elm.map(lm => [prop, lm]));
 
-    elm = [elms.controls, elms.startCanvas, elms.endCanvas];
+    elm = [elms.controls, elms.startSwatch, elms.endSwatch];
     ez.newTarget({prop, elm, mask});        // start:0, end:1
     postIts.push(...elm.map(lm => [prop, lm]));
 
@@ -392,14 +400,23 @@ function resizeWindow(_, isCollapsed) {
             prop.set(div, "");
     }
 
-    let css, id, elm, obj;                  // <input type="color"> both have
-    for (id of START_END) {                 // position:absolute, their size and
-        css = g[id].picker.style;           // position match their canvas, the
-        elm = g[id].canvas;                 // canvas is always visible and the
-        obj = elm.getBoundingClientRect();  // <input> has opacity:0, except on
-        css.width  = obj.width  + U.px;     // :hover and :active.
-        css.height = obj.height + U.px;
-        css.left   = obj.left   + U.px;     // width, height, left are the same
-        css.top    = obj.top    + U.px;     // for both elements...
-    }
+    const
+    dialog = elms.picker,
+    style  = getComputedStyle(dialog);
+    dialog.style.width = div.offsetWidth
+                       - parseFloat(style.paddingLeft)
+                       - parseFloat(style.paddingRight)
+                       - parseFloat(style.borderWidth)
+                       + U.px;
+
+//$$let css, id, elm, obj;                  // <input type="color"> both have
+//$$for (id of START_END) {                 // position:absolute, their size and
+//$$    css = g[id].picker.style;           // position match their canvas, the
+//$$    elm = g[id].canvas;                 // canvas is always visible and the
+//$$    obj = elm.getBoundingClientRect();  // <input> has opacity:0, except on
+//$$    css.width  = obj.width  + U.px;     // :hover and :active.
+//$$    css.height = obj.height + U.px;
+//$$    css.left   = obj.left   + U.px;     // width, height, left are the same
+//$$    css.top    = obj.top    + U.px;     // for both elements...
+//$$}
 }

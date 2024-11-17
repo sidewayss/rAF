@@ -8,12 +8,11 @@ import {setPrefix}              from "../named.js";
 import {changeStop}             from "../play.js";
 import {setLocal, setLocalBool} from "../local-storage.js";
 import {msecs, frames, timeFrames, updateTime}       from "../update.js";
-import {CHANGE, CLICK, INPUT, MEASER_, elms, g, is, boolToString,
+import {CHANGE, CLICK, INPUT, MEASER_, elms, dlg, g, is, boolToString,
         addEventToElms, addEventsByElm, orUndefined} from "../common.js";
 
 import {Color, ezColor, refRange, resizeWindow} from "./_load.js";
 import {refresh, oneCounter}                    from "./_update.js";
-
 
 const
 invalids = new Set,
@@ -30,11 +29,13 @@ function loadEvents() {
     addEventsByElm(CHANGE, [elms.time, elms.type, elms.gamut], change);
 
     addEventToElms(INPUT,  [elms.startText,   elms.endText],     input .text);
-    addEventToElms(CHANGE, [elms.startPicker, elms.endPicker],   change.color);
+    addEventToElms(CLICK,  [elms.startButton, elms.endButton],   click.swatch);
     addEventToElms(CHANGE, [elms.leftSpaces,  elms.rightSpaces], change.space);
+    addEventsByElm(CLICK,  [dlg.ok, dlg.cancel], click);
+    dlg.spaces.addEventListener(CHANGE, change.dlgSpaces);
 
-    change.type();              // sets isMulti
-    return is({multi:isMulti});
+    change.type();       // sets isMulti
+    return is({color:true, multi:isMulti});
 }
 //==============================================================================
 //    input event handlers:
@@ -42,8 +43,10 @@ const input = {
  // text() handles input events for #startText, #endText, validates that its' a
  //        CSS color, updates start | end for both left & right.
     text(evt) {
-        const tar = evt.target;
-        const se  = g[getCamel(tar)];  // g.start or g.end
+        const
+        tar = evt.target,
+        id  = getCamel(tar),  // "start" or "end"
+        se  = g[id];
 
         try { se.color = new Color(tar.value); }
         catch {
@@ -53,7 +56,11 @@ const input = {
         //-----------------------
         invalidInput(tar, false);
 
-        se.canvas.style.backgroundColor = se.color.display();
+        const color = se.color.display();
+        se.button.style.backgroundColor = color;
+        se.swatch.style.backgroundColor = color;
+        g.lbl[id].style.color = color;
+
         if (Is.def(evt.type))          // else called by change.color()
             se.color.value = se.color.to("srgb").toString({format: "hex"});
                                        // <input>.value is in hex notation
@@ -129,13 +136,13 @@ const change = {
             elms.named.dispatchEvent(new Event(CHANGE)); // calls openNamed()
         }
     },
-    color(evt) { // <input type="color"> g.startEnd.picker, value = hex notation
-        const
-        tar = evt.target,
-        txt = g[getCamel(tar)].text;
-        txt.value = tar.value;
-        input.text({target:txt});
-    },
+//$$color(evt) { // <input type="color"> g.startEnd.picker, value = hex notation
+//$$    const
+//$$    tar = evt.target,
+//$$    txt = g[getCamel(tar)].text;
+//$$    txt.value = tar.value;
+//$$    input.text({target:txt});
+//$$},
     gamut(evt) {  // <select id="gamut"> runs outOfGamut() for start, end, value
         const
         color = g.left.color,                 // Color instance
@@ -148,11 +155,31 @@ const change = {
         color.coords = evt.isLoading ? g.start.left
                                      : frames[elms.x.value].left;
         outOfGamut(E.value, color, gamut, inGamut);
+    },
+
+    dlgSpaces() {
+        dlg.picker.space = dlg.spaces.value;
     }
 };
 //==============================================================================
 //    click event handlers, in top-left to bottom-right screen order:
 const click = {
+    swatch(evt) {        // g[start|end]
+        dlg.picker.color  = g[getCamel(evt.target)].text.value;
+        dlg.picker.target = evt.target; // can I use .dataset for objects??
+        elms.picker.showModal();
+    },
+    ok() {
+        const
+        tar = dlg.picker.target,
+        txt = g[getCamel(tar)].text;
+        txt.value = dlg.picker.color;
+        input.text({target:txt});
+        elms.picker.close();
+    },
+    cancel() {
+        elms.picker.close();
+    },
  // compare() shows|hides the right side
     compare(evt) {
         const b = click.boolBtn(evt);
@@ -229,15 +256,16 @@ function outOfGamut(id, color, gamut = elms.gamut.value,
                              inGamut = color.inGamut(gamut)) { // see collapse()
     const
     lbl = g.lbl[id],
+    txt = g.left[id],
     arr = lbl.title.split(E.sp),
     was = (arr.length == 2);
     if (was != inGamut) {
         if (inGamut) {
-            lbl.style.color = "";
+            txt.style.color = "";
             lbl.title = arr.slice(0, 2).join(E.sp);
         }
         else {
-            lbl.style.color = "rgb(192 0 0)";  // 75% red
+            txt.style.color = "rgb(192 0 0)";  // 75% red
             lbl.title += " (out of gamut)";
         }
     }

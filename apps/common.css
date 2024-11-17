@@ -25,6 +25,7 @@
   --7-16ths: calc(7 * var(--16th));
   --9-16ths: calc(9 * var(--16th));
   --11-16ths:calc(11 * var(--16th));
+  --13-16ths:calc(13 * var(--16th));
   --15-16ths:calc(1rem - var(--16th));
 
   --border-gray:  var(--16th) solid #0002;

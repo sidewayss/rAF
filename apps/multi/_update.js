@@ -54,21 +54,6 @@ function getMsecs() {
     const md = measer.duration;
     pad.secs = D + (md >= 10000 ? 3 : 2);
     return md;
-//!!let first, t;
-//!!const
-//!!trips = elms.trip .map( elm => elm.checked && P.isVisible(elm)),
-//!!plays = elms.plays.map((elm, i) => Number(elm.value
-//!!                                       || elms.ez_plays[i].textContent));
-//!!return Math.max(...easys.map((ez, i) => {
-//!!    t = ez.time;
-//!!    first = t + ez.wait;
-//!!    if (trips[i])
-//!!        first += t + ez.tripWait;
-//!!    // _duration removes excess E.steps time, in first or last loop play
-//!!    return ez._duration(first, trips[i])
-//!!         + (first + ez.loopWait)         // * has precedence over +
-//!!         * (plays[i] - 1);               // plays[i] has range of 1 to COUNT
-//!!}));
 }
 // getFrame() is called by these three functions:
 //            initPseudo()   t = 0,           oneD = MASK_X, isMask = true

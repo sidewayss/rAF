@@ -316,15 +316,6 @@ function postPlay() {
         frames[0] = vucFrame(0, MILLI, v, v, u, Ez.comp(u));
     }
     drawLine();
-//!!const
-//!!isTripping = elms.roundTrip.checked                     // roundTrip
-//!!          && !elms.autoTrip.checked                     // && !autoTrip
-//!!          && ezX.e.status != E.tripped,                 // && return trip
-//!!u = Number(isTripping),                                 // unit = 1 or 0
-//!!x = MILLI * u,                                          // x = 0 or 1000
-//!!y = MILLI * Number(u != elms.direction.selectedIndex);  // y = ditto
-//!!
-//!!frames[0] = vucFrame(0, x, y, y, u, 1 - u);
 }
 //==============================================================================
 function theStart() { return Number(elms.start.textContent); }
