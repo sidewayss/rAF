@@ -172,7 +172,7 @@ function spliceMask(o, config, idx) {
             return cfg.byArg ? !Is.def(cfg.param[idx]) : true;
         case 2:
             return cfg.bAbE ? cfg.param[idx].every(v => !Is.def(v))
-                            : cfg.param.every((prm, i) => !Is.def(prm[i][idx]));
+                            : cfg.param.every(prm => !Is.def(prm[idx]));
         }
     });
     if (b) {
