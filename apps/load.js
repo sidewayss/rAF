@@ -47,10 +47,10 @@ function loadCommon() {
     else             // id == "spaces"
         arr.push(...byTag[1].splice(-1, 1)); // Color Picker <select>
 
-//!!arr = byTag[0].at(-1).id == "name"
-//!!    ? [...byTag[0].splice(-1, 1), // break out <dialog> sub-elements by id
-//!!       ...byTag[2].splice(-3, 3)]
-//!!    : byTag[2].splice(-1, 1);     // color page has no Saved Named dialog
+//$$arr = byTag[0].at(-1).id == "name"
+//$$    ? [...byTag[0].splice(-1, 1), // break out <dialog> sub-elements by id
+//$$       ...byTag[2].splice(-3, 3)]
+//$$    : byTag[2].splice(-1, 1);     // color page has no Saved Named dialog
 
     for (id of ["icon","title","msg"])
         arr.push(document.getElementById(id));

@@ -172,7 +172,7 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
                 // elm.style converts hsl(), hwb() to rgb() or rgba()
                 // parse getAttribute("style") to get the original value
                 const style = elm.getAttribute("style").split(/[:;]\s*/);
-                value = style[style.indexOf(this.cssName) + 1];
+                value = style[style.indexOf(this.name) + 1];
             }
             else { // some values and funcs require calling getComputedStyle()
                 const isFunc = listOfFuncs.some(v => value.includes(v + E.lp));

@@ -1,0 +1,203 @@
+/* animated: easier to find if they're at the top */
+button, select, span, input[type=text], label, .lbl-right {
+  color:var(--pitch);
+}
+.symSpan, .display, .number {
+  color:var(--darker-gray);
+}
+.emphasis {
+  color:black;
+}
+state-btn {
+  opacity:1;
+  fill  :var(--pitch);
+  stroke:var(--pitch);
+  stroke-width:2px;
+}
+state-btn[disabled] {
+  opacity:1;
+  fill   :#CCC;
+  stroke :#CCC;
+}
+
+select:hover:not(:disabled) {
+  background-color:white;
+  border-color:var(--line-gray);
+}
+
+color-swatch {
+  flex-direction: row-reverse;
+  padding:0;
+  margin:0;
+  border-radius:0;
+  &::part(gamut) {
+    display: none;
+  }
+}
+
+#x {
+  flex-grow: 1;
+  width:auto;
+  padding:0.5rem 0;
+  margin-right:0.25rem;
+}
+#stop { margin:0 0.5rem }
+
+.slash {
+  position:relative;
+  top:1px;
+  font-size:calc(1rem + var(--8th));
+  margin:0 var(--8th);
+}
+
+.font400 { font-weight:400 }
+
+.ml3-8  { margin-left:  var(--3-8ths) }
+
+.counter  { /* only partially duplicated, padding is different */
+  align-items:baseline;
+  margin:0;
+  padding-top:var(--16th);
+}
+/* not duplicates */
+html * {
+  accent-color:var(--pitch);
+}
+body {
+  height:100vh;
+  background-color:black;
+  opacity:1;
+  filter:saturate(1.5) contrast(1.5);
+}
+input[type=text] {
+  flex-grow: 1;
+  align-self:stretch;
+  border:var(--border-gray);
+  outline:none;
+}
+input[type=text]:hover {
+  border-color:var(--line-gray);
+}
+input[type=text]:focus {
+  border-color:black;
+}
+#triptych {
+  display:grid;
+  grid-template-columns:calc(1rem + var(--5-8ths)) 1fr 1fr;
+  grid-template-rows:   calc(1rem + var(--11-16ths)) repeat(4, 1.5rem);
+  justify-items:start;  /* defaults to stretch */
+  align-items:  start;  /* ditto */
+}
+#controls {
+  padding: 0.5rem 0; /* different from multi/index.css */
+  background-color:var(--bg-white);
+  opacity:0;
+  filter:saturate(2) blur(12px) contrast(2) drop-shadow(white 0 0 80px);
+}
+#compare {
+  font-size:1.75rem;
+  margin-left:-1px; /* I couldn't find another way to align it */
+}
+.symSpan {
+  font-family:"Material Symbols Rounded";
+  font-size:calc(1rem + var(--7-16ths));
+  justify-self:center;
+  cursor:default;
+}
+.display {
+  font-weight:400;
+  font-style:italic;
+  padding-top:1px;
+}
+.number {
+  height:     1.5rem; /* grid row height, how to get it using attr()?? */
+  padding-top:1px;
+}
+.left {
+  margin-left:0.5rem;
+}
+.right {
+  margin-left:var(--5-8ths);
+}
+.number.right {
+  margin-left: var(--3-16ths);
+  padding-left:var(--3-8ths);
+  border: var(--border-gray);
+  border-width:0 0 0 1px; /* done this way for animation of border-color */
+}
+#canvas {
+  z-index:-1;
+  pointer-events:none;
+  position:absolute;
+  width: 100vw;
+  height:100vh;
+  align-items:stretch;
+  opacity:0;
+}
+#startSwatch::part(swatch), #endSwatch::part(swatch) {
+  align-self:stretch;
+  width:calc(1rem + var(--9-16ths)); /* same as <select> height */
+  border:1px solid black;
+}
+#startPicker, #endPicker {
+  position:absolute;
+  opacity:0;
+  border-radius:0;
+}
+#startPicker:hover, #endPicker:hover {
+  opacity:0.6;
+}
+#startPicker:active, #endPicker:active {
+  opacity:1;
+}
+#leftCanvas, #rightCanvas { /* children of #canvas */
+  width:50%;
+}
+#time {
+  width: 3.5rem; /* was 7ch font-size increased, should be 5.833ch now */
+  flex-grow: 1;
+}
+#type {
+  border-color:transparent;
+  background:transparent;
+}
+#type:hover { /* dup of select:hover in common.css, but more specific */
+  background-color:white;
+  border-color:var(--line-gray);
+}
+#type:active:hover,
+select:active:hover {
+  color:black;
+}
+#share {
+  font-size:calc(1.5rem - var(--8th));
+}
+.spaces {
+  padding-top:0;
+  padding-bottom:var(--3-16ths);
+}
+.symBtn {
+  border:none;
+  background-color:transparent;
+}
+.symBtn:disabled {
+  background-color:transparent;
+}
+button:hover:not(:disabled) {
+  color:black; /* overwrites common.css for both selectors */
+  background-color:#DDD;
+}
+button:active:hover {
+  color:black; /* overwrites common.css for both selectors */
+  background-color:white;
+  box-shadow: 1px 1px 1px var(--line-gray) inset;
+}
+/* <state-btn> overrides - #play, #stop */
+state-btn:hover {
+  fill  :black;
+  stroke:black; /* necessary to override common.css */
+  stroke-width:4px;
+}
+state-btn:active {
+  stroke-width:3px;
+}

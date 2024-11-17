@@ -19,8 +19,8 @@
 
     <link rel="stylesheet" href="../common.css"/>
     <link rel="stylesheet" href="index.css"/>
-    <script src="https://elements.colorjs.io/src/color-picker/color-picker.js" type="module"></script>
     <script src="/html-elements/state-btn.js" type="module"></script>
+    <script src="https://elements.colorjs.io/src/color-swatch/color-swatch.js" type="module"></script>
     <script src="../load.js" type="module"></script>
   </head>
   <body class="col align-center">
@@ -40,21 +40,23 @@
         <input  id="time" type="range" step="1" min="500" max="9999" value="2000"/>
       </div>
       <div class="row collapse">
-        <label for="startText">Start:</label>
-        <input  id="startText"  type="text"  value="darkred" class="border-gray" spellcheck="false"/>
-        <button id="startButton">
-          <div  id="startSwatch"></div>
-        </button>
+        <color-swatch id="startSwatch">
+          <div class"row">
+            <label for="startText">Start:</label>
+            <input  id="startText" type="text" class="border-gray" spellcheck="false"
+                value="darkred"/>
+          </div>
+        </color-swatch>
       </div>
       <div class="row mb3-8 collapse" style="margin-top:-1px">
-        <label for="endText">End:&nbsp;&nbsp;</label>
-        <input  id="endText"  type="text"  value="" class="border-gray" spellcheck="false"/>
-        <button id="endButton">
-          <div  id="endSwatch"></div>
-        </button>
+        <color-swatch id="endSwatch">
+          <label for="endText">End:&nbsp;&nbsp;</label>
+          <input  id="endText" type="text" class="border-gray" spellcheck="false"
+               value="color(--lchuv 86.8 42.9 230)"/>
+        </color-swatch>
       </div>
       <div id="triptych" class="collapse">
-        <button id= "compare" class="symBtn boolBtn emphasis" value="true">switch_right</button>
+        <button id="compare" class="symBtn boolBtn emphasis" value="true">switch_right</button>
         <select id= "leftSpaces" class="spaces border-gray" style="margin-left:var(--3-16ths)"></select>
         <select id="rightSpaces" class="spaces border-gray" style="margin-left:var(--5-16ths)"></select>
         <div id="divNoCompare" class="col" style="margin-left:1.25rem; display:none;">
@@ -108,8 +110,8 @@
         </div>
       </div>
     </div>
-<!--    <input id="startPicker" type="color" class="collapse"/> --> <!-- position:absolute -->
-<!--    <input id="endPicker"   type="color" class="collapse"/> -->
+    <input id="startPicker" type="color" class="collapse"/> <!-- position:absolute -->
+    <input id="endPicker"   type="color" class="collapse"/>
     <span  id="copied">Copied!</span>
     <!-- Error/Warning/Info Dialog -->
     <dialog id="msgBox">
@@ -122,18 +124,6 @@
           </div>
         </div>
         <button id="close">Close</button>
-      </div>
-    </dialog>
-    <!----------------->
-    <dialog id="picker">
-      <color-picker></color-picker>
-      <div class="row between" style="margin-top:1rem">
-        <div class="row" id="divSpaces">
-          <label for="spaces">Space:</label>
-          <select id="spaces"></select>
-        </div>
-        <button id="ok"    >OK</button>
-        <button id="cancel">Cancel</button>
       </div>
     </dialog>
   </body>

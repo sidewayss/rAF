@@ -93,7 +93,48 @@ const PFactory = {
         _len = "_len",    _lenPct  = "_lenPct",
         _pct = "_pct",    _lenPctN = "_lenPctN",
         _noU = "_noU",    _noUPct  = "_noUPct";
+        //----------------------------------------------------------------------
+        // Enumerations for argument indexes for masks, must precede collections
+        let arr, obj,
+        keys = ["R","G","B","A","C"],
+        len  = keys.length;             // feColorMatrix has 20 args
+        const RGBC = Array.from(        // RR - CA
+            {length:len * (len - 1)},
+            (_, i) => keys[i % len] + keys[Math.floor(i / len)]
+        ),
+        rgb = keys.slice(0, -1).map(v => v.toLowerCase()),
+        hsl = ["h","s","l"],            // color functions have 3 args + alpha
+        hwb = [,"w"],
+        lab = ["l","a","b","alpha"],
+        lch = [,"c","h"],
+        xyz = ["x","y","z"];
 
+        keys = ["a","b","c","d"];       // matrix3d() has 16 args
+        len  = keys.length;             // a1 - d4
+        const m3d = Array.from(
+            {length:len * len},
+            (_, i) => keys[i % len] + Math.floor(i / len + 1)
+        );
+        keys.push("e","f");             // for SVG matrix() - 2D has 6 args
+
+        const pairs = [                 // create the properties and aliases
+            [C,  [RGBC, rgb, hsl, hwb]],
+            [HD, [lab, lch, xyz]],
+            [M,  [keys, m3d]],
+            [E,  [vB]]
+        ];
+        for ([obj, arr] of pairs)
+            for (keys of arr)           // forEach() excludes empty, includes i
+                keys.forEach((v, i) => obj[v] = i);
+
+        M.tx = M.e;                     // for CSS matrix()
+        M.ty = M.f;
+        C.alpha  = C.a;                 // a more readable alias, aligns with HD
+        E.z      = E.w;                 // for transform3d()
+        E.width  = E.w;                 // for convenience, consistency with P
+        E.height = E.h;
+        E.angle  = E.h;                 // for rotate3d()
+        //----------------------------------------------------------------------
         // Fill collections, order is critical: U, Fn, F, Pn, P:
         add(LENGTHS, 99, U);    // 99 prevents abbreviated names
         add(ANGLES,  99, U);
@@ -131,7 +172,7 @@ const PFactory = {
         add(svgLP,   99, Pn, P, "",    _lenPctN,  Bute);
         add(html,     0, Pn, P, "",    _noU,      HtmlBute);
 
-        let fp, isKebab, key, keys;
+        let fp, isKebab, key;
         const colorFuncs = [];
         Ez.readOnly(Fn, "color", "color");
         this.funcC = funcC.slice();     // for Ez._invalidErr(, validList)
@@ -154,7 +195,7 @@ const PFactory = {
         const rgba = Fn.rgb + "a";      // elm.style, getComputedStyle() use it
         Ez.readOnly(F,  rgba, F.rgb);
         Ez.readOnly(Fn, rgba, rgba);
-
+        //----------------------------------------------------------------------
         // Properties for this, F, P:
         // readOnly() for P because F and this get frozen, but P is extensible.
         // P._pct _len _ang _color help the static global property setters
@@ -207,7 +248,7 @@ const PFactory = {
         Pn.xhref = "xlink:href";        // deprecated
         P.xhref  = new Prop(Pn.xhref, false);
 
-        let full, short, long,          // background abbreviations are special
+        let full, short, long;          // background abbreviations are special
         len = Pn.background.length + 1;
         bg.push(Pn.backgroundColor);    // color properties grouped elsewhere
         bgUn.shift();                   // "background" is the one without a "-"
@@ -223,48 +264,7 @@ const PFactory = {
             Pn[short] = full;           // short abbreviation, e.g. bgC
             P [short] = P[full];
         }
-
-        // Enumerations for argument indexes in masks
-        keys = ["R","G","B","A","C"];
-        len  = keys.length;             // feColorMatrix has 20 args
-        const RGBC = Array.from(        // RR - CA
-            {length:len * (len - 1)},
-            (_, i) => keys[i % len] + keys[Math.floor(i / len)]
-        ),
-        rgb = keys.slice(0, -1).map(v => v.toLowerCase()),
-        hsl = ["h","s","l"],            // color functions have 3 args + alpha
-        hwb = [,"w"],
-        lab = ["l","a","b","alpha"],
-        lch = [,"c","h"],
-        xyz = ["x","y","z"];
-
-        keys = ["a","b","c","d"];       // matrix3d() has 16 args
-        len  = keys.length;             // a1 - d4
-        const m3d = Array.from(
-            {length:len * len},
-            (_, i) => keys[i % len] + Math.floor(i / len + 1)
-        );
-        keys.push("e","f");             // for SVG matrix() - 2D has 6 args
-
-        let arr, obj;
-        const pairs = [                 // create the properties and aliases
-            [C,  [RGBC, rgb, hsl, hwb]],
-            [HD, [lab, lch, xyz]],
-            [M,  [keys, m3d]],
-            [E,  [vB]]
-        ];
-        for ([obj, arr] of pairs)
-            for (keys of arr)           // forEach() excludes empty, includes i
-                keys.forEach((v, i) => obj[v] = i);
-
-        M.tx = M.e;                     // for CSS matrix()
-        M.ty = M.f;
-        C.alpha  = C.a;                 // a more readable alias, aligns with HD
-        E.z      = E.w;                 // for transform3d()
-        E.width  = E.w;                 // for convenience, consistency with P
-        E.height = E.h;
-        E.angle  = E.h;                 // for rotate3d()
-
+        //---------------------------------------------------------
         // Lock up as much as is plausible, P and Pn are extensible
         for (obj of [F, P])
             Object.values(obj).forEach(o => Object.seal(o));
