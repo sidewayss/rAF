@@ -222,3 +222,6 @@ state-btn:active {
   align-self:stretch;
   border-radius:2px;
 }
+color-picker::part(details) {
+	display: none;
+}
