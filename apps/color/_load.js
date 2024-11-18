@@ -343,7 +343,8 @@ function easeFinally(af, ezs, ez, wait, is) {
 
     time -= 150;
     ez2 = new Easy({wait, time, type:E.sine, io:E.out});
-    ez2.newTarget({cjs, start, end, prop:P.bgColor, elm:elms.endSwatch});
+    ez2.newTarget({cjs, start, end, prop:P.bgColor, elm:elms.endButton});
+    ez2.newTarget({cjs, start, end, prop:P.color,   elm:elms.lblEnd});
 
     prop = P.accentColor;                   // #time, #x again
     end  = Color.to(prop.getOne(elm[0]), space).coords;
@@ -358,7 +359,7 @@ function easeFinally(af, ezs, ez, wait, is) {
     ez.newTarget({end, prop, elm, mask});   // start:0
     postIts.push(...elm.map(lm => [prop, lm]));
 
-    elm = [elms.controls, elms.startSwatch, elms.endSwatch];
+    elm = [elms.controls, elms.startButton, elms.endButton];
     ez.newTarget({prop, elm, mask});        // start:0, end:1
     postIts.push(...elm.map(lm => [prop, lm]));
 
