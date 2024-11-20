@@ -69,8 +69,6 @@ function load(_, hasVisited) {
                          .map(([_, sp]) => sp)                  // spaces only
                          .sort((a, b) => a.id < b.id ? -1 : 1); // alpha sort
 
-    dlg.picker = elms.picker.firstElementChild; // <color-picker>
-
     elm = elms.leftSpaces;
     for (space of sorted) {             // populate leftSpaces <select>
         id  = space.id;
@@ -402,7 +400,7 @@ function resizeWindow(_, isCollapsed) {
     }
 
     const
-    dialog = elms.picker,
+    dialog = elms.dlgPick,
     style  = getComputedStyle(dialog);
     dialog.style.width = div.offsetWidth
                        - parseFloat(style.paddingLeft)
@@ -412,7 +410,7 @@ function resizeWindow(_, isCollapsed) {
 
 //$$let css, id, elm, obj;                  // <input type="color"> both have
 //$$for (id of START_END) {                 // position:absolute, their size and
-//$$    css = g[id].picker.style;           // position match their canvas, the
+//$$    css = g[id].input.style;            // position match their canvas, the
 //$$    elm = g[id].canvas;                 // canvas is always visible and the
 //$$    obj = elm.getBoundingClientRect();  // <input> has opacity:0, except on
 //$$    css.width  = obj.width  + U.px;     // :hover and :active.

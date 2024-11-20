@@ -94,8 +94,8 @@
         <button id="collapse" class="symBtn boolBtn">expand_less</button>
       </div>
       <div id="playback" class="row center">
-        <state-btn id="play" class="row" data-states='[[0,"play"], [1,"pause"], [2,"resume"]]'></state-btn>
-        <state-btn id="stop" class="row" data-states='[[0,"stop"], [1,"reset"]]' disabled></state-btn>
+        <state-btn id="play" class="row" states='[[0,"play"], [1,"pause"], [2,"resume"]]'></state-btn>
+        <state-btn id="stop" class="row" states='[[0,"stop"], [1,"reset"]]' disabled></state-btn>
         <div class="row counter">
           <span id="elapsed"   class="emphasis"      > 0.000</span
           ><span class="slash">/</span
@@ -125,7 +125,7 @@
       </div>
     </dialog>
     <!----------------->
-    <dialog id="picker">
+    <dialog id="dlgPick">
       <color-picker></color-picker>
       <div class="row between" style="margin-top:1rem">
         <div class="row" id="divSpaces">

@@ -35,9 +35,9 @@
           <!-- diptych left side row 1 ---------------------------->
           <div class="flex between pb3-8 pl1-8">
             <div class="row">
-              <check-box id="roundTrip" data-label="Round trip " class="row pr1-16"></check-box>
-              <check-box id="flipTrip"  data-label="flip"        class="row ml1-2" checked></check-box>
-              <check-box id="autoTrip"  data-label="auto"        class="row ml3-4" checked></check-box>
+              <check-box id="roundTrip" label="Round trip " class="row pr1-16"></check-box>
+              <check-box id="flipTrip"  label="flip"        class="row ml1-2" checked></check-box>
+              <check-box id="autoTrip"  label="auto"        class="row ml3-4" checked></check-box>
               <div class="row"></div> <!-- tripWait cloned from loopWait -->
             </div>
             <div class="row">
@@ -47,19 +47,19 @@
           </div>
           <!-- diptych left side row 2a for E.steps ---------------->
           <div class="div-steps row between pb3-8 pl1-8">
-            <check-box id="initZero" class="row" data-label="Init zero" disabled style="display:none"></check-box>
+            <check-box id="initZero" class="row" label="Init zero" disabled style="display:none"></check-box>
             <div id="divUserTiming" class="row">
               <pre>timing:</pre>
               <div class="row end">
-                <input-num class="secs steps" data-digits="3" data-no-resize></input-num>
+                <input-num class="secs steps" digits="3" no-resize></input-num>
               </div>
             </div>
           </div>
           <!-- diptych left side row 2 (row 3 for steps) ---------->
           <div class="flex between pl1-8">
-            <check-box id="frameZero" class="row" data-label="Frame zero" checked></check-box>
+            <check-box id="frameZero" class="row" label="Frame zero" checked></check-box>
             <div class="row">
-              <check-box id="loopByElm" class="row" data-label="Loop 3 elements"></check-box>
+              <check-box id="loopByElm" class="row" label="Loop 3 elements"></check-box>
               <select id="loopWait"></select>
             </div>
           </div>
@@ -87,17 +87,17 @@
           </div>
           <div id="divPow" class="row ml1-2">
             <label id="lblPow" for="pow">Pow:</label>
-            <input-num id="pow" min="0.1" max="9.9" data-digits="1" value="2" data-no-resize></input-num>
+            <input-num id="pow" min="0.1" max="9.9" digits="1" value="2" no-resize></input-num>
           </div>
           <div id="divPow2" class="row end">
             <button id="linkPow" class="link linked" value="true">link</button>
-            <input-num id="pow2" min="0.1" max="9.9" data-digits="1" value="2" data-no-resize></input-num>
+            <input-num id="pow2" min="0.1" max="9.9" digits="1" value="2" no-resize></input-num>
           </div>
           <div id="bezier" class="row ml3-16">
             <div class="row align-end">
               <pre class="lbl-paren">&lpar;</pre>
               <pre class="comma">,</pre>
-              <input-num data-digits="2" data-no-resize></input-num>
+              <input-num digits="2" no-resize></input-num>
               <pre class="lbl-paren">&rpar;</pre>
             </div>
           </div>
@@ -109,7 +109,7 @@
         <!-- E.steps 3rd row-->
         <div id="divValues" class="div-steps row ml1-2 pt3-8"">
           <div id="divUserValues" class="row">
-            <input-num class="steps" data-digits="2" data-no-resize></input-num>
+            <input-num class="steps" digits="2" no-resize></input-num>
           </div>
       </div>
       </div>
@@ -121,10 +121,10 @@
       <div class="flex end">
         <div class="col lefty align-start" style="padding-top:var(--16th)"> <!-- padding compensates for lack thereof in element above -->
           <div class="row" style="align-self:stretch"> <!-- stretch because playback buttons spread evenly-->
-            <check-box id="useNow" class="row pl1-8" data-label="Use now() "></check-box>
+            <check-box id="useNow" class="row pl1-8" label="Use now() "></check-box>
             <div class="row evenly align-start grow">
-              <state-btn id="play" class="row" data-states='[[0,"play"], [1,"pause"], [2,"resume"]]'></state-btn>
-              <state-btn id="stop" class="row" data-states='[[0,"stop"], [1,"reset"]]' disabled></state-btn>
+              <state-btn id="play" class="row" states='[[0,"play"], [1,"pause"], [2,"resume"]]'></state-btn>
+              <state-btn id="stop" class="row" states='[[0,"stop"], [1,"reset"]]' disabled></state-btn>
             </div>
           </div>
           <div id="sidebar">
@@ -139,7 +139,7 @@
                 <p>Start: <span id="start" class="fixed ml5-16">   0</span></p>
                 <div id="divMid" class="row">
                   <p>Mid: &nbsp;&nbsp;</p>
-                  <input-num id="mid" min="100" max="900" value="500" data-no-resize></input-num>
+                  <input-num id="mid" min="100" max="900" value="500" no-resize></input-num>
                   <button id="clearMid" class="clear" disabled>close</button>
                 </div>
                 <p>End: &nbsp;&nbsp;<span id="end" class="fixed ml5-16">1000</span></p>
@@ -151,12 +151,12 @@
           <div class="col pl1-8" style="border-left:var(--border-hidden);">
             <div id="divSplit" class="row">
               <label for="split"></label>
-              <input-num id="split" min="0.05" max="1.95" data-digits="3" data-units="s" data-no-resize></input-num>
+              <input-num id="split" min="0.05" max="1.95" digits="3" units="s" no-resize></input-num>
               <button class="clear" disabled>close</button>
               <button class="lock">lock_open</button>
             </div>
           </div>
-          <check-box id="drawAsSteps" class="row checklist pl1-8" data-label="Draw line as steps"></check-box>
+          <check-box id="drawAsSteps" class="row checklist pl1-8" label="Draw line as steps"></check-box>
           <div class="col" style="border-left:var(--border-hidden)">
             <div id="divCopy" class="row bt mt1-2">
               <pre>Copy:</pre>

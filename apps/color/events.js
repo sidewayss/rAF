@@ -21,15 +21,18 @@ btnText  = { // textContent: boolean as number is index into each array
     roundT:  ["repeat",      "repeat_on"   ],
     collapse:["expand_less", "expand_more" ]
 };
+let picker;
 //==============================================================================
 // loadEvents() is called exclusively by load(), helps keep stuff private
 function loadEvents() {
+    picker = elms.dlgPick.firstElementChild;    // <color-picker>
+
     addEventsByElm(CLICK,  g.boolBtns,  click);
     addEventsByElm(INPUT,  [elms.time], input);
     addEventsByElm(CHANGE, [elms.time, elms.type, elms.gamut], change);
 
     addEventToElms(INPUT,  [elms.startText,   elms.endText],     input .text);
-    addEventToElms(CLICK,  [elms.startButton, elms.endButton],   click.swatch);
+    addEventToElms(CLICK,  [elms.startButton, elms.endButton],   click .swatch);
     addEventToElms(CHANGE, [elms.leftSpaces,  elms.rightSpaces], change.space);
     addEventsByElm(CLICK,  [dlg.ok, dlg.cancel], click);
     dlg.spaces.addEventListener(CHANGE, change.dlgSpaces);
@@ -136,7 +139,7 @@ const change = {
             elms.named.dispatchEvent(new Event(CHANGE)); // calls openNamed()
         }
     },
-//$$color(evt) { // <input type="color"> g.startEnd.picker, value = hex notation
+//$$color(evt) { // <input type="color"> g.startEnd.input, value = hex notation
 //$$    const
 //$$    tar = evt.target,
 //$$    txt = g[getCamel(tar)].text;
@@ -158,27 +161,27 @@ const change = {
     },
 
     dlgSpaces() {
-        dlg.picker.space = dlg.spaces.value;
+        picker.space = dlg.spaces.value;
     }
 };
 //==============================================================================
 //    click event handlers, in top-left to bottom-right screen order:
 const click = {
     swatch(evt) {        // g[start|end]
-        dlg.picker.color  = g[getCamel(evt.target)].text.value;
-        dlg.picker.target = evt.target; // can I use .dataset for objects??
-        elms.picker.showModal();
+        picker.color  = g[getCamel(evt.target)].text.value;
+        picker.target = evt.target; // can I use .dataset for objects??
+        elms.dlgPick.showModal();
     },
     ok() {
         const
-        tar = dlg.picker.target,
+        tar = picker.target,
         txt = g[getCamel(tar)].text;
-        txt.value = dlg.picker.color;
+        txt.value = picker.color;
         input.text({target:txt});
-        elms.picker.close();
+        elms.dlgPick.close();
     },
     cancel() {
-        elms.picker.close();
+        elms.dlgPick.close();
     },
  // compare() shows|hides the right side
     compare(evt) {
