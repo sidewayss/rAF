@@ -26,7 +26,7 @@ function prepLegs(o, type, s, e, w, tc, isInc) { // tc is "time" or "count"
         legNumber(leg, tc, i, ...Ez.undefGrThan0);
         legType(o, leg, i, type, isInc);
         if (leg.type == E.steps)
-            steps(o, leg, s);        // E.steps: leg.timing can set leg.time
+            steps(o, leg);           // E.steps: leg.timing can set leg.time
 
         if (leg[tc])
             legsTotal += leg[tc];    // accumulate leg.time|count
@@ -65,7 +65,8 @@ function prepLegs(o, type, s, e, w, tc, isInc) { // tc is "time" or "count"
 //         leg.timing is Array-ish, Easy, or undefined.
 //         If leg.timing is Array-ish, leg.steps can be undefined, otherwise
 //         the legs.steps or leg.steps.length must match leg.timing.length.
-function steps(o, leg, s) {
+function steps(o, leg) {
+    const s = "steps", t = "timing";
     let l, stepsIsA,
     stepsIsN = Is.Number(leg[s]);
 

@@ -335,9 +335,9 @@ class EBase {
         //---------------------------
         if (!Is.def(this.#initial)) {
             this.calcInitial(o);
-            this.#initial = Array(l);
+            this.#initial = Array(o.l);
             for (let i = 0, l = this.#cElms; i < l; i++)
-                this.#initial[i] = arr.map((_, i) => this._parseElm(i).join(""));
+                this.#initial[i] = this._parseElm(i).join("");
         }
         this.#initByElm = this.#initial.slice(1); // see _initElms()
         this.#loopElms  = this.#elms   .slice(1); // ditto
@@ -378,8 +378,8 @@ class EaserByElm extends EBase { // Easer by Element, single-elm or loopByElm
         super(o);
         this.#calcs = Array.from({length:o.l},
                                  (_, i) => new ECalc(o, o.calcs[i]));
-        this.setInitial(o); // must follow super() and this.#calcs assignment
         Ez.is(this, "ByElm");
+        this.setInitial(o); // must follow super(),this.#calcs = , and isByElm
         Object.seal(this);
     }
     _apply(e) {
