@@ -40,7 +40,7 @@ function loadCopy(dir, _named) {
 //  click.data() copies frames data for tabular validation elsewhere
 //  click.code() copies JavaScript code that creates the current animation
 const click = {
-    data() { copyText(ns.copyData("time (ms)", Easy.eKey)); },
+    data() { copyText(ns.copyData("time (ms)", E.eKey)); },
     code() { copyText(ns.copyCode(ns_named.objEz)); }
 };
 //==============================================================================
@@ -89,7 +89,7 @@ function easyToText(name, obj, varName = nameToJS(name), isMulti = !Is.def(obj),
     let txt = jsonToText(obj);
     for (const p of [TYPE, IO, "jump"])           // replace numbers with E.name
         txt = txt.replace(rgxPropertyValue(p),    // e.g. "7" = "E.pow"
-                          (m, v) => `${p}:${E.prefix}${Easy[p][v]}${m.at(-1)}`);
+                          (m, v) => `${p}:${E.prefix}${E[p][v]}${m.at(-1)}`);
 
     txt = `const ${varName} = new Easy(${txt});\n`
     if (isStp ?? isSteps(obj.type)) {

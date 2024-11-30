@@ -1,6 +1,6 @@
 export {loadTIOPow, setLink, updateTypeIO, isPow, isBezierOrSteps};
 
-import {E, Ez, P, Easy} from "../../src/raf.js";
+import {E, Ez, P} from "../../src/raf.js";
 
 import {TWO, CLICK, INPUT, CHANGE, elms, g, addEventByClass, addEventToElms,
         pairOfOthers, boolToString} from "../common.js";
@@ -17,7 +17,7 @@ function loadTIOPow() {
     Ez.readOnly(g, "links", ["link_off", LINK]); // boolean acts as 0|1 index
 
     for (sel of [elms.type, elms.io])      // populate the <select>s: #type, #io
-        for (opt of Easy[sel.id].slice(0, E.increment))
+        for (opt of E[sel.id].slice(0, E.increment))
             sel.add(new Option(opt, E[opt]));
 
     opt = elms.io.options;                 // sort io in a user-friendly order

@@ -8,7 +8,7 @@ export const
     wait   = 400,                  // changePlay()=>raf.play(ns.wait);
     formatFrames = true
 ;
-import {E, U, F, P, Easy} from "../../src/raf.js";
+import {E, U, F, P} from "../../src/raf.js";
 
 import {ezX}            from "../load.js";
 import {storeCurrent}   from "../local-storage.js";
@@ -91,7 +91,7 @@ function updateX(frm) {
 // setCounters() is called exclusively by updateCounters()
 function setCounters(frm, defD) {
     let decimals, digits, elements, i, isValue, key, n, txt;
-    for (key of Easy.eKey) {
+    for (key of E.eKey) {
         isValue  = (key[0] == "v");
         digits   = pad[key];
         decimals = isValue ? 0 : defD;

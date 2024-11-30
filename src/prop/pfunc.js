@@ -3,7 +3,7 @@
 // *copyright disambiguation* For P-Funk see:
 //   https://youtu.be/f_R3c2TIV-E?list=OLAK5uy_k5BKg6aR7SkE69hOjKtbSTVMLYr-6AftU
 //==============================================================================
-import {U, Is} from "../globals.js";
+import {E, U, Is} from "../globals.js";
 import {Ez}    from "../ez.js";
 
 export const // units by type

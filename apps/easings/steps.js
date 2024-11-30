@@ -7,12 +7,12 @@ export const
 EASY   = "easy",
 TIMING = "timing";
 
-import {E, Is, Ez, P, Easy} from "../../src/raf.js";
+import {E, Is, Ez, P} from "../../src/raf.js";
 
 import {D, pad, secs, formatNumber, timeFrames, updateTime} from "../update.js";
 import {getNamed, getNamedEasy}                             from "../local-storage.js";
-import {MILLI, COUNT, SELECT, DIV, LABEL, INPUT, CHANGE,
-        elms, g, addEventByClass}                           from "../common.js";
+import {MILLI, COUNT, SELECT, DIV, LABEL, CHANGE, elms, g, addEventByClass}
+                                                            from "../common.js";
 
 import {range, wasStp, refresh} from "./_update.js";
 import {changeTime}             from "./chart.js"
@@ -31,7 +31,7 @@ function loadSteps() {
     let i, sel, str;
     FORMAT_END = [pad.milli, 0, elms.end];
 
-    STEPS = Easy.type[E.steps]; // must wait for PFactory.init() to run
+    STEPS = E.type[E.steps]; // must wait for PFactory.init() to run
     Ez.readOnly(elms,           // elms.divsSteps is for updateTypeIO()
                 Ez.toCamel(`${DIV}s`, STEPS),
                 document.getElementsByClassName(`${DIV}-${STEPS}`));
@@ -41,7 +41,7 @@ function loadSteps() {
         sel.add(new Option(i));
 
     sel = elms.jump;
-    for (str of Easy.jump)
+    for (str of E.jump)
         sel.add(new Option(str, E[str]));
 
     sel.value = E.end;  // the CSS default jump value

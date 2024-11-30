@@ -4,7 +4,7 @@ export const
 DEFAULT_NAME = "",             // default value for elms.named[0]
 DEFAULT = "default";           // default text  ditto
 
-import {E, Easy} from "../src/raf.js";   // all for a reserved name...
+import {E} from "../src/raf.js";
 
 import {loadCopy}                             from "./copy.js";
 import {getNamedBoth, setNamed, storeCurrent} from "./local-storage.js";
@@ -19,7 +19,7 @@ let ns_load;                        // = import(_load.js) for openNamed()
 // loadNamed() called by loadCommon()
 function loadNamed(isMulti, dir, _load) {
     ns_load = _load;
-    LINEAR  = Easy.type[E.linear];        // #easies[0].text, see click.ok()
+    LINEAR  = E.type[E.linear];           // #easies[0].text, see click.ok()
     setPrefix(isMulti ? MEASER_ : EASY_); // prefix by class
 
     elms.named.addEventListener(CHANGE, openNamed, false);

@@ -2,7 +2,7 @@ export {load, getEasies, initEasies, updateAll, resizeWindow};
 
 export const rafChecks = ["useNow","frameZero","initZero"];
 
-import {E, U, P, Pn, Ease, Ez, Easy} from "../../src/raf.js";
+import {E, U, P, Pn, Ease, Ez} from "../../src/raf.js";
 
 import {BaseElement} from "/html-elements/base-element.js"
 
@@ -115,7 +115,7 @@ function checkWH(elm) {
 // getEasies() is called exclusively by loadJSON()
 function getEasies(_, json) {
     let i,    // all but i and elm are consts, but this reads better
-    id   = Easy.type[E.bezier],
+    id   = E.type[E.bezier],
     div  = elms[id],
     elm  = div.firstElementChild,          // sub-<div> wrapper
     divs = [elm],

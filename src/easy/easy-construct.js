@@ -5,8 +5,8 @@ export {prepLegs, override, spreadToEmpties, legText, legNumber, legUnit,
 
 import {EBezier} from "./ebezier.js";
 
-import {E}  from "../globals.js";
-import {Ez} from "../ez.js";
+import {E, Is} from "../globals.js";
+import {Ez}    from "../ez.js";
 //==============================================================================
 // prepLegs() collects legsTotal and o.emptyLegs for spreading #time or #count
 //            across legs, and sets #wait, #legsWait, and #time or #count.

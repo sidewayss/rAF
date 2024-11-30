@@ -8,7 +8,7 @@ chart = {},      // SVG chart elements and viewBox array
 range = {},      // SVG vertical pseudo-range element
 loopFrames = [];
 
-import {E, U, P, Pn, Is, Ez, Easy} from "../../src/raf.js";
+import {E, U, P, Pn, Is, Ez} from "../../src/raf.js";
 
 import {ezX, raf}              from "../load.js";
 import {MILLI, COUNT, elms, g} from "../common.js";
@@ -228,7 +228,7 @@ function pseudoUpdate() {
 function getFrame(t, ex, ey) {
     const frm = {t, x:ex.value, y:ey.value};  // .y is an alias for .value
 
-    for (var key of ["status", ...Easy.eKey])
+    for (var key of ["status", ...E.eKey])
         frm[key] = ey[key];
 
     return frm;
@@ -275,7 +275,7 @@ function formatDuration(val, d) {
 //==============================================================================
 // setCounters() is called exclusively by updateCounters()
 function setCounters(frm, d, pad) {
-    for (var key of Easy.eKey)
+    for (var key of E.eKey)
         formatNumber(frm[key], pad[key], d, elms[key]);
 }
 //==============================================================================
