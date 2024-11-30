@@ -105,7 +105,7 @@ function disablePlay(isPlaying, isPausing) {
     let elm
     for (elm of [...g.disables,
                  ...g.buttons.filter(btn => btn.dataset.enabled)])
-        setAttrBool(elm, "disabled", isPlaying);
+        elm.toggleAttribute("disabled", isPlaying);
 
     elm = elms.x
     if (isPlaying) {

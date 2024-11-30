@@ -5,6 +5,8 @@ preDoc;    // prefix for this document, see local-storage.js
 
 import {E, Ez, P, Easy, Easies, AFrame, rAFInit} from "../src/raf.js";
 
+import {BaseElement} from "/html-elements/base-element.js"
+
 import {getNamed, getNamedObj, getNamedBoth, setNamed} from "./local-storage.js";
 import {msecs, loadUpdate, formatNumber}               from "./update.js";
 import {DEFAULT_NAME, loadNamed, disableSave, disablePreset, disableDelete}
@@ -15,7 +17,7 @@ import {MILLI, COUNT, ONE, INPUT, SELECT, BUTTON, DIV, LABEL, dlg, elms, g,
 import(_load.js): load, getEasies, initEasies, updateAll, easeFinally,
                   resizeWindow
 */
-let awaitCustom, awaitNamed, awaitUpdate, ns, ns_named;
+let awaitNamed, awaitUpdate, ns, ns_named;
 const RESIZE = "resize";
 
 const awaitFonts = [            // start loading fonts asap
@@ -65,7 +67,8 @@ function loadCommon() {
     byTag[0].splice(byTag[0].indexOf(elms.x), 1);  // elms.x disables abnormally
     Ez.readOnly(g, "disables", [...byTag[0],       // <input>
                                 ...byTag[1],       // <select>
-                                ...byTag.at(-2)]); // <check-box>
+                                ...byTag.at(-4),   // <input-num>, easings only
+                                ...byTag.at(-2)]); // <check-box>, not color
     Ez.readOnly(g, "buttons",  byTag[2]);          // <button>, see disablePlay()
     Ez.readOnly(g, "playback", byTag.at(-3));      // <state-btn> #play,#stop
 
@@ -90,36 +93,26 @@ function loadCommon() {
         awaitNamed  = Ez.promise();   // these two resolve in loadJSON()
         awaitUpdate = Ez.promise();
         fetch("../common.json")
-          .then (rsp => loadJSON(rsp, is.multi, dir, ns, hasVisited, msg))
+          .then (rsp => loadJSON(rsp, is, dir, ns, name, hasVisited, byTag, msg))
           .catch(err => errorAlert(err, msg));
-
-        awaitCustom = byTag.slice(-4) // the custom elements
-                           .filter(v => v.length) // remove unused tags
-                           .map(v => customElements.whenDefined(v[0].localName));
-        if (is.promise)
-            awaitCustom.push(is.promise);         // for easings pre-await-top
-
-        Promise.all([document.fonts.ready, awaitNamed, awaitUpdate, ...awaitCustom])
-               .then (()  => loadFinally(is, name, hasVisited, id))
-               .catch(err => errorAlert(err));
 
         window.addEventListener(RESIZE, ns.resizeWindow, false);
     }).catch(errorAlert);
 }
 //==============================================================================
 // loadJSON() executes on fetch(common.json).then(), could be inlined & indented
-function loadJSON(response, isMulti, dir, ns, hasVisited, msg) {
+function loadJSON(response, is, dir, ns, name, hasVisited, byTag, msg) {
     if (response.ok)
         response.json().then(json => {
             g.presets = json.presets;  // must precede loadNamed()
-            loadNamed(isMulti, dir, ns)
+            loadNamed(is.multi, dir, ns)
               .then(namespace => {
                 ns_named = namespace;
                 awaitNamed.resolve();
             }).catch(
                 awaitNamed.reject      // let Promise.all() handle it
             );
-            loadUpdate(isMulti, dir)
+            loadUpdate(is.multi, dir)
               .then (() => {
                 ns.getEasies(hasVisited, json);
                 let elm, id, title;    // apply titles to elements and labels
@@ -131,10 +124,23 @@ function loadJSON(response, isMulti, dir, ns, hasVisited, msg) {
                             elm.labels[0].title = title;
                     }
                 }
-                awaitUpdate.resolve();
-            }).catch(
-                awaitUpdate.reject
-            );
+                const awaitCustom =
+                    byTag.slice (-4)   // the page's custom elements
+                         .filter(v => v.length)
+                         .map   (v => customElements.whenDefined(v[0].localName));
+                if (is.promise)
+                    awaitCustom.push(is.promise);
+                if (is.easings) {      // byTag is missing clones
+                    const nums = [...document.getElementsByTagName("input-num")];
+                    awaitCustom.push(
+                        ...nums.map(num => BaseElement.promises.get(num))
+                    );
+                }
+
+                Promise.all([document.fonts.ready, awaitNamed, ...awaitCustom])
+                    .then (()  => loadFinally(is, name, hasVisited, id))
+                    .catch(errorAlert);
+            }).catch(errorAlert);
 
             getNamed();                // populate elms.named from localStorage
         }).catch(err => errorAlert(err, msg));
@@ -185,8 +191,8 @@ function loadFinally(is, name, hasVisited, id) {
     //-------------
     if (is.easings) {   // only easings has <input-num>, must precede updateAll()
         for (obj of document.getElementsByTagName("input-num")) {
-            obj.autoResize = true; // this module loads after the <input-num>'s
-            obj.resize();          // connectedCallback(), and it adds fonts.
+            obj.autoResize = true;
+            obj.resize();
         }
     }
     ns.updateAll(obj);
