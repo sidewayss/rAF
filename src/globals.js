@@ -1,6 +1,4 @@
-export {E, Ease, F, Fn, HD, Is, M, P, Pn, Rx, U};
-
-import {Ez} from "./raf.js";
+export {E, Ease, HD, Is, M, Rx, U};
 
 // All the consts objects except Rx and Is are populated in PFactory.init()
 const U  = {pct:"%"};   // units, e.g. "px", "deg"
@@ -14,9 +12,23 @@ const E  = {            // Easy-related constants, PFactory.init() adds enums
     rad :Math.PI / 180, // multipliers to convert from degrees to other units
     grad:10 / 9,
     turn:1 / 360,
-    svgRotX: 0,         // SVG rotate() has its own argument order
-    svgRotY: 1,         // CSS rotate shares arg order with rotate3d(), but it
-    svgRotAngle: 2      // has "unstructured" alternate args and arg order.
+    svgRotA:0,         // SVG rotate() has its own argument order
+    svgRotX:1,         // CSS rotate shares arg order with rotate3d(), but it
+    svgRotY:2,         // has "unstructured" alternate args and arg order.
+                       // string arrays for enums, <option>, <li>, etc.
+    eKey  :["value","unit","comp"],
+    io    :["in","out","inIn","outIn","inOut","outOut"],
+    jump  :["none","start","end","both"],
+    status:["arrived","tripped","waiting","inbound","outbound",
+            "initial","original","pausing","playing","empty"],
+    type  :["linear","sine","circ","expo","back","elastic","bounce",
+            "pow","bezier","steps","increment"],
+                        // join() joins those string arrays for error messages
+    join(arr, start = 0, end = Infinity) {
+        return arr.slice(start, end)
+                  .map(v => this.prefix + v)
+                  .join(", ");
+    }
 };
 const Ease = {          // preset easing names/values
     ease:[{bezier:[0.25, 0.1, 0.25, 1.0]}]// I can't think of a better name
@@ -54,58 +66,3 @@ const Is = {            // boolean functions, highly inlineable
     }
 };
 Object.seal(Is);
-//==============================================================================
-// The prime targets of PFactory.init():
-const Fn = {};         // function names
-const Pn = {};         // property and attribute names
-const F  = {           // Func, CFunc, ColorFunc, SRFunc instances by name
- // joinCSSpolygon() joins an array of numbers into a CSS polygon() value
-    joinCSSpolygon(arr, fillRule, u = U.px) {
-        let i, l, str;
-        const seps = [E.sp, E.comma]
-        str = F.polygon.prefix + (fillRule ? fillRule + E.comma: "");
-        for (i = 0, l = arr.length - 1; i < l; i++)
-            str += arr[i] + u + seps[i % 2];
-        return str + arr[i] + u + E.rp;     // no trailing separator
-    },
-};
-const P  = {           // Prop, Bute, PrAtt, HtmlBute instances by name
- // visible is useful as a boolean, for one or more elements
-    visible(elms, b) {
-        const val = b ? "visible" : "hidden";
-        elms = Ez.toElements(elms);
-        for (const elm of elms)
-            P.visibility.setOne(elm, val);
-    },
-    isVisible(elm) { // one element at a time
-        return P.visibility.getOne(elm) == "visible";
-    },
- // displayed does something similar for display
-    displayed(elms, b, value) {
-        boolNone(Pn.display, elms, b, value);
-    },
-    isDisplayed(elm) { // one element at a time
-        return P.display.getOne(elm) != "none";
-    },
- // events does something similar for pointer-events
-    events(elms, b, value) {
-        boolNone(Pn.pE, elms, b, value);
-    },
-    hasEvents(elm) {
-        return elm.style.pointerEvents != "none";
-    },
- // enable() is an inverted pseudo-disabled attribute for SVG and other elements
- //          that don't have a disabled attribute. It sets pointer-events:none
- //          and tabIndex = -1 instead. The name is inverted to avoid confusion.
-    enable(elms, b, value, i = b ? 0 : -1) {
-        P.events(elms, b, value);
-        for (const elm of Ez.toElements(elms))
-            elm.tabIndex = i;
-    }
-};
-// boolNone helps P.displayed() and P.events()
-function boolNone(name, elms, b, value) {
-    const val = b ? (value ?? "") : "none";
-    for (const elm of Ez.toElements(elms))
-        P[name].setOne(elm, val);
-}

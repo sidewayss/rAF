@@ -2,7 +2,8 @@ export {endToDist};
 
 import {faDelete} from "./urcfa.js";
 
-import {Ez, Is} from "../raf.js"
+import {Is} from "../globals.js";
+import {Ez} from "../ez.js";
 //==============================================================================
 // endToDist() converts factor from end to distance, if addend is undefined it
 //             defaults to zero and end already equals distance.

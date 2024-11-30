@@ -1,5 +1,7 @@
-import {Ez, Is} from "./raf.js";
-import {PBase}  from "./prop/pbase.js";
+import {Is} from "./globals.js";
+import {Ez} from "./ez.js";
+
+import {PBase} from "./prop/pbase.js";
 
 // ACues: a barebones cue list
 export class ACues {
@@ -93,10 +95,9 @@ export class ACues {
     }
 //  splice(), push(), unshift(), insert() if you want to manage array sorting
     splice(start, deleteCount) {
-        const cues = Array.prototype.slice.call(arguments, 2);
+        let cues = Array.prototype.slice.call(arguments, 2);
         if (this.#validate)
-            for (const cue of cues)
-                cue = this.#validate(cue);
+            cues = cues.map(cue =>this.#validate(cue));
 
         return this.#cues.splice(start, deleteCount, ...cues);
     }

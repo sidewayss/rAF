@@ -6,7 +6,12 @@
 // be called for gradients, so you must set o.currentValue for HSL/HWB there.
 export {fromColor, rgbToHxx, rgbToHsl, rgbToHwb};
 
-import {C, U, Rx, E, Ez, F, Fn} from "../raf.js";
+import {F, Fn} from "./pfunc.js";
+import {CFunc} from "./func.js";
+import {C}     from "./color-names.js"
+
+import {E, Rx, U} from "../globals.js";
+import {Ez}       from "../ez.js";
 //==============================================================================
 // fromColor() parses a DOM value, converts hex to rgb() and color names to
 //             rgb(), hsl(), or hwb(), returns an array of 3 or 4 function
@@ -18,7 +23,7 @@ function fromColor(v, toNum, f = F.rgb, u = f._u) {
     if (!f.isFunc)          // duplicate of error in EFactory getFunc()...
         Ez._mustBeErr("func", "an instance of Func");
     else if(!f.isCFunc)
-        Ez._invalidErr("color function", f.name, PFactory.funcC);
+        Ez._invalidErr("color function", f.name, CFunc.funcNames);
     //-------------------
     let arr, canConvert;
     const A = C.a;

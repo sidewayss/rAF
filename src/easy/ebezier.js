@@ -29,7 +29,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import {Ez} from "../raf.js";
+import {Ez} from "../ez.js";
 //==============================================================================
 export class EBezier {
 //  #accuracy is a relative level of precision for the calculation. If you want

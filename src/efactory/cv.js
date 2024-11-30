@@ -2,7 +2,11 @@ export {getCV, parseUn, current};
 
 import {cjsTo} from "./color.js";
 
-import {C, Ez, Fn, Is} from "../raf.js"
+import {Is} from "../globals.js";
+import {Ez} from "../ez.js";
+
+import {Fn} from "../prop/pfunc.js";
+import {C}  from "../prop/color-names.js"
 //==============================================================================
 function getCV(o, hasElms) {
     let cv = o.currentValue ?? o.cV;

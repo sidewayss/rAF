@@ -1,6 +1,6 @@
 export {color, cjsTo};
 
-import {Ez} from "../raf.js"
+import {Ez} from "../ez.js"
 //==============================================================================
 // color() sets o.cjs, the primary Color instance
 function color(o) {

@@ -1,5 +1,9 @@
 //!!rename #targets to #active and #backup to #targets to mimic class Easies!!
-import {E, Ez, Is, Easies, ACues} from "./raf.js";
+import {E, Is} from "./globals.js";
+import {Ez}    from "./ez.js";
+import {ACues} from "./acues.js";
+
+import {Easies} from "./easy/easies.js";
 
 // AFrame: the animation frame manager
 export class AFrame {

@@ -1,6 +1,11 @@
 export {getFunc, urcfa, optional, faDelete};
 
-import {C, E, Ez, F, Is} from "../raf.js"
+import {E, Is} from "../globals.js";
+import {Ez}    from "../ez.js";
+
+import {F}     from "../prop/pfunc.js"
+import {PBase} from "../prop/pbase.js"
+import {C}     from "../prop/color-names.js"
 //==============================================================================
 function getFunc(o, cv) {
     if (!o.prop || o.cjs)
@@ -112,7 +117,7 @@ function fa(o, keys, isAddend) {
 // faToNumber() converts fa values to valid numbers, not0 for distance
 function faToNumber(val, key, o, not0) {
     if (val !== E.cV) {                // exclude null
-        val = Ez.toNumby(val, o.func, o.u);
+        val = PBase.toNumby(val, o.func, o.u);
         if (!Is.A(val))                // default,  !neg,     ,!float,!undef
             val = Ez.toNumber(val, key, undefined, false, not0, false, false);
     }

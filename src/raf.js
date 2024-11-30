@@ -1,8 +1,9 @@
 // Export the library:
-export * from "./globals.js";           // E, Ease, F, Fn, HD, Is, P, Pn, U, Rx
+export * from "./globals.js";           // E, Ease, HD, Is, U, Rx
 export * from "./ez.js";                // Ez
 export * from "./prop/color-names.js";  // C
-export * from "./prop/pfactory.js";     // PFactory initializes everything
+export * from "./prop/pfunc.js";        // F, Fn, P, Pn, PFunc
+export * from "./prop/pfactory.js";     // PFactory
 export * from "./easy/easy.js";         // Easy
 export * from "./easy/incremental.js";  // Incremental, subclass of Easy
 export * from "./easy/easies.js";       // Easies
@@ -12,7 +13,6 @@ export * from "./aframe.js";            // AFrame
 // Initialization is required:
 import {E, Ease}  from "./globals.js";
 import {Ez}       from "./ez.js";
-import {Easy}     from "./easy/easy.js";
 import {PFactory} from "./prop/pfactory.js";
 
 let isInitialized;
@@ -27,12 +27,21 @@ export function rAFInit() {
     } //------------
     PFactory.init();
 
-    let arr, key, obj;      // E enumerations
-    for (arr of [Easy.status, Easy.type, Easy.io, Easy.jump, Easy.set])
+    let arr, key, obj;
+    const                         // E enumerations:
+    vB  = ["x","y","w","h"],      // SVG viewBox++
+    set = ["let","set","net"];    // Prop.proto.set() options, sort of...
+
+    for (arr of [vB, set, E.io, E.jump, E.status, E.type])
         arr.forEach((v, i) => E[v] = i);
 
-    for (key of Easy.eKey)  // E string constants
+    for (key of E.eKey)           // E string constants
         E[key] = key;
+
+    E.z      = E.w;               // for transform3d()
+    E.width  = E.w;               // for convenience, consistency with P
+    E.height = E.h;
+    E.angle  = E.h;               // for rotate3d(), CSS rotate property
 
     // Popular arguments for Ez.toNumber() and Easy.legNumber():
     // Can't define these inside const Ez because ...Ez.foo is not available
@@ -50,15 +59,15 @@ export function rAFInit() {
     let inn, out, pow;      // "in" is a reserved word, thus "inn"
     const eases = [
         ["",1.685], ["quad",2], ["cubic",3], ["quart",4], ["quint",5],
-        ...Easy.type.slice(1, 7).map(v => [v,])
+        ...E.type.slice(1, 7).map(v => [v,])
     ];
     for ([key, pow] of eases) {
         inn = pow ? {pow:pow} : {type:E[key]};
         out = {...inn, io:E.out};
         inn.io = E.in;      // explicit default value
         arr = [[inn],[out],[inn, out],[out, inn],[inn, {...inn}],[out, {...out}]];
-        key ? arr.forEach((v, i) => Ease[key + Ez.initialCap(Easy.io[i])] = v)
-             : arr.forEach((v, i) => Ease[Easy.io[i]] = v);
+        key ? arr.forEach((v, i) => Ease[key + Ez.initialCap(E.io[i])] = v)
+             : arr.forEach((v, i) => Ease[E.io[i]] = v);
     }
     // Lock 'em up
     for (obj of [E, Ease, Ez])

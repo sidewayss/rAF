@@ -1,9 +1,9 @@
 import { getBabelOutputPlugin } from "@rollup/plugin-babel";
-import { minify } from "rollup-plugin-swc-minify";
+import terser from "@rollup/plugin-terser";
 
 const
 format = "es",
-input  = "raf.js";
+input  = "src/raf.js";
 
 export default {
   input,
@@ -11,16 +11,30 @@ export default {
     file: `dist/${input}`,
     format
   },
-  plugins: [
+  plugins: [/*
     getBabelOutputPlugin({
       comments: false,
       assumptions: {"noDocumentAll":true},
       plugins: [
-        ["babel-plugin-private-to-public", {"minify":true, "aToZ":true}],
+        ["babel-plugin-private-to-public", {"prefix":"ø"}],    // &#xF8
         "@babel/plugin-transform-nullish-coalescing-operator",
         "@babel/plugin-transform-optional-chaining"
       ]
-    }),
-    //minify({format})
+    })/*,
+    terser({
+      compress: {
+        keep_classnames: true,
+        keep_infinity: true,
+        module: true
+      },
+      mangle: {
+        keep_classnames: true,
+        module: true,
+        toplevel: false,
+        properties: {
+          regex: /^ø/
+        }
+      }
+    })*/
   ]
 };

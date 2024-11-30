@@ -4,7 +4,7 @@ export {MEBase, MEaser, MEaserByElm};
 import {EBase} from "./easer.js";
 import {ECalc} from "./ecalc.js";
 
-import {Ez}    from "../raf.js";
+import {Ez} from "../ez.js";
 
 // This would benefit from multiple inheritance: ByElm and ME
 class MEBase extends EBase { // M = multi E = Easer, the multi-ease base class

@@ -1,7 +1,9 @@
 export {plugCV};
 
+import {Ez} from "../ez.js";
+
+import {C}     from "../prop/color-names.js"
 import {PBase} from "../prop/pbase.js";
-import {C, Ez}    from "../raf.js"
 //==============================================================================
 // plugCV() creates o.value[elm[arg]] and plugs it with unmasked current
 //          values and separators. Plug contents derive from these two arrays:

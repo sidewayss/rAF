@@ -3,10 +3,10 @@
 export {prepLegs, override, spreadToEmpties, legText, legNumber, legUnit,
         getType, getIO, toBezier, toNumberArray};
 
-import {E, Is, Ez, Easy} from "../raf.js";
-
-import {steps}   from "./easy-steps.js"
 import {EBezier} from "./ebezier.js";
+
+import {E}  from "../globals.js";
+import {Ez} from "../ez.js";
 //==============================================================================
 // prepLegs() collects legsTotal and o.emptyLegs for spreading #time or #count
 //            across legs, and sets #wait, #legsWait, and #time or #count.
@@ -26,7 +26,7 @@ function prepLegs(o, type, s, e, w, tc, isInc) { // tc is "time" or "count"
         legNumber(leg, tc, i, ...Ez.undefGrThan0);
         legType(o, leg, i, type, isInc);
         if (leg.type == E.steps)
-            steps(o, leg);           // E.steps: leg.timing can set leg.time
+            steps(o, leg, s);        // E.steps: leg.timing can set leg.time
 
         if (leg[tc])
             legsTotal += leg[tc];    // accumulate leg.time|count
@@ -58,6 +58,99 @@ function prepLegs(o, type, s, e, w, tc, isInc) { // tc is "time" or "count"
         throw new Error("You must define a non-zero value for obj.time or every leg.time.");
     //--------------                 // !isInc is only time, no count
     return legsWait;
+}
+// steps() consolidates code in prepLegs()
+//         Each step becomes a leg to make processing simpler during animation.
+//         leg.steps  is Number, Array-ish, undefined. leg.easy eases leg.steps.
+//         leg.timing is Array-ish, Easy, or undefined.
+//         If leg.timing is Array-ish, leg.steps can be undefined, otherwise
+//         the legs.steps or leg.steps.length must match leg.timing.length.
+function steps(o, leg, s) {
+    let l, stepsIsA,
+    stepsIsN = Is.Number(leg[s]);
+
+    if (!stepsIsN && Is.def(leg[s])) {  // numeric string, array, or invalid
+        const n = Is.A(leg[s]) ? NaN : parseFloat(leg[s]);
+        if (Number.isNaN(n)) {      // it's an array of numbers or an error
+            try {
+                leg[s] = toNumberArray(leg[s].slice(), s);
+            } catch {
+                Ez._mustBeErr(s, "a Number, an Array [Number], or convertible "
+                               + "to Number or Array [Number]")
+            }
+            stepsIsA = true;        // ...slice() preserves user array //!!how do you preserve it and set it at the same time??
+            leg.stepsReady = true;
+            if (Is.def(leg.start))
+                console.info(leg.start != leg[s][0]); //!!leg.start is ignored anyway
+            if (Is.def(leg.end))
+                console.info(leg.end != leg[s].at(-1)); //!!leg.end is ignored anyway
+        }
+        else {                      // parseFloat() converted it to a number
+            leg[s] = n;
+            stepsIsN = true;
+        }
+    }
+    else if (!Is.def(leg.easy))
+        leg.easy = o.easy;
+
+    if (!Is.def(leg[t]))                // validate/convert leg.timing
+        leg[t] = o[t];
+    if (Is.def(leg[t]) && !leg[t].isEasy) {
+        try {                           // it's an array of numbers or error
+            leg[t] = toNumberArray(leg[t], t);
+        } catch {
+            Ez._mustBeErr(t, "an Easy, an Array [Number], convertible "
+                           + "to Array [Number], or undefined")
+        }
+        Ez._mustAscendErr(leg[t], `${t} array`);
+        l = leg[t].length;
+        if (stepsIsN && leg[s] != l)
+            Ez._mustBeErr(`${s}`,
+                          `the same as ${t}.length: ${leg[s]} != ${l}`);
+        if (stepsIsA && leg[s].length != l)
+            Ez._mustBeErr(`${s} and ${t} arrays`,
+                          `the same length: ${leg[s].length} != ${l}`);
+        //-------------------------
+        const last = leg[t].at(-1);
+        if (!Is.def(leg.time) || last > leg.time) {
+            if (last > leg.time)
+                console.warn("Your timing array extends past the total "
+                           + "leg.time, and has overriden leg.time: "
+                           + `${last} > ${leg.time}`);
+            leg.time = last;        // avoids spreadToEmpties(), errors
+        }
+        leg.timingReady = true;
+    }
+    else {                          // auto-generate linear waits based
+        const                       // on steps/ends and jump.
+        j    = "jump",
+        jump = leg.easy             // eased values means start = 0, end = 1
+             ? E.end                //  E.end is the CSS steps() default
+             : Number(leg[j] ?? o[j] ?? E.end);
+
+        if (!E.jump[jump])
+            Ez._invalidErr(j, jump, E.join(E.jump));
+        //-------------
+        let c;                      // the number of segments, the divisor
+        if (stepsIsA) {
+            l = leg[s].length;      // formulas for c/l are backwards here
+            c = l + Number(jump == E.none)
+                  - Number(jump == E.both);
+            if (!c)
+                throw new Error(`E.both requires 2 ${s} minimum.`);
+        }
+        else {
+            c = Ez.toNumber(leg[s], s, 1, ...Ez.intGrThan0);
+            l = c + Number(jump == E.both)
+                  - Number(jump == E.none);
+            if (!l)
+                throw new Error(`{${s}:1, ${j}:E.none} = zero ${s}.`,
+                                {cause:"zero steps"});
+        } //----------------------------------
+        const offset = jump & E.start ? 0 : 1;
+        leg.waits = Array.from({length:l}, (_, i) => (i + offset) / c);
+        leg.jump  = jump;   // validated/converted, see prepLegs(): lastLeg.jump
+    }                       // only matters for #lastLeg...
 }
 //==============================================================================
 // override() overrides o vs leg for start, end, time|count
@@ -114,7 +207,7 @@ function legUnit(leg, start, dist, keys) {
 // value instead of setting the type.
 function getType(o, defaultType, type = o.type) {
     if (!Is.def(type)) {
-        for (const name of Easy.type.slice(E.pow))
+        for (const name of E.type.slice(E.pow))
             if (Is.def(o[name]))
                 return E[name];  // E.pow, E.bezier, E.steps, E.increment
         //----------------------
@@ -127,8 +220,8 @@ function getType(o, defaultType, type = o.type) {
             else
                 return E.linear; // fallback default value
     }
-    else if (!Easy.type[type])
-        Ez._invalidErr("type", type, Easy._listE("type"));
+    else if (!E.type[type])
+        Ez._invalidErr("type", type, E.join(E.type));
     //----------
     return type;
 }
@@ -141,7 +234,7 @@ function legType(o, leg, i, defaultType, isInc) {
     if (type >= E.pow) { // E.pow, E.bezier, E.steps, and E.increment
         // For E.pow and E.bezier leg[name] must be defined
         // For E.steps and E.increment additional validation occurs later
-        const name = Easy.type[type];
+        const name = E.type[type];
         if (!Is.def(leg[name])) {
             if (!Is.def(o[name]) && type < E.steps)
                 Ez._mustBeErr(`${legText(i, name)}`, "defined");
@@ -165,18 +258,18 @@ function getIO(io, defaultEase = E.in) {
         case E.inOut: case E.inIn:
         case E.outIn: case E.outOut:
             if (arguments.length > 2) // leg.io, not o.io
-                Ez._cantBeErr("leg.io", `${Easy._listE(name, E.inIn)}. `
+                Ez._cantBeErr("leg.io", `${E.join(E.io, E.inIn)}. `
                                         + "You must split this leg into two legs");
         case E.in: case E.out:
             return io;
         case undefined:
             return defaultEase;
         default:
-            Ez._invalidErr(name, io, Easy._listE(name));
+            Ez._invalidErr(name, io, E.join(E.io));
     }
 }
 //==============================================================================
-function toBezier(val, time, name = Easy.type[E.bezier]) {
+function toBezier(val, time, name = E.type[E.bezier]) {
     try {
         if (val.isEBezier)
             val.time = time;

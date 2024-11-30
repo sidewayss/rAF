@@ -14,10 +14,12 @@ import {calcEaser, calcMEaser,
         calcByElm, calcNoElms}    from "./calcs.js";
 
 import {PBase}     from "../prop/pbase.js";
-import {E, Ez, Is} from "../raf.js"
+import {E, Is} from "../globals.js";
+import {Ez}     from "../ez.js";
 //==============================================================================
 // create() instantiates a bottom-level subclass of EBase and returns it.
-function create(o, set, isEasies) { // start by validating o.properties:
+function create(o, set, validEasy) { // start by validating o.properties:
+    const isEasies = Boolean(validEasy);
     if (Is.def(set) && (isEasies ? !o.easies : Boolean(o.easies))) {
         const arr = isEasies ? ["single", "Easy",   "Easies"]
                              : ["multi",  "Easies", "Easy"  ];
@@ -53,7 +55,7 @@ function create(o, set, isEasies) { // start by validating o.properties:
     getFunc(o, cv);                 // getFunc() can set o.func
     urcfa  (o);                     // addend, factor, count, required, units
     config (o, hasElms);            // configure addend, factor, max, min
-    mask   (o);                     // parse|create mask, easies for MEaser,
+    mask   (o, validEasy);          // parse|create mask, easies for MEaser,
     if (hasElms) {                  // o.c for isNet, isPseudo.
         if (o.isNet)
             parseUn(o);             // normalize stuff across elements

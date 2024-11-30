@@ -1,6 +1,4 @@
-import {E, Is, Rx} from "./raf.js";
-
-import {fromColor} from "./prop/color-convert.js";
+import {E, Is, Rx} from "./globals.js";
 
 // Ez is a factotem collection of functions. Some are general purpose and others
 // are unlikely to be used outside of rAF. rafInit() adds more toNumber() arg
@@ -136,15 +134,6 @@ export const Ez = {
 //  toSum() is a callback for Array.prototype.reduce(), reduces to a sum.
     toSum(sum, v) {
         return sum + v;
-    },
-//  toNumby() is soft numeric conversion for property/attribute string values
-//            like Johnny Cochran: "If it doesn't convert, you must revert."
-//            parseFloat() allows unit suffix and rejects, thus preserves, null
-//            color strings are a special case, as they always are
-    toNumby(v, f, u) {
-        const n = parseFloat(v);
-        return !Number.isNaN(n) ? n : f?.isCFunc ? fromColor(v, true, f, u)
-                                                 : v;
     },
 //  toNumber() is numeric validation/conversion, too many options...
     toNumber(v, name, defaultValue,

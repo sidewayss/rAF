@@ -7,11 +7,13 @@
 //   ECalc._c01() converts a single number to a 1D array of numbers
 export {calcEaser, calcMEaser, calcByElm, calcNoElms};
 
+import {Is} from "../globals.js";
+import {Ez} from "../ez.js";
+
 import {Easer,  EaserByElm}  from "../easer/easer.js";
 import {MEaser, MEaserByElm} from "../easer/measer.js";
 
 import {PBase}  from "../prop/pbase.js";
-import {Ez, Is} from "../raf.js"
 
 const noop = {cNN:"_noop"};
 //==============================================================================

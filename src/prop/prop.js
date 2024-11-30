@@ -2,8 +2,8 @@
 export {Prop, Bute, PrAtt, HtmlBute}
 
 import {PBase} from "./pbase.js";
-
-import {Ez, F, P} from "../raf.js"
+import {F, P}  from "./pfunc.js";
+import {Ez}    from "../ez.js";
 //==============================================================================
 class Prop extends PBase {
     constructor() {

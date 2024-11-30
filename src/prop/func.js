@@ -1,8 +1,11 @@
 // Not exported by raf.js
 export {Func, CFunc, ColorFunc, SRFunc};
 
-import {PFactory, ANGLES, EMPTY_PCT} from "./pfactory.js";
-import {C, E, Ez, Fn, Is, U} from "../raf.js";
+import {ANGLES, EMPTY_PCT, Fn, PFunc} from "./pfunc.js";
+import {C}                            from "./color-names.js"
+
+import {E, Is, U} from "../globals.js";
+import {Ez}       from "../ez.js";
 //==============================================================================
 class Func {                    //\ Func: CSS or SVG function
     #units; #separator;          // c = count, r = required, s = separator
@@ -24,7 +27,8 @@ class Func {                    //\ Func: CSS or SVG function
             case Fn.skew:        // units = "" for transforms
             case Fn.scale: case Fn.translate:
                 c = 2;  r = 1;  break;
-            case Fn.rotate:      // these settings are for CSS rotate()
+            case Fn.rotate:      // CSS rotate(), SVG rotate in class Bute
+            case Fn.rotateX: case Fn.rotateY: case Fn.rotateZ:
                 c = 1;  r = 1;  break;
             case Fn.matrix:
                 c = 6;  r = 6;  break;
@@ -56,7 +60,7 @@ class Func {                    //\ Func: CSS or SVG function
                                   : this.#units[0];
     }
     set units(val) {    // units arrays are a necessary hassle
-        val = PFactory._validUnits(val, this.key, this);
+        val = PFunc._validUnits(val, this.key, this);
         if (this.isCFunc)
             if (this.hasHue)
                 if (this.isHXX)
@@ -113,7 +117,9 @@ class Func {                    //\ Func: CSS or SVG function
 }
 //==============================================================================
 class CFunc extends Func {      //\ CFunc: CSS color functions
-    static _funcs = {}; // see PFactory.alphaUnits(), hueUnits()
+    static funcs = {};
+    static funcNames = ["rgb","hsl","hwb","lch","oklch","lab","oklab"];
+
     constructor(name, key, units, utype) {
         const u = (name[0] == "h")
                 ? [units, U.pct, U.pct, units]  // units = ""
@@ -121,13 +127,13 @@ class CFunc extends Func {      //\ CFunc: CSS color functions
 
         super(name, key, u, utype, C.a + 1, C.a, [E.sp, E.sp, " / "]);
 
-        CFunc._funcs[name] = this;
+        CFunc.funcs[name] = this;
         Ez.is(this, "CFunc");
     }
 // this.alphaUnits are the units for the alpha argument: "" or U.pct
     get alphaUnits() { return this._u[C.a]; }
     set alphaUnits(val) {
-        this._u[C.a] = PFactory._validUnits(val, "alphaUnits", EMPTY_PCT);
+        this._u[C.a] = PFunc._validUnits(val, "alphaUnits", EMPTY_PCT);
     }
 // this.hueUnits are the units for the hue argument in hsl, hwb, lch, oklch
     get hueUnits() {
@@ -136,7 +142,7 @@ class CFunc extends Func {      //\ CFunc: CSS color functions
     }
     set hueUnits(val) {
         if (this.hasHue)
-            this._u[this.hueIndex] = PFactory._validUnits(val, "hueUnits", ANGLES);
+            this._u[this.hueIndex] = PFunc._validUnits(val, "hueUnits", ANGLES);
     }
 }
 //==============================================================================

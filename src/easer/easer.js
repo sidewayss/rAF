@@ -3,8 +3,9 @@ export {EBase, Easer, EaserByElm};
 
 import {ECalc} from "./ecalc.js";
 
-import {C, E, Ez, Is, Easy} from "../raf.js";
-
+import {E, Is} from "../globals.js";
+import {Ez}    from "../ez.js";
+import {C}     from "../prop/color-names.js"
 // A whole lot of crap ends up in this base class because javascript has no
 // multiple inheritance and there are two forks: ME and ByElm.
 class EBase {
@@ -150,7 +151,7 @@ class EBase {
             this.#eKey = eKey;
         }
     }
-    #validEKey(val, name) {
+    #validEKey(val, name = "eKey") {
         const isDef = Is.def(val);
         if (this.#isSDE) {
             if (isDef) {
@@ -167,10 +168,10 @@ class EBase {
         }
         if (!isDef)   // hasFactor defaults to E.unit
             return this.#hasF ? E.unit : E.value;
-        if (Easy.eKey.includes(val))
+        if (E.eKey.includes(val))
             return val;
         else
-            Ez._invalidErr(name, val, Easy._listE(name));
+            Ez._invalidErr(name, val, E.join(E.eKey));
     }
 
 // this._eVal is the public property used to evaluate at run-time

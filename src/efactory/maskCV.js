@@ -1,6 +1,7 @@
 export {maskCV};
 
-import {E, Ez, Is} from "../raf.js"
+import {E, Is} from "../globals.js";
+import {PBase} from "../prop/pbase.js";
 //==============================================================================
 // maskCV() populates factor/addend with current values as specified by the
 //          user via E.currentValue or its shorthand E.cV.
@@ -28,7 +29,7 @@ function maskCV(o) {
     // some values more than once, and these arrays are generally tiny.
     nums = o.cjs
          ? o.cv
-         : o.cv.map(arr => arr.map(v => Ez.toNumby(v, o.func, o.u)));
+         : o.cv.map(arr => arr.map(v => PBase.toNumby(v, o.func, o.u)));
 
     // cfgs with .dim == 0 must be separated because later filters rely on
     // properties that the next if() modifies: byElm and byArg.

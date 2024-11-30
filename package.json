@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "JavaScript Animation Library",
   "type": "module",
-  "main": "raf.js",
-  "module": "raf.js",
+  "main": "dist/raf.js",
+  "module": "dist/raf.js",
   "scripts": {},
   "repository": {
     "type": "git",
@@ -23,9 +23,8 @@
   "devDependencies": {
     "@babel/plugin-transform-nullish-coalescing-operator": "^7.25.9",
     "@babel/plugin-transform-optional-chaining": "^7.25.9",
-    "@rollup/plugin-babel": "^6.0.4"
-  },
-  "dependencies": {
-    "babel-plugin-private-to-public": "file:.yalc/babel-plugin-private-to-public"
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-terser": "^0.4.4",
+    "babel-plugin-private-to-public": "^1.0.1"
   }
 }

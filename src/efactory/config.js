@@ -1,7 +1,9 @@
 export {config};
 
-import {ECalc}     from "../easer/ecalc.js";
-import {E, Ez, Is} from "../raf.js"
+import {E, Is} from "../globals.js";
+import {Ez}    from "../ez.js";
+
+import {ECalc} from "../easer/ecalc.js";
 
 const
 keys   = ["f",           "a",           "max",      "min"     ],

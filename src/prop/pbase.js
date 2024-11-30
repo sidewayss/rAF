@@ -1,10 +1,12 @@
 // Not exported by raf.js
-import {PFactory}  from "./pfactory.js";
-import {fromColor} from "./color-convert.js";
+import {F, Fn, P, PFunc} from "./pfunc.js";
+import {CFunc}           from "./func.js";
+import {fromColor}       from "./color-convert.js";
 
-import {E, Ez, F, Fn, Is, P, Rx} from "../raf.js";
+import {E, Is, Rx} from "../globals.js";
+import {Ez}        from "../ez.js";
 
-const               // style/attribute values that require getComputedStyle():
+const       // style/attribute values that require getComputedStyle():
 listOfValues = ["auto","inherit","initial","revert","revert-layer","unset"],
 listOfFuncs  = [Fn.calc,"var","attr","max","min","clamp"];
 
@@ -56,14 +58,15 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
                     `an instance of Func ${this.needsFunc ? "" : " or undefined"}`
                 );
             else if (this.isColor && !val?.isCFunc)
-                Ez._invalidErr("func", val?.key ?? val, PFactory.funcC,
+                Ez._invalidErr("func", val?.key ?? val, CFunc.funcNames,
                                `P.${this.key}.func`);
         }
         this.#func = val;
     }
 // this.units
     get units()    { return this.#units; }
-    set units(val) { this.#units = PFactory._validUnits(val, this.key, this); }
+    set units(val) { this.#units = val; PFunc._validUnits(val, this.key, this);
+        }
     set _u   (u)   { this.#units = u; } // backdoor avoids double-validation
 
 //  _unitz() gets the active units, which might be the func's units
@@ -211,8 +214,17 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
     _2Num(v, f, u = this._unitz(f)) {
         const arr = this.parse(v, f, u);
         return arr.length < 2
-             ? Ez.toNumby(arr[0], f, u)
-             : arr.map(n => Ez.toNumby(n, f, u));
+             ? PBase.toNumby(arr[0], f, u)
+             : arr.map(n => PBase.toNumby(n, f, u));
+    }
+//  toNumby() is soft numeric conversion for property/attribute string values.
+//            As Johnny Cochran said: "If it doesn't convert, you must revert." :)
+//            parseFloat() allows unit suffix and rejects, thus preserves, null.
+//            Color strings are a special case, as they always are.
+    static toNumby(v, f, u) {
+        const n = parseFloat(v);
+        return !Number.isNaN(n) ? n : f?.isCFunc ? fromColor(v, true, f, u)
+                                                 : v;
     }
 //  getUn() is for "unstructured" props & funcs, though it can be used with any
 //  prop or func, ideally one that has numeric parameters.

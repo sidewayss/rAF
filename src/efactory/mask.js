@@ -1,7 +1,8 @@
 export {mask};
 
-import {PBase}        from "../prop/pbase.js";
-import {Is, Ez, Easy} from "../raf.js"
+import {Is}    from "../globals.js";
+import {Ez}    from "../ez.js";
+import {PBase} from "../prop/pbase.js";
 //==============================================================================
 // mask() sets o.mask to a dense array of sorted argument indexes.
 //        Also processes o.easies, which must align with o.mask.
@@ -11,7 +12,7 @@ import {Is, Ez, Easy} from "../raf.js"
 //         - sparse array: non-empty slots = masked indexes
 //         - o.config:     sequential indexes 0 to array.length - 1
 //         - undefined:    sequential indexes 0 to o.r - 1
-function mask(o) {
+function mask(o, validEasy) {
     let n;
     const count = o.isNet ? Math.min(...o.cv.map(arr => arr.length))
                           : o.c;
@@ -44,7 +45,7 @@ function mask(o) {
 
     const easies = "easies";        // o.easies cannot be sparse and must be
     if (o[easies])                  // the same length as o.mask.
-        o[easies] = Ez.toArray(o[easies], easies, Easy._validate)
+        o[easies] = Ez.toArray(o[easies], easies, validEasy)
 
     if (!o.mask) {                  // undefined and/or pseudo without prop
         if (!o.r) {

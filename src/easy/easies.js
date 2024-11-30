@@ -1,7 +1,10 @@
+import {Easy} from "./easy.js";
+
+import {E}  from "../globals.js";
+import {Ez} from "../ez.js";
+
 import {create} from "../efactory/efactory.js";
 import {MEBase} from "../easer/measer.js";
-
-import {E, Ez, Easy} from "../raf.js";
 
 export class Easies {
     #active; #easy2ME; #easy2Plays; #easy2Trips; #me2Plays; #noTargets;
@@ -70,7 +73,7 @@ export class Easies {
 
 //  newTarget() creates a MEaser or MEaserByElm instance and adds it to #targets
     newTarget(o) {
-        return create(o, this.#targets, true);
+        return create(o, this.#targets, Easy._validate);
     }
 //  addTarget() validates a MEaser instance, adds it to #targets. returns it
     addTarget(t) {

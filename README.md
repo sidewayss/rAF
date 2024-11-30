@@ -16,11 +16,11 @@ There are also animation examples in these collections on CodePen:
 ## Setup
 **rAF** is modular. There are currently no packages or minified file. Should be coming your way soon after v1.0. For most users, `raf.js` provides all the exports you need. Here is a typical import statement:
 ```
-import {E, Ez, F, P, PFactory, Easy, Easies, AFrame} from "https://sidewayss.com/raf/src/raf.js";
+import {E, Ez, F, P, Easy, Easies, AFrame, rAFInit} from "https://sidewayss.com/raf/src/raf.js";
 ```
 You must execute this method prior to using any other rAF features:
 ```
-PFactory.init();
+rAFInit();
 ```
 It initializes constants that are used internally, many of which you will use too. Among those are the `E`, `Ez`, `F`, and `P` objects listed in the `import` example above.
 
@@ -57,7 +57,7 @@ Goals, Assumptions, and Approach:
 ## Why bother?
 I originally got interested in web animations through animating SVG sheet music scores, created and exported to SVG by <a href="https://musescore.org">MuseScore</a> (github repo <a href="https://github.com/musescore/MuseScore">here</a>, my fork is <a href="https://github.com/sidewayss/MuseScore">here</a>). I then decided to create a heavily animated personal web site. In that process I consolidated a bunch of common animation code and created the initial version of **rAF**.
 
-Soon thereafter, I stepped away from programming for the next five years. Upon my return in April, 2023 I started to update my personal site. I soon realized that CSS had evolved notably and that my core design for **rAF** was outdated, and not as clean or complete as I had thought. I was considering seeking gainful employment in programming again. Updating **rAF** seemed like a good way to freshen my skills and produce a result that would fill in for the gap in my CV.
+Soon thereafter, I stepped away from programming for the next five years. Upon my return in April, 2023 I started to update my personal site. I soon realized that CSS had evolved notably and that my core design for **rAF** was outdated, and not as clean or complete as I had thought. I was considering seeking gainful employment in programming again. Updating **rAF** seemed like a good way to freshen my skills and produce something that might fill the gap in my CV.
 
 I don't expect to see a lot of interest in **rAF**. It's a now-obscure niche, and there have been many animation libraries produced since Velocity.js took the web by storm over a decade ago. I was mostly animating SVG, and Velocity doesn't do SVG gradients, among other things. So I built my own stuff.
 

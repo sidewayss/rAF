@@ -1,24 +1,14 @@
 import {prepLegs, override, legUnit, spreadToEmpties, getType, getIO, toBezier}
                      from "./easy-construct.js"
-import {stepsToLegs} from "./easy-steps.js"
 import {easings}     from "./easings.js";
 
 import {create} from "../efactory/efactory.js";
 import {EBase}  from "../easer/easer.js";
 
-import {E, Ez, Is} from "../raf.js";
+import {E, Is} from "../globals.js";
+import {Ez}    from "../ez.js";
 
 export class Easy {
-//  Public string arrays for enums and <select><option> or other displayed list
-    static eKey   = ["value","unit","comp"];
-    static status = ["arrived","tripped","waiting","inbound","outbound",
-                     "initial","original","pausing","playing","empty"];
-    static type   = ["linear","sine","circ","expo","back","elastic","bounce",
-                     "pow","bezier","steps","increment"];
-    static io     = ["in","out","inIn","outIn","inOut","outOut"];
-    static set    = ["let","set","net"];
-    static jump   = ["none","start","end","both"];
-
     #autoTrip; #base; #dist; #e; #end; #flipTrip; #lastLeg; #legsWait;
     #loopWait; #onAutoTrip; #onLoop; #oneShot; #peri; #plays; #post; #pre;
     #reversed; #roundTrip; #start; #targets; #time; #tripWait; #wait; #zero;
@@ -43,14 +33,13 @@ export class Easy {
         this.#roundTrip = Boolean(o.roundTrip);
         this.#autoTrip  = Ez.defaultToTrue(o.autoTrip);
 
-        //  #plays is only used as a default for targets that don't define it
-        //  setter runs #multiPlayTripNoAuto() after autoTrip and roundTrip set
+        // #plays is only used as a default for targets that don't define it
+        // setter runs #multiPlayTripNoAuto() after autoTrip and roundTrip set
         this.plays = o.plays || o.repeats + 1 || undefined;
 
         if (Is.def(o.legs))         // validate/pseudo-clone user-defined legs
             o.legs = Ez.toArray(o.legs, "legs", Ez._validObj)
                        .map(v => Object.assign({}, v));
-
         const
         type = isInc ? E.increment : getType(o),
         io   = getIO(o.io);
@@ -65,7 +54,7 @@ export class Easy {
             if (ios.length == 2) {
                 if (!Is.def(o[t]))  // assignment above allows undefined for now
                     throw new Error(`You must define obj.${t} or each leg.${t}`);
-                //--------------------------------------------------------------
+                //---
                 const
                 split = Ez.toNumber(o.split, "split", o[t] / 2, ...Ez.grThan0),
                 wait  = this.#setWait(o.gap, "gap");
@@ -180,7 +169,7 @@ export class Easy {
         objDist = o[e] - o[s],              // leg default distance is:
         defDist = objDist / o.legs.length,  //   total / # of legs
         isDown  = objDist < 0,
-        keys    = Easy.eKey.slice(1);       // unit and comp only
+        keys    = E.eKey.slice(1);          // unit and comp only
         if (isDown)
             keys.reverse();                 // if (dist < 0) swap unit and comp
 
@@ -653,7 +642,7 @@ export class Easy {
                 if (next) {
                     this._leg = next;
                     wait = next.wait;
-                }               // else handled by if (!next) below: wait =
+                }               // else handled by if (!next) below
             }
         }
         // The changes to wait below only apply if autoTrip or plays > 1, but
@@ -675,11 +664,99 @@ export class Easy {
             this._inbound = !this._inbound;
         e.status = this._inbound ? E.tripped : E.arrived; //$$
     }
+}
 //==============================================================================
-//  static _listE() returns a comma + space-separated list of Easy E.xxx names
-    static _listE(name, start = 0, end = Infinity) {
-        return this[name].slice(start, end)
-                         .map(v => E.prefix + v)
-                         .join(", ");
+//  stepsToLegs() helps Easy._finishLegs() turn 1 leg into >1 legs for _calc()
+function stepsToLegs(o, leg, legDist, dist, idx, last, keys) {
+    let ends, waits;
+    const t = "timing";         // not "time"
+    if (leg.timingReady)        // leg.timing is an array of wait times
+        waits = leg[t];
+    else if (leg[t])            // leg.timing is an Easy instance
+        waits = easeSteps(leg[t], leg.waits, 1, 0, leg.time, t, true);
+    else                        // leg.timing is undefined
+        waits = leg.waits.map(v => v * leg.time);
+                                // leg.waits is 0-1, portion of time
+    let l = waits.length;
+    const LENGTH = {length:l};
+    if (leg.stepsReady)         // leg.steps is already an array of step values
+        ends = leg.steps;
+    else if (leg.easy)          // generate eased steps
+        ends = easeSteps(leg.easy, waits, leg.time, leg.start, legDist, "easy");
+    else {
+        const d = legDist / l;  // generate linear steps
+        ends = Array.from(LENGTH, (_, i) => leg.start + (d * (i + 1)));
     }
+                                // transform the steps into legs:
+    const
+    start = o.start,
+    legs  = Array.from(LENGTH, () => new Object);
+    legs.forEach((lg, i) => {
+        lg.type = E.steps;
+        lg.io   = E.in;         // must be defined
+        lg.end  = ends[i];      // the step value
+        legUnit(lg, start, dist, keys);
+        lg.prev = legs[i - 1];
+        lg.next = legs[i + 1];
+        lg.time = 0;            // steps don't have a duration
+        lg.wait = waits[i] - (i ? waits[i - 1] : 0);
+    });
+    if (leg.wait)
+        legs[0].wait += leg.wait;
+
+    const obj = {};
+    if (idx == 0)               // _firstLeg
+        obj.firstLeg = legs[0];
+    else {                      // replace leg in the linked list
+        legs[0].prev  = leg.prev;
+        leg.prev.next = legs[0];
+    }
+    --l;
+    const leftover   = leg.time - waits[l];
+    legs[l].leftover = leftover;
+    if (idx == last) {          // #lastLeg
+        o.end   = legs[l].end;
+    //!!o.time -= leftover;
+        obj.lastLeg = legs[l];
+    }
+    else {                      // continue to replace leg in the list
+        legs[l].next   = leg.next;
+        leg.next.prev  = legs[l];
+        leg.next.wait += leftover;
+    }
+    return obj;
+}
+// easeSteps() helps stepsToLegs() use an Easy to set the timing or values for
+//  E.steps. ez cannot be E.increment here because it has either no end, or no
+//  duration; and its legs cannot be E.steps, to avoid infinite easeSteps loops
+//  and because un-eased steps is linear, which doesn't ease anything.
+//  For eased values, jump:E.start has no effect because time = 0 produces
+//  value = 0. So E.start is the same as E.none, E.end the same as E.both.
+function easeSteps(ez, nows, time, start, dist, name, isTiming) {
+    Easy._validate(ez, name);                   // phase 1 validation
+    if (ez.isIncremental)                       // phase 2: can't be E.increment
+        Ez._cantBeErr(name, "class Incremental");
+    //------------------------------------------
+    let leg = ez._firstLeg;
+    const ezDown = ez.end < ez.start;
+    do {                                        // for each leg:
+        if (leg.type == E.steps)                   // phase 3: can't be E.steps
+            Ez._cantBeErr(name, "type:E.steps");
+        if (isTiming && (ezDown != leg.end < leg.start
+                      || (leg.type >= E.back && leg.type <= E.bounce)
+                      || (leg.type == E.bezier && Ez.unitOutOfBounds(leg.bezier.array))))
+            Ez._cantBeErr(                      // phase 4: can't mix directions
+                name,
+                "an Easy that changes direction. Time only moves in one direction",
+                {cause:"reverse time"}          // better *not* as string...
+            );
+    } while((leg = leg.next));
+    //------------------------------------------// validation complete
+    ez._zeroOut(0);                             // prep for pseudo-animation
+    const d    = time / ez.time;                // d for divisor
+    const prop = ezDown ? E.comp : E.unit;      // nows always ascends
+    return nows.map(v => {
+       ez._easeMe(v / d);
+       return start + (ez.e[prop] * dist);
+    });
 }

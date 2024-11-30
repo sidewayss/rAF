@@ -1,4 +1,4 @@
-import {Is} from "../raf.js";
+import {Is} from "../globals.js";
 
 // Not exported by raf.js
 export class ECalc {

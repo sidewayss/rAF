@@ -1,25 +1,15 @@
-export {PFactory, ANGLES, EMPTY_PCT}; // ANGLES, EMPTY_PCT for func.js:CFunc
+import {LENGTHS, ANGLES, TIMES, F, Fn, P, Pn} from "./pfunc.js"
+import {Func, CFunc, ColorFunc, SRFunc}       from "./func.js"
+import {Prop, Bute, PrAtt, HtmlBute}          from "./prop.js"
 
-import {Func, CFunc, ColorFunc, SRFunc} from "./func.js"
-import {Prop, Bute, PrAtt, HtmlBute}    from "./prop.js"
+import {C} from "./color-names.js"
 
-import {C, HD, M, U, Is, Rx, E, Ez, F, Fn, P, Pn} from "../raf.js";
-
-// PFactory.init() populates the U, F, Fn, P, Pn objects using these arrays:
-// C = <color>;  Un = gradients and other "unstructured" functions;
-// A = <angle>;  L  = <length> default units:px;
-// N = <number>; P  = <percentage>;
-// T = transform funcions; Tm = <time> default units:ms;
-// F = filter functions;    2 = no abbreviated name created;
-const     // units:
-LENGTHS   = ["px","em","rem","vw","vh","vmin","vmax","pt","pc","mm","in"],
-ANGLES    = ["deg","rad","grad","turn"], // see CFunc.prototype.hueUnits
-TIMES     = ["ms","s"],
-EMPTY_PCT = ["", "U.pct"];               // ditto .alphaUnits
+import {HD, M, U, Is, Rx} from "../globals.js";
+import {Ez}               from "../ez.js";
 //==============================================================================
-const PFactory = {
- // init() populates U, F, Fn, P, Pn, C, HD, and freezes all but P, Pn
- //        call it once per session prior to using any of those objects
+export const PFactory = {
+ // init() populates U, F, Fn, P, Pn, C, HD, and freezes all but P, Pn.
+ //        Call it once per session prior to using any of those objects.
     init() {
         if (this.initialized) {
             console.info(Ez._only("PFactory", "initialized once per session"));
@@ -27,10 +17,17 @@ const PFactory = {
         } //-------------------------------
         const FA = [], FL = [], CSSVC = [],
 
+        // functions, properties, attributes by category:
+        // C = <color>;  Un = gradients and other "unstructured" functions;
+        // A = <angle>;  L  = <length> default units:px;
+        // N = <number>; P  = <percentage>;
+        // T = transform funcions; Tm = <time> default units:ms;
+        // F = filter functions;    2 = no abbreviated name created;
+        //
         // Functions
         funcs   = ["url","var","cubic-bezier"],  //!!can any of these be animated??worth having here??
                   // color funcs
-        funcC   = ["rgb","hsl","hwb","lch","oklch","lab","oklab"],
+        funcC   = CFunc.funcNames,
                   // isUn funcs
         funcUn  = ["color-mix","inset","path","polygon","calc","linear","steps"], //!!calc, linear, steps...
         funcGr  = ["linear-gradient","radial-gradient","conic-gradient",
@@ -84,11 +81,9 @@ const PFactory = {
         svgLP = ["dx","dy","startOffset","textLength","x1","x2","y1","y2"],
 
         // HTML attributes, class HtmlBute
-        html  = ["value"],      // for <input type="range">
+        html = ["value"],       // for <input type="range">
 
         // Miscellaneous
-        vB = ["x","y","w","h"], // SVG viewBox
-
         _ang = "_ang",    isUn = "isUn",
         _len = "_len",    _lenPct  = "_lenPct",
         _pct = "_pct",    _lenPctN = "_lenPctN",
@@ -96,9 +91,9 @@ const PFactory = {
         //----------------------------------------------------------------------
         // Enumerations for argument indexes for masks, must precede collections
         let arr, obj,
-        keys = ["R","G","B","A","C"],
-        len  = keys.length;             // feColorMatrix has 20 args
-        const RGBC = Array.from(        // RR - CA
+        keys = ["R","G","B","A","C"],   // feColorMatrix has 20 args: RR - CA
+        len  = keys.length;
+        const RGBC = Array.from(
             {length:len * (len - 1)},
             (_, i) => keys[i % len] + keys[Math.floor(i / len)]
         ),
@@ -120,8 +115,7 @@ const PFactory = {
         const pairs = [                 // create the properties and aliases
             [C,  [RGBC, rgb, hsl, hwb]],
             [HD, [lab, lch, xyz]],
-            [M,  [keys, m3d]],
-            [E,  [vB]]
+            [M,  [keys, m3d]]
         ];
         for ([obj, arr] of pairs)
             for (keys of arr)           // forEach() excludes empty, includes i
@@ -130,10 +124,6 @@ const PFactory = {
         M.tx = M.e;                     // for CSS matrix()
         M.ty = M.f;
         C.alpha  = C.a;                 // a more readable alias, aligns with HD
-        E.z      = E.w;                 // for transform3d()
-        E.width  = E.w;                 // for convenience, consistency with P
-        E.height = E.h;
-        E.angle  = E.h;                 // for rotate3d()
         //----------------------------------------------------------------------
         // Fill collections, order is critical: U, Fn, F, Pn, P:
         add(LENGTHS, 99, U);    // 99 prevents abbreviated names
@@ -268,7 +258,7 @@ const PFactory = {
         // Lock up as much as is plausible, P and Pn are extensible
         for (obj of [F, P])
             Object.values(obj).forEach(o => Object.seal(o));
-        for (obj of [C, F, Fn, HD, U, CFunc._funcs])
+        for (obj of [C, F, Fn, HD, U, CFunc.funcs])
             Object.freeze(obj);
 
         this.initialized = true;
@@ -301,90 +291,8 @@ const PFactory = {
         });
         attrs.forEach((v, i) => attrs[i] = "data-" + v);
         add(attrs, 99, Pn, P, "", _noU, Bute);
-    },
- // --------------------------------------------------------------------------
- // _validUnits() helps Func and PBase validate units, obj can be an array of
-    _validUnits(val, name, obj) { // string values or a Prop or Func instance.
-        let arr;
-        if (Is.A(obj)) {          // LENGTHS, ANGLES, EMPTY_PCT
-            if (!obj.includes(val))
-                arr = obj;
-        }
-        else if (obj._noUPct) {
-            if (!EMPTY_PCT.includes(val))
-                arr = EMPTY_PCT;
-        }
-        else if (obj._len) {
-            if (!LENGTHS.includes(val))
-                arr = LENGTHS;
-        }
-        else if (obj._lenPct) {
-            if (!LENGTHS.includes(val) && val != U.pct)
-                arr = [...LENGTHS, U.pct];
-        }
-        else if (obj._lenPctN) {
-            if (!LENGTHS.includes(val) && val != U.pct && val !== "")
-                arr = [...LENGTHS, U.pct, ""];
-        }
-        else if (obj._ang) {
-            if (!ANGLES.includes(val))
-                arr = ANGLES;
-        }
-        else if (obj._pct && val != U.pct)
-            throw new Error(`${name} units are read-only: ${U.pct}.`);
-        else if (obj._noU || obj.isUn) // noUnits or isUnstructured
-            throw new Error(`${name} does not use units: val.`);
-
-        if (arr)
-            Ez._invalidErr(name, val, arr);
-
-        return val;
-    },
- // ----------------------------------------------------------------
- // Setters to globally change units, func:
- // set lengthUnits() sets units for Props/Funcs that use <length>
-    set lengthUnits(val) {
-        val = this._validUnits(val, "lengthUnits", LENGTHS);
-        for (obj of this._len)
-            obj._u = val;      // backdoor avoids double-validation
-    },
- // set angleUnits() sets units for Funcs that use <angle>
-    set angleUnits(val) {
-        val = this._validUnits(val, "angleUnits", ANGLES);
-        for (const obj of this._ang)
-            obj._u = val;
-    },
- // set percent() toggles U.pct for Props/Funcs that use it
-    set percent(b) {
-        if (b)
-            for (const obj of this._pct)
-                obj._u = U.pct;
-        else
-            for (const obj of this._pct)
-                obj._u = obj._lenPct ? U.px : "";
-    },
- // set colorFunc() sets the CFunc for all color Props
-    set colorFunc(val) {
-        if (val?.isCFunc)
-            for (const obj of this._color)
-                obj.func = val;
-        else
-            Ez._invalidErr("colorFunc", val?.key ?? val, this.funcC);
-    },
- // -----------------------------------
- // These two are for class CFunc only:
-    set alphaUnits(val) {
-        val = this._validUnits(val, "alphaUnits", EMPTY_PCT);
-        for (const f of Object.values(CFunc._funcs))
-            f._u[C.a] = val;
-    },
-    set hueUnits(val) {
-        val = this._validUnits(val, "hueUnits", ANGLES);
-        for (const f of Object.values(CFunc._funcs))
-            if (f.hasHue)
-                f._u[f.hueIndex] = val;
     }
-}
+ }
 //==============================================================================
 // Helpers for init()
 function keys2Objects(objs, keys) {
