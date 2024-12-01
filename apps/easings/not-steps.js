@@ -1,11 +1,11 @@
-export {easingFromObj, easingFromForm};
+export {easingFromObj, easingFromForm, getDF};
 
 import {Ez}  from "../../src/raf.js";
 
-import {msecs}                                    from "../update.js";
-import {TWO, elms, g, orUndefined, elseUndefined} from "../common.js";
+import {msecs}             from "../update.js";
+import {MILLI, TWO, elms, g, orUndefined, elseUndefined}
+                           from "../common.js";
 
-import {getDF}             from "./_named.js";
 import {MSG}               from "./msg.js";
 import {setLink, isPow}    from "./tio-pow.js";
 import {LINK, TYPE, IO, POW, twoLegs, isBezier, bezierArray}
@@ -75,4 +75,8 @@ function easingFromForm(obj) {
     else                                    // property order must match presets
         return Object.assign(obj, {mid, split, gap, pow,
                                    bezier:elseUndefined(isBez, bezierArray())});
+}
+// getDF() gets a divisor or factor
+function getDF(id) {
+    return id.endsWith("d") ? 1 : MILLI; // "mid" ends with "d"
 }

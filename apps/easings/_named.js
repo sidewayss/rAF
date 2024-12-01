@@ -1,4 +1,4 @@
-export {formFromObj, objFromForm, updateNamed, getDF, ok};
+export {formFromObj, objFromForm, updateNamed, ok};
 export let objEz;
 
 import {E, Ez, Is}  from "../../src/raf.js"
@@ -6,14 +6,14 @@ import {E, Ez, Is}  from "../../src/raf.js"
 import {formatNumber} from "../update.js";
 import {INPUT, elms, g, orUndefined, elseUndefined} from "../common.js";
 
-import {wasStp, theStart, theEnd}      from "./_update.js";
-import {FORMAT_START, swapIt}          from "./chart.js";
-import {shallowClone}                  from "./events.js";
-import {MSG, disableClear}             from "./msg.js";
-import {initEzXY, updateTrip}          from "./index.js";
-import {easingFromObj, easingFromForm} from "./not-steps.js";
+import {wasStp, theStart, theEnd}             from "./_update.js";
+import {FORMAT_START, swapIt}                 from "./chart.js";
+import {shallowClone}                         from "./events.js";
+import {MSG, disableClear}                    from "./msg.js";
+import {initEzXY, updateTrip}                 from "./index.js";
+import {easingFromObj, easingFromForm, getDF} from "./not-steps.js";
 import {FORMAT_END, stepsFromObj, stepsFromForm, wasIsSteps, isSteps, toggleUser}
-                                       from "./steps.js";
+                                              from "./steps.js";
 //==============================================================================
 // formFromObj() populates the form, sets globals, <= loadFinally(), openNamed()
 function formFromObj(obj, hasVisited) {
@@ -32,11 +32,12 @@ function formFromObj(obj, hasVisited) {
     elms.loopByElm.checked = obj.loopByElm;
 
     const
-    isStp = isSteps(),
-    leg0  = obj.legs?.[0],// #mid,
-    leg1  = obj.legs?.[1];// #split,
-    g.type = obj.type ?? leg0?.type ?? E.linear;
-    g.io   = obj.io   ?? (leg0 ? Ez.joinIO(leg0.io, leg1.io) : E.in);
+    leg0 = obj.legs?.[0],
+    leg1 = obj.legs?.[1],
+    type = obj.type ?? leg0?.type ?? E.linear;
+
+    g.type = type;
+    g.io   = obj.io ?? (leg0 ? Ez.joinIO(leg0.io, leg1.io) : E.in);
     elms.type.value = g.type;
     elms.io  .value = g.io;
 
@@ -45,7 +46,8 @@ function formFromObj(obj, hasVisited) {
         elms.time.value = val;
     elms.time.dispatchEvent(new Event(INPUT)); // input.time()=>timeFrames()
 
-    if (!isStp || Is.def(hasVisited)) {
+    const isStp = isSteps(type);
+    if (!isStp || Is.def(hasVisited)) {        // if (isStp) legs are undefined:
         [leg0?.end, leg0?.time, leg1?.wait].forEach((v, i) => {
             id  = MSG[i];                      // #mid, #split, #gap
             elm = elms[id];
@@ -113,13 +115,9 @@ function objFromForm() {
 // updateNamed is called exclusively by openNamed()
 function updateNamed(obj) {
     if (!initEzXY(obj)) return false;
-    //----------------
+    //--------------
     updateTrip();   // updateAll() only calls it if (isLoading)
     return true;
-}
-// getDF() gets a divisor or factor
-function getDF(id) {
-    return id.endsWith("d") ? 1 : MILLI; // "mid" ends with "d"
 }
 //==============================================================================
 // ok() is called exclusively by clickOk()

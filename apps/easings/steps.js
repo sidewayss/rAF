@@ -15,7 +15,6 @@ import {MILLI, COUNT, SELECT, DIV, LABEL, CHANGE, elms, g, addEventByClass}
                                                             from "../common.js";
 
 import {range, wasStp, refresh} from "./_update.js";
-import {getDF}                  from "./_named.js";
 import {changeTime}             from "./chart.js"
 import {OTHER}                  from "./index.js";
 

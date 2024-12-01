@@ -149,7 +149,7 @@ function loadJSON(response, is, dir, ns, name, hasVisited, byTag, msg) {
 }
 //==============================================================================
 // loadFinally() executes on Promise.all().then(), could be inlined & indented:)
-function loadFinally(is, name, hasVisited, id) {
+function loadFinally(is, name, hasVisited) {
     let obj;
     const               // there are new clones since loadCommon() { byTag = }
     tags  = [INPUT, SELECT, BUTTON, LABEL,"input-num","check-box"],
@@ -181,12 +181,12 @@ function loadFinally(is, name, hasVisited, id) {
         obj = getNamedObj(DEFAULT_NAME);
         setNamed(DEFAULT_NAME, elms.save ? JSON.stringify(obj) : undefined);
     }
-    elms.x.value = 0;   // re-opening page uses previous value, default = center
+    elms.x.value = 0;   // default = center, re-opening page uses previous value
     raf = new AFrame;
     if (is.multi)       // multi ready for resize, needs clipStart, clipEnd now
         window.dispatchEvent(dummyEvent(RESIZE, "isLoading"));
 
-    ns_named.formFromObj(obj, hasVisited);
+    ns_named.formFromObj(obj, hasVisited); // restore everything
 
     // msecs and secs are now set, see timeFrames().
     // ezX animates elms.x in all pages, and the x-axis of the chart in the
@@ -282,20 +282,6 @@ function loadFinally(is, name, hasVisited, id) {
                         p.cut(elm);
                 });
             }
-      //++})
-      //++.finally(()  => {  // service worker manages caching
-      //++  navigator.serviceWorker.register("../sw.js")
-      //++    .then (reg => { // runs in the background after page displayed
-      //++      const sw = reg.installing ?? reg.waiting ?? reg.active;
-      //++      if (sw)      // message adds document-specific files to the cache
-      //++          if (reg.active)
-      //++              sw.postMessage({id});
-      //++          else     // wait until activated
-      //++              sw.addEventListener("statechange", evt => {
-      //++                  if (evt.target.state == "activated")
-      //++                      sw.postMessage({id});
-      //++              });
-      //++  }).catch(errorLog);
           });
     });
 }
