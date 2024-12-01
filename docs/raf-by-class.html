@@ -134,7 +134,6 @@
 			<span class="bullet"><a href="#easy">class Easy</a></span>
 			<span class="subclass"><a href="#obj">constructor(obj): the obj argument</a></span>
 			<span class="subclass"><a href="#leg">the leg object</a></span>
-			<span class="subclass"><a href="#e">const E: values pertaining to Easy</a></span>
 			<span class="bullet"><a href="#ebase">class EBase</a></span>
 			<span class="subclass"><a href="#create">EFactory.js/create(obj): the obj argument</a></span>
 			<span class="subclass"><a href="#easer">class Easer</a></span>
@@ -154,10 +153,12 @@
 			<span class="subclass"><a href="#srfunc">class SRFunc</a></span>
 			<span class="subclass"><a href="#f">const F: Func instances by name</a></span>
 			<span class="bullet">more const Objects</span>
+			<span class="subclass"><a href="#pfactory">const PFactory: initialization functions</a></span>
 			<span class="subclass"><a href="#u">const U: &nbsp;units</a></span>
 			<span class="subclass"><a href="#is">const Is: boolean functions</a></span>
 			<span class="subclass"><a href="#ez">const Ez: a factotem</a></span>
-			<span class="subclass"><a href="#bitmasks">bitmasks for argument masking</a></span>
+			<span class="subclass"><a href="#e">const E: &nbsp;mostly pertaining to class Easy</a></span>
+			<span class="subclass"><a href="#arg-indexes">integer indexes for argument masking</a></span>
 			<span class="subclass"><a href="#ease">const Ease: CSS and jQuery-style presets</a></span>
 			<span class="bullet"><a href="#ebezier">class EBezier</a></span>
 			<span class="bullet"><a href="#ecalc">class ECalc</a></span>
@@ -413,26 +414,8 @@
 			<tr><td class="border-dotted">next </td><td class="border-dotted middle">leg object </td><td class="border-dotted">next leg in list </td></tr>
 			<tr><td>ease </td><td class="middle">function </td><td>the easing function to call, see easings.js </td></tr>
 		</table>
-		<table id="e">
-			<colgroup><col width=836></colgroup>
-			<tr><td class="subclass">const E: values pertaining to Easy</td></tr>
-			<tr><td class="wrap">E.currentValue <i>alias</i> E.cV = use current DOM value for factor, addend, max, min</td></tr>
-			<tr><td class="h3 border-top">eKey: E.abc = "abc"</td></tr>
-			<tr><td class="wrap">E.value, E.unit, E.comp</td></tr>
-			<tr><td class="h2 border-top">Auto-generated enumerations of integers starting at 0</td></tr>
-			<tr><td class="h3">status (order significant for E.arrived = 0 = falsy and other &lt; and &gt; comparisons)</td></tr>
-			<tr><td class="wrap">E.arrived, E.tripped, E.waiting, E.inbound, E.outbound, E.initial, E.original, E.pausing, E.playing, E.empty</td></tr>
-			<tr><td class="h3 border-top">type (order significant only for E.linear = 0 = falsy)</td></tr>
-			<tr><td class="wrap">E.linear, E.sine, E.circ, E.expo, E.back, E.elastic, E.bounce, E.pow, E.bezier, E.steps, E.increment</td></tr>
-			<tr><td class="h3 border-top">io (order significant, combined with bitmasks)</td></tr>
-			<tr><td class="wrap">E.in, E.out, E.inIn, E.outIn, E.inOut, E.outOut</td></tr>
-			<tr><td class="h3 border-top">jump (order significant, combined with bitmasks)</td></tr>
-			<tr><td class="wrap">E.none, E.start, E.end, E.both</td></tr>
-			<tr><td class="h3 border-top">set</td></tr>
-			<tr><td class="wrap">E.let, E.set, E.net</td></tr>
-		</table>
 <!----------------------------------------------------------------------------->
-		<table id="ebase">
+ 		<table id="ebase">
 			<colgroup><col width=154><col width=130><col width=454></colgroup>
 			<tr><td class="h1" colspan=3>class EBase</td></tr>
 			<tr><td class="h2" colspan=3>Public</td></tr>
@@ -478,7 +461,7 @@
 			<tr><td>prop</td><td class="middle">PBase</td><td>the property to animate</td></tr>
 			<tr><td>func</td><td class="middle">Func</td><td>the function to use</td></tr>
 			<tr><td>units</td><td class="middle">string enum</td><td>optional, falls back to prop to func</td></tr>
-			<tr><td class="border-dotted">mask</td><td class="border-dotted middle">array: [int]</td><td class="border-dotted">argument mask: array of arg indexes, bitmask, etc.</td></tr>
+			<tr><td class="border-dotted">mask</td><td class="border-dotted middle">array: [int]</td><td class="border-dotted">argument mask: array of arg indexes, etc.</td></tr>
 			<tr><td>easies</td><td class="middle">array: [Easy]</td><td>for MEBase and subclasses</td></tr>
 			<tr><td>eKey</td><td class="middle">string enum</td><td>the easy.e property to calculate: E.value, E.unit, E.comp</td></tr>
 			<tr><td class="border-dotted">evaluator</td><td class="border-dotted middle">function</td><td class="border-dotted">user evaluate() function</td></tr>
@@ -645,7 +628,7 @@
 			<tr><td class="wrap" colspan=3>P.backgroundAttachment, P.backgroundClip, P.backgroundOrigin, P.backgroundBlendMode, P.backgroundRepeat</td></tr>
 			<tr><td class="h3 border-top" colspan=3>&quot;unstructured&quot;, no units, flexible arguments</td></tr>
 			<tr><td class="wrap" colspan=3>P.border, P.borderImage, P.boxShadow, P.clipPath, P.offsetPath, P.shapeOutside, P.background, P.backgroundImage, P.backgroundSize, P.backgroundPosition, P.backgroundPositionX, P.backgroundPositionY</td></tr>
-			<tr><td class="h3 border-top" colspan=3>filter and transform can take a single function, or multiple functions = &quot;unstructured&quot;</td></tr>
+			<tr><td class="h3 border-top" colspan=3>filter and transform can take one or more functions = &quot;unstructured&quot;</td></tr>
 			<tr><td class="wrap" colspan=3>P.filter, P.transform, P.transSVG (SVG transform is a separate object)</td></tr>
 			<tr><td class="h3 border-top" colspan=3>color properties, they use color functions and optionally Color.js</td></tr>
 			<tr><td class="wrap" colspan=3>P.color, P.accentColor, P.backgroundColor, P.borderColor, P.borderLeftColor, P.borderRightColor, P.borderTopColor, P.borderBottomColor</td></tr>
@@ -732,6 +715,13 @@
 			<tr><td class="wrap" colspan=3>F.circle, F.ellipse</td></tr>
 		</table>
 <!----------------------------------------------------------------------------->
+		<table id="pfactory">
+			<colgroup><col width=168><col width=118><col width=404></colgroup>
+			<tr><td class="h1" colspan=3">const PFactory</td></tr>
+			<tr><td class="h2 border-dotted" colspan=3">Public methods</td></tr>
+			<tr><td>init()</td><td class="middle">undefined</td><td>initializes almost everything</td></tr>
+			<tr><td>addAttributes()</td><td class="middle">undefined</td><td>adds custom attributes to P and Pn</td></tr>
+		</table>
 		<table id="u">
 			<colgroup><col width=690></colgroup>
 			<tr><td class="h1">const U: units</td></tr>
@@ -764,18 +754,7 @@
 			<colgroup><col width=172><col width=100><col width=538></colgroup>
 			<tr><td class="h1" colspan=3>const Ez: a factotem</td></tr>
 			<tr><td class="h2" colspan=3>Public</td></tr>
-			<tr><td class="h3" colspan=3>properties dynamically generated by PFactory.init()</td></tr>
-			<tr><td>rad</td><td class="middle">float</td><td>0.017453 = Math.PI / 180 (conversion to/from degrees):</td></tr>
-			<tr><td>grad</td><td class="middle">float</td><td>1.111111 = 10 / 9</td></tr>
-			<tr><td class="border-dotted">turn</td><td class="border-dotted middle">float</td><td class="border-dotted">0.002778 = 1 / 360</td></tr>
-			<tr><td>x</td><td class="middle">integer</td><td>bitmasks for masking SVG viewBox arguments:</td></tr>
-			<tr><td>y</td><td class="middle">integer</td><td><i>they work for other properties too</i></td></tr>
-			<tr><td>z</td><td class="middle">integer</td><td>added for 3D, used outside of viewBox</td></tr>
-			<tr><td>w</td><td class="middle">integer</td><td></td></tr>
-			<tr><td>h</td><td class="middle">integer</td><td></td></tr>
-			<tr><td>width</td><td class="middle">integer</td><td>aliases:</td></tr>
-			<tr><td class="border-dotted">height</td><td class="border-dotted middle">integer</td><td class="border-dotted"></td></tr>
-			<tr><td class="border-dotted">angle</td><td class="border-dotted middle">integer</td><td class="border-dotted">bitmask for SVG rotate()</td></tr>
+			<tr><td class="h3" colspan=3>properties</td></tr>
 			<tr><td>defZero</td><td class="middle">array</td><td>arguments for Ez.toNumber() in array form:</td></tr>
 			<tr><td>grThan0</td><td class="middle">array</td><td></td></tr>
 			<tr><td>notNeg</td><td class="middle">array</td><td></td></tr>
@@ -831,113 +810,166 @@
 			<tr><td>_dims()</td><td class="right" colspan=2>counts array dimensions up to 2, non-array = 0, undefined = -1</td></tr>
 		</table>
 <!----------------------------------------------------------------------------->
-		<div id="bitmasks" style="display:flex; flex-direction:column; margin-top:2rem;">
-			<p style="width:100%; padding-left:0.25rem; font-size:1.125rem; font-family:'Roboto Mono'; color:#002060;">bitmasks for argument masking:</p>
+		<table id="e">
+			<colgroup><col width=124><col width=78><col width=624></colgroup>
+			<tr><td class="h1" colspan=3>const E: mostly pertaining to class Easy</td></tr>
+			<tr><td class="h2" colspan=3>Public properties</td></tr>
+			<tr><td class="border-dotted">currentValue</td><td class="border-dotted middle">null</td><td class="border-dotted">(<i>alias</i> E.cV) use current DOM value for factor, addend, max, min</td></tr>
+			<tr><td class="h3" colspan=3>eKey string constants</td></tr>
+			<tr><td>value</td><td class="middle">"value"</td><td>the value</td></tr>
+			<tr><td>unit</td><td class="middle">"unit"</td><td>the unit, range 0-1 inclusive</td></tr>
+			<tr><td class="border-dotted">comp</td><td class="border-dotted middle">"comp"</td><td class="border-dotted">the complement of the unit</td></tr>
+			<tr><td class="h3" colspan=3>Easy and AFrame status values enumeration</td></tr>
+			<tr><td>arrived</td><td class="middle">0</td><td>the Easy has arrived and stopped animating</td></tr>
+			<tr><td>tripped</td><td class="middle">1</td><td>the Easy has arrived at the outbound destination of a round trip</td></tr>
+			<tr><td>waiting</td><td class="middle">2</td><td>the Easy is waiting, the value doesn't change across frames</td></tr>
+			<tr><td>inbound</td><td class="middle">3</td><td>the Easy is on the return leg of a round trip</td></tr>
+			<tr><td>outbound</td><td class="middle">4</td><td>the Easy is moving from start to end, calculating every frame</td></tr>
+			<tr><td>initial</td><td class="middle">5</td><td>the Easy is in its frame zero state, initial values set</td></tr>
+			<tr><td>original</td><td class="middle">6</td><td>the Easy has not set any property values</td></tr>
+			<tr><td>pausing</td><td class="middle">7</td><td>the AFrame is pausing the animation</td></tr>
+			<tr><td>playing</td><td class="middle">8</td><td>the AFrame is playing the animation</td></tr>
+			<tr><td class="border-dotted">empty</td><td class="border-dotted middle">9</td><td class="border-dotted">the AFrame has no targets</td></tr>
+			<tr><td class="h3" colspan=3>Easy and leg type property enum</td></tr>
+			<tr><td>linear</td><td class="middle">0</td><td>the default linear timing function</td></tr>
+			<tr><td>sine</td><td class="middle">1</td><td>sine through bounce are "borrowed" from JQuery</td></tr>
+			<tr><td>circ</td><td class="middle">2</td><td></td></tr>
+			<tr><td>expo</td><td class="middle">3</td><td></td></tr>
+			<tr><td>back</td><td class="middle">4</td><td></td></tr>
+			<tr><td>elastic</td><td class="middle">5</td><td></td></tr>
+			<tr><td>bounce</td><td class="middle">6</td><td></td></tr>
+			<tr><td>pow</td><td class="middle">7</td><td>variable timing based on user-supplied exponent</td></tr>
+			<tr><td>bezier</td><td class="middle">8</td><td>bezier timing based on [x1, y1, x2, y2]</td></tr>
+			<tr><td>steps</td><td class="middle">8</td><td>step function</td></tr>
+			<tr><td class="border-dotted">increment</td><td class="border-dotted middle">9</td><td class="border-dotted">incremental function, doesn't require time</td></tr>
+			<tr><td class="h3" colspan=3>Easy and leg "io" property enum</td></tr>
+			<tr><td>in</td><td class="middle">0</td><td>the default ease in</td></tr>
+			<tr><td>out</td><td class="middle">1</td><td>ease out / the rest are for two-legged Easy only:</td></tr>
+			<tr><td>inIn</td><td class="middle">2</td><td>ease in-in</td></tr>
+			<tr><td>outIn</td><td class="middle">3</td><td>ease out-in</td></tr>
+			<tr><td>inOut</td><td class="middle">4</td><td>ease in-out</td></tr>
+			<tr><td class="border-dotted">outOut</td><td class="border-dotted middle">5</td><td class="border-dotted">ease out-out</td></tr>
+			<tr><td class="h3" colspan=3>Step function jump enum</td></tr>
+			<tr><td>none</td><td class="middle">0</td><td>jump-none is the CSS equivalent</td></tr>
+			<tr><td>start</td><td class="middle">1</td><td>jump-start</td></tr>
+			<tr><td>end</td><td class="middle">2</td><td>jump-end</td></tr>
+			<tr><td class="border-dotted">both</td><td class="border-dotted middle">3</td><td class="border-dotted">jump-both</td></tr>
+			<tr><td class="h3" colspan=3>Easer set property enum</td></tr>
+			<tr><td>let</td><td class="middle">0</td><td>only changes masked values</td></tr>
+			<tr><td>set</td><td class="middle">1</td><td>all args are masked, no need to get current values</td></tr>
+			<tr><td class="border-dotted">net</td><td class="border-dotted middle">2</td><td class="border-dotted">only change numbers - for "unstructured" properties/functions</td></tr>
+			<tr><td class="h3" colspan=3>For conversion to/from degrees</td></tr>
+			<tr><td>rad</td> <td class="right" colspan=2>0.017453 = Math.PI / 180</td></tr>
+			<tr><td>grad</td><td class="right" colspan=2>1.111111 = 10 / 9</td></tr>
+			<tr><td>turn</td><td class="right" colspan=2>0.002778 = 1 / 360</td></tr>
+		</table>
+		<div id="arg-indexes" style="display:flex; flex-direction:column; margin-top:2rem;">
+			<p style="width:100%; padding-left:0.25rem; font-size:1.125rem; font-family:'Roboto Mono'; color:#002060;">indexes for argument masking:</p>
 			<div style="display:flex; align-items:flex-start;">
 				<table class="mt0 border-thin">
 					<colgroup><col width=54><col width=80><col width=15><col width=42><col width=24></colgroup>
 					<tr><td class="h2 centered" colspan="5">C</td></tr>
 					<tr><td class="h3 centered" colspan="2">feColorMatrix</td><td class="middle"></td><td class="h3 centered" colspan="2">color</td></tr>
 					<tr>
-						<td>C.RR</td><td class="number">1</td>
+						<td>C.RR</td><td class="number">0</td>
 						<td class="middle"></td>
-						<td>C.r</td><td class="number">1</td>
+						<td>C.r</td><td class="number">0</td>
 					</tr>
 					<tr>
-						<td>C.GR</td><td class="number">2</td>
+						<td>C.GR</td><td class="number">1</td>
 						<td class="middle"></td>
-						<td>C.g</td><td class="number">2</td>
+						<td>C.g</td><td class="number">1</td>
 					</tr>
 					<tr>
-						<td>C.BR</td><td class="number">4</td>
+						<td>C.BR</td><td class="number">2</td>
 						<td class="middle"></td>
-						<td>C.b</td><td class="number">4</td>
+						<td>C.b</td><td class="number">2</td>
 					</tr>
 					<tr>
-						<td>C.AR</td><td class="number">8</td>
+						<td>C.AR</td><td class="number">3</td>
 						<td class="middle"></td>
-						<td class="border-dotted">C.a</td><td class="number border-dotted">8</td>
+						<td class="border-dotted">C.a</td><td class="number border-dotted">3</td>
 					</tr>
 					<tr>
-						<td class="border-dotted">C.CR</td><td class="number border-dotted">16</td>
+						<td class="border-dotted">C.CR</td><td class="number border-dotted">4</td>
 						<td class="middle"></td>
-						<td>C.h</td><td class="number">1</td>
+						<td>C.h</td><td class="number">0</td>
 					</tr>
 					<!---->
 					<tr>
-						<td>C.RG</td><td class="number">32</td>
+						<td>C.RG</td><td class="number">5</td>
 						<td class="middle"></td>
-						<td>C.s</td><td class="number">2</td>
+						<td>C.s</td><td class="number">1</td>
 					</tr>
 					<tr>
-						<td>C.GG</td><td class="number">64</td>
+						<td>C.GG</td><td class="number">6</td>
 						<td class="middle"></td>
-						<td class="border-dotted">C.l</td><td class="number border-dotted">4</td>
+						<td class="border-dotted">C.l</td><td class="number border-dotted">2</td>
 					</tr>
 					<tr>
-						<td>C.BG</td><td class="number">128</td>
+						<td>C.BG</td><td class="number">7</td>
 						<td class="middle"></td>
-						<td class="border-dotted">C.w</td><td class="number border-dotted">2</td>
+						<td class="border-dotted">C.w</td><td class="number border-dotted">1</td>
 					</tr>
 					<tr>
-						<td>C.AG</td><td class="number">256</td>
+						<td>C.AG</td><td class="number">8</td>
 						<td class="middle"></td>
 						<td colspan="2">
 					</tr>
 					<tr>
-						<td class="border-dotted">C.CG</td><td class="number border-dotted">512</td>
+						<td class="border-dotted">C.CG</td><td class="number border-dotted">9</td>
 						<td class="middle"></td>
 						<td class="italic" colspan="2">rgb()</td>
 					</tr>
 					<!---->
 					<tr>
-						<td>C.RB</td><td class="number">1,024</td>
+						<td>C.RB</td><td class="number">10</td>
 						<td class="middle"></td>
 						<td class="italic" colspan="2">hsl()</td>
 					</tr>
 					<tr>
-						<td>C.GB</td><td class="number">2,048</td>
+						<td>C.GB</td><td class="number">11</td>
 						<td class="middle"></td>
 						<td class="bottom italic" colspan="2">hwb()</td>
 					</tr>
 					<tr>
-						<td>C.BB</td><td class="number">4,096</td>
+						<td>C.BB</td><td class="number">12</td>
 						<td class="right"></td>
 						<td></td><td></td>
 					</tr>
 					<tr>
-						<td>C.AB</td><td class="number">8,192</td>
+						<td>C.AB</td><td class="number">13</td>
 						<td class="right"></td>
 						<td></td><td></td>
 					</tr>
 					<tr>
-						<td class="border-dotted">C.CB</td><td class="number border-dotted">16,384</td>
+						<td class="border-dotted">C.CB</td><td class="number border-dotted">14</td>
 						<td class="right"></td>
 						<td></td><td></td>
 					</tr>
 					<!---->
 					<tr>
-						<td>C.RA</td><td class="number">32,768</td>
+						<td>C.RA</td><td class="number">15</td>
 						<td class="right"></td>
 						<td></td><td></td>
 					</tr>
 					<tr>
-						<td>C.GA</td><td class="number">65,536</td>
+						<td>C.GA</td><td class="number">16</td>
 						<td class="right"></td>
 						<td></td><td></td>
 					</tr>
 					<tr>
-						<td>C.BA</td><td class="number">131,072</td>
+						<td>C.BA</td><td class="number">17</td>
 						<td class="right"></td>
 						<td></td><td></td>
 					</tr>
 					<tr>
-						<td>C.AA</td><td class="number">262,144</td>
+						<td>C.AA</td><td class="number">18</td>
 						<td class="right"></td>
 						<td></td><td></td>
 					</tr>
 					<tr>
-						<td>C.CA</td><td class="number">524,288</td>
+						<td>C.CA</td><td class="number">19</td>
 						<td class="right"></td>
 						<td></td><td></td>
 					</tr>
@@ -946,15 +978,15 @@
 					<colgroup><col width=88><col width=24></colgroup>
 					<tr><td class="h2 centered" colspan="2">HD</td></tr>
 					<tr><td class="h3 centered" colspan="2">UHD color*</td></tr>
-					<tr><td>HD.l</td><td class="number">1</td></tr>
-					<tr><td>HD.a</td><td class="number">2</td></tr>
-					<tr><td class="border-dotted">HD.b</td><td class="number border-dotted">4</td></tr>
-					<tr><td>HD.c</td><td class="number">2</td></tr>
-					<tr><td class="border-dotted">HD.h</td><td class="number border-dotted">4</td></tr>
-					<tr><td>HD.x</td><td class="number">1</td></tr>
-					<tr><td>HD.y</td><td class="number">2</td></tr>
-					<tr><td class="border-dotted">HD.z</td><td class="number border-dotted">4</td></tr>
-					<tr><td class="border-dotted">HD.alpha</td><td class="number border-dotted">8</td></tr>
+					<tr><td>HD.l</td><td class="number">0</td></tr>
+					<tr><td>HD.a</td><td class="number">1</td></tr>
+					<tr><td class="border-dotted">HD.b</td><td class="number border-dotted">2</td></tr>
+					<tr><td>HD.c</td><td class="number">1</td></tr>
+					<tr><td class="border-dotted">HD.h</td><td class="number border-dotted">2</td></tr>
+					<tr><td>HD.x</td><td class="number">0</td></tr>
+					<tr><td>HD.y</td><td class="number">1</td></tr>
+					<tr><td class="border-dotted">HD.z</td><td class="number border-dotted">2</td></tr>
+					<tr><td class="border-dotted">HD.alpha</td><td class="number border-dotted">3</td></tr>
 					<tr><td class="italic" colspan="2">lab()</td></tr>
 					<tr><td class="italic" colspan="2">oklab()</td></tr>
 					<tr><td class="italic" colspan="2">lch()</td></tr>
@@ -962,107 +994,111 @@
 					<tr><td class="italic" colspan="2">color()</td></tr>
 				</table>
 				<table class="mt0 ml1 border-thin">
-					<colgroup><col width=50><col width=30><col width=15><col width=54><col width=80></colgroup>
+					<colgroup><col width=50><col width=30><col width=15><col width=54><col width=40></colgroup>
 					<tr><td class="h2 centered" colspan="5">M</td></tr>
 					<tr><td class="h3 centered" colspan="2">matrix</td><td class="middle"></td><td class="h3 centered" colspan="2">matrix3d</td></tr>
 					<tr>
-						<td>M.a</td><td class="number">1</td>
+						<td>M.a</td><td class="number">0</td>
 						<td class="middle"></td>
-						<td>M.a1</td><td class="number">1</td>
+						<td>M.a1</td><td class="number">0</td>
 					</tr>
 					<tr>
-						<td>M.b</td><td class="number">2</td>
+						<td>M.b</td><td class="number">1</td>
 						<td class="middle"></td>
-						<td>M.b1</td><td class="number">2</td>
+						<td>M.b1</td><td class="number">1</td>
 					</tr>
 					<tr>
-						<td>M.c</td><td class="number">4</td>
+						<td>M.c</td><td class="number">2</td>
 						<td class="middle"></td>
-						<td>M.c1</td><td class="number">4</td>
+						<td>M.c1</td><td class="number">2</td>
 					</tr>
 					<tr>
-						<td>M.e</td><td class="number">16</td>
+						<td>M.e</td><td class="number">3</td>
 						<td class="middle"></td>
-						<td class="border-dotted">M.d1</td><td class="number border-dotted">16</td>
+						<td class="border-dotted">M.d1</td><td class="number border-dotted">3</td>
 					</tr>
 					<!---->
 					<tr>
-						<td class="border-dotted">M.f</td><td class="number border-dotted">32</td>
+						<td class="border-dotted">M.f</td><td class="number border-dotted">4</td>
 						<td class="middle"></td>
-						<td>M.a2</td><td class="number">32</td>
+						<td>M.a2</td><td class="number">4</td>
 					</tr>
 					<tr>
-						<td>M.tx</td><td class="number">16</td>
+						<td>M.tx</td><td class="number">3</td>
 						<td class="middle"></td>
-						<td>M.b2</td><td class="number">64</td>
+						<td>M.b2</td><td class="number">5</td>
 					</tr>
 					<tr>
-						<td class="bottom">M.ty</td><td class="number bottom">32</td>
+						<td class="bottom">M.ty</td><td class="number bottom">4</td>
 						<td class="middle"></td>
-						<td>M.c2</td><td class="number">128</td>
+						<td>M.c2</td><td class="number">6</td>
 					</tr>
 					<tr>
 						<td></td><td></td>
 						<td class="left"></td>
-						<td class="border-dotted">M.d2</td><td class="number border-dotted">512</td>
-					</tr>
-					<!---->
-					<tr>
-						<td></td><td></td>
-						<td class="left"></td>
-						<td>M.a3</td><td class="number">1,024</td>
-					</tr>
-					<tr>
-						<td></td><td></td>
-						<td class="left"></td>
-						<td>M.b3</td><td class="number">2,048</td>
-					</tr>
-					<tr>
-						<td></td><td></td>
-						<td class="left"></td>
-						<td>M.c3</td><td class="number">4,096</td>
-					</tr>
-					<tr>
-						<td></td><td></td>
-						<td class="left"></td>
-						<td class="border-dotted">M.d3</td><td class="number border-dotted">16,384</td>
+						<td class="border-dotted">M.d2</td><td class="number border-dotted">7</td>
 					</tr>
 					<!---->
 					<tr>
 						<td></td><td></td>
 						<td class="left"></td>
-						<td>M.a4</td><td class="number">32,768</td>
+						<td>M.a3</td><td class="number">8</td>
 					</tr>
 					<tr>
 						<td></td><td></td>
 						<td class="left"></td>
-						<td>M.b4</td><td class="number">65,536</td>
+						<td>M.b3</td><td class="number">9</td>
 					</tr>
 					<tr>
 						<td></td><td></td>
 						<td class="left"></td>
-						<td>M.c4</td><td class="number">131,072</td>
+						<td>M.c3</td><td class="number">10</td>
 					</tr>
 					<tr>
 						<td></td><td></td>
 						<td class="left"></td>
-						<td>M.d4</td><td class="number">524,288</td>
+						<td class="border-dotted">M.d3</td><td class="number border-dotted">11</td>
+					</tr>
+					<!---->
+					<tr>
+						<td></td><td></td>
+						<td class="left"></td>
+						<td>M.a4</td><td class="number">12</td>
+					</tr>
+					<tr>
+						<td></td><td></td>
+						<td class="left"></td>
+						<td>M.b4</td><td class="number">13</td>
+					</tr>
+					<tr>
+						<td></td><td></td>
+						<td class="left"></td>
+						<td>M.c4</td><td class="number">14</td>
+					</tr>
+					<tr>
+						<td></td><td></td>
+						<td class="left"></td>
+						<td>M.d4</td><td class="number">15</td>
 					</tr>
 				</table>
 				<table class="mt0 ml1 border-thin">
-					<colgroup><col width=96><col width=24></colgroup>
-					<tr><td class="h2 centered" colspan="2">Ez</td></tr>
+					<colgroup><col width=104><col width=24></colgroup>
+					<tr><td class="h2 centered" colspan="2">E</td></tr>
 					<tr><td class="h3 centered" colspan="2">viewBox++</td></tr>
-					<tr><td>Ez.x</td><td class="number">1</td></tr>
-					<tr><td>Ez.y</td><td class="number">2</td></tr>
- 					<tr><td class="border-dotted">Ez.z</td><td class="number border-dotted">4</td></tr>
-					<tr><td>Ez.w</td><td class="number">4</td></tr>
-					<tr><td>Ez.h</td><td class="number">8</td></tr>
-					<tr><td>Ez.width</td><td class="number">4</td></tr>
-					<tr><td>Ez.height</td><td class="number">8</td></tr>
-					<tr><td class="h3 centered border-top" colspan="2">SVG rotate</td></tr>
-					<tr><td>Ez.angle</td><td class="number">8</td></tr>
-				</table>
+					<tr><td>E.x</td><td class="number">0</td></tr>
+					<tr><td>E.y</td><td class="number">1</td></tr>
+ 					<tr><td class="border-dotted">E.z</td><td class="number border-dotted">2</td></tr>
+					<tr><td>E.w</td><td class="number">2</td></tr>
+					<tr><td>E.h</td><td class="number">3</td></tr>
+					<tr><td>E.width</td><td class="number">2</td></tr>
+					<tr><td>E.height</td><td class="number">3</td></tr>
+					<tr><td class="h3 centered border-top" colspan="2">rotate3d</td></tr>
+					<tr><td>E.angle</td><td class="number">3</td></tr>
+					<tr><td class="h3 centered border-top" colspan="2">SVG rotate()</td></tr>
+					<tr><td>E.svgRotA</td><td class="number">0</td></tr>
+					<tr><td>E.svgRotA</td><td class="number">1</td></tr>
+					<tr><td>E.svgRotY</td><td class="number">2</td></tr>
+						</table>
 			</div>
 			<p style="font-family:'Roboto Mono'; color:#3E1F00; margin-top:0.5rem;">* display-p3 and rec2020 use RGB nomenclature</p>
 		</div>

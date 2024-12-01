@@ -1,4 +1,4 @@
-export {loadNamed, setPrefix, disableSave, disablePreset, disableDelete};
+export {loadNamed, setPrefix, disableSave, disablePreset, disableDelete, abled};
 export let   LINEAR, ns, preClass, presets; // ns exported for storeCurrent()
 export const
 DEFAULT_NAME = "",             // default value for elms.named[0]
@@ -8,8 +8,8 @@ import {E} from "../src/raf.js";
 
 import {loadCopy}                             from "./copy.js";
 import {getNamedBoth, setNamed, storeCurrent} from "./local-storage.js";
-import {CHANGE, CLICK, EASY_, MEASER_, dlg, elms, g, addEventsByElm,
-        boolToString, messageBox}             from "./common.js";
+import {CHANGE, CLICK, EASY_, MEASER_, dlg, elms, g, addEventsByElm, messageBox}
+                                              from "./common.js";
 /*
 import(_named.js): formFromObj, updateNamed; ok() for easings only.
 import(_load.js) : updateAll via loadNamed(..., _load)
@@ -120,31 +120,26 @@ function openNamed() {  // not exported
 //               b is true when the selected named object is modified.
 function disableSave(b) {
     if (elms.save) {
-        elms.save  .disabled = b;
-        elms.revert.disabled = b;
-        const str = boolToString(!b);
-        elms.save  .dataset.enabled = str; // see disablePlay()
-        elms.revert.dataset.enabled = str; // "italic" = "modified"
         elms.named.style.fontStyle = b ? "" : "italic";
+        for (const elm of [elms.save, elms.revert])
+            abled(elm, b);
     }
 }
 // disablePreset() called by openNamed(), clickOk(), loadFinally(), presets can
 //                 be modified and saved, elms.preset reverts to preset values.
 function disablePreset(name, item) {
-    if (elms.preset) {
-        elms.preset.disabled = !name || !item
-                            || !presets[name]
-                            || JSON.stringify(presets[name]) == item;
-
-        elms.preset.dataset.enabled = boolToString(!elms.preset.disabled);
-    }
+    if (elms.preset)
+        abled(elms.preset, !name || !item || !presets[name]
+                                 || JSON.stringify(presets[name]) == item);
 }
 // disableDelete() called by openNamed(), clickOk(), loadFinally()
 function disableDelete(name) { // can't delete presets, including default
-    const elm = elms.delete;
-    if (elm) {
-        const dis    = Boolean(presets[name]);
-        elm.disabled = dis;
-        elm.dataset.enabled = boolToString(!dis);
-    }
+    if (elms.delete)
+        abled(elms.delete, Boolean(presets[name]));
+}
+// abled() helps other functions enable or disable an element
+function abled(elm, b) {
+    elm.disabled = b;
+    g.disabled[b ? "add" : "delete"](elm);
+
 }

@@ -124,7 +124,7 @@ function getEasies(_, json) {
     ease = Ease.ease[0][id],               // default CSS "ease" as bezier array
     size = ease.length;
 
-    for (i = 1; i < size; i++)             // clone sub-<div>
+    for (i = 1; i < size; i++)             // clone bezier sub-<div>
         divs.push(div.appendChild(elm.cloneNode(true)));
 
     const titles = json.titles;

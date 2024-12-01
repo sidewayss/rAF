@@ -31,7 +31,6 @@ function loadTIOPow() {
 
     elms[sel.id] = sel;
     elms.divType2.appendChild(sel);
-    g.disables.push(sel);
 
     for ([id, evt] of [[TYPE, INPUT], [POW, CHANGE]]) {
         two = [elms[id], elms[id + TWO]];

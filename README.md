@@ -5,7 +5,7 @@ The name **rAF** is a common abbreviation for the core JavaScript animation func
 It is a solo open source project about to be released in its first public version 1.0. Hopefully others will contribute in the future.
 
 ## Getting started
-If you want to skip the formalities and jump right in, the best place to start are the <a href="https://sidewayss.github.io/rAF/apps/">3 Apps</a> (latest code on GitHub Pages) that test & demonstrate the library and generate starting-point JavaScript code. They are also available in a more stable form on my <a href="https://sidewayss.com/raf/apps/">homepage</a>.
+If you want to skip the formalities and jump right in, the best place to start are the <a href="https://sidewayss.github.io/rAF/apps/">3 Apps</a> (latest code on GitHub Pages) that test & demonstrate the library and generate starting-point JavaScript code. They are also available in a more sta(b)le form on my <a href="https://sidewayss.com/raf/apps/">homepage</a>.
 
 There are also animation examples in these collections on CodePen:
 
@@ -14,7 +14,7 @@ There are also animation examples in these collections on CodePen:
 <a href="https://sidewayss.github.io/rAF/docs/raf-by-class.html">Properties and Methods by Class</a> catalogs classes and constants you might want to use. The current state of documentation is skeletal. Hopefully the examples, apps, and app instructions will help to fill to fill things in.
 
 ## Setup
-**rAF** is modular. There are currently no packages or minified file. Should be coming your way soon after v1.0. For most users, `raf.js` provides all the exports you need. Here is a typical import statement:
+**rAF** is modular. There are currently no packages and no transpiled or minified file. Coming your way soon as part of v1.0. For most users, `raf.js` provides all the exports you need. Here is a typical import statement:
 ```
 import {E, Ez, F, P, Easy, Easies, AFrame, rAFInit} from "https://sidewayss.com/raf/src/raf.js";
 ```
@@ -28,13 +28,13 @@ It initializes constants that are used internally, many of which you will use to
 **rAF** provides a flexible, structured, and compact way to create and execute CSS or SVG animations of two types:
 - Gradual value changes controlled by timing patterns
 - Cue-based animations, where timing cues trigger animation events that can span elements and properties
-It also provides an alternate paradigm for setting properties/attributes where the property sets the value on the element, not the other way around. There are advantages.
+- An alternate paradigm for setting properties/attributes, where the property sets the value on the element, not the other way around. There are advantages.
 
 Features CSS doesn't have:
-- Multiple timing patterns for a single property, within and across functions
+- Multiple timing patterns for a single property, by argument, within and across functions
 - Eased steps, for timing and values separately
 - Max and min limits by argument by element
-- Animate the same property differently across elements in a single animation
+- Animate the same property differently across elements in a single animation, sharing the timing function or not
 - <a href="https://github.com/color-js/color.js">Color.js</a> integration
 - For two-legged easings:
     - Not just `inOut`, there are `outIn`, `inIn`, and `outOut` settings
@@ -48,7 +48,7 @@ Goals, Assumptions, and Approach:
 - Allow for the animation of every property/attribute and function in full detail
 - Create a minimal syntax that is both flexible and forgiving
 - Make it fully object-oriented within the confines of JavaScript
-- Assume a “modern browser” that supports ES6*
+- Assume a “modern browser” that supports ES6*, but transpile back to wherever is plausible
 - Build in callbacks for flexibility and the ability to meet as-yet-unknown requirements
 - Create a way to test user GPU power and develop methods for handling low-end vs high-end GPUs
 

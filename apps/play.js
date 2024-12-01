@@ -102,9 +102,10 @@ function formatPlay(isPlaying) { // isPlaying is true or false, never undefined
 }
 // disablePlay() helps changePlay(), changeStop() via resetPlay()
 function disablePlay(isPlaying, isPausing) {
-    let elm
-    for (elm of [...g.disables,
-                 ...g.buttons.filter(btn => btn.dataset.enabled)])
+    let elm;
+    const targets = isPlaying ? g.abled
+                              : g.abled.filter(e => !g.disabled.has(e));
+    for (elm of targets)
         elm.toggleAttribute("disabled", isPlaying);
 
     elm = elms.x
@@ -116,9 +117,4 @@ function disablePlay(isPlaying, isPausing) {
         P.enable(elm, true);
         P.accentColor.cut(elm);
     }
-}
-// setAttrBool() helps with disabled, checked, and other boolean attributes
-function setAttrBool(elm, attr, b) { // only used by disablePlay()
-    b ? elm.setAttribute(attr, "")
-      : elm.removeAttribute(attr);
 }

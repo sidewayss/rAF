@@ -110,7 +110,6 @@ function load(_, hasVisited) {
     clone.id = sib.id       // dummy element contains id and keeps the grid
     elms[sib.id] = clone;   // from reflowing via replaceWith().
     clone.style.marginLeft = sib.style.marginLeft;
-    g.disables.splice(g.disables.indexOf(sib), 1, clone);
     sib.replaceWith(clone);
                             // initialize elms:
     [EASY_, MEASER_].forEach((v, i) => elms.type.options[i].value = v);

@@ -63,13 +63,6 @@ p.hi { font-weight:500; }
   padding-top:var(--8th);
 }
 
-/* Numeric inputs are messy */
-input[type=number] {
-  text-align:right;
-  padding-left: 0;
-  padding-right:0;
-  caret-color:black;
-}
 #v0, #v1, #v2 {
   width:calc(3ch + 1.75rem);
 }
@@ -291,24 +284,8 @@ circle {
   .w5ch { width:5.35ch; } /* .35 for #mid alignment at font-size:100% */
   .w6ch { width:6.5ch; }
   .w7ch { width:7.5ch; }
-  input[type=number].secs {
-    text-align:left;
-    padding-left:0.3125rem;
-  }
-  input[type=number].secs:not(:hover, :focus) {
-    -moz-appearance:textfield;
-  }
 }
 @supports (hanging-punctuation:first) and (font:-apple-system-body)
                                       and (-webkit-appearance:none) {
-  input[type=number].secs {
-    text-align:left;
-    padding-left:0.3125rem;
-  }
-  input[type=number].secs:not(:hover, :focus)::-webkit-outer-spin-button,
-  input[type=number].secs:not(:hover, :focus)::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-  }
   .clear { font-weight:normal; }
 }

@@ -45,7 +45,7 @@ function loadCommon() {
 
     arr = byTag[2].splice(-3, 3);     // break out <dialog> sub-elements by id
     if (byTag[0].at(-1).id == "name")
-        arr.push(...byTag[0].splice(-1, 1)); // Save Named <input>
+        arr.push(...byTag[0].splice(-1, 1)); // <input id="name" type="text">
     else             // id == "spaces"
         arr.push(...byTag[1].splice(-1, 1)); // Color Picker <select>
 
@@ -151,6 +151,14 @@ function loadJSON(response, is, dir, ns, name, hasVisited, byTag, msg) {
 // loadFinally() executes on Promise.all().then(), could be inlined & indented:)
 function loadFinally(is, name, hasVisited, id) {
     let obj;
+    const               // there are new clones since loadCommon() { byTag = }
+    tags  = [INPUT, SELECT, BUTTON, LABEL,"input-num","check-box"],
+    byTag = tags.map(tag => [...document.body.getElementsByTagName(tag)]);
+
+    byTag[0].splice(byTag[0].indexOf(elms.x), 1); // elms.x disables abnormally
+    Ez.readOnly(g, "abled",    byTag.flat());     // en|dis for disablePlay()
+    Ez.readOnly(g, "disabled", new Set);          // stay disabled post-play
+
     if (elms.save)
         Ez.readOnly(g, "restore", `${preDoc}restore`);
 

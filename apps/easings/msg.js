@@ -6,6 +6,7 @@ export const MSG = ["mid","split","gap"];
 import {Ez, P} from "../../src/raf.js";
 
 import {msecs, secs} from "../update.js";
+import {abled}       from "../named.js";
 import {MILLI, BUTTON, DIV, CLICK, CHANGE, elms, addEventToElms,
         addEventsByElm, addEventByClass, boolToString}
                      from "../common.js";
@@ -152,8 +153,7 @@ function setSplitGap(time = msecs,
 // disableClear() helps changeMSG() and clickClear(), also called by
 //               easingFromObj(), returns a factor/divisor.
 function disableClear(elm, n, isDefN) {
-    elm.clear.disabled = !isDefN || n == elm.default();
-    elm.clear.dataset.enabled = boolToString(!elm.clear.disabled);
+    abled(elm.clear, !isDefN || n == elm.default())
 }
 // isUnlocked() helps clickLock() and setSplitGap();
 function isUnlocked(elm) {  // not exported

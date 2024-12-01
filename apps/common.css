@@ -91,8 +91,8 @@ select, input[type=number] {
   background-color:var(--sidebar-white);
   border:var(--border-gray);
 }
-input[type=text] {
-  caret-color:black;
+input[type=text], input-num {
+  caret-color:auto;
 }
 input.invalid {
   background-color:rgb(139 0 0 / 0.1); /* background-opacity does not exist */
@@ -184,8 +184,7 @@ check-box, check-tri {
 }
 check-box[disabled], check-box[disabled][checked],
 check-tri[disabled], check-tri[disabled][checked],
-label[disabled],
-select:disabled {
+label[disabled], select:disabled {
   stroke:var(--medium-gray);
   color: var(--medium-gray);
 }
