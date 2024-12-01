@@ -144,6 +144,18 @@ class CFunc extends Func {      //\ CFunc: CSS color functions
         if (this.hasHue)
             this._u[this.hueIndex] = PFunc._validUnits(val, "hueUnits", ANGLES);
     }
+//  These two set all the funcs' units at once:
+    static set alphaUnits(val) {
+        val = this._validUnits(val, "alphaUnits", EMPTY_PCT);
+        for (const f of Object.values(CFunc.funcs))
+            f._u[C.a] = val;
+    }
+    static set hueUnits(val) {
+        val = this._validUnits(val, "hueUnits", ANGLES);
+        for (const f of Object.values(CFunc.funcs))
+            if (f.hasHue)
+                f._u[f.hueIndex] = val;
+    }
 }
 //==============================================================================
 class ColorFunc extends CFunc { //\ ColorFunc: CSS color() function

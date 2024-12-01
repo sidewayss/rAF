@@ -1,4 +1,4 @@
-export {color, cjsTo};
+export {color, cjsTo, isCjs, isCjsSpace};
 
 import {Ez} from "../ez.js"
 //==============================================================================

@@ -86,7 +86,7 @@ function loadCommon() {
         Ez.readOnly(g, "keyName", `${preDoc}name`);
 
         const name = localStorage.getItem(g.keyName),
-        hasVisited = (name !== null),
+        hasVisited = (name !== null), // must be Boolean, not undefined
         is = ns.load(byTag, hasVisited),
                                       // the rest of the async processes:
         msg = "Error fetching common.json: presets & tooltips are unavailable";

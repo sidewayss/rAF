@@ -4,7 +4,7 @@
 //   https://youtu.be/f_R3c2TIV-E?list=OLAK5uy_k5BKg6aR7SkE69hOjKtbSTVMLYr-6AftU
 //==============================================================================
 import {E, U, Is} from "../globals.js";
-import {Ez}    from "../ez.js";
+import {Ez}       from "../ez.js";
 
 export const // units by type
 LENGTHS   = ["px","em","rem","vw","vh","vmin","vmax","pt","pc","mm","in"],
@@ -125,19 +125,6 @@ PFunc = {   // shared Prop and Func stuff, mostly relating to units
                 obj.func = val;
         else
             Ez._invalidErr("colorFunc", val?.key ?? val, this.funcC);
-    },
- // These two are only for CFunc, but have the same name as CFunc read-write
- // instance properties; less confusing here than as static class properties.
-    set alphaUnits(val) {
-        val = this._validUnits(val, "alphaUnits", EMPTY_PCT);
-        for (const f of Object.values(CFunc.funcs))
-            f._u[C.a] = val;
-    },
-    set hueUnits(val) {
-        val = this._validUnits(val, "hueUnits", ANGLES);
-        for (const f of Object.values(CFunc.funcs))
-            if (f.hasHue)
-                f._u[f.hueIndex] = val;
     }
 };
 // boolNone helps P.displayed() and P.events()

@@ -1,6 +1,6 @@
 export {getCV, parseUn, current};
 
-import {cjsTo} from "./color.js";
+import {isCjs, cjsTo} from "./color.js";
 
 import {Is} from "../globals.js";
 import {Ez} from "../ez.js";

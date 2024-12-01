@@ -1,12 +1,12 @@
 export {easingFromObj, easingFromForm};
 
-import {Is, Ez}  from "../../src/raf.js";
+import {Ez}  from "../../src/raf.js";
 
-import {msecs}             from "../update.js";
-import {MILLI, TWO, elms, g, orUndefined, elseUndefined}
-                           from "../common.js";
+import {msecs}                                    from "../update.js";
+import {TWO, elms, g, orUndefined, elseUndefined} from "../common.js";
 
-import {MSG, disableClear} from "./msg.js";
+import {getDF}             from "./_named.js";
+import {MSG}               from "./msg.js";
 import {setLink, isPow}    from "./tio-pow.js";
 import {LINK, TYPE, IO, POW, twoLegs, isBezier, bezierArray}
                            from "./index.js";
@@ -26,22 +26,9 @@ function easingFromObj(obj, _, leg0, leg1) {
     else
         elms.pow2.value = elms.pow.value;
 
-    let elm, id, isDefN, n, val;
-    [leg0?.end,                          // #mid,
-     leg0?.time,                         // #split,
-     leg1?.wait].forEach((v, i) => {     // #gap - initial default values:
-        id  = MSG[i];
-        elm = elms[id];
-        n   = obj[id] ?? v;
-        isDefN = Is.def(n)
-        val    = isDefN ? n / getDF(id)  // default value
-                        : elm.default(); // fallback
-        elm.value = val;
-        disableClear(elm, val, isDefN);
-    });
     if (!isBez) {                        // bezier has only one leg here
         elms.type2.value = leg1?.type ?? g.type;
-        for (id of [TYPE, POW])          // #linkType and #linkPow
+        for (const id of [TYPE, POW])    // #linkType and #linkPow
             setLink(
                 elms[Ez.toCamel(LINK, id)],
                 elms[id].value == elms[id + TWO].value
@@ -88,8 +75,4 @@ function easingFromForm(obj) {
     else                                    // property order must match presets
         return Object.assign(obj, {mid, split, gap, pow,
                                    bezier:elseUndefined(isBez, bezierArray())});
-}
-// getDF() gets a divisor or factor
-function getDF(id) {
-    return id.endsWith("d") ? 1 : MILLI; // "mid" ends with "d"
 }
