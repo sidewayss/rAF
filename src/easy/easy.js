@@ -134,7 +134,7 @@ export class Easy {
         Object.freeze(this.#e);
 
         Ez.is(this);
-        Object.seal(this);
+    //%%Object.seal(this);
     }
 //  static _validate() is a validation function for Ez.toArray()
     static _validate(obj, err) {

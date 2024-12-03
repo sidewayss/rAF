@@ -21,7 +21,7 @@ export class ACues {
             this.#cues = [];
 
         Ez.is(this);
-        Object.seal(this);
+    //%%Object.seal(this);
     }
 //==============================================================================
     get validate()  { return Is.def(this.#validate); }

@@ -117,7 +117,7 @@ function drawLine(isStp = isSteps()) {
     const str   = [],
     loopIndexes = [0],
     drawAsLine  = !isStp && !elms.drawAsSteps.checked,
-    hasWaiting  =  isStp || ezY.loopWait || ezY.tripWait;
+    hasWaiting  = /* isStp ||*/ ezY.loopWait || ezY.tripWait; //!!isStp??!!tripWait??
     if (loopFrames.length)
         loopIndexes.push(...loopFrames);
 
@@ -135,8 +135,8 @@ function drawLine(isStp = isSteps()) {
             map = slice.map(frm => frameToString(frm));
         else {                          // j is offset by -1 relative to slice
             map = slice.slice(1).map((frm, j) =>
-                      pointToString(frm.x, slice[j].y)
-                    + frameToString(frm));
+                      pointToString(frm.x, slice[j].y) + frameToString(frm)
+                  );
             if (isStp)
                 str.push(frameToString(slice[0]));
         }
@@ -280,18 +280,22 @@ function setCounters(frm, d, pad) {
 }
 //==============================================================================
 // updateX() is called exclusively by inputX(), the user can click anywhere on
-//           #x, so for loopByElm set all 3 dots every time.
+//           #x, non-linear selection, so loopByElm sets all 3 dots every time.
 function updateX(frm, i) {
-    const
+    let
     x = frm.x + U.px,
     y = frm.y + U.px;           // !loopFrames == isPseudo
     if (!elms.loopByElm.checked || !loopFrames.length)
         setDot(0, x, y);
     else  {                     // loopByElm && !isPseudo
-        const iElm = (loopFrames.findLastIndex(n => n < i) + 1) % COUNT;
+        const
+        idx  = loopFrames.findLastIndex(n => n <= i),
+        iElm = (idx + 1) % COUNT;
         for (let j = 0; j < COUNT; j++)
             if (j == iElm)
-                setDot(j, x, y);
+                ezY.loopWait && iElm > 0 && frm.t - frames[loopFrames[idx]].t < ezY.loopWait
+              ? setDot(j, 0, theStart())
+              : setDot(j, x, y);
             else if (j > iElm || elms.roundTrip.checked)
                 setDot(j, 0, theStart());
             else

@@ -14,9 +14,10 @@ import {updateSplitGap, setSplitGap, isUnlocked} from "./msg.js";
 import {FORMAT_END, isSteps, wasIsSteps, isUserTV, infoZero} from "./steps.js";
 //==============================================================================
 function loadChart() { // called by loadTIOPow() so cloning is finished prior
-    const elements = document.getElementsByClassName("chart");
-    addEventsByElm(CHANGE, elements, change, true);                   //!!true??
-    addEventsByElm(INPUT, [elms.time, ...elms.beziers], input, true); //!!ditto
+    const changers = [...document.getElementsByClassName("chart"),
+                      ...elms.beziers];
+    addEventsByElm(CHANGE, changers,  change, true); //!!true??
+    addEventsByElm(INPUT, [elms.time], input, true); //!!ditto
 
     elms.swap.addEventListener(CLICK, clickSwap);
     FORMAT_START = [pad.milli, 0, elms.start];
@@ -41,9 +42,6 @@ function swapIt(b) { // true means swapped: start > end
 //==============================================================================
 // input event handlers
 const input = {
-    bezier(evt) { // #bezier0-3
-        refresh(evt.target);
-    },
     time() {      // called indirectly by formFromObj(), evt always defined
         const prev = msecs;
         timeFrames();
@@ -100,6 +98,9 @@ const change = {
             elms.initZero.dispatchEvent(dummyEvent(CHANGE, "changeType"));
         }
         refresh(tar, 0, has2);
+    },
+    bezier(evt) { // #bezier0-3
+        refresh(evt.target);
     }
 };
 // for lastUserTime input, see steps.js:

@@ -77,7 +77,7 @@ p.hi { font-weight:500; }
 
 /* time inputs: the "s" units labels hide when the spinners show */
 .secs { /* #t0, #t1, #t1, #split, #gap */
-  width:calc(5ch + 1.25rem);
+/*  width:calc(5ch + 1.25rem);*/
 }
 #split, #gap {
   margin-left:var(--5-16ths);
@@ -227,7 +227,7 @@ circle {
   color:var(--medium-blue);
 }
 
-.clear:disabled, .lock:disabled {
+.clear:disabled, .lock:disabled, .link:disabled {
   font-weight:normal;
   color:#AAA;
   background-color: transparent;

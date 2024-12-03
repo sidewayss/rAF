@@ -35,7 +35,7 @@ function loadTIOPow() {
     for ([id, evt] of [[TYPE, INPUT], [POW, CHANGE]]) {
         two = [elms[id], elms[id + TWO]];
         pairOfOthers(...two);              // each one is the other's other
-        addEventToElms (evt, two, inputTypePow);
+        addEventToElms(evt, two, inputTypePow);
     }
     loadChart();
     addEventByClass(CLICK, LINK, null, inputTypePow);

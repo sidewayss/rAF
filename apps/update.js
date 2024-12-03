@@ -55,8 +55,9 @@ function loadUpdate(isMulti, dir) {
 //==============================================================================
 // inputX() handles input events for #x, called by easings refresh() w/o evt
 function inputX() {
-    const i   = elms.x.valueAsNumber;
-    const frm = frames[i];
+    const
+    i   = elms.x.valueAsNumber,
+    frm = frames[i];
     updateCounters(i, frm);
     ns.updateX(frm, i); // 2nd arg easings only
 }

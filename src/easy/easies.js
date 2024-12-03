@@ -26,7 +26,7 @@ export class Easies {
         this.#easy2ME    = new Map; // Map(Easy,   Set(MEaser))
         this.#me2Plays   = new Map; // Map(MEaser, Map(Easy,  playings))
         Ez.is(this);
-        Object.seal(this);
+    //%%Object.seal(this);
     }
     get easies() { return Array.from(this.#easies); } // shallow copy as Array
 //==============================================================================

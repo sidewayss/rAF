@@ -150,7 +150,7 @@ function loadJSON(response, is, dir, ns, name, hasVisited, byTag, msg) {
 //==============================================================================
 // loadFinally() executes on Promise.all().then(), could be inlined & indented:)
 function loadFinally(is, name, hasVisited) {
-    let obj;
+    let elm, obj;
     const               // there are new clones since loadCommon() { byTag = }
     tags  = [INPUT, SELECT, BUTTON, LABEL,"input-num","check-box"],
     byTag = tags.map(tag => [...document.body.getElementsByTagName(tag)]);
@@ -185,7 +185,12 @@ function loadFinally(is, name, hasVisited) {
     raf = new AFrame;
     if (is.multi)       // multi ready for resize, needs clipStart, clipEnd now
         window.dispatchEvent(dummyEvent(RESIZE, "isLoading"));
-
+    else if (byTag.at(-2).length) { // only easings has <input-num>
+        for (elm of document.getElementsByTagName("input-num")) {
+            elm.autoResize = true;
+            elm.resize();
+        }
+    }
     ns_named.formFromObj(obj, hasVisited); // restore everything
 
     // msecs and secs are now set, see timeFrames().
@@ -196,13 +201,7 @@ function loadFinally(is, name, hasVisited) {
     ezX = new Easy({time:msecs, end:MILLI}); //*05
     if (!ns.initEasies(obj, hasVisited))
         return;
-    //-------------
-    if (is.easings) {   // only easings has <input-num>, must precede updateAll()
-        for (obj of document.getElementsByTagName("input-num")) {
-            obj.autoResize = true;
-            obj.resize();
-        }
-    }
+    //----------------
     ns.updateAll(obj);
     if (!is.multi) {    // easings and color resize must follow updateAll()
         window.dispatchEvent(dummyEvent(RESIZE, "hasntVisited", !hasVisited));
@@ -227,7 +226,7 @@ function loadFinally(is, name, hasVisited) {
         let             // fade document.body into view, P.o == P.opacity
         time = 750,
         ez   = new Easy({time, type:E.expo}),
-        ezs  = af.newEasies([ez]),
+        ezs  = af.newEasies([ez]);
         elm  = ns.easeFinally?.(af, ezs, ez, time, is) ?? document.body;
         ez.newTarget({elm, prop:P.o});
         af.oneShot = true;

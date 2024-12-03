@@ -35,7 +35,7 @@ export class AFrame {
                               "a boolean, array-ish, a valid object with "
                             + "properties, or undefined.");
         }
-        Object.seal(this);
+    //%%Object.seal(this);
     }
 //==============================================================================
     get zero()    { return this.#zero; }

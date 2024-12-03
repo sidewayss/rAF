@@ -157,7 +157,7 @@ export const Ez = {
         else if (notZero && n === 0)
             err = "a non-zero";
         if (err)
-            this._mustBeErr(`${name}:${v}\n${name}`,
+            this._mustBeErr(`${name} = ${v}\n${name}`,
                             `${err} ${notFloat ? "integer" : "number"}`);
         //-------
         return n;

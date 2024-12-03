@@ -1,6 +1,6 @@
 export {easingFromObj, easingFromForm, getDF};
 
-import {Ez}  from "../../src/raf.js";
+import {Ez, Is}  from "../../src/raf.js";
 
 import {msecs}             from "../update.js";
 import {MILLI, TWO, elms, g, orUndefined, elseUndefined}
@@ -8,12 +8,13 @@ import {MILLI, TWO, elms, g, orUndefined, elseUndefined}
 
 import {MSG}               from "./msg.js";
 import {setLink, isPow}    from "./tio-pow.js";
+import {updateTV}          from "./steps.js";
 import {LINK, TYPE, IO, POW, twoLegs, isBezier, bezierArray}
                            from "./index.js";
 //==============================================================================
 // easingFromObj() creates an object from localStorage and updates controls,
 //                 called exclusively by formFromObj().
-function easingFromObj(obj, _, leg0, leg1) {
+function easingFromObj(obj, hasVisited, leg0, leg1) {
     const isBez = isBezier();
     if (isBez)
         for (let i = 0; i < 4; i++)
@@ -34,7 +35,9 @@ function easingFromObj(obj, _, leg0, leg1) {
                 elms[id].value == elms[id + TWO].value
             );
     }
-    return [];  // could probably return undefined, but this is at least typed
+    if (Is.def(hasVisited)) // it must run on page load and it must be in
+        updateTV();         // stepsFromObj() so it's here not in formFromObj().
+    return [];
 }
 // easingFromForm() creates an object from controls for localStorage or
 //                  new Easy(), called exclusively by objFromForm().

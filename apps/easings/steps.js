@@ -1,6 +1,6 @@
 export {loadSteps, loadTV, stepsFromObj, stepsFromForm, initSteps, isSteps,
-        wasIsSteps, toggleUser, isUserTV, tvFromElm, setInfo, infoZero,
-        displayJump};
+        wasIsSteps, toggleUser, isUserTV, updateTV, tvFromElm, setInfo,
+        infoZero, displayJump};
 
 export let FORMAT_END;
 export const
@@ -57,11 +57,11 @@ function loadSteps() {
 }
 function loadTV() { // called exclusively by getEasies() during page load
     let arr, clone, div, divUser, elm, func, i, id, isT, last, lbl, max, min,
-        sel, selNamed, step, userTV;
+        sel, selNamed, userTV;
 
-    for ([id, min, max, step, isT] of
-        [[TIMING,    0, elms.time.max, ".001", true],
-         [VALUES, -100, MILLI + 100,   "1", ]])
+    for ([id, min, max, isT] of
+        [[TIMING,    0, elms.time.max / MILLI, true],
+         [VALUES, -100, MILLI + 100, ]])
     {
         lbl = document.createElement(LABEL);
         lbl.htmlFor     = id;
@@ -106,15 +106,9 @@ function loadTV() { // called exclusively by getEasies() during page load
             elm.id   = id[0] + i;              // "v0-2" or "t0-2"
             elm.min  = min;
             elm.max  = max;
-            elm.step = step;
         }
         elms[userTV] = arr;                    // elms.userTiming, .userValues
     }
-    [TIMING, VALUES].forEach((nm, j) => {      // must be a separate loop
-        func = tvShowHide(!j);
-        for (elm of elms[nm][OTHER])
-            func(elm, false);                  // initial state is hidden
-    });
     addEventByClass(CHANGE, STEPS, null, changeSteps);
 
     lastUserTime = elms.userTiming.at(-1);
