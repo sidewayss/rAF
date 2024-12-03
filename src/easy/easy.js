@@ -606,24 +606,25 @@ export class Easy {
                 if (hasNext)              // E.arrived, E.tripped, E.waiting
                     leg = leg.prev;       // i.e. e.status <= E.waiting (or isSteps)
                 this.#leg2e(e, leg);
-                if (hasNext) //!!these comments need revisions!!
-                    return;               // waiting or steps = E.arrived, or steps !e.waitNow...
-                //----------------------- //!!loopByElm && steps must continue!!
+                if (hasNext)
+                    return;               // waiting
+                //-----------------------
                 this._leg = this._inbound ? this.#lastLeg : this._firstLeg;
-            //!!if  (!e.status && isSteps)
+                console.log(now, this.#time);
+            //!!if  (!e.status && isSteps) // steps = E.arrived, or steps !e.waitNow
             //!!    return;
                 e = this.e2;              // for looping, autoTrip steps no wait
                 if (isSteps) {
                     if (!waitNow)
                         this.#leg2e(e, leg);
                     return;
-                } //------------------------ steps is done, no calculations
+                } //----------------------// steps is done, no calculations
                 leg = this._leg;
             }
             now = this._now;              // _nextLeg modified it
-        }                                 // ...leg.part is signed
+        }
         const unit = leg.ease(now / leg.time) * leg.part + leg.prev.unit;
-        e.unit  = unit;
+        e.unit  = unit;                   //    leg.part is signed
         e.comp  = Ez.comp(unit);
         e.value = unit * this.#dist + this.#base;
     }
@@ -654,7 +655,7 @@ export class Easy {
             if (this._inbound)  // E.tripped
                 wait = this.#autoTrip ? this.#tripWait : 0;
             else                // E.arrived
-                wait = this.#loopWait;
+                wait = this.#loopWait + (this._leg.leftover ?? 0);
         }
         e.waitNow   = wait && (wait >= this._now);
         this.#zero += wait + time;
@@ -717,8 +718,7 @@ function stepsToLegs(o, leg, legDist, dist, idx, last, keys) {
     const leftover   = leg.time - waits[l];
     legs[l].leftover = leftover;
     if (idx == last) {          // #lastLeg
-        o.end   = legs[l].end;
-    //!!o.time -= leftover;
+        o.end = legs[l].end;
         obj.lastLeg = legs[l];
     }
     else {                      // continue to replace leg in the list
