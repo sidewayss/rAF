@@ -606,10 +606,12 @@ export class Easy {
                 if (hasNext)              // E.arrived, E.tripped, E.waiting
                     leg = leg.prev;       // i.e. e.status <= E.waiting (or isSteps)
                 this.#leg2e(e, leg);
-                if (hasNext || (!e.status && isSteps)) //!!these comments need revisions!!
+                if (hasNext) //!!these comments need revisions!!
                     return;               // waiting or steps = E.arrived, or steps !e.waitNow...
-                //----------------------- //!!loopbyelm && steps must continue!!
+                //----------------------- //!!loopByElm && steps must continue!!
                 this._leg = this._inbound ? this.#lastLeg : this._firstLeg;
+            //!!if  (!e.status && isSteps)
+            //!!    return;
                 e = this.e2;              // for looping, autoTrip steps no wait
                 if (isSteps) {
                     if (!waitNow)

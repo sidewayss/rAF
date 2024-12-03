@@ -256,7 +256,7 @@ export class Easies {
                                 if (noWait)        // do it now
                                     t._initElms();
                                 else               // post-wait, next apply()
-                                    t._setLooping(true);
+                                    t._setLooping(true); //!!test to make sure this runs!!
                         }
                         else if (noWait)   // loopByElm w/o wait, next elm
                             t._apply(e2);
