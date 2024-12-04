@@ -48,32 +48,36 @@ const input = {
     text(evt) {
         const
         tar = evt.target,
-        id  = getCamel(tar),  // "start" or "end"
+        id  = getCamel(tar),    // "start" or "end"
         se  = g[id];
 
-        try { se.color = new Color(tar.value); }
+        let color;
+        try { color = new Color(tar.value); }
         catch {
             invalidInput(tar, true);
             return;
-        }//----------------------------------------------
-        if (se.color.display().includes("NaN")) {
+        }                       // double-validation required
+        if (color.display().includes("NaN")) {
             invalidInput(tar, true);
             return;
-        }
+        }                       // triple-validation required, but only rarely
+        for (const opt of g.left.spaces)
+            if (color[Ez.kebabToSnake(opt.dataset.spaceId)].includes(NaN)) {
+                invalidInput(tar, true);
+                return;
+            }
+        //---------------
+        se.color = color;
+        setLocal(tar);          // save only valid values to localStorage
         invalidInput(tar, false);
 
-        const color = se.color.display();
-        se.button.style.backgroundColor = color;
-        se.swatch.style.backgroundColor = color;
-        g.lbl[id].style.color = color;
+        const css = color.display();
+        se.button.style.backgroundColor = css;
+        se.swatch.style.backgroundColor = css;
+        g.lbl[id].style.color = css;
 
-        if (Is.def(evt.type))          // else called by change.color()
-            se.color.value = se.color.to("srgb").toString({format: "hex"});
-                                       // <input>.value is in hex notation
         for (const lr of g.leftRight)
             updateOne(se, lr);
-
-        setLocal(tar);                 // only save valid values to localStorage
         if (!evt.isLoading)
             refresh();
     },
