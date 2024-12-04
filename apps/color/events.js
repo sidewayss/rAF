@@ -56,7 +56,7 @@ const input = {
             invalidInput(tar, true);
             return;
         }//----------------------------------------------
-        if (se.color.coords.some(v => Number.isNaN(v))) {
+        if (se.color.display().includes("NaN")) {
             invalidInput(tar, true);
             return;
         }
