@@ -186,8 +186,8 @@ function newTargets(isPseudo) {
                 tar = ez.newTarget({prop, loopByElm, elms:cr.dots});
                                         // callbacks for one target only
             tar.onLoopByElm = callbacks.onLoopByElm;
-            tar.onLoop      = callbacks.onLoop;
-            ezY.onLoop      = undefined;
+            tar.onLoop = callbacks.onLoop;
+            ezY.onLoop = undefined;
         }
         else {                          // test single and multi-element targets
             ezY.onLoop = callbacks.onLoop;
@@ -291,15 +291,19 @@ function updateX(frm, i) {
         const
         idx  = loopFrames.findLastIndex(n => n <= i),
         iElm = (idx + 1) % COUNT;
+
         for (let j = 0; j < COUNT; j++)
-            if (j == iElm)
-                ezY.loopWait && iElm > 0 && frm.t - frames[loopFrames[idx]].t < ezY.loopWait
-              ? setDot(j, 0, theStart())
-              : setDot(j, x, y);
+            if (j == iElm) {
+                const wait = ezY.loopWait;
+                if (wait && iElm > 0 && frm.t - frames[loopFrames[idx]].t < wait)
+                    setDot(j, 0, theStart()); // waiting to start
+                else
+                    setDot(j, x, y);          // on the go
+            }
             else if (j > iElm || elms.roundTrip.checked)
-                setDot(j, 0, theStart());
-            else
-                setDot(j, MILLI, theEnd());
+                setDot(j, 0, theStart());     // not yet || returned to start
+            else  // j < iElm && !elms.roundTrip.checked
+                setDot(j, MILLI, theEnd());   // arrived
     }
 }
 // setDot() helps updateX() set the position of one dot in both chart and range

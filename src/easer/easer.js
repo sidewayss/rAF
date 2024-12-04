@@ -297,8 +297,8 @@ class EBase {
         this.#prop.setEm(this.#loopElms, this.#initByElm);
     //++this.#onLoop?.(this); //++run callback after wait, not on arrival
     }
-//  setLooping() helps Easies.proto._next() set #isLooping
-    setLooping(b) { this.#isLooping = Boolean(b); }
+//  _setLooping() helps Easies.proto._next() set #isLooping
+    _setLooping(b) { this.#isLooping = Boolean(b); }
 
 //==============================================================================
 // The two #setOne functions:

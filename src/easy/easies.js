@@ -214,7 +214,7 @@ export class Easies {
         // Execute every active easy
         for (easy of this.#active)
             easy._easeMe(timeStamp);
-        //=============================
+        //=====================================
         // Process the easies' targets
         for ([easy, map] of this.#easy2Plays) {
             e   = easy.e;                  // map is Easer to integer plays
@@ -261,18 +261,15 @@ export class Easies {
                         else if (noWait)   // loopByElm w/o wait, next elm
                             t._apply(e2);
 
-                        if (plays)         // run loop callbacks
-                            if (nextElm)
-                                t.onLoopByElm?.(easy, t);
-                            else
-                                t.onLoop?.(easy, t);
+                        if (plays)          // run loop callbacks, now or later
+                            easy._loopCallback(t, nextElm);
                     }
                 }
             }
             if (!map.size)
                 this.#easy2Plays.delete(easy);
         }
-        //===============================
+        //==================================
         // Process #targets, the MEasers
         for ([t, plays] of this.#me2Plays) {
             val   = [];                     // val is sparse like t.#calcs
@@ -362,7 +359,7 @@ export class Easies {
                     e.status = E.inbound;   //$$
                                             // else no change
                 if (!sts)
-                    easy.onLoop?.(easy);    // plays > 1 loop for Easy
+                    easy._loopCallback();   // plays > 1 loop for Easy
             }
         }
         this.#peri?.(this, timeStamp);      // wait until everything is updated

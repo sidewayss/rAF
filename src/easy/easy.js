@@ -10,8 +10,9 @@ import {Ez}    from "../ez.js";
 
 export class Easy {
     #autoTrip; #base; #dist; #e; #end; #flipTrip; #lastLeg; #legsWait;
-    #loopWait; #onAutoTrip; #onLoop; #oneShot; #peri; #plays; #post; #pre;
-    #reversed; #roundTrip; #start; #targets; #time; #tripWait; #wait; #zero;
+    #loopWait; #onAutoTrip; #onLoop; #oneShot; #leftover; #loopTargets;
+    #peri; #plays; #post; #pre; #reversed; #roundTrip; #start; #targets;
+    #time; #tripWait; #wait; #zero;
 
     _leg; _now; _inbound; // shared with Incremental.prototype._calc()
     _value;               // for Incremental only, but used in shared code here
@@ -32,6 +33,8 @@ export class Easy {
         this.#tripWait  = this.#setWait(o.tripWait, "tripWait");
         this.#roundTrip = Boolean(o.roundTrip);
         this.#autoTrip  = Ez.defaultToTrue(o.autoTrip);
+
+        this.#loopTargets = new Map;// for steps w/o E.end that loop
 
         // #plays is only used as a default for targets that don't define it
         // setter runs #multiPlayTripNoAuto() after autoTrip and roundTrip set
@@ -592,6 +595,12 @@ export class Easy {
             this._calc(timeStamp, this._leg, e);
             this.#peri?.(this);         // doesn't run while waiting
         }
+        if (this.#loopTargets.size && timeStamp >= -this.#loopWait) {
+            this.#leftover = 0;         // must precede _loopCallBack()
+            for (const [t, func] of this.#loopTargets)
+                this._loopCallback(t, null, func);
+            this.#loopTargets.clear();
+        }
         return e.status;
     }
 //  _calc() calculates an eased value, overridden in Incremental
@@ -610,7 +619,6 @@ export class Easy {
                     return;               // waiting
                 //-----------------------
                 this._leg = this._inbound ? this.#lastLeg : this._firstLeg;
-                console.log(now, this.#time);
             //!!if  (!e.status && isSteps) // steps = E.arrived, or steps !e.waitNow
             //!!    return;
                 e = this.e2;              // for looping, autoTrip steps no wait
@@ -654,8 +662,10 @@ export class Easy {
             this._trip(e);      // sets e.status
             if (this._inbound)  // E.tripped
                 wait = this.#autoTrip ? this.#tripWait : 0;
-            else                // E.arrived
-                wait = this.#loopWait + (this._leg.leftover ?? 0);
+            else {              // E.arrived, leftover is for steps w/o jump-end
+                this.#leftover = this._leg.leftover;
+                wait = this.#loopWait + (this.#leftover ?? 0);
+            }
         }
         e.waitNow   = wait && (wait >= this._now);
         this.#zero += wait + time;
@@ -666,6 +676,18 @@ export class Easy {
         if (this.#roundTrip)
             this._inbound = !this._inbound;
         e.status = this._inbound ? E.tripped : E.arrived; //$$
+    }
+//  _loopCallback() supports loop(ByElm) for E.steps w/o jump-end
+//                  runs loop callback functions now or later
+//                  called by Easies.proto._next() and this._easeMe()
+    _loopCallback(t, byElm, func = !t    ? this.#onLoop
+                                 : byElm ? t.onLoopByElm
+                                         : t.onLoop) {
+        if (func)
+            if (this.#leftover) // later <= _next()
+                this.#loopTargets.set(t, func);
+            else
+                func(this, t);  // now   <= _next(), or _easeMe() = postponed
     }
 }
 //==============================================================================

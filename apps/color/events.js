@@ -55,8 +55,11 @@ const input = {
         catch {
             invalidInput(tar, true);
             return;
+        }//----------------------------------------------
+        if (se.color.coords.some(v => Number.isNaN(v))) {
+            invalidInput(tar, true);
+            return;
         }
-        //-----------------------
         invalidInput(tar, false);
 
         const color = se.color.display();

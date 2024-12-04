@@ -5,17 +5,19 @@ const U  = {pct:"%"};   // units, e.g. "px", "deg"
 const M  = {};          // enum of arg indexes for matrix() and matrix3d()
 const HD = {};          // enum of arg indexes for CSS L4 (UHD) color functions
 const E  = {            // Easy-related constants, PFactory.init() adds enums
+    prefix:"E.",        // string version of prefix for E.property
     cV:null, currentValue:null,
-    prefix:"E.",        // prefix for accessing E via string
     lp:'(',  rp:')',    // lp, rp, sp, comma because '(', ')',  ' ', and ','
     sp:' ',  comma:',', // are awkward in code.
-    rad :Math.PI / 180, // multipliers to convert from degrees to other units
+
+    rad :Math.PI / 180, // multipliers to convert from degrees to other units:
     grad:10 / 9,
     turn:1 / 360,
-    svgRotA:0,         // SVG rotate() has its own argument order
-    svgRotX:1,         // CSS rotate shares arg order with rotate3d(), but it
-    svgRotY:2,         // has "unstructured" alternate args and arg order.
-                       // string arrays for enums, <option>, <li>, etc.
+
+    svgRotA:0,         // SVG rotate() has its own argument order.
+    svgRotX:1,         // CSS rotate shares arg order with rotate3d(), but has
+    svgRotY:2,         // "unstructured" alternate args and arg order.
+                       // string arrays for enums, <option>, <li>, etc.:
     eKey  :["value","unit","comp"],
     io    :["in","out","inIn","outIn","inOut","outOut"],
     jump  :["none","start","end","both"],
