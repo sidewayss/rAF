@@ -17,7 +17,7 @@ import {MILLI, COUNT, ONE, INPUT, SELECT, BUTTON, DIV, LABEL, dlg, elms, g,
 import(_load.js): load, getEasies, initEasies, updateAll, easeFinally,
                   resizeWindow
 */
-let awaitNamed, awaitUpdate, ns, ns_named;
+let ns, ns_named;
 const RESIZE = "resize";
 
 const awaitFonts = [            // start loading fonts asap
@@ -90,8 +90,6 @@ function loadCommon() {
         is = ns.load(byTag, hasVisited),
                                       // the rest of the async processes:
         msg = "Error fetching common.json: presets & tooltips are unavailable";
-        awaitNamed  = Ez.promise();   // these two resolve in loadJSON()
-        awaitUpdate = Ez.promise();
         fetch("../common.json")
           .then (rsp => loadJSON(rsp, is, dir, ns, name, hasVisited, byTag, msg))
           .catch(err => errorAlert(err, msg));
@@ -104,6 +102,7 @@ function loadCommon() {
 function loadJSON(response, is, dir, ns, name, hasVisited, byTag, msg) {
     if (response.ok)
         response.json().then(json => {
+            const awaitNamed = Ez.promise();
             g.presets = json.presets;  // must precede loadNamed()
             loadNamed(is.multi, dir, ns)
               .then(namespace => {
@@ -125,20 +124,18 @@ function loadJSON(response, is, dir, ns, name, hasVisited, byTag, msg) {
                     }
                 }
                 const awaitCustom =
-                    byTag.slice (-4)   // the page's custom elements
+                    byTag.slice (-4)   // the page's custom elements, by tag
                          .filter(v => v.length)
                          .map   (v => customElements.whenDefined(v[0].localName));
                 if (is.promise)
                     awaitCustom.push(is.promise);
-                if (is.easings) {      // byTag is missing clones
-                    const nums = [...document.getElementsByTagName("input-num")];
+                if (is.easings)        // byTag is missing clones
                     awaitCustom.push(
-                        ...nums.map(num => BaseElement.promises.get(num))
+                        ...Array.from(document.getElementsByTagName("input-num"))
+                                .map (inp => BaseElement.promises.get(inp))
                     );
-                }
-
                 Promise.all([document.fonts.ready, awaitNamed, ...awaitCustom])
-                    .then (()  => loadFinally(is, name, hasVisited, id))
+                    .then (() => loadFinally(is, name, hasVisited, id))
                     .catch(errorAlert);
             }).catch(errorAlert);
 

@@ -222,6 +222,7 @@ state-btn:active {
   align-self:stretch;
   border-radius:2px;
 }
-color-picker::part(details) {
+color-picker::part(details),
+color-picker::part(color-space) {
 	display: none;
 }
