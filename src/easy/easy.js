@@ -663,12 +663,15 @@ export class Easy {
             if (this._inbound)  // E.tripped
                 wait = this.#autoTrip ? this.#tripWait : 0;
             else {              // E.arrived, leftover is for steps w/o jump-end
-                this.#leftover = this._leg.leftover;
-                wait = this.#loopWait + (this.#leftover ?? 0);
+                this.#leftover = this._leg.leftover ?? 0;
+                wait = this.#leftover + this.#loopWait;
             }
         }
-        e.waitNow   = wait && (wait >= this._now);
-        this.#zero += wait + time;
+        this.#zero     += time;
+        this.#leftover += this.#zero;
+        this.#zero     += wait;
+
+        e.waitNow = wait && (wait >= this._now);
         return this._leg;
     }
 //  _trip() helps both _calc()s, handles both ends of the round trip

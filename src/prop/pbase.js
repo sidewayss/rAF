@@ -1,14 +1,14 @@
 // Not exported by raf.js
-import {F, Fn, P, PFunc} from "./pfunc.js";
-import {CFunc}           from "./func.js";
-import {fromColor}       from "./color-convert.js";
+import {Fn, P, PFunc} from "./pfunc.js";
+import {Func, CFunc}  from "./func.js";
+import {fromColor}    from "./color-convert.js";
 
 import {E, Is, Rx} from "../globals.js";
 import {Ez}        from "../ez.js";
 
 const       // style/attribute values that require getComputedStyle():
-listOfValues = ["auto","inherit","initial","revert","revert-layer","unset"],
-listOfFuncs  = [Fn.calc,"var","attr","max","min","clamp"];
+gcsValues = ["auto","inherit","initial","revert","revert-layer","unset"],
+gcsFuncs  = [Fn.calc,"var","attr","max","min","clamp"];
 
 export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
     static #separator = E.sp;  // only font-family separates w/comma, and
@@ -170,16 +170,17 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
         const name  = this.name;
         let   value = elm.style[name];  // style overrides attribute in HTML/SVG
         if (value) {
-            if (!isCSS && (this.isColor || this === F.colorMix)
-                       && value.includes(Fn.rgb + E.lp)) {
-                // elm.style converts hsl(), hwb() to rgb() or rgba()
-                // parse getAttribute("style") to get the original value
+            if (!isCSS && (this.isColor
+                        || Func.gradients.some(v => value.startsWith(v + E.lp)))) {
+                // elm.style converts hsl(), hwb() to rgb() or rgba(), and
+                // removes any alpha values of 1 or 100%. You have to parse
+                // getAttribute("style") to get the original value.
                 const style = elm.getAttribute("style").split(/[:;]\s*/);
                 value = style[style.indexOf(this.name) + 1];
             }
             else { // some values and funcs require calling getComputedStyle()
-                const isFunc = listOfFuncs.some(v => value.includes(v + E.lp));
-                if (isFunc || listOfValues.includes(value)) {
+                const isFunc = gcsFuncs.some(v => value.includes(v + E.lp));
+                if (isFunc || gcsValues.includes(value)) {
                     if (isCSS) {        // var() is the only one that's gettable
                         const split = isFunc ? value.split(Rx.func) : [value];
                         if (split[0] != Fn.var)

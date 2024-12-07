@@ -85,11 +85,12 @@ function calcMEaser(o) {
 //==============================================================================
 // calcByElm() returns new EaserByElm or MEaserByElm
 function calcByElm(o, isME) {
+    let i, src;
     const calcs = Ez.newArray2D(o.l); // if (isME) setCalc() overwrites calcs[i]
 
     o.oneD = Array(o.lm);
     if (o.config.length) {            // parse configs into calcs:
-        let cfg, i, isUp, notOrByArg, prm, src,
+        let cfg, isUp, notOrByArg, prm,
         c_N,                          // c_N = output dim count, part of cNN
         cN_ = 0;                      // cN_ = input  ditto
 

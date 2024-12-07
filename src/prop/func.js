@@ -10,6 +10,10 @@ import {Ez}       from "../ez.js";
 class Func {                    //\ Func: CSS or SVG function
     #units; #separator;          // c = count, r = required, s = separator
 
+    static gradients = ["linear-gradient","radial-gradient","conic-gradient",
+                        "repeating-linear-gradient","repeating-radial-gradient",
+                        "repeating-conic-gradient"];
+
     // name is the CSS/SVG function name, key is a camelCase version of name
     constructor(name, key, units, utype, c, r, s = E.comma) {
         Ez.readOnly(this, "name", name);

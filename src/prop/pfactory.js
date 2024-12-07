@@ -29,10 +29,8 @@ export const PFactory = {
                   // color funcs
         funcC   = CFunc.funcNames,
                   // isUn funcs
+        funcGr  = Func.gradients,
         funcUn  = ["color-mix","inset","path","polygon","calc","linear","steps"], //!!calc, linear, steps...
-        funcGr  = ["linear-gradient","radial-gradient","conic-gradient",
-                   "repeating-linear-gradient","repeating-radial-gradient",
-                   "repeating-conic-gradient"],
         funcSR  = ["circle", "ellipse"],         // SR = <shape-radius>
                   // filter funcs
         funcF   = ["brightness","contrast","grayscale","invert","opacity","saturate","sepia"],
