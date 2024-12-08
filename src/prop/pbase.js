@@ -175,8 +175,10 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
                 // elm.style converts hsl(), hwb() to rgb() or rgba(), and
                 // removes any alpha values of 1 or 100%. You have to parse
                 // getAttribute("style") to get the original value.
-                const style = elm.getAttribute("style").split(/[:;]\s*/);
-                value = style[style.indexOf(this.name) + 1];
+                const
+                style = elm.getAttribute("style").split(/[:;]\s*/),
+                idx   = style.indexOf(this.name)
+                value = (idx >= 0) ? style[idx + 1] : "";
             }
             else { // some values and funcs require calling getComputedStyle()
                 const isFunc = gcsFuncs.some(v => value.includes(v + E.lp));
@@ -195,7 +197,7 @@ export class PBase {    // the base class for Prop, Bute, PrAtt, HtmlBute:
                 }
             }
         }
-        else if (!isCSS) {              // && !value
+        if (!value && !isCSS) {
             if (this.isPratt)           // fall back to attribute
                 value = elm.getAttribute(name);
             if (!value)                 // fall all the way back to gCS()
