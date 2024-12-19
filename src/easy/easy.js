@@ -638,24 +638,20 @@ export class Easy {
     }
 //  _nextLeg helps both _calc()s to get time-based next leg
     _nextLeg(leg, e) {
-        let wait;
-        let next   = leg.next;
-        let time   = leg.time;
-        this._now -= time;
-        //!!Is there a way to condense this logic?? some identical repitition!!
-        if (next) {             // proceed to the next leg, skipping a leg
-            this._leg = next;   // happens, especially with eased steps.
-            wait = next.wait;
-            while (next && this._now >= time + wait) {
-                time += wait + next.time;
-                next = next.next
-                this._now -= time;
-                if (next) {
-                    this._leg = next;
-                    wait = next.wait;
-                }               // else handled by if (!next) below
-            }
-        }
+        let
+        wait = 0,
+        time = 0,
+        next = leg;
+        do {                          // proceed to the next leg; skipping a leg
+            time += wait + next.time; // happens, especially with eased steps.
+            next = next.next
+            this._now -= time;
+            if (next) {
+                leg  = next;
+                wait = next.wait;
+            }                         // else handled by if (!next) below
+        } while (next && this._now >= time + wait);
+
         // The changes to wait below only apply if autoTrip or plays > 1, but
         // those are set on targets, so easies._next() sorts it out later.
         if (!next) {            // arrive or trip
